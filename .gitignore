@@ -1,0 +1,50 @@
+# ==================================
+# Java Compiled Files (.class)
+# ==================================
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# ==================================
+# Build Tool Directories (Maven / Gradle)
+# ==================================
+target/
+build/
+.gradle/
+
+# ==================================
+# IDE / Editor Files (Eclipse, IntelliJ IDEA, NetBeans)
+# ==================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==================================
+# System & OS Files
+# ==================================
+.DS_Store
+Thumbs.db
