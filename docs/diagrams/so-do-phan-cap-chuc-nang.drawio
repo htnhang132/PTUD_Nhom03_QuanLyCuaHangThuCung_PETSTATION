@@ -503,28 +503,28 @@
           <mxGeometry height="48" width="152" x="1426" y="506" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-1" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#1F4E78;strokeColor=#16324F;fontColor=#FFFFFF;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;" value="" vertex="1">
-          <mxGeometry height="14" width="18" x="1400" y="978" as="geometry" />
+          <mxGeometry height="14" width="18" x="1160" y="962" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-2" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#333333;" value="Mức 0 - Toàn hệ thống" vertex="1">
-          <mxGeometry height="18" width="220" x="1422" y="976" as="geometry" />
+          <mxGeometry height="18" width="220" x="1182" y="960" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-3" parent="1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#2E75B6;strokeColor=#1F4E78;fontColor=#FFFFFF;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;" value="" vertex="1">
-          <mxGeometry height="14" width="18" x="1400" y="1004" as="geometry" />
+          <mxGeometry height="14" width="18" x="1160" y="988" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-4" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#333333;" value="Mức 1 - Phân hệ (Module)" vertex="1">
-          <mxGeometry height="18" width="220" x="1422" y="1002" as="geometry" />
+          <mxGeometry height="18" width="220" x="1182" y="986" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-5" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#DDEBF7;strokeColor=#2E75B6;fontColor=#1F4E78;fontStyle=1;fontSize=13;align=center;verticalAlign=middle;" value="" vertex="1">
-          <mxGeometry height="14" width="18" x="1400" y="1030" as="geometry" />
+          <mxGeometry height="14" width="18" x="1160" y="1014" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-6" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#333333;" value="Mức 2 - Chức năng chính" vertex="1">
-          <mxGeometry height="18" width="220" x="1422" y="1028" as="geometry" />
+          <mxGeometry height="18" width="220" x="1182" y="1012" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-7" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9DC3E6;fontColor=#444444;fontStyle=2;fontSize=13;align=center;verticalAlign=middle;dashed=1;" value="" vertex="1">
-          <mxGeometry height="14" width="18" x="1400" y="1056" as="geometry" />
+          <mxGeometry height="14" width="18" x="1160" y="1040" as="geometry" />
         </mxCell>
         <mxCell id="Da_TPx-3FgGCLlm3hc-a-8" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#333333;" value="Mức 3 - Chức năng con / thao tác chi tiết" vertex="1">
-          <mxGeometry height="18" width="220" x="1422" y="1054" as="geometry" />
+          <mxGeometry height="18" width="220" x="1182" y="1038" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
