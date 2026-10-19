@@ -34,14 +34,36 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     /** Đặt phòng trong NghiepVuHotelPanel. */
+    @Override
+    protected void capNhatThaoTac() {
+        if (tblBang == null || pnlCacThaoTac == null) return;
+        String trangThai =
+                tblBang.getSelectedRow() < 0
+                        ? ""
+                        : String.valueOf(
+                                moHinh.getValueAt(
+                                        tblBang.convertRowIndexToModel(tblBang.getSelectedRow()),
+                                        9));
+        for (Component thanhPhan : pnlCacThaoTac.getComponents())
+            if (thanhPhan instanceof JButton btn) {
+                switch (btn.getText()) {
+                    case "Nhận phòng" -> btn.setEnabled(trangThai.equals("BOOKED"));
+                    case "Ghi chăm sóc", "Quyết toán" ->
+                            btn.setEnabled(trangThai.equals("CHECKED_IN"));
+                    case "Xem nhật ký" -> btn.setEnabled(!trangThai.isEmpty());
+                    default -> {}
+                }
+            }
+    }
+
     protected void datPhong() {
         // Giá trị.
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,
-                        "Đặt phòng Pet Hotel",
+                        "Đặt phòng lưu trú",
                         layThuCung(),
-                        taoLuaChon("room", "Phòng", LuaChonNghiepVuService.layLuaChonPhong()),
+                        layTruongPhongDaChon(),
                         layTruongVanBan(
                                 "start", "Ngày vào (yyyy-MM-dd HH:mm)", layThoiGianHienTai()),
                         layTruongVanBan(
@@ -51,17 +73,33 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                         .plusDays(1)
                                         .withSecond(0)
                                         .format(THOI_GIAN_NGAY)),
-                        layTruongVanBan("deposit", "Tiền cọc (đồng)", "0"),
                         layTruongVanBan("note", "Ghi chú", ""));
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (giaTri != null)
-            LuuTruService.datPhong(
-                    giaTri.get("pet"),
-                    giaTri.get("room"),
-                    docThoiGian(giaTri, "start"),
-                    docThoiGian(giaTri, "end"),
-                    docSoTien(giaTri, "deposit"),
-                    giaTri.get("note"));
+        if (giaTri != null) {
+            long coc =
+                    LuuTruService.tinhCocDuKien(
+                            giaTri.get("room"),
+                            docThoiGian(giaTri, "start"),
+                            docThoiGian(giaTri, "end"));
+            if (JOptionPane.showConfirmDialog(
+                            this,
+                            "Đã nhận cọc TIỀN MẶT 50% (ghi vào ca đang mở): "
+                                    + com.petstation.util.TienTe.dinhDang(coc)
+                                    + "?",
+                            "Xác nhận nhận cọc",
+                            JOptionPane.YES_NO_OPTION)
+                    != JOptionPane.YES_OPTION) return;
+            long id =
+                    LuuTruService.datPhong(
+                            giaTri.get("pet"),
+                            giaTri.get("room"),
+                            docThoiGian(giaTri, "start"),
+                            docThoiGian(giaTri, "end"),
+                            coc,
+                            giaTri.get("note"),
+                            true);
+            banHang.layQuyTrinh().chonHotel(id);
+        }
     }
 
     /** Ghi nhật ký trong NghiepVuHotelPanel. */
@@ -102,4 +140,10 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         BanHangService.quyetToan(loai, layDongChon(), banHang);
         dieuHuong.accept(MaManHinh.PAYMENT);
     }
+    private BieuMauSQL.TruongDuLieu layTruongPhongDaChon() {
+        var truong=taoLuaChon("room","Phòng",LuaChonNghiepVuService.layLuaChonPhong());
+        long id=banHang.layQuyTrinh().layPhongHotel();
+        return new BieuMauSQL.TruongDuLieu(truong.khoa(),truong.nhan(),id>0?banHang.layQuyTrinh().layMaPhongHotel():"",truong.cacLuaChon());
+    }
+
 }

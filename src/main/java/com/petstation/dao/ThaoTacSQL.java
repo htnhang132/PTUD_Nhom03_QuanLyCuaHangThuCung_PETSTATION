@@ -143,6 +143,7 @@ public final class ThaoTacSQL {
             else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (giaTri instanceof LocalDateTime thoiGian)
                 cauLenh.setTimestamp(chiSo + 1, Timestamp.valueOf(thoiGian));
+            else if(giaTri instanceof String chuoi) cauLenh.setNString(chiSo + 1, chuoi);
             else cauLenh.setObject(chiSo + 1, giaTri);
         }
         return cauLenh;

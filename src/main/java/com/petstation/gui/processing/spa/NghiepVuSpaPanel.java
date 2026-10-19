@@ -36,6 +36,36 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     }
 
     /** Đặt lịch hẹn trong NghiepVuSpaPanel. */
+    @Override
+    protected void capNhatThaoTac() {
+        if (tblBang == null || pnlCacThaoTac == null) return;
+        String trangThai = "";
+        boolean coDichVu = false;
+        if (tblBang.getSelectedRow() >= 0 && kieuNghiepVu != LoaiNghiepVu.APPOINTMENTS) {
+            int dong = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
+            trangThai = String.valueOf(moHinh.getValueAt(dong, 7));
+            coDichVu = ((Number) moHinh.getValueAt(dong, 6)).longValue() > 0;
+        }
+        for (Component thanhPhan : pnlCacThaoTac.getComponents())
+            if (thanhPhan instanceof JButton btn) {
+                switch (btn.getText()) {
+                    case "Thêm dịch vụ" ->
+                            btn.setEnabled(Set.of("RECEIVED", "IN_PROGRESS").contains(trangThai));
+                    case "Bắt đầu làm" -> btn.setEnabled(trangThai.equals("RECEIVED") && coDichVu);
+                    case "Hoàn thành" -> btn.setEnabled(trangThai.equals("IN_PROGRESS"));
+                    case "Thanh toán" ->
+                            btn.setEnabled(
+                                    trangThai.equals("COMPLETED")
+                                            && com.petstation.service.PhienDangNhapService
+                                                    .layPhien()
+                                                    .kiemTraCo(
+                                                            com.petstation.model.Quyen
+                                                                    .PAYMENT_PROCESS));
+                    default -> {}
+                }
+            }
+    }
+
     protected void datLichHen() {
         // Giá trị.
         Map<String, String> giaTri =
@@ -49,12 +79,15 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                         layTruongVanBan(
                                 "start", "Bắt đầu (yyyy-MM-dd HH:mm)", layThoiGianHienTai()));
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (giaTri != null)
-            SpaService.datLichHen(
-                    giaTri.get("pet"),
-                    giaTri.get("package"),
-                    giaTri.get("staff"),
-                    docThoiGian(giaTri, "start"));
+        if (giaTri != null) {
+            long id =
+                    SpaService.datLichHen(
+                            giaTri.get("pet"),
+                            giaTri.get("package"),
+                            giaTri.get("staff"),
+                            docThoiGian(giaTri, "start"));
+            banHang.layQuyTrinh().chonLichHen(id);
+        }
     }
 
     /** Hủy lịch hẹn trong NghiepVuSpaPanel. */
@@ -74,6 +107,15 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
             thuCung = chuyenThanhChuoi(SpaService.layMaLichHenThuCung(layDongChon()));
         }
         // Trường thú cưng.
+        if (lichHen.isEmpty() && banHang.layQuyTrinh().layLichHen() > 0) {
+            var hen =
+                    com.petstation.service.QuyTrinhService.layLichHen(
+                            banHang.layQuyTrinh().layLichHen());
+            if (!hen.isEmpty()) {
+                lichHen = hen.get(0)[0].toString();
+                thuCung = hen.get(0)[1].toString();
+            }
+        }
         TruongDuLieu truongThuCung =
                 thuCung.isEmpty()
                         ? layThuCung()
@@ -90,12 +132,16 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                         layTruongVanBan("weight", "Cân nặng thực tế (kg)", ""),
                         layTruongVanBan("note", "Tình trạng / Lưu ý", ""));
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (giaTri != null)
-            SpaService.tiepNhan(
-                    giaTri.get("pet"),
-                    lichHen,
-                    Double.parseDouble(giaTri.get("weight").replace(',', '.')),
-                    giaTri.get("note"));
+        if (giaTri != null) {
+            long id =
+                    SpaService.tiepNhan(
+                            giaTri.get("pet"),
+                            lichHen,
+                            Double.parseDouble(giaTri.get("weight").replace(',', '.')),
+                            giaTri.get("note"));
+            banHang.layQuyTrinh().chonSpa(id);
+            dieuHuong.accept(MaManHinh.SPA_SERVICE_SELECTION);
+        }
     }
 
     /** Thêm dịch vụ trong NghiepVuSpaPanel. */

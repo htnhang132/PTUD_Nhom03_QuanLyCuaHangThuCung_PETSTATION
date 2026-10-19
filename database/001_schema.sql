@@ -111,7 +111,7 @@ CREATE TABLE khach_hang (
     dia_chi NVARCHAR(300) NULL,
     ngay_sinh DATE NULL,
     diem_tich_luy INT NOT NULL DEFAULT 0 CHECK (diem_tich_luy >= 0),
-    hang_thanh_vien VARCHAR(20) NOT NULL DEFAULT 'REGULAR',
+    hang_thanh_vien NVARCHAR(20) NOT NULL DEFAULT N'REGULAR',
     dang_hoat_dong BIT NOT NULL DEFAULT 1,
     row_version ROWVERSION
 );
@@ -124,7 +124,7 @@ CREATE TABLE thu_cung (
     ten NVARCHAR(80) NOT NULL,
     loai VARCHAR(10) NOT NULL CHECK (loai IN ('DOG','CAT')),
     giong NVARCHAR(100) NULL,
-    gioi_tinh VARCHAR(10) NULL,
+    gioi_tinh NVARCHAR(10) NULL,
     mau_long NVARCHAR(80) NULL,
     can_nang DECIMAL(8,2) NULL CHECK (can_nang > 0),
     tinh_trang_suc_khoe NVARCHAR(1000) NULL,
@@ -736,4 +736,80 @@ BEGIN
 END;
 IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='UX_san_pham_barcode' AND object_id=OBJECT_ID('san_pham'))
  CREATE UNIQUE INDEX UX_san_pham_barcode ON san_pham(barcode) WHERE barcode IS NOT NULL;
+GO
+
+-- DEMO_COMPLETION_V1: nâng cấp bổ sung; không đổi dữ liệu lịch sử.
+IF COL_LENGTH('voucher','khoa_doi_diem') IS NULL
+ ALTER TABLE voucher ADD khoa_doi_diem VARCHAR(80) NULL;
+GO
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='UX_voucher_doi_diem' AND object_id=OBJECT_ID('voucher'))
+ CREATE UNIQUE INDEX UX_voucher_doi_diem ON voucher(khoa_doi_diem) WHERE khoa_doi_diem IS NOT NULL;
+GO
+IF COL_LENGTH('hop_dong_luu_tru','da_nhan_coc') IS NULL
+ ALTER TABLE hop_dong_luu_tru ADD da_nhan_coc BIT NOT NULL CONSTRAINT DF_hotel_nhan_coc DEFAULT 0,
+  nhan_coc_luc DATETIME2 NULL, nhan_coc_boi BIGINT NULL REFERENCES tai_khoan(id);
+GO
+IF COL_LENGTH('phieu_doi_tra','loai_phieu') IS NULL
+ ALTER TABLE phieu_doi_tra ADD loai_phieu VARCHAR(20) NOT NULL CONSTRAINT DF_doi_tra_loai DEFAULT 'LEGACY_RETURN',
+  hoa_don_thay_the_id BIGINT NULL REFERENCES hoa_don(id),
+  gia_tri_duoc_doi BIGINT NULL, khoa_thao_tac VARCHAR(80) NULL;
+GO
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='UX_doi_hang_khoa' AND object_id=OBJECT_ID('phieu_doi_tra'))
+ CREATE UNIQUE INDEX UX_doi_hang_khoa ON phieu_doi_tra(khoa_thao_tac) WHERE khoa_thao_tac IS NOT NULL;
+GO
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='IX_tiem_phong_thu_cung' AND object_id=OBJECT_ID('tiem_phong'))
+ CREATE INDEX IX_tiem_phong_thu_cung ON tiem_phong(thu_cung_id,ngay_tiem DESC);
+GO
+IF COL_LENGTH('hop_dong_luu_tru','phien_nhan_coc_id') IS NULL
+ ALTER TABLE hop_dong_luu_tru ADD phien_nhan_coc_id BIGINT NULL REFERENCES phien_lam_viec(id);
+GO
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='UX_doi_hang_hoa_don' AND object_id=OBJECT_ID('phieu_doi_tra'))
+ CREATE UNIQUE INDEX UX_doi_hang_hoa_don ON phieu_doi_tra(hoa_don_thay_the_id) WHERE hoa_don_thay_the_id IS NOT NULL;
+GO
+
+-- REAL_CATALOG_V1: Thông tin sản phẩm thu thập; không đổi giá, tồn và lịch sử cũ.
+IF COL_LENGTH('san_pham','thuong_hieu') IS NULL
+ ALTER TABLE san_pham ADD thuong_hieu NVARCHAR(100) NULL;
+GO
+IF COL_LENGTH('san_pham','quy_cach') IS NULL
+ ALTER TABLE san_pham ADD quy_cach NVARCHAR(100) NULL;
+GO
+IF COL_LENGTH('san_pham','doi_tuong_su_dung') IS NULL
+ ALTER TABLE san_pham ADD doi_tuong_su_dung NVARCHAR(100) NULL;
+GO
+IF COL_LENGTH('san_pham','mo_ta') IS NULL
+ ALTER TABLE san_pham ADD mo_ta NVARCHAR(1000) NULL;
+GO
+IF COL_LENGTH('san_pham','nguon_url') IS NULL
+ ALTER TABLE san_pham ADD nguon_url NVARCHAR(1000) NULL;
+GO
+IF COL_LENGTH('san_pham','ngay_thu_thap') IS NULL
+ ALTER TABLE san_pham ADD ngay_thu_thap DATE NULL;
+GO
+
+-- UI_FINISH_V1: hình thức kết ca có cấu trúc, để NULL cho lịch sử chưa xác định.
+IF COL_LENGTH('dbo.phien_lam_viec','hinh_thuc_ban_giao') IS NULL
+ ALTER TABLE dbo.phien_lam_viec ADD hinh_thuc_ban_giao VARCHAR(20) NULL
+ CONSTRAINT CK_phien_hinh_thuc_ban_giao CHECK(hinh_thuc_ban_giao IN ('NOP_QUY','BAN_GIAO'));
+GO
+IF OBJECT_ID('dbo.doi_chieu_ma_du_lieu','U') IS NULL
+ CREATE TABLE dbo.doi_chieu_ma_du_lieu(
+ bang SYSNAME NOT NULL,cot SYSNAME NOT NULL,id_doi_tuong BIGINT NOT NULL,
+ ma_cu NVARCHAR(100) NOT NULL,ma_moi NVARCHAR(100) NOT NULL,phien_ban VARCHAR(40) NOT NULL,
+ CONSTRAINT PK_doi_chieu_ma_du_lieu PRIMARY KEY(bang,cot,id_doi_tuong));
+GO
+
+-- UI_UNICODE_SCHEMA_V1: tên hạng thành viên cần lưu được tiếng Việt.
+IF EXISTS(SELECT 1 FROM sys.columns c JOIN sys.types t ON t.user_type_id=c.user_type_id WHERE c.object_id=OBJECT_ID('dbo.khach_hang') AND c.name='hang_thanh_vien' AND t.name='varchar')
+ BEGIN
+ DECLARE @tenMacDinh SYSNAME,@dinhNghia NVARCHAR(MAX),@lenh NVARCHAR(MAX);
+ SELECT @tenMacDinh=d.name,@dinhNghia=d.definition FROM sys.default_constraints d JOIN sys.columns c ON c.object_id=d.parent_object_id AND c.column_id=d.parent_column_id WHERE c.object_id=OBJECT_ID('dbo.khach_hang') AND c.name='hang_thanh_vien';
+ IF @tenMacDinh IS NOT NULL BEGIN SET @lenh=N'ALTER TABLE dbo.khach_hang DROP CONSTRAINT '+QUOTENAME(@tenMacDinh);EXEC sp_executesql @lenh;END;
+ ALTER TABLE dbo.khach_hang ALTER COLUMN hang_thanh_vien NVARCHAR(20) NOT NULL;
+ IF @tenMacDinh IS NOT NULL BEGIN SET @lenh=N'ALTER TABLE dbo.khach_hang ADD CONSTRAINT '+QUOTENAME(@tenMacDinh)+N' DEFAULT '+@dinhNghia+N' FOR hang_thanh_vien';EXEC sp_executesql @lenh;END;
+ END;
+IF EXISTS(SELECT 1 FROM sys.columns c JOIN sys.types t ON t.user_type_id=c.user_type_id WHERE c.object_id=OBJECT_ID('dbo.thu_cung') AND c.name='gioi_tinh' AND t.name='varchar')
+ ALTER TABLE dbo.thu_cung ALTER COLUMN gioi_tinh NVARCHAR(10) NULL;
+IF OBJECT_ID('dbo.doi_chieu_unicode','U') IS NULL
+ CREATE TABLE doi_chieu_unicode(bang SYSNAME NOT NULL,cot SYSNAME NOT NULL,id_doi_tuong BIGINT NOT NULL,gia_tri_cu NVARCHAR(500) NOT NULL,gia_tri_moi NVARCHAR(500) NOT NULL,phien_ban VARCHAR(50) NOT NULL,sua_luc DATETIME2 NOT NULL DEFAULT SYSDATETIME(),PRIMARY KEY(bang,cot,id_doi_tuong,phien_ban));
 GO

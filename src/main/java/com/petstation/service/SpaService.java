@@ -24,6 +24,8 @@ public final class SpaService {
     public static long datLichHen(
             String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {
         yeuCau(Quyen.SPA_MANAGE);
+        if (batDau == null || batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0)))
+            throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
         return thucHienGiaoDich(
                 ketNoi -> {
                     // Vùng đang xét.
@@ -74,6 +76,7 @@ public final class SpaService {
                     // Vùng đang xét.
                     Object[] vungDangXet = layThuCung(maThuCung);
                     // Lịch hẹn.
+                    TiemPhongService.kiemTraNhanSpa(maThuCung);
                     Long lichHen = null;
                     // Nhân viên.
                     long nhanVien = layIdNhanVien();

@@ -39,7 +39,8 @@ public final class InHoaDonPanel extends CoSoPanel {
     private final JPanel pnlGoc = new JPanel(cacThe);
 
     /** Xem trước. */
-    private final JTextArea txtXemTruoc = new JTextArea();
+    private final com.petstation.gui.components.common.HoaDonDocPanel pnlHoaDon =
+            new com.petstation.gui.components.common.HoaDonDocPanel();
 
     /** Biểu ngữ. */
     private final JLabel lblBieuNgu = new JLabel();
@@ -56,7 +57,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         setLayout(new BorderLayout(0, 14));
 
         // Tiêu đề.
-        JLabel lblTieuDe = taoTieuDeMuc("In hóa đơn");
+        JLabel lblTieuDe = taoTieuDeMuc("Xem hóa đơn");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
         add(lblTieuDe, BorderLayout.NORTH);
 
@@ -68,14 +69,14 @@ public final class InHoaDonPanel extends CoSoPanel {
         lblBieuNgu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         lblBieuNgu.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        txtXemTruoc.setEditable(false);
-        txtXemTruoc.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
-        txtXemTruoc.setBackground(Color.WHITE);
-        txtXemTruoc.setBorder(new EmptyBorder(16, 20, 16, 20));
         // Cuộn.
-        JScrollPane scrCuon = new JScrollPane(txtXemTruoc);
+        JScrollPane scrCuon =
+                new JScrollPane(
+                        pnlHoaDon,
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
-        scrCuon.setPreferredSize(new Dimension(430, 0));
+        scrCuon.setPreferredSize(new Dimension(460, 0));
         // Giấy.
         JPanel pnlGiay = new JPanel(new BorderLayout());
         pnlGiay.setOpaque(false);
@@ -86,15 +87,18 @@ public final class InHoaDonPanel extends CoSoPanel {
         // Ràng buộc lưới.
         GridBagConstraints rangBuocLuoi = new GridBagConstraints();
         rangBuocLuoi.fill = GridBagConstraints.VERTICAL;
+        rangBuocLuoi.weightx = 0;
+        rangBuocLuoi.insets = new Insets(0, 18, 0, 18);
         rangBuocLuoi.weighty = 1;
         pnlOGiua.add(scrCuon, rangBuocLuoi);
         pnlGiay.add(pnlOGiua, BorderLayout.CENTER);
 
         // In.
-        NutDinhDang btnIn = new NutDinhDang("In hóa đơn (Ctrl+P)", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnIn = new NutDinhDang("In hóa đơn (Ctrl+P)", NutDinhDang.KieuNut.PHU);
         btnIn.addActionListener(suKien -> xuLyIn());
         // Tiếp theo.
-        NutDinhDang btnTiepTheo = new NutDinhDang("Lập hóa đơn mới (F2)", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnTiepTheo =
+                new NutDinhDang("Lập hóa đơn mới (F2)", NutDinhDang.KieuNut.CHINH);
         btnTiepTheo.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.POS));
         // Gợi ý.
         JLabel lblGoiY =
@@ -150,13 +154,13 @@ public final class InHoaDonPanel extends CoSoPanel {
                         ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.thayDoi())
                         : "";
         lblBieuNgu.setText(
-                "✔ Đã thanh toán  "
+                "Đã thanh toán  "
                         + dongDuLieu.soHoaDon()
                         + "  ·  Tổng "
                         + TienTe.dinhDang(dongDuLieu.tong())
                         + thayDoi);
-        txtXemTruoc.setText(hienThi(dongDuLieu));
-        txtXemTruoc.setCaretPosition(0);
+        pnlHoaDon.datDuLieu(
+                com.petstation.service.BanHangService.layChiTietBienLai(dongDuLieu.soHoaDon()));
     }
 
     /**
@@ -166,6 +170,7 @@ public final class InHoaDonPanel extends CoSoPanel {
      * @return kết quả hiển thị
      */
     public static String hienThi(GioHang.BienLai dongDuLieu) {
+        var nguon = com.petstation.service.BanHangService.layNguonBienLai(dongDuLieu.soHoaDon());
         // Bộ ghép chuỗi.
         StringBuilder boGhepChuoi = new StringBuilder();
         boGhepChuoi
@@ -177,7 +182,15 @@ public final class InHoaDonPanel extends CoSoPanel {
         boGhepChuoi
                 .append(layGiua(com.petstation.service.CaiDatService.lay("STORE_PHONE")))
                 .append('\n');
-        boGhepChuoi.append(layGiua("Hóa đơn bán hàng")).append('\n');
+        boGhepChuoi
+                .append(
+                        layGiua(
+                                nguon.loai().equals("EXCHANGE")
+                                        ? "Đổi hàng — thu chênh lệch"
+                                        : nguon.loai().equals("HOTEL")
+                                                ? "Quyết toán Hotel"
+                                                : "Hóa đơn bán hàng"))
+                .append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         boGhepChuoi.append("Số HĐ : ").append(dongDuLieu.soHoaDon()).append('\n');
         boGhepChuoi
@@ -189,9 +202,16 @@ public final class InHoaDonPanel extends CoSoPanel {
                 .append('\n');
         boGhepChuoi.append("Thu ngân: ").append(dongDuLieu.thuNgan()).append('\n');
         boGhepChuoi.append("Khách : ").append(dongDuLieu.khachHang()).append('\n');
+        if (!nguon.ma().isBlank()) boGhepChuoi.append("Nguồn : ").append(nguon.ma()).append('\n');
+        if (!nguon.hoaDonGoc().isBlank())
+            boGhepChuoi.append("HĐ gốc: ").append(nguon.hoaDonGoc()).append('\n');
+        if (nguon.loai().equals("HOTEL"))
+            boGhepChuoi
+                    .append(layCap("Tiền cọc đã trừ", TienTe.dinhDang(nguon.daCanTru())))
+                    .append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         for (GioHang.DongHang dongDangXet : dongDuLieu.cacDong()) {
-            boGhepChuoi.append(layCat(dongDangXet.ten(), CHIEU_RONG)).append('\n');
+            boGhepChuoi.append(dongDangXet.ten()).append('\n');
             boGhepChuoi
                     .append(
                             layCap(
@@ -209,7 +229,9 @@ public final class InHoaDonPanel extends CoSoPanel {
             boGhepChuoi
                     .append(
                             layCap(
-                                    "Giảm giá"
+                                    (nguon.loai().equals("EXCHANGE")
+                                                    ? "Giá trị hàng được đổi"
+                                                    : "Giảm giá")
                                             + (dongDuLieu.voucher().isEmpty()
                                                     ? ""
                                                     : "(" + dongDuLieu.voucher() + ")"),
@@ -238,6 +260,95 @@ public final class InHoaDonPanel extends CoSoPanel {
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         boGhepChuoi.append(layGiua("Cảm ơn quý khách!")).append('\n');
         return boGhepChuoi.toString();
+    }
+
+    /** Bản xem và in dùng cùng bảng hàng, tên đầy đủ được xuống dòng tự nhiên. */
+    public static String hienThiHTML(GioHang.BienLai bienLai) {
+        var nguon = com.petstation.service.BanHangService.layNguonBienLai(bienLai.soHoaDon());
+        StringBuilder html =
+                new StringBuilder(
+                        "<html><head><style>body{font-family:Arial;font-size:12px;color:#61341D;margin:20px}h1{color:#CE1D2D;text-align:center;margin:0;font-size:20px}h2{margin:6px"
+                            + " 0;font-size:17px}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px"
+                            + " solid #e4ded6}th{background:#FDF9ED}p{margin:6px"
+                            + " 0}</style></head><body>");
+        java.net.URL logo = InHoaDonPanel.class.getResource("/images/pet-station-logo.png");
+        html.append("<table><tr><td width='80'>");
+        if (logo != null)
+            html.append("<img src='").append(logo).append("' width='60' height='60'>");
+        html.append("</td><td align='center'><h1>")
+                .append(maHoa(com.petstation.service.CaiDatService.lay("STORE_NAME")))
+                .append("</h1>");
+        html.append(maHoa(com.petstation.service.CaiDatService.lay("STORE_ADDRESS")))
+                .append("<br>")
+                .append(maHoa(com.petstation.service.CaiDatService.lay("STORE_PHONE")))
+                .append("</td></tr></table>");
+        html.append("<h2 align='center'>HÓA ĐƠN</h2><table><tr><td>Số hóa đơn: <b>")
+                .append(maHoa(bienLai.soHoaDon()))
+                .append("</b></td><td>Ngày: ")
+                .append(bienLai.thoiGian().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+                .append("</td></tr><tr><td>Khách hàng: ")
+                .append(maHoa(bienLai.khachHang()))
+                .append("</td><td>Thu ngân: ")
+                .append(maHoa(bienLai.thuNgan()))
+                .append("</td></tr></table>");
+        if (!nguon.ma().isBlank())
+            html.append("<p>Chứng từ: ").append(maHoa(nguon.ma())).append("</p>");
+        if (!nguon.hoaDonGoc().isBlank())
+            html.append("<p>Hóa đơn gốc: ").append(maHoa(nguon.hoaDonGoc())).append("</p>");
+        html.append(
+                "<table><tr><th align='left' width='52%'>Tên hàng / dịch vụ</th><th align='center'"
+                        + " width='8%'>SL</th><th align='right' width='20%'>Đơn giá</th><th"
+                        + " align='right' width='20%'>Thành tiền</th></tr>");
+        for (var dong : bienLai.cacDong())
+            html.append("<tr><td>")
+                    .append(maHoa(dong.ten()))
+                    .append("</td><td align='center'>")
+                    .append(dong.soLuong())
+                    .append("</td><td align='right'>")
+                    .append(TienTe.dinhDang(dong.donGia()))
+                    .append("</td><td align='right'>")
+                    .append(TienTe.dinhDang(dong.docSoTien()))
+                    .append("</td></tr>");
+        html.append("</table><table>");
+        themTong(html, "Tạm tính", bienLai.tamTinh());
+        if (bienLai.giamGia() > 0)
+            themTong(
+                    html,
+                    nguon.loai().equals("EXCHANGE")
+                            ? "Giá trị hàng được đổi"
+                            : "Giảm giá " + bienLai.voucher(),
+                    -bienLai.giamGia());
+        if (nguon.loai().equals("HOTEL")) themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
+        themTong(html, "TỔNG THANH TOÁN", bienLai.tong());
+        String phuongThuc =
+                switch (bienLai.phuongThuc()) {
+                    case CASH -> "Tiền mặt";
+                    case TRANSFER -> "Chuyển khoản / QR";
+                    case CARD -> "Thẻ";
+                };
+        themTong(html, "Đã nhận — " + phuongThuc, bienLai.daNhan());
+        if (bienLai.phuongThuc() == CaThuNganService.PhuongThuc.CASH)
+            themTong(html, "Tiền thừa", bienLai.thayDoi());
+        return html.append("</table><p align='center'>Cảm ơn quý khách!</p></body></html>")
+                .toString();
+    }
+
+    private static void themTong(StringBuilder html, String nhan, long tien) {
+        html.append("<tr><td align='right' width='75%'>")
+                .append(maHoa(nhan))
+                .append("</td><td align='right'><b>")
+                .append(TienTe.dinhDang(tien))
+                .append("</b></td></tr>");
+    }
+
+    private static String maHoa(String chuoi) {
+        return chuoi == null
+                ? ""
+                : chuoi.replace("&", "&amp;")
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                        .replace("\"", "&quot;")
+                        .replace("'", "&#39;");
     }
 
     /**
@@ -293,12 +404,20 @@ public final class InHoaDonPanel extends CoSoPanel {
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banHang.layBienLaiCuoi() == null) return;
         try {
-            txtXemTruoc.print(null, null, true, null, null, true);
+            java.awt.print.PrinterJob congViec = java.awt.print.PrinterJob.getPrinterJob();
+            congViec.setJobName("Hóa đơn " + banHang.layBienLaiCuoi().soHoaDon());
+            congViec.setPrintable(pnlHoaDon);
+            javax.print.attribute.PrintRequestAttributeSet thuocTinh =
+                    new javax.print.attribute.HashPrintRequestAttributeSet();
+            if (congViec.printDialog(thuocTinh)) {
+                congViec.setPrintable(pnlHoaDon, congViec.getPageFormat(thuocTinh));
+                congViec.print(thuocTinh);
+            }
         } catch (java.awt.print.PrinterException | HeadlessException ngoaiLe) {
             HopThoai.hienThiThongBaoHopThoai(
                     this,
                     "Không thể in: " + ngoaiLe.getMessage(),
-                    "In hóa đơn",
+                    "Xem hóa đơn",
                     JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -326,6 +445,6 @@ public final class InHoaDonPanel extends CoSoPanel {
      */
     @Override
     protected String layTieuDeTroGiup() {
-        return "In hóa đơn";
+        return "Xem hóa đơn";
     }
 }

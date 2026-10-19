@@ -26,6 +26,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
         // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục khách hàng", "khách hàng")
+                        .themBoLoc("Hạng thành viên", d -> String.valueOf(d[6]))
                         .datTienTo("KH")
                         .timKiem("Tìm theo tên, SĐT, mã khách...")
                         .datTrangThai(8, "Đang hoạt động", "Ngừng hoạt động");

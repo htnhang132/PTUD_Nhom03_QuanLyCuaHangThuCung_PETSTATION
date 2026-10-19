@@ -26,6 +26,22 @@ public final class DatPhongHotelPanel extends NghiepVuHotelPanel {
         super(LoaiNghiepVu.HOTEL_BOOKING, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Đặt phòng", this::datPhong);
+        themNut(
+                pnlCacThaoTac,
+                "Dọn phòng xong",
+                () -> {
+                    var giaTri =
+                            com.petstation.gui.components.common.BieuMauSQL.layYeuCauNhap(
+                                    this,
+                                    "Hoàn thành dọn phòng",
+                                    com.petstation.gui.components.common.BieuMauSQL.TruongDuLieu
+                                            .layLuaChon(
+                                                    "room",
+                                                    "Phòng đang dọn",
+                                                    LuuTruService.layPhongDangDon()));
+                    if (giaTri != null)
+                        LuuTruService.hoanTatDonPhong(Long.parseLong(giaTri.get("room")));
+                });
         themNut(pnlCacThaoTac, "Nhận phòng", () -> LuuTruService.kiemTraVao(layDongChon()));
         themNut(pnlCacThaoTac, "Ghi chăm sóc", this::ghiNhatKy);
         themNut(pnlCacThaoTac, "Xem nhật ký", this::layNhatKyChiTiet);

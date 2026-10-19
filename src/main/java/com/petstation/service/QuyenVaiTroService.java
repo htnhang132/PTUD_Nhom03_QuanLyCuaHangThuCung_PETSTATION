@@ -46,12 +46,12 @@ public final class QuyenVaiTroService {
             case PET_MANAGE -> "Hồ sơ thú cưng";
             case PRODUCT_MANAGE -> "Sản phẩm";
             case SUPPLIER_MANAGE -> "Nhà cung cấp";
-            case INVENTORY_RECEIVE -> "Nhập kho";
-            case INVENTORY_ISSUE -> "Xuất kho / Xuất hủy";
+            case INVENTORY_RECEIVE -> "Lập phiếu nhập kho";
+            case INVENTORY_ISSUE -> "Xuất hủy hàng hóa";
             case INVENTORY_COUNT -> "Kiểm kê";
             case PRICE_PROPOSE -> "Đề xuất giá";
             case PRICE_APPROVE -> "Duyệt giá";
-            case POS_SELL -> "Lập hóa đơn, đổi trả";
+            case POS_SELL -> "Lập hóa đơn, đổi hàng";
             case PAYMENT_PROCESS -> "Thanh toán";
             case CASH_SHIFT_MANAGE -> "Mở ca / Kết ca";
             case PROMOTION_MANAGE -> "Khuyến mãi, tích điểm, voucher";

@@ -117,6 +117,11 @@ public final class BieuMauSQL {
                 }
                 dauVao = new JComboBox<>(truongDangXet.cacLuaChon().toArray(LuaChon[]::new));
             }
+            if(dauVao instanceof JComboBox<?> cbo && truongDangXet.banDau()!=null) {
+                for(int i=0;i<cbo.getItemCount();i++)if(cbo.getItemAt(i) instanceof LuaChon chon && chon.giaTri().equals(truongDangXet.banDau()))cbo.setSelectedIndex(i);
+            }
+            dauVao.setName(truongDangXet.khoa());
+            dauVao.getAccessibleContext().setAccessibleName(truongDangXet.nhan());
             cacDauVao.put(truongDangXet.khoa(), dauVao);
             giaTriDangXet.gridx = 1;
             giaTriDangXet.weightx = 1;

@@ -26,6 +26,7 @@ public final class QuyTrinhManHinh {
          * @return kết quả lấy chỉ số của
          */
         public int layChiSoCua(MaManHinh id) {
+            if (id == MaManHinh.SPA) id = MaManHinh.SPA_INTAKE;
             return cacBuoc.indexOf(id);
         }
 
@@ -72,10 +73,10 @@ public final class QuyTrinhManHinh {
                     new QuyTrinh(
                             "Bán hàng",
                             List.of(MaManHinh.POS, MaManHinh.PAYMENT, MaManHinh.PRINT_INVOICE),
-                            List.of("Lập đơn", "Thanh toán", "In hóa đơn"),
+                            List.of("Lập hóa đơn", "Thanh toán", "Xem hóa đơn"),
                             false),
                     new QuyTrinh(
-                            "Dịch vụ Spa",
+                            "Lập phiếu Spa",
                             List.of(
                                     MaManHinh.SPA_SCHEDULE,
                                     MaManHinh.SPA_INTAKE,
@@ -90,7 +91,7 @@ public final class QuyTrinhManHinh {
                                     "Đóng phiếu"),
                             true),
                     new QuyTrinh(
-                            "Pet Hotel",
+                            "Quản lý lưu trú",
                             List.of(
                                     MaManHinh.HOTEL_BOOKING,
                                     MaManHinh.HOTEL_JOURNAL,

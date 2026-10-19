@@ -41,6 +41,57 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     public BoSoanThaoBangGia() {
         DinhDangBang.apDung(tblBang);
         tblBang.setRowHeight(30);
+        javax.swing.table.TableRowSorter<DefaultTableModel> sapXep =
+                new javax.swing.table.TableRowSorter<>(moHinh);
+        tblBang.setRowSorter(sapXep);
+        javax.swing.JComboBox<String> cboLoai =
+                new javax.swing.JComboBox<>(new String[] {"Tất cả", "Chó", "Mèo"});
+        javax.swing.JTextField txtKhoangCan = new javax.swing.JTextField(8);
+        Runnable loc =
+                () ->
+                        sapXep.setRowFilter(
+                                new javax.swing.RowFilter<DefaultTableModel, Integer>() {
+                                    public boolean include(
+                                            Entry<? extends DefaultTableModel, ? extends Integer>
+                                                    dong) {
+                                        return (cboLoai.getSelectedIndex() == 0
+                                                        || dong.getStringValue(0)
+                                                                .equals(cboLoai.getSelectedItem()))
+                                                && dong.getStringValue(1)
+                                                        .toLowerCase(java.util.Locale.ROOT)
+                                                        .contains(
+                                                                txtKhoangCan
+                                                                        .getText()
+                                                                        .trim()
+                                                                        .toLowerCase(
+                                                                                java.util.Locale
+                                                                                        .ROOT));
+                                    }
+                                });
+        cboLoai.addActionListener(e -> loc.run());
+        txtKhoangCan
+                .getDocument()
+                .addDocumentListener(
+                        new javax.swing.event.DocumentListener() {
+                            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                                loc.run();
+                            }
+
+                            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                                loc.run();
+                            }
+
+                            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                                loc.run();
+                            }
+                        });
+        JPanel pnlLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlLoc.setOpaque(false);
+        pnlLoc.add(new javax.swing.JLabel("Loài:"));
+        pnlLoc.add(cboLoai);
+        pnlLoc.add(new javax.swing.JLabel("Khoảng cân:"));
+        pnlLoc.add(txtKhoangCan);
+        pnlVungHienThi.add(pnlLoc, BorderLayout.NORTH);
         // Khung cuộn.
         JScrollPane scrKhungCuon = new JScrollPane(tblBang);
         scrKhungCuon.setPreferredSize(new Dimension(300, 150));

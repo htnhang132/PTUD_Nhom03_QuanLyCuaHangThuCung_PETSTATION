@@ -4,7 +4,6 @@ import static com.petstation.dao.ThaoTacSQL.*;
 import static com.petstation.gui.components.TruongNghiepVu.*;
 
 import com.petstation.gui.components.BangNghiepVuPanel;
-import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.common.BieuMauSQL;
 import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
@@ -36,24 +35,30 @@ public abstract class NghiepVuBanHangPanel extends BangNghiepVuPanel {
 
     /** Trả hàng trong NghiepVuBanHangPanel. */
     protected void traHang() {
-        // Giá trị.
-        Map<String, String> giaTri =
+        var giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,
-                        "Lập phiếu trả hàng",
+                        "Đổi phụ kiện trong 3 ngày — không hoàn tiền",
                         taoLuaChon(
                                 "item",
-                                "Hàng trên hóa đơn",
+                                "Hàng trên hóa đơn gốc",
                                 LuaChonNghiepVuService.layLuaChonDongHang()),
-                        layTruongVanBan("qty", "Số lượng trả", "1"),
+                        layTruongVanBan("qty", "Số lượng đổi", "1"),
+                        taoLuaChon(
+                                "replacement",
+                                "Phụ kiện thay thế",
+                                LuaChonNghiepVuService.layLuaChonSanPham()),
+                        layTruongVanBan("newQty", "Số lượng thay thế", "1"),
                         layTruongVanBan("reason", "Lý do", ""));
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (giaTri != null) {
-            DoiTraService.traHang(
-                    docSoTien(giaTri, "item"), docSoLuong(giaTri, "qty"), giaTri.get("reason"));
-            HopThoai.hienThiThanhCong(
-                    this, "Đã lưu phiếu trả. Phiếu vượt hạn mức hoặc thời hạn sẽ chờ duyệt.");
-        }
+        if (giaTri == null) return;
+        DoiTraService.lapDoiHang(
+                banHang,
+                docSoTien(giaTri, "item"),
+                docSoLuong(giaTri, "qty"),
+                giaTri.get("replacement"),
+                docSoLuong(giaTri, "newQty"),
+                giaTri.get("reason"));
+        dieuHuong.accept(MaManHinh.PAYMENT);
     }
 
     /** Hiển thị hóa đơn trong NghiepVuBanHangPanel. */

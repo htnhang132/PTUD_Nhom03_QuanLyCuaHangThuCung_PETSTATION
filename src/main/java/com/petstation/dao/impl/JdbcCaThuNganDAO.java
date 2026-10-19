@@ -9,6 +9,38 @@ public final class JdbcCaThuNganDAO {
     /** Khởi tạo JdbcCaThuNganDAO với các giá trị được cung cấp. */
     private JdbcCaThuNganDAO() {}
 
+    /** Chỉ trả về tài khoản đang làm việc, có quyền nhận ca. */
+    public static List<Object[]> layNguoiNhan(long taiKhoanHienTai) {
+        return ThaoTacSQL.truyVan(
+                "SELECT t.id,n.ho_ten,t.ten_dang_nhap FROM tai_khoan t JOIN nhan_vien n ON"
+                    + " n.id=t.nhan_vien_id WHERE t.trang_thai='ACTIVE' AND n.dang_lam_viec=1 AND"
+                    + " t.id<>? AND t.vai_tro IN ('STORE_MANAGER','SALES_STAFF') AND EXISTS(SELECT"
+                    + " 1 FROM vai_tro_quyen q WHERE q.vai_tro=t.vai_tro AND"
+                    + " q.ma_quyen='CASH_SHIFT_MANAGE') ORDER BY n.ho_ten",
+                taiKhoanHienTai);
+    }
+
+    public static int dongCoBanGiao(
+            long thucDem, long chenhLech, String lyDo, String hinhThuc, Long nguoiNhan, long id) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE phien_lam_viec SET"
+                    + " tien_thuc_te=?,chenh_lech=?,giai_trinh=?,hinh_thuc_ban_giao=?,nguoi_nhan_ban_giao_id=?,dong_luc=SYSDATETIME(),trang_thai='HANDED_OVER'"
+                    + " WHERE id=? AND trang_thai='OPEN'",
+                thucDem,
+                chenhLech,
+                lyDo,
+                hinhThuc,
+                nguoiNhan,
+                id);
+    }
+
+    public static long layTongCocDaNhan(long phien) {
+        return ThaoTacSQL.laySo(
+                "SELECT COALESCE(SUM(tien_coc),0) FROM hop_dong_luu_tru WHERE phien_nhan_coc_id=?"
+                        + " AND da_nhan_coc=1",
+                phien);
+    }
+
     /**
      * Đếm đóng trong JdbcCaThuNganDAO.
      *
@@ -68,10 +100,10 @@ public final class JdbcCaThuNganDAO {
      */
     public static long demDuKienTienMat(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(-p.chenh_lech),0) FROM phieu_doi_tra p JOIN hoa_don h"
-                        + " ON h.id=p.hoa_don_id JOIN don_hang d ON d.id=h.don_hang_id WHERE"
+                "SELECT COALESCE(SUM(-p.chenh_lech),0) FROM phieu_doi_tra p JOIN hoa_don h ON"
+                        + " h.id=p.hoa_don_id JOIN don_hang d ON d.id=h.don_hang_id WHERE"
                         + " d.phien_lam_viec_id=? AND p.trang_thai='COMPLETED' AND"
-                        + " h.hinh_thuc_thanh_toan='CASH'",
+                        + " p.loai_phieu='LEGACY_RETURN' AND h.hinh_thuc_thanh_toan='CASH'",
                 cacThamSo);
     }
 

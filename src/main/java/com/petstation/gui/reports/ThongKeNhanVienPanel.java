@@ -1,6 +1,6 @@
 package com.petstation.gui.reports;
 
-import static com.petstation.gui.reports.DuLieuBaoCao.taoKieuHienThi;
+import static com.petstation.gui.reports.DuLieuBaoCao.*;
 
 import com.petstation.gui.reports.BaoCaoPanel.*;
 import com.petstation.service.ThongKeService;
@@ -16,6 +16,23 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                 "Chọn kỳ để xem giao dịch đã lưu",
                 "Thống kê nhân viên".replace(' ', '_'),
                 List.of(
+                        taoKieuHienThi(
+                                "Thu tiền và chênh lệch ca",
+                                new String[] {
+                                    "Nhân viên",
+                                    "Ca",
+                                    "Mở lúc",
+                                    "Đóng lúc",
+                                    "Tiền đầu ca",
+                                    "Thu hóa đơn",
+                                    "Cọc lưu trú",
+                                    "Thực đếm",
+                                    "Chênh lệch"
+                                },
+                                0,
+                                8,
+                                true,
+                                ThongKeService::layTongHopCa),
                         taoKieuHienThi(
                                 "Lịch làm việc",
                                 new String[] {"Mã NV", "Nhân viên", "Chức vụ", "Số ca", "Số giờ"},

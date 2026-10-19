@@ -48,19 +48,41 @@ public final class MaTranQuyenPanel extends CoSoPanel {
             Object[] dong = new Object[cacCot.length];
             dong[0] = QuyenVaiTroService.layNhan(vungDangXet);
             for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
-                dong[chiSo + 1] =
-                        QuyenVaiTroService.tao(cacVaiTro[chiSo]).contains(vungDangXet) ? "✔" : "";
+                dong[chiSo + 1] = QuyenVaiTroService.tao(cacVaiTro[chiSo]).contains(vungDangXet);
             moHinh.addRow(dong);
         }
         // Cuộn.
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         // Bảng.
         JTable tblBang = layBang(scrCuon);
+        tblBang.getColumnModel().getColumn(0).setMinWidth(245);
+        tblBang.getColumnModel().getColumn(0).setPreferredWidth(285);
         tblBang.setAutoCreateRowSorter(false);
         tblBang.setRowSorter(null);
         // Giữa.
         javax.swing.table.DefaultTableCellRenderer lblGiua =
-                new javax.swing.table.DefaultTableCellRenderer();
+                new javax.swing.table.DefaultTableCellRenderer() {
+                    @Override
+                    public java.awt.Component getTableCellRendererComponent(
+                            JTable bang,
+                            Object giaTri,
+                            boolean chon,
+                            boolean tapTrung,
+                            int dong,
+                            int cot) {
+                        super.getTableCellRendererComponent(bang, "", chon, tapTrung, dong, cot);
+                        boolean co = Boolean.TRUE.equals(giaTri);
+                        setIcon(
+                                new com.petstation.gui.components.BieuTuongGiaoDien(
+                                        co
+                                                ? com.petstation.gui.components.BieuTuongGiaoDien
+                                                        .Kieu.CHO_PHEP
+                                                : com.petstation.gui.components.BieuTuongGiaoDien
+                                                        .Kieu.KHONG_CHO_PHEP));
+                        setToolTipText(co ? "Được phép" : "Không được phép");
+                        return this;
+                    }
+                };
         lblGiua.setHorizontalAlignment(JLabel.CENTER);
         for (int chiSo = 1; chiSo < cacCot.length; chiSo++)
             tblBang.getColumnModel().getColumn(chiSo).setCellRenderer(lblGiua);

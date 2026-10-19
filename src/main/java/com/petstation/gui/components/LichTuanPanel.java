@@ -157,7 +157,15 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         add(scrCuon, BorderLayout.CENTER);
         add(taoChuGiai(), BorderLayout.SOUTH);
 
-        LichLamViecService.themBoLangNghe(() -> SwingUtilities.invokeLater(this::dungLai));
+        LichLamViecService.themBoLangNghe(
+                () ->
+                        SwingUtilities.invokeLater(
+                                () -> {
+                                    if (isShowing()
+                                            && com.petstation.service.PhienDangNhapService
+                                                            .layPhienHienTai()
+                                                    != null) dungLai();
+                                }));
         dungLai();
     }
 

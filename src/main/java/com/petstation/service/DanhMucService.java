@@ -199,6 +199,58 @@ public final class DanhMucService {
 
         thucHienGiaoDich(
                 ketNoi -> {
+                    if (danhMuc.loai == LoaiDanhMuc.VOUCHERS) {
+                        yeuCau(Quyen.PROMOTION_MANAGE);
+                        String ma = String.valueOf(truoc == null ? giaTri[0] : truoc[0]);
+                        var rangBuoc =
+                                com.petstation.dao.impl.JdbcTichDiemDAO.layRangBuocVoucher(ma);
+                        if (!rangBuoc.isEmpty() && rangBuoc.get(0)[1] != null)
+                            throw new IllegalArgumentException(
+                                    "Voucher đổi điểm giữ nguyên mệnh giá, hạn, chủ và một lượt"
+                                            + " dùng; không sửa qua danh mục.");
+                        if (giaTri.length < 9)
+                            throw new IllegalArgumentException("Cần chọn khách sở hữu voucher.");
+                        if (rangBuoc.isEmpty() && String.valueOf(giaTri[7]).isBlank())
+                            throw new IllegalArgumentException(
+                                    "Voucher mới phải gắn với một khách hàng.");
+                        if ((rangBuoc.isEmpty() || rangBuoc.get(0)[2] != null)
+                                && !"1".equals(String.valueOf(giaTri[3])))
+                            throw new IllegalArgumentException(
+                                    "Voucher cá nhân chỉ có một lượt dùng.");
+                        if (!rangBuoc.isEmpty() && ((Number) rangBuoc.get(0)[0]).longValue() > 0)
+                            throw new IllegalArgumentException(
+                                    "Voucher đã dùng chỉ được tra cứu, không sửa hoặc phát hành"
+                                            + " lại.");
+                    }
+                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS && giaTri.length >= 17) {
+                        String anh = String.valueOf(giaTri[10]);
+                        if (!anh.isBlank()
+                                && !com.petstation.util.TaiAnhSanPham.kiemTraDuongDan(anh))
+                            throw new IllegalArgumentException(
+                                    "Ảnh sản phẩm phải nằm trong images/products.");
+                        int[] chiSo = {11, 12, 13, 14};
+                        int[] gioiHan = {100, 100, 100, 1000};
+                        for (int i = 0; i < chiSo.length; i++)
+                            if (String.valueOf(giaTri[chiSo[i]]).length() > gioiHan[i])
+                                throw new IllegalArgumentException(
+                                        "Thông tin chi tiết sản phẩm quá dài.");
+                    }
+                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
+                            && layPhien().docVaiTro() == com.petstation.model.VaiTro.STORE_MANAGER)
+                        yeuCau(Quyen.PRICE_APPROVE);
+                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
+                            && layPhien().docVaiTro()
+                                    != com.petstation.model.VaiTro.STORE_MANAGER) {
+                        var sp =
+                                com.petstation.dao.impl.JdbcDeXuatGiaDAO.timSanPham(
+                                        String.valueOf(giaTri[0]));
+                        long giaCu = sp.isEmpty() ? 0 : ((Number) sp.get(0)[1]).longValue();
+                        if (com.petstation.util.TienTe.doc(String.valueOf(giaTri[4])) != giaCu)
+                            throw new PhanQuyenException(
+                                    "Nhân viên kho dùng nút Đề xuất giá; chỉ quản lý được áp dụng"
+                                            + " giá bán.");
+                        if (sp.isEmpty()) giaTri[9] = "Ngừng kinh doanh";
+                    }
                     JdbcDanhMucDAO.luu(
                             danhMuc.loai,
                             truoc,
@@ -255,5 +307,9 @@ public final class DanhMucService {
     public static void datLaiMatKhau(String tenDangNhap, String matKhau) {
         yeuCau(Quyen.ACCOUNT_MANAGE);
         JdbcDanhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
+    }
+
+    public static void xoaBoLangNghe() {
+        GIA_CAC_BO_LANG_NGHE.clear();
     }
 }

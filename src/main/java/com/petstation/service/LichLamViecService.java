@@ -236,4 +236,8 @@ public final class LichLamViecService {
     private static void thongBao() {
         for (Runnable boLangNghe : List.copyOf(CAC_BO_LANG_NGHE)) boLangNghe.run();
     }
+
+    public static void xoaBoLangNghe() {
+        CAC_BO_LANG_NGHE.clear();
+    }
 }

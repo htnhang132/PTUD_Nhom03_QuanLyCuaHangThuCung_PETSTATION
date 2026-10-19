@@ -1,6 +1,6 @@
 package com.petstation.gui.reports;
 
-import static com.petstation.gui.reports.DuLieuBaoCao.taoKieuHienThi;
+import static com.petstation.gui.reports.DuLieuBaoCao.*;
 
 import com.petstation.gui.reports.BaoCaoPanel.*;
 import com.petstation.service.ThongKeService;
@@ -17,13 +17,26 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                 "Thống kê hàng hóa".replace(' ', '_'),
                 List.of(
                         taoKieuHienThi(
+                                        "Biến động trong kỳ",
+                                        new String[] {
+                                            "Mã SP",
+                                            "Sản phẩm",
+                                            "Loại giao dịch",
+                                            "Số lượng (+ nhập / − xuất)"
+                                        },
+                                        1,
+                                        3,
+                                        false,
+                                        ThongKeService::layBienDongKho)
+                                .chiQuanLy(),
+                        taoKieuHienThi(
                                 "Sản phẩm bán chạy",
                                 new String[] {"Mã SP", "Sản phẩm", "Số bán sau trả", "Doanh thu"},
                                 1,
                                 3,
                                 true,
                                 ThongKeService::laySanPhamBanChay),
-                        taoKieuHienThi(
+                        taoKieuHienTai(
                                 "Tồn kho hiện tại",
                                 new String[] {
                                     "Mã SP",
@@ -36,7 +49,7 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                                 2,
                                 false,
                                 ngayDangXet -> ThongKeService.layTonKho()),
-                        taoKieuHienThi(
+                        taoKieuHienTai(
                                 "Sắp hết hạn",
                                 new String[] {"Mã SP", "Sản phẩm", "Số lô", "Hạn dùng", "Tồn"},
                                 1,

@@ -120,6 +120,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         DinhDangBang.apDung(tblBang);
+        lienKetBoLoc(txtTimKiem, tblBang);
         pnlChon.add(scrCuon, BorderLayout.CENTER);
         // Gợi ý.
         JLabel lblGoiY =

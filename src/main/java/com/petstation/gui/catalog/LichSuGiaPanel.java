@@ -39,6 +39,14 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                 }
             };
 
+    private final javax.swing.JComboBox<String> cboSanPham = new javax.swing.JComboBox<>();
+    private final com.petstation.gui.components.common.BoChonKhoangNgay pnlKhoangNgay =
+            new com.petstation.gui.components.common.BoChonKhoangNgay();
+    private final javax.swing.JLabel lblKetQua = new javax.swing.JLabel();
+    private JTable tblLichSu;
+    private JTextField txtTuKhoa;
+    private java.time.LocalDate tuNgay, denNgay;
+
     /** Khởi tạo LichSuGiaPanel với các giá trị được cung cấp. */
     public LichSuGiaPanel() {
         setLayout(new BorderLayout(0, 10));
@@ -48,15 +56,86 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         // Bảng.
         JTable tblBang = layBang(scrCuon);
-        lienKetBoLoc(txtTimKiem, tblBang);
+        tblLichSu = tblBang;
+        txtTuKhoa = txtTimKiem;
+        tblBang.setAutoCreateRowSorter(true);
+        txtTimKiem
+                .getDocument()
+                .addDocumentListener(
+                        new javax.swing.event.DocumentListener() {
+                            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLoc();
+                            }
+
+                            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLoc();
+                            }
+
+                            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLoc();
+                            }
+                        });
+        cboSanPham.addItem("Tất cả");
+        cboSanPham.addActionListener(e -> apDungBoLoc());
+        pnlKhoangNgay.datNgayBatDau(java.time.LocalDate.now().minusDays(29));
+        pnlKhoangNgay.datNgayKetThuc(java.time.LocalDate.now());
+        tuNgay = pnlKhoangNgay.layNgayBatDau();
+        denNgay = pnlKhoangNgay.layNgayKetThuc();
         // Trên.
         javax.swing.JPanel pnlTren = taoVungTrongSuot(new BorderLayout(10, 0));
         pnlTren.add(taoTieuDeMuc("Lịch sử thay đổi giá bán"), BorderLayout.WEST);
         pnlTren.add(txtTimKiem, BorderLayout.EAST);
-        add(pnlTren, BorderLayout.NORTH);
+        javax.swing.JPanel pnlDau = taoVungTrongSuot(new BorderLayout(0, 8));
+        javax.swing.JPanel pnlLoc =
+                taoVungTrongSuot(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 0));
+        pnlLoc.add(new javax.swing.JLabel("Sản phẩm:"));
+        pnlLoc.add(cboSanPham);
+        javax.swing.JButton btnLoc = new javax.swing.JButton("Xem lịch sử");
+        btnLoc.addActionListener(
+                e -> {
+                    if (pnlKhoangNgay.layNgayBatDau()==null || pnlKhoangNgay.layNgayKetThuc()==null || pnlKhoangNgay.layNgayBatDau().isAfter(pnlKhoangNgay.layNgayKetThuc())) {
+                        com.petstation.gui.components.HopThoai.hienThiCanhBao(
+                                this, "Chọn đủ hai ngày; ngày bắt đầu không được sau ngày kết thúc.");
+                        return;
+                    }
+                    tuNgay = pnlKhoangNgay.layNgayBatDau();
+                    denNgay = pnlKhoangNgay.layNgayKetThuc();
+                    apDungBoLoc();
+                });
+        pnlLoc.add(btnLoc);
+        javax.swing.JButton btnXoa = new javax.swing.JButton("Xóa bộ lọc");
+        btnXoa.addActionListener(
+                e -> {
+                    tuNgay = null;
+                    denNgay = null;
+                    cboSanPham.setSelectedIndex(0);
+                    txtTimKiem.setText("");
+                    apDungBoLoc();
+                });
+        pnlLoc.add(btnXoa);
+        javax.swing.JButton btnXuat = new javax.swing.JButton("Xuất Excel");
+        btnXuat.addActionListener(
+                e ->
+                        com.petstation.gui.components.common.XuatExcel.xuatBang(
+                                this, tblBang, "Lich_su_gia"));
+        pnlLoc.add(btnXuat);
+        pnlLoc.add(lblKetQua);
+        pnlDau.add(pnlTren, BorderLayout.NORTH);
+        pnlDau.add(pnlKhoangNgay, BorderLayout.CENTER);
+        pnlDau.add(pnlLoc, BorderLayout.SOUTH);
+        add(pnlDau, BorderLayout.NORTH);
         add(scrCuon, BorderLayout.CENTER);
         taiLai();
-        DanhMucService.themBoLangNgheGia(() -> SwingUtilities.invokeLater(this::taiLai));
+        apDungBoLoc();
+        DanhMucService.themBoLangNgheGia(
+                () ->
+                        SwingUtilities.invokeLater(
+                                () -> {
+                                    if (isShowing()
+                                            && com.petstation.service.PhienDangNhapService
+                                                            .layPhienHienTai()
+                                                    != null) taiLai();
+                                }));
     }
 
     /** Tải lại trong LichSuGiaPanel. */
@@ -65,6 +144,15 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
         // Các dòng.
         java.util.List<Object[]> cacDong = new java.util.ArrayList<>(DanhMucService.layLichSuGia());
 
+        Object daChon = cboSanPham.getSelectedItem();
+        cboSanPham.removeAllItems();
+        cboSanPham.addItem("Tất cả");
+        cacDong.stream()
+                .map(d -> d[1] + " — " + d[2])
+                .distinct()
+                .sorted()
+                .forEach(cboSanPham::addItem);
+        if (daChon != null) cboSanPham.setSelectedItem(daChon);
         for (Object[] dongDuLieu : cacDong) {
             moHinh.addRow(
                     new Object[] {
@@ -78,6 +166,38 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                         dongDuLieu[5]
                     });
         }
+    }
+
+    private void apDungBoLoc() {
+        if (tblLichSu == null) return;
+        var sapXep = (javax.swing.table.TableRowSorter<DefaultTableModel>) tblLichSu.getRowSorter();
+        sapXep.setRowFilter(
+                new javax.swing.RowFilter<DefaultTableModel, Integer>() {
+                    public boolean include(
+                            Entry<? extends DefaultTableModel, ? extends Integer> dong) {
+                        String tu = txtTuKhoa.getText().trim().toLowerCase(java.util.Locale.ROOT);
+                        String sanPham = dong.getStringValue(1) + " — " + dong.getStringValue(2);
+                        if (cboSanPham.getSelectedIndex() > 0
+                                && !sanPham.equals(cboSanPham.getSelectedItem())) return false;
+                        if (!sanPham.toLowerCase(java.util.Locale.ROOT).contains(tu)) return false;
+                        if (tuNgay != null) {
+                            String ngay = dong.getStringValue(0);
+                            java.time.LocalDate d;
+                            try {
+                                d =
+                                        java.time.LocalDate.parse(
+                                                ngay.substring(0, 10),
+                                                java.time.format.DateTimeFormatter.ofPattern(
+                                                        "dd/MM/yyyy"));
+                            } catch (RuntimeException e) {
+                                return false;
+                            }
+                            if (d.isBefore(tuNgay) || d.isAfter(denNgay)) return false;
+                        }
+                        return true;
+                    }
+                });
+        lblKetQua.setText(tblLichSu.getRowCount() + " kết quả");
     }
 
     /** Xử lý hiển thị trong LichSuGiaPanel. */
@@ -103,6 +223,6 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
      */
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chỉ xem. Giá bán đổi ở tab Danh sách sản phẩm sẽ tự ghi vào đây.";
+        return "Chỉ xem. Giá được duyệt tại Phê duyệt yêu cầu sẽ tự ghi lịch sử. Lọc sản phẩm và khoảng ngày để tra cứu hoặc xuất Excel.";
     }
 }

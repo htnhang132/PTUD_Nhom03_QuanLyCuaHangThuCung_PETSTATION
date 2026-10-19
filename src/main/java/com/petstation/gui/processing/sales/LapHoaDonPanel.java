@@ -41,7 +41,8 @@ public class LapHoaDonPanel extends CoSoPanel {
      * @param gia giá
      * @param tonKho tồn kho
      */
-    private record SanPham(String ma, String ten, String nhomHang, long gia, int tonKho) {}
+    private record SanPham(
+            String ma, String ten, String nhomHang, long gia, int tonKho, String anh) {}
 
     /**
      * Lấy sản phẩm trong LapHoaDonPanel.
@@ -60,7 +61,8 @@ public class LapHoaDonPanel extends CoSoPanel {
                             String.valueOf(dongDuLieu[1]),
                             String.valueOf(dongDuLieu[2]),
                             ((Number) dongDuLieu[3]).longValue(),
-                            ((Number) dongDuLieu[4]).intValue()));
+                            ((Number) dongDuLieu[4]).intValue(),
+                            String.valueOf(dongDuLieu[5])));
         }
         return ra;
     }
@@ -138,6 +140,18 @@ public class LapHoaDonPanel extends CoSoPanel {
 
         setBorder(new EmptyBorder(14, 16, 14, 16));
         setLayout(new BorderLayout(16, 0));
+        pnlLuoi.addComponentListener(
+                new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentResized(java.awt.event.ComponentEvent e) {
+                        int cot = Math.max(1, Math.min(4, pnlLuoi.getWidth() / 200));
+                        GridLayout luoi = (GridLayout) pnlLuoi.getLayout();
+                        if (luoi.getColumns() != cot) {
+                            luoi.setColumns(cot);
+                            pnlLuoi.revalidate();
+                        }
+                    }
+                });
 
         txtTimKiem = taoOTimKiem("Quét mã vạch hoặc gõ tên / mã sản phẩm, rồi Enter");
         txtTimKiem.setPreferredSize(new Dimension(0, 40));
@@ -309,7 +323,7 @@ public class LapHoaDonPanel extends CoSoPanel {
         BoGocPanel pnlThe = new BoGocPanel(10, MauUngDung.THE_NEN, true);
         pnlThe.setLayout(new BorderLayout(0, 4));
         pnlThe.setBorder(new EmptyBorder(12, 14, 12, 14));
-        pnlThe.setPreferredSize(new Dimension(150, 112));
+        pnlThe.setPreferredSize(new Dimension(180, 310));
         pnlThe.setCursor(
                 ra ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         pnlThe.getAccessibleContext().setAccessibleName(vungDangXet.ten());
@@ -344,13 +358,19 @@ public class LapHoaDonPanel extends CoSoPanel {
         pnlDuoi.add(lblGia, BorderLayout.WEST);
         pnlDuoi.add(lblTonKho, BorderLayout.EAST);
 
-        pnlThe.add(lblMa, BorderLayout.NORTH);
-        pnlThe.add(lblTen, BorderLayout.CENTER);
+        var pnlAnh = new com.petstation.gui.components.common.AnhSanPhamPanel(140);
+        pnlAnh.datAnh(vungDangXet.anh());
+        JPanel pnlThongTin = taoVungTrongSuot(new BorderLayout(0, 4));
+        pnlThongTin.add(lblMa, BorderLayout.NORTH);
+        pnlThongTin.add(lblTen, BorderLayout.CENTER);
+        pnlThe.add(pnlAnh, BorderLayout.NORTH);
+        pnlThe.add(pnlThongTin, BorderLayout.CENTER);
         pnlThe.add(pnlDuoi, BorderLayout.SOUTH);
 
         // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (!ra) {
-            pnlThe.addMouseListener(
+            ganThaoTacThe(
+                    pnlThe,
                     new MouseAdapter() {
                         /**
                          * Lấy chuột đã bấm trong lớp xử lý giao diện.
@@ -364,6 +384,14 @@ public class LapHoaDonPanel extends CoSoPanel {
                     });
         }
         return pnlThe;
+    }
+
+    /** Gắn cùng thao tác lên ảnh và nhãn vì sự kiện chuột Swing không nổi lên panel cha. */
+    private void ganThaoTacThe(Component thanhPhan, MouseAdapter thaoTac) {
+        thanhPhan.addMouseListener(thaoTac);
+        thanhPhan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (thanhPhan instanceof Container vung)
+            for (Component con : vung.getComponents()) ganThaoTacThe(con, thaoTac);
     }
 
     /** Thêm theo quét trong LapHoaDonPanel. */
@@ -412,7 +440,7 @@ public class LapHoaDonPanel extends CoSoPanel {
     private BoGocPanel taoGioHang() {
         // Giỏ hàng vùng hiển thị.
         BoGocPanel pnlGioHangVungHienThi = layThe(new BorderLayout(0, 10));
-        pnlGioHangVungHienThi.setPreferredSize(new Dimension(460, 0));
+        pnlGioHangVungHienThi.setPreferredSize(new Dimension(480, 0));
 
         // Tiêu đề và nút treo hoặc mở lại đơn
         // Tiêu đề.
@@ -641,12 +669,17 @@ public class LapHoaDonPanel extends CoSoPanel {
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN),
                         new EmptyBorder(8, 10, 8, 10)));
-        pnlDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
+        pnlDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 118));
 
         // Thông tin.
         JPanel pnlThongTin = taoVungTrongSuot(new BorderLayout());
         // Tên.
-        JLabel lblTen = new JLabel(dong.ten());
+        JLabel lblTen =
+                new JLabel(
+                        "<html><body style='width:175px'>"
+                                + dong.ten().replace("&", "&amp;").replace("<", "&lt;")
+                                + "</body></html>");
+        lblTen.setToolTipText(dong.ten());
         lblTen.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         // Đơn vị.
         JLabel lblDonVi = new JLabel(TienTe.dinhDang(dong.donGia()));

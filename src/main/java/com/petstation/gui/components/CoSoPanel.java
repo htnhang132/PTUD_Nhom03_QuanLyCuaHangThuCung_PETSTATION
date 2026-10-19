@@ -31,6 +31,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     /** Khởi tạo CoSoPanel với các giá trị được cung cấp. */
     public CoSoPanel() {
+        com.petstation.gui.components.common.HoTroCuon.theoDoi(this);
         setBackground(MauUngDung.NEN_KEM);
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(20, 24, 20, 24));

@@ -114,7 +114,7 @@ public final class ChinhFrame extends JFrame {
         pnlThanhCongCu =
                 new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.DASHBOARD), this::diQuayLai);
         pnlThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
-        pnlThanhQuyTrinh = new ThanhQuyTrinh(this::dieuHuong);
+        pnlThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         pnlThanhMenu =
                 new ThanhMenuChinh(
                         manHinhBoDangKy, this::dieuHuong, this::dangXuat, this::yeuCauThoat);
@@ -190,6 +190,16 @@ public final class ChinhFrame extends JFrame {
      *
      * @param id id
      */
+    private void chuyenBuoc(MaManHinh dich) {
+        try {
+            com.petstation.service.QuyTrinhService.chuyenBuoc(
+                    hienTai.name(), dich.name(), manHinhBoDangKy.layGioHang());
+            dieuHuong(dich);
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, loi.getMessage());
+        }
+    }
+
     public void dieuHuong(MaManHinh id) {
         // Định nghĩa.
         DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(id);
@@ -421,6 +431,8 @@ public final class ChinhFrame extends JFrame {
         // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (ketQua == JOptionPane.YES_OPTION) {
             NhatKyHeThongService.ghiNhatKy("Đăng xuất", "Hệ thống");
+            manHinhBoDangKy.layGioHang().xoa();
+            manHinhBoDangKy.layGioHang().layQuyTrinh().xoa();
             nguCanh.layNguCanhPhien().xoa();
             PhienDangNhapService.datPhienDangNhap(null);
             dispose();

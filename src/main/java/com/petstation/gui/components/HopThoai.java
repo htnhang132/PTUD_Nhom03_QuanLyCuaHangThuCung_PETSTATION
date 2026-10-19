@@ -234,7 +234,7 @@ public final class HopThoai {
                 JOptionPane.showOptionDialog(
                         cha,
                         thongBao,
-                        TIEU_DE_XAC_NHAN,
+                        tieuDe == null || tieuDe.isBlank() ? TIEU_DE_XAC_NHAN : tieuDe,
                         JOptionPane.DEFAULT_OPTION,
                         nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE,
                         null,

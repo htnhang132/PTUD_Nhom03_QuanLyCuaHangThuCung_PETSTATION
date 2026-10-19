@@ -232,7 +232,7 @@ public class DangNhapFrame extends JFrame {
         btnQuen.setBorderPainted(false);
         btnQuen.setContentAreaFilled(false);
         btnQuen.setFocusPainted(false);
-        btnQuen.setForeground(MauUngDung.XANH_DUONG);
+        btnQuen.setForeground(MauUngDung.NAU);
         btnQuen.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnQuen.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnQuen.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -395,7 +395,8 @@ public class DangNhapFrame extends JFrame {
         } catch (UnsupportedOperationException ngoaiLe) {
             chuHoa = false;
         }
-        lblNhanChuHoa.setText(chuHoa ? "⚠ Caps Lock đang bật" : "");
+        lblNhanChuHoa.setIcon(chuHoa ? new com.petstation.gui.components.BieuTuongGiaoDien(com.petstation.gui.components.BieuTuongGiaoDien.Kieu.CANH_BAO) : null);
+        lblNhanChuHoa.setText(chuHoa ? "Caps Lock đang bật" : "");
     }
 
     /** Lấy thực hiện đăng nhập trong DangNhapFrame. */

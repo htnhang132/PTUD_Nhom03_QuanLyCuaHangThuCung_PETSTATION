@@ -144,7 +144,10 @@ public final class CaThuNganService {
      * @return kết quả lấy tiền mặt dự kiến
      */
     public long layTienMatDuKien() {
-        return layTienDauCa() + layDoanhThuTienMat() - JdbcCaThuNganDAO.demDuKienTienMat(layId());
+        return layTienDauCa()
+                + layDoanhThuTienMat()
+                + layTienCocHotel()
+                - JdbcCaThuNganDAO.demDuKienTienMat(layId());
     }
 
     /**
@@ -152,6 +155,10 @@ public final class CaThuNganService {
      *
      * @return kết quả lấy nhãn
      */
+    public long layTienCocHotel() {
+        return JdbcCaThuNganDAO.layTongCocDaNhan(layId());
+    }
+
     public String layNhan() {
         return kiemTraMo() ? "Đang mở – " + layTenCa() : "Chưa mở ca";
     }
@@ -191,6 +198,7 @@ public final class CaThuNganService {
      */
     public void mo(String ten, long soTien) {
         yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        if (ten == null || ten.isBlank()) throw new IllegalArgumentException("Chưa chọn tên ca.");
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (soTien < 0) throw new IllegalArgumentException("Tiền đầu ca phải không âm.");
         thucHienGiaoDich(
@@ -221,7 +229,39 @@ public final class CaThuNganService {
      * @param ghiChu ghi chú
      */
     public void dong(long daDem, String ghiChu) {
+        dong(daDem, ghiChu, HinhThucBanGiao.NOP_QUY, null);
+    }
+
+    public enum HinhThucBanGiao {
+        NOP_QUY,
+        BAN_GIAO
+    }
+
+    public record NguoiNhan(long id, String hoTen, String tenDangNhap) {
+        @Override
+        public String toString() {
+            return hoTen + " (" + tenDangNhap + ")";
+        }
+    }
+
+    public List<NguoiNhan> layNguoiNhan() {
         yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        return JdbcCaThuNganDAO.layNguoiNhan(layIdTaiKhoan()).stream()
+                .map(
+                        d ->
+                                new NguoiNhan(
+                                        ((Number) d[0]).longValue(),
+                                        String.valueOf(d[1]),
+                                        String.valueOf(d[2])))
+                .toList();
+    }
+
+    /** Kết ca và lưu người nhận bằng khóa ngoại, cùng giao dịch với số tiền. */
+    public void dong(long daDem, String ghiChu, HinhThucBanGiao hinhThuc, Long nguoiNhan) {
+        yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        Objects.requireNonNull(hinhThuc, "Chưa chọn hình thức bàn giao.");
+        if (hinhThuc == HinhThucBanGiao.NOP_QUY && nguoiNhan != null)
+            throw new IllegalArgumentException("Nộp quỹ không có người nhận ca.");
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (daDem < 0) throw new IllegalArgumentException("Tiền thực đếm phải không âm.");
         thucHienGiaoDich(
@@ -233,9 +273,22 @@ public final class CaThuNganService {
                     JdbcCaThuNganDAO.demDong(idHienTai);
                     // Dự kiến.
                     long duKien = layTienMatDuKien();
+                    if (daDem != duKien && (ghiChu == null || ghiChu.isBlank()))
+                        throw new IllegalArgumentException("Cần nhập lý do chênh lệch tiền mặt.");
+                    if (hinhThuc == HinhThucBanGiao.BAN_GIAO
+                            && (nguoiNhan == null
+                                    || layNguoiNhan().stream().noneMatch(n -> n.id() == nguoiNhan)))
+                        throw new IllegalArgumentException(
+                                "Chọn quản lý hoặc thu ngân đang hoạt động để nhận ca.");
                     // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (JdbcCaThuNganDAO.capNhatDong(daDem, daDem - duKien, ghiChu, idHienTai) != 1)
-                        throw new IllegalStateException("Ca đã đóng.");
+                    if (JdbcCaThuNganDAO.dongCoBanGiao(
+                                    daDem,
+                                    daDem - duKien,
+                                    ghiChu,
+                                    hinhThuc.name(),
+                                    nguoiNhan,
+                                    idHienTai)
+                            != 1) throw new IllegalStateException("Ca đã đóng.");
                     cuoiCungBanGiao =
                             "Thực đếm "
                                     + daDem

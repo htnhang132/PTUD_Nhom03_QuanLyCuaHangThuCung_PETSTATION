@@ -1,42 +1,33 @@
 package com.petstation.gui.search;
 
-import static com.petstation.dao.ThaoTacSQL.*;
-
 import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.gui.processing.spa.NghiepVuSpaPanel;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
-import com.petstation.service.SpaService;
 
-import java.awt.*;
-import java.time.*;
-import java.util.*;
 import java.util.function.Consumer;
 
-import javax.swing.*;
-
-/** Cung cấp giao diện và xử lý tương tác cho Spa hằng ngày vùng hiển thị. */
+/** Phiếu Spa trong ngày; thao tác thay đổi nằm ở các màn xử lý. */
 public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
-    /**
-     * Khởi tạo TraCuuPhieuSpaPanel với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param dieuHuong điều hướng
-     */
-    public TraCuuPhieuSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.SPA_TICKETS, banHang, dieuHuong);
-
-        themNut(pnlCacThaoTac, "+ Tiếp nhận", this::tiepNhan);
-        themNut(pnlCacThaoTac, "Thêm dịch vụ", this::themDichVu);
-        themNut(
-                pnlCacThaoTac,
-                "Bắt đầu làm",
-                () -> SpaService.layTrangThaiSpa(layDongChon(), "IN_PROGRESS"));
-        themNut(
-                pnlCacThaoTac,
-                "Hoàn thành",
-                () -> SpaService.layTrangThaiSpa(layDongChon(), "COMPLETED"));
-        themNut(pnlCacThaoTac, "Thanh toán", () -> quyetToan("SPA"));
+    public TraCuuPhieuSpaPanel(GioHang gio, Consumer<MaManHinh> dieuHuong) {
+        super(LoaiNghiepVu.SPA_TICKETS, gio, dieuHuong);
         themNut(pnlCacThaoTac, "Chi tiết dịch vụ", this::laySpaChiTiet);
+        themNut(
+                pnlCacThaoTac,
+                "Mở xử lý",
+                () -> {
+                    gio.layQuyTrinh().chonSpa(layDongChon());
+                    dieuHuong.accept(MaManHinh.SPA_PROGRESS);
+                });
+        themNut(
+                pnlCacThaoTac,
+                "In danh sách",
+                () -> {
+                    try {
+                        tblBang.print();
+                    } catch (java.awt.print.PrinterException loi) {
+                        throw new IllegalStateException(loi.getMessage(), loi);
+                    }
+                });
     }
 }

@@ -108,8 +108,13 @@ public final class JdbcNghiepVuDAO {
                                 + " t.id,t.ma_phieu,k.ho_ten,p.ten,t.can_nang_thuc_te,n.ho_ten,t.tong_tien,t.trang_thai,t.tao_luc"
                                 + " FROM phieu_tiep_nhan_spa t JOIN thu_cung p ON"
                                 + " p.id=t.thu_cung_id JOIN khach_hang k ON k.id=p.khach_hang_id"
-                                + " LEFT JOIN nhan_vien n ON n.id=t.nhan_vien_id ORDER BY t.tao_luc"
-                                + " DESC,t.id DESC");
+                                + " LEFT JOIN nhan_vien n ON n.id=t.nhan_vien_id"
+                                    + (cheDo == LoaiNghiepVu.SPA_TICKETS
+                                            ? " WHERE t.tao_luc>=CONVERT(date,SYSDATETIME()) AND"
+                                                  + " t.tao_luc<DATEADD(day,1,CONVERT(date,SYSDATETIME()))"
+                                            : "")
+                                    + " ORDER BY t.tao_luc"
+                                    + " DESC,t.id DESC");
             case HOTEL_STAY, HOTEL_BOOKING, HOTEL_JOURNAL, HOTEL_CHECKOUT ->
                     new KieuHienThi(
                             switch (cheDo) {
@@ -194,15 +199,15 @@ public final class JdbcNghiepVuDAO {
                                 "ID",
                                 "Mã phiếu",
                                 "Hóa đơn gốc",
-                                "Tiền hoàn",
+                                "Thu chênh lệch / lịch sử hoàn",
                                 "Lý do",
                                 "Trạng thái",
                                 "Ngày tạo"
                             },
                             "SELECT"
-                                + " p.id,p.ma_phieu,h.so_hoa_don,-p.chenh_lech,p.ly_do,p.trang_thai,p.tao_luc"
-                                + " FROM phieu_doi_tra p JOIN hoa_don h ON h.id=p.hoa_don_id ORDER"
-                                + " BY p.id DESC");
+                                + " p.id,p.ma_phieu,h.so_hoa_don,p.chenh_lech,p.ly_do,CONCAT(p.loai_phieu,':"
+                                + " ',p.trang_thai),p.tao_luc FROM phieu_doi_tra p JOIN hoa_don h"
+                                + " ON h.id=p.hoa_don_id ORDER BY p.id DESC");
             case PENDING ->
                     new KieuHienThi(
                             "Đơn đang treo",

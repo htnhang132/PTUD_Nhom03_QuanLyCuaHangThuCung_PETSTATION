@@ -54,10 +54,10 @@ public final class MauUngDung {
     public static final Color TRANG = Color.WHITE;
 
     /** Viền. */
-    public static final Color VIEN = new Color(0xD0, 0xD7, 0xDE);
+    public static final Color VIEN = new Color(0xDF, 0xD5, 0xC9);
 
     /** Bề mặt xen kẽ. */
-    public static final Color BE_MAT_XEN_KE = new Color(0xF6, 0xF8, 0xFA);
+    public static final Color BE_MAT_XEN_KE = new Color(0xFD, 0xF9, 0xED);
 
     /** Dòng xen kẽ. */
     public static final Color DONG_XEN_KE = new Color(0xFB, 0xF8, 0xF1);

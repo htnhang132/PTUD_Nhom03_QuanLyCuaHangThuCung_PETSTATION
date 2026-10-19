@@ -1,7 +1,6 @@
 package com.petstation.model;
 
 import com.petstation.service.CaThuNganService;
-import com.petstation.service.CaiDatService;
 import com.petstation.service.DanhMucService;
 
 import java.time.LocalDateTime;
@@ -79,6 +78,12 @@ public final class GioHang {
             String thuNgan) {}
 
     /** Các dòng. */
+    private final NguCanhQuyTrinh quyTrinh = new NguCanhQuyTrinh();
+
+    public NguCanhQuyTrinh layQuyTrinh() {
+        return quyTrinh;
+    }
+
     private final List<DongHang> cacDong = new ArrayList<>();
 
     /** Khách hàng số điện thoại. */
@@ -117,6 +122,33 @@ public final class GioHang {
 
     /** Id nguồn. */
     private long idNguon;
+
+    public record YeuCauDoiHang(
+            long dongGoc, int soLuong, String lyDo, long giaTriDuocDoi, String maKhachHang) {}
+
+    private YeuCauDoiHang doiHang;
+    private String xacNhanNhanTien = "";
+
+    private String taoKhoaNhanTien(CaThuNganService.PhuongThuc pt) {
+        return pt + "|" + khoaThanhToan + "|" + tinhTong() + "|" + maVoucher;
+    }
+
+    public void xacNhanDaNhanTien(CaThuNganService.PhuongThuc pt, boolean daNhan) {
+        xacNhanNhanTien = daNhan ? taoKhoaNhanTien(pt) : "";
+    }
+
+    public boolean kiemTraDaNhanTien(CaThuNganService.PhuongThuc pt) {
+        return pt == CaThuNganService.PhuongThuc.CASH
+                || xacNhanNhanTien.equals(taoKhoaNhanTien(pt));
+    }
+
+    public YeuCauDoiHang layDoiHang() {
+        return doiHang;
+    }
+
+    public void datDoiHang(YeuCauDoiHang giaTri) {
+        doiHang = giaTri;
+    }
 
     /**
      * Lấy các dòng trong GioHang.
@@ -278,6 +310,8 @@ public final class GioHang {
         maKhachHang = ma == null ? "" : ma;
         tenKhachHang = ten == null ? "" : ten;
         khachHangDiem = Math.max(0, diem);
+        maVoucher = "";
+        giaTriVoucher = 0;
         diemDaDung = 0;
     }
 
@@ -289,17 +323,10 @@ public final class GioHang {
      * @param diem điểm
      */
     public void datDiemDaDung(long diem) {
-        // Giá trị.
-        long giaTri = CaiDatService.layGiaTriQuyDoiMoiDiem();
-        // Lớn nhất theo tổng.
-        long lonNhatTheoTong =
-                giaTri <= 0
-                        ? 0
-                        : Math.max(
-                                0,
-                                (tinhTamTinh() - layKhuyenMaiGiamGia() - laySoTienVoucher())
-                                        / giaTri);
-        diemDaDung = Math.max(0, Math.min(diem, Math.min(khachHangDiem, lonNhatTheoTong)));
+        if (diem != 0)
+            throw new IllegalArgumentException(
+                    "Điểm chỉ dùng để đổi voucher Spa; không trừ trực tiếp vào hóa đơn.");
+        diemDaDung = 0;
     }
 
     /**
@@ -308,7 +335,7 @@ public final class GioHang {
      * @return kết quả lấy giá trị điểm
      */
     public long layGiaTriDiem() {
-        return diemDaDung * CaiDatService.layGiaTriQuyDoiMoiDiem();
+        return 0;
     }
 
     /**
@@ -335,8 +362,7 @@ public final class GioHang {
             String phamVi = String.valueOf(dongDuLieu[3]);
             for (DongHang dongDangXet : cacDong) {
                 // Là dịch vụ.
-                boolean laDichVu =
-                        dongDangXet.ma().startsWith("DV") || dongDangXet.ma().startsWith("HOTEL");
+                boolean laDichVu = "SPA".equals(kieuNguon) || "HOTEL".equals(kieuNguon);
                 // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (phamVi.equals("Cả đơn")
                         || (phamVi.equals("Sản phẩm") && !laDichVu)
@@ -445,6 +471,7 @@ public final class GioHang {
      * @return kết quả tính giảm giá
      */
     public long tinhGiamGia() {
+        if ("EXCHANGE".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.giaTriDuocDoi();
         // Theo phần trăm.
         long theoPhanTram = Math.round(tinhTamTinh() * giamGiaPhanTram / 100.0);
         return Math.min(
@@ -471,41 +498,24 @@ public final class GioHang {
      * @return kết quả áp dụng voucher
      */
     public String apDungVoucher(String ma) {
-        // Giá trị đang xét.
-        String giaTriDangXet = ma == null ? "" : ma.trim().toUpperCase(Locale.ROOT);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (giaTriDangXet.isEmpty()) {
+        if ("EXCHANGE".equals(kieuNguon) && ma != null && !ma.isBlank())
+            return "Đổi hàng không áp dụng thêm voucher.";
+        String giaTri = ma == null ? "" : ma.trim().toUpperCase(Locale.ROOT);
+        if (giaTri.isEmpty()) {
             maVoucher = "";
             giaTriVoucher = 0;
             return null;
         }
-        for (Object[] dongDuLieu : DanhMucService.layVoucher()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-            if (!String.valueOf(dongDuLieu[0]).toUpperCase(Locale.ROOT).equals(giaTriDangXet))
-                continue;
-            // Trạng thái.
-            String trangThai = String.valueOf(dongDuLieu[6]);
-            // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
-            if (trangThai.equals("Ngừng")) return "Voucher " + giaTriDangXet + " đã ngừng sử dụng.";
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-            if (!kiemTraTrongKhoangNgay("01/01/2000", dongDuLieu[2]))
-                return "Voucher " + giaTriDangXet + " không dùng được (hết hạn).";
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-            if (com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[4]))
-                    >= com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[3])))
-                return "Voucher " + giaTriDangXet + " không dùng được (hết lượt).";
-            // Nhỏ nhất.
-            long nhoNhat = com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[5]));
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-            if (tinhTamTinh() < nhoNhat)
-                return "Voucher chỉ áp dụng cho đơn từ "
-                        + com.petstation.util.TienTe.dinhDang(nhoNhat)
-                        + ".";
-            maVoucher = giaTriDangXet;
-            giaTriVoucher = com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[1]));
+        try {
+            long soTien =
+                    com.petstation.service.TichDiemService.kiemTraVoucher(
+                            giaTri, maKhachHang, kieuNguon, tinhTamTinh());
+            maVoucher = giaTri;
+            giaTriVoucher = soTien;
             return null;
+        } catch (IllegalArgumentException loi) {
+            return loi.getMessage();
         }
-        return "Mã voucher không tồn tại.";
     }
 
     /**
@@ -530,6 +540,7 @@ public final class GioHang {
     public BienLai hoanTat(CaThuNganService.PhuongThuc phuongThuc, long daNhan, String thuNgan) {
         bienLaiCuoi =
                 com.petstation.service.BanHangService.thanhToan(this, phuongThuc, daNhan, thuNgan);
+        quyTrinh.ketThuc(kieuNguon);
         return bienLaiCuoi;
     }
 
@@ -539,6 +550,8 @@ public final class GioHang {
                 "PAY-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);
         kieuNguon = "";
         idNguon = 0;
+        doiHang = null;
+        xacNhanNhanTien = "";
         cacDong.clear();
         khachHangSoDienThoai = "";
         giamGiaPhanTram = 0;

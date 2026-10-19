@@ -160,4 +160,8 @@ public final class NhatKyHeThongService {
     public static void themBoLangNghe(Runnable boLangNghe) {
         CAC_BO_LANG_NGHE.add(boLangNghe);
     }
+
+    public static void xoaBoLangNghe() {
+        CAC_BO_LANG_NGHE.clear();
+    }
 }

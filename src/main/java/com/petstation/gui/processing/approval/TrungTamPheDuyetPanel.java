@@ -125,7 +125,15 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         tach.setBorder(null);
         tach.setOpaque(false);
         add(tach, BorderLayout.CENTER);
-        PheDuyetService.themBoLangNghe(() -> SwingUtilities.invokeLater(this::taiLai));
+        PheDuyetService.themBoLangNghe(
+                () ->
+                        SwingUtilities.invokeLater(
+                                () -> {
+                                    if (isShowing()
+                                            && com.petstation.service.PhienDangNhapService
+                                                            .layPhienHienTai()
+                                                    != null) taiLai();
+                                }));
         taiLai();
     }
 

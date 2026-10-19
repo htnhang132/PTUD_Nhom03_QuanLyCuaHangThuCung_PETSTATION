@@ -18,6 +18,21 @@ public final class BanHangService {
     /** Khởi tạo BanHangService với các giá trị được cung cấp. */
     private BanHangService() {}
 
+    /** Nguồn và khoản đã cấn trừ vẫn đọc được khi in lại sau khi khởi động ứng dụng. */
+    public record NguonBienLai(String loai, String ma, long daCanTru, String hoaDonGoc) {}
+
+    public static NguonBienLai layNguonBienLai(String soHoaDon) {
+        layPhien();
+        var dong = JdbcBanHangDAO.layNguonBienLai(soHoaDon);
+        if (dong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
+        Object[] d = dong.get(0);
+        return new NguonBienLai(
+                chuyenThanhChuoi(d[0]),
+                chuyenThanhChuoi(d[1]),
+                ((Number) d[2]).longValue(),
+                chuyenThanhChuoi(d[3]));
+    }
+
     /**
      * Thanh toán trong BanHangService.
      *
@@ -52,6 +67,10 @@ public final class BanHangService {
                     if (JdbcBanHangDAO.demThanhToan2() > 0)
                         throw new IllegalStateException("Ngày đã chốt, không thể ghi giao dịch.");
                     // Khách hàng.
+                    long phieuDoi =
+                            "EXCHANGE".equals(banHang.layKieuNguon())
+                                    ? DoiTraService.chuanBi(banHang)
+                                    : 0;
                     Long khachHang =
                             banHang.layMaKhachHang().isBlank()
                                     ? null
@@ -91,6 +110,9 @@ public final class BanHangService {
                                             + " này.");
                     }
                     // Tổng.
+                    if (!banHang.kiemTraDaNhanTien(phuongThuc))
+                        throw new IllegalArgumentException(
+                                "Nhân viên cần xác nhận đã nhận tiền trước khi lưu thanh toán.");
                     long tong = banHang.tinhTong();
                     // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                     if (tong < 0 || phuongThuc == CaThuNganService.PhuongThuc.CASH && daNhan < tong)
@@ -111,7 +133,8 @@ public final class BanHangService {
                         // Sản phẩm.
                         Long sanPham = null;
                         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-                        if (banHang.layKieuNguon().isBlank()) {
+                        if (banHang.layKieuNguon().isBlank()
+                                || "EXCHANGE".equals(banHang.layKieuNguon())) {
                             // Các sản phẩm.
                             List<Object[]> cacSanPham = JdbcBanHangDAO.timThanhToan2(dong.ma());
                             // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
@@ -163,7 +186,9 @@ public final class BanHangService {
                     long duocTich =
                             khachHang == null
                                     ? 0
-                                    : tong / CaiDatService.laySoTienChoMoiDiemTichLuy();
+                                    : phieuDoi > 0
+                                            ? DoiTraService.tinhDiemCong(banHang)
+                                            : tong / CaiDatService.laySoTienChoMoiDiemTichLuy();
                     // Hóa đơn.
                     long hoaDon =
                             JdbcBanHangDAO.themThanhToan3(
@@ -215,6 +240,7 @@ public final class BanHangService {
                                     "Hợp đồng đã trả phòng hoặc chưa check-in.");
                         JdbcBanHangDAO.capNhatThanhToan8(banHang.layIdNguon());
                     }
+                    if (phieuDoi > 0) DoiTraService.hoanTat(phieuDoi, hoaDon);
                     NhatKyHeThongService.ghiNhatKy("Thanh toán", "Hóa đơn " + khong + ": " + tong);
                     return layBienLai(khong);
                 });
@@ -286,6 +312,9 @@ public final class BanHangService {
         yeuCau(Quyen.POS_SELL);
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (banHang.kiemTraTrong()) throw new IllegalArgumentException("Giỏ hàng trống.");
+        if (!banHang.layKieuNguon().isBlank())
+            throw new IllegalArgumentException(
+                    "Chỉ treo đơn bán sản phẩm; phiếu Spa/Hotel vẫn được giữ trong màn xử lý.");
         return thucHienGiaoDich(
                 ketNoi -> {
                     // Id.
@@ -430,6 +459,9 @@ public final class BanHangService {
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (cacHoaDon.isEmpty()) throw new IllegalArgumentException("Hóa đơn đã hủy.");
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+        if (com.petstation.dao.impl.JdbcDoiHangDAO.laHoaDonThayThe(hoaDon))
+            throw new IllegalArgumentException(
+                    "Không thể hủy hóa đơn gắn với phiếu đổi hàng đã hoàn thành.");
         if (JdbcBanHangDAO.demHuyHoaDon3(hoaDon) > 0)
             throw new IllegalArgumentException(
                     "Hóa đơn có phiếu trả hàng, cần xử lý đổi trả thay vì hủy.");
@@ -466,5 +498,24 @@ public final class BanHangService {
     public static List<Object[]> layCoTheBanCacSanPham() {
         PhienDangNhapService.yeuCau(com.petstation.model.Quyen.POS_SELL);
         return JdbcBanHangDAO.layCoTheBanCacSanPham();
+    }
+
+    public static com.petstation.model.ChiTietBienLai layChiTietBienLai(String soHoaDon) {
+        layPhien();
+        var bienLai = layBienLai(soHoaDon);
+        var nguon = layNguonBienLai(soHoaDon);
+        var dong = JdbcBanHangDAO.layThongTinIn(soHoaDon).get(0);
+        return new com.petstation.model.ChiTietBienLai(
+                bienLai,
+                CaiDatService.lay("STORE_NAME"),
+                CaiDatService.lay("STORE_ADDRESS"),
+                CaiDatService.lay("STORE_PHONE"),
+                chuyenThanhChuoi(dong[0]),
+                ((Number) dong[1]).intValue(),
+                dong[2] == null ? null : ((Number) dong[2]).longValue(),
+                nguon.loai(),
+                nguon.ma(),
+                nguon.daCanTru(),
+                nguon.hoaDonGoc());
     }
 }

@@ -81,7 +81,15 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         add(pnlNoiDung, BorderLayout.CENTER);
 
         taiLai();
-        NhatKyHeThongService.themBoLangNghe(() -> SwingUtilities.invokeLater(this::taiLai));
+        NhatKyHeThongService.themBoLangNghe(
+                () ->
+                        SwingUtilities.invokeLater(
+                                () -> {
+                                    if (isShowing()
+                                            && com.petstation.service.PhienDangNhapService
+                                                            .layPhienHienTai()
+                                                    != null) taiLai();
+                                }));
     }
 
     /** Đang khởi tạo. */

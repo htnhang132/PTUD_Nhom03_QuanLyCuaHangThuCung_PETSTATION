@@ -15,6 +15,8 @@ public class BoChonKhoangNgay extends JPanel {
     /** Giá trị có sẵn hộp chọn. */
     private JComboBox<String> cboGiaTriCoSanHopChon;
 
+    private boolean dangDatKy;
+
     /** Ngày bắt đầu bộ chọn. */
     private BoChonNgay pnlNgayBatDauBoChon;
 
@@ -27,6 +29,7 @@ public class BoChonKhoangNgay extends JPanel {
     /** Khởi tạo BoChonKhoangNgay với các giá trị được cung cấp. */
     public BoChonKhoangNgay() {
         setLayout(new BorderLayout(10, 5));
+        setOpaque(false);
 
         // Các khoảng ngày có sẵn
         // Các giá trị có sẵn.
@@ -39,6 +42,7 @@ public class BoChonKhoangNgay extends JPanel {
             "Tháng này",
             "Tháng trước",
             "30 ngày qua",
+            "Năm nay",
             "Tùy chọn..."
         };
 
@@ -47,24 +51,29 @@ public class BoChonKhoangNgay extends JPanel {
 
         // Khung chọn khoảng ngày tùy chỉnh
         pnlTuyChinhNgayVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        pnlTuyChinhNgayVungHienThi.add(new JLabel("Từ:"));
+        pnlTuyChinhNgayVungHienThi.setOpaque(false);
+        pnlTuyChinhNgayVungHienThi.add(new JLabel("Từ ngày:"));
         pnlNgayBatDauBoChon = new BoChonNgay();
         pnlTuyChinhNgayVungHienThi.add(pnlNgayBatDauBoChon);
 
-        pnlTuyChinhNgayVungHienThi.add(new JLabel("Đến:"));
+        pnlTuyChinhNgayVungHienThi.add(new JLabel("Đến ngày:"));
         pnlNgayKetThucBoChon = new BoChonNgay();
         pnlTuyChinhNgayVungHienThi.add(pnlNgayKetThucBoChon);
 
-        pnlTuyChinhNgayVungHienThi.setVisible(false);
+        pnlTuyChinhNgayVungHienThi.setVisible(true);
 
         // Bố cục
         // Trên vùng hiển thị.
         JPanel pnlTrenVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pnlTrenVungHienThi.setOpaque(false);
         pnlTrenVungHienThi.add(new JLabel("Khoảng thời gian:"));
         pnlTrenVungHienThi.add(cboGiaTriCoSanHopChon);
 
         add(pnlTrenVungHienThi, BorderLayout.NORTH);
         add(pnlTuyChinhNgayVungHienThi, BorderLayout.CENTER);
+
+        pnlNgayBatDauBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
+        pnlNgayKetThucBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
 
         // Chọn sẵn khoảng ngày hôm nay
         cboGiaTriCoSanHopChon.setSelectedIndex(0);
@@ -85,21 +94,21 @@ public class BoChonKhoangNgay extends JPanel {
         switch (daChon) {
             case "Hôm nay":
                 tu = den = homNay;
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Hôm qua":
                 tu = den = homNay.minusDays(1);
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "7 ngày qua":
                 tu = homNay.minusDays(6);
                 den = homNay;
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Tuần này":
                 tu = homNay.minusDays(homNay.getDayOfWeek().getValue() - 1);
                 den = homNay;
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Tuần trước":
                 // Cuối cùng tuần bắt đầu.
@@ -107,24 +116,28 @@ public class BoChonKhoangNgay extends JPanel {
                         homNay.minusDays(homNay.getDayOfWeek().getValue() + 6);
                 tu = cuoiCungTuanBatDau;
                 den = cuoiCungTuanBatDau.plusDays(6);
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Tháng này":
                 tu = homNay.withDayOfMonth(1);
                 den = homNay;
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Tháng trước":
                 // Cuối cùng tháng.
                 LocalDate cuoiCungThang = homNay.minusMonths(1);
                 tu = cuoiCungThang.withDayOfMonth(1);
                 den = cuoiCungThang.withDayOfMonth(cuoiCungThang.lengthOfMonth());
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "30 ngày qua":
                 tu = homNay.minusDays(29);
                 den = homNay;
-                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
+                break;
+            case "Năm nay":
+                tu = homNay.withDayOfYear(1);
+                den = homNay;
                 break;
             case "Tùy chọn...":
                 pnlTuyChinhNgayVungHienThi.setVisible(true);
@@ -135,11 +148,21 @@ public class BoChonKhoangNgay extends JPanel {
         // Gán ngày tương ứng với lựa chọn có sẵn
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tu != null && den != null) {
+            dangDatKy = true;
             pnlNgayBatDauBoChon.datNgayDuocChon(tu);
             pnlNgayKetThucBoChon.datNgayDuocChon(den);
+            dangDatKy = false;
         }
 
         firePropertyChange("dateRange", null, new LocalDate[] {tu, den});
+    }
+
+    private void chonTuyChinh() {
+        if (!dangDatKy) {
+            cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
+            firePropertyChange(
+                    "dateRange", null, new LocalDate[] {layNgayBatDau(), layNgayKetThuc()});
+        }
     }
 
     // Truy xuất thuộc tính
@@ -203,5 +226,9 @@ public class BoChonKhoangNgay extends JPanel {
     public void datLai() {
         cboGiaTriCoSanHopChon.setSelectedIndex(0);
         xuLyGiaTriCoSanThayDoi();
+    }
+
+    public void chonKy(String tenKy) {
+        cboGiaTriCoSanHopChon.setSelectedItem(tenKy);
     }
 }

@@ -1,15 +1,46 @@
 package com.petstation.gui.reports;
 
 import com.petstation.gui.reports.BaoCaoPanel.*;
+import com.petstation.model.KhoangNgay;
 import com.petstation.util.TienTe;
 
 import java.util.*;
-import java.util.function.IntFunction;
+import java.util.function.Function;
 
 /** Cung cấp giao diện và xử lý tương tác cho báo cáo các kiểu hiển thị. */
 public final class DuLieuBaoCao {
     /** Khởi tạo DuLieuBaoCao với các giá trị được cung cấp. */
     private DuLieuBaoCao() {}
+
+    public static KieuHienThi taoKieuHienTai(
+            String ten,
+            String[] cot,
+            int nhan,
+            int chiSo,
+            boolean tienTe,
+            Function<KhoangNgay, List<Object[]>> truyVan) {
+        KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, truyVan);
+        return new KieuHienThi(
+                ten,
+                khoang -> {
+                    DuLieu d = goc.tao().apply(KhoangNgay.ganDay(1));
+                    return new DuLieu(
+                            d.bieuDoCacNhan(),
+                            d.bieuDoCacGiaTri(),
+                            d.tienTe(),
+                            d.donVi(),
+                            d.cacCot(),
+                            d.cacDong(),
+                            new String[] {"Số bản ghi", "Tổng", "Phạm vi", "Thời điểm"},
+                            new String[] {
+                                d.theCacGiaTri()[0],
+                                d.theCacGiaTri()[1],
+                                "Hiện tại",
+                                java.time.LocalDate.now().toString()
+                            });
+                },
+                true);
+    }
 
     /**
      * Tạo kiểu hiển thị trong DuLieuBaoCao.
@@ -28,12 +59,12 @@ public final class DuLieuBaoCao {
             int nhan,
             int chiSo,
             boolean tienTe,
-            IntFunction<List<Object[]>> truyVan) {
+            Function<KhoangNgay, List<Object[]>> truyVan) {
         return new KieuHienThi(
                 tieuDe,
                 soNgay -> {
                     // Các dòng.
-                    List<Object[]> cacDong = truyVan.apply((int) soNgay);
+                    List<Object[]> cacDong = truyVan.apply(soNgay);
                     // Các nhãn.
                     String[] cacNhan = new String[cacDong.size()];
                     // Các giá trị.
@@ -60,8 +91,8 @@ public final class DuLieuBaoCao {
                                 tienTe
                                         ? TienTe.dinhDang(Math.round(tong))
                                         : String.format(java.util.Locale.ROOT, "%.0f", tong),
-                                (int) soNgay + " ngày",
-                                java.time.LocalDate.now()
+                                soNgay.demSoNgay() + " ngày",
+                                soNgay.denNgay()
                                         .format(
                                                 java.time.format.DateTimeFormatter.ofPattern(
                                                         "dd/MM/yyyy"))

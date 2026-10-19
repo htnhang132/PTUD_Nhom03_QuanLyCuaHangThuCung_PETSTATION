@@ -23,6 +23,6 @@ public final class XuatHuyKhoPanel extends NghiepVuKhoPanel {
      */
     public XuatHuyKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.WRITE_OFF, banHang, dieuHuong);
-        themNut(pnlCacThaoTac, "+ Xuất kho / Hủy", this::ghiHuy);
+        themNut(pnlCacThaoTac, "+ Lập phiếu xuất hủy", this::ghiHuy);
     }
 }

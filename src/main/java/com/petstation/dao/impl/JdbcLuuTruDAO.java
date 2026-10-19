@@ -9,12 +9,28 @@ public final class JdbcLuuTruDAO {
     /** Khởi tạo JdbcLuuTruDAO với các giá trị được cung cấp. */
     private JdbcLuuTruDAO() {}
 
+    public static List<Object[]> layPhongDangDon() {
+        return ThaoTacSQL.truyVan(
+                "SELECT id,ma_phong FROM phong_hotel WHERE trang_thai='CLEANING' ORDER BY"
+                        + " ma_phong");
+    }
+
     /**
      * Cập nhật nhận phòng trong JdbcLuuTruDAO.
      *
      * @param cacThamSo các tham số
      * @return kết quả cập nhật nhận phòng
      */
+    public static void xacNhanCoc(long id, long taiKhoan, long phien) {
+        ThaoTacSQL.capNhat(
+                "UPDATE hop_dong_luu_tru SET"
+                    + " da_nhan_coc=1,nhan_coc_luc=SYSDATETIME(),nhan_coc_boi=?,phien_nhan_coc_id=?"
+                    + " WHERE id=?",
+                taiKhoan,
+                phien,
+                id);
+    }
+
     public static int capNhatNhanPhong(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
                 "UPDATE hop_dong_luu_tru SET trang_thai='CHECKED_IN' WHERE id=?", cacThamSo);
@@ -71,7 +87,7 @@ public final class JdbcLuuTruDAO {
     public static Object layNhanPhong(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon(
                 "SELECT phong_id FROM hop_dong_luu_tru WITH(UPDLOCK,HOLDLOCK)"
-                        + " WHERE id=? AND trang_thai='BOOKED'",
+                        + " WHERE id=? AND trang_thai='BOOKED' AND da_nhan_coc=1",
                 cacThamSo);
     }
 

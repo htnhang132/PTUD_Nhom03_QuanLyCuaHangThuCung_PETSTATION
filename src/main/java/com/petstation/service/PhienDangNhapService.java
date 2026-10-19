@@ -17,6 +17,13 @@ public final class PhienDangNhapService {
      */
     public static void datPhienDangNhap(PhienDangNhap giaTri) {
         phienDangNhap = giaTri;
+        if (giaTri == null) {
+            PheDuyetService.xoaBoLangNghe();
+            NhatKyHeThongService.xoaBoLangNghe();
+            LichLamViecService.xoaBoLangNghe();
+            DanhMucService.xoaBoLangNghe();
+            PheDuyetService.daChonHoaDon = "";
+        }
     }
 
     /**

@@ -26,7 +26,6 @@ import com.petstation.gui.processing.sales.InHoaDonPanel;
 import com.petstation.gui.processing.sales.LapHoaDonPanel;
 import com.petstation.gui.processing.sales.ThanhToanPanel;
 import com.petstation.gui.processing.spa.ChonDichVuSpaPanel;
-import com.petstation.gui.processing.spa.DichVuSpaPanel;
 import com.petstation.gui.processing.spa.DongPhieuSpaPanel;
 import com.petstation.gui.processing.spa.LichHenSpaPanel;
 import com.petstation.gui.processing.spa.TienDoSpaPanel;
@@ -69,7 +68,7 @@ public final class DangKyManHinh {
     /** Các màn bán hàng chỉ dùng được khi đã mở ca. */
     /** Cần mở ca làm việc. */
     private static final Set<MaManHinh> CAN_MO_CA_LAM_VIEC =
-            EnumSet.of(MaManHinh.POS, MaManHinh.PAYMENT);
+            EnumSet.of(MaManHinh.POS, MaManHinh.PAYMENT, MaManHinh.HOTEL_BOOKING);
 
     /** Phiên đăng nhập. */
     private final PhienDangNhap phienDangNhap;
@@ -176,7 +175,7 @@ public final class DangKyManHinh {
                 Quyen.SPA_MANAGE);
         dangKy(
                 MaManHinh.HOTEL_ROOMS,
-                "Phòng Pet Hotel",
+                "Phòng lưu trú",
                 "Danh mục phòng. Trạng thái do nghiệp vụ cập nhật, chỉ \"bảo trì\" chỉnh tay.",
                 Quyen.HOTEL_MANAGE);
         dangKy(
@@ -191,7 +190,7 @@ public final class DangKyManHinh {
                 Quyen.PROMOTION_MANAGE);
         dangKy(
                 MaManHinh.LOYALTY_VOUCHER,
-                "Tích điểm & Voucher",
+                "Điểm thưởng và voucher",
                 "Quy tắc điểm, hạng thành viên và voucher.",
                 Quyen.CUSTOMER_MANAGE);
 
@@ -218,7 +217,7 @@ public final class DangKyManHinh {
                 Quyen.SPA_MANAGE);
         dangKy(
                 MaManHinh.HOTEL_MAP,
-                "Sơ đồ phòng / lưu trú",
+                "Sơ đồ phòng lưu trú",
                 "Lưới phòng theo trạng thái. Phòng quá hạn trả tô đỏ.",
                 Quyen.HOTEL_MANAGE);
         dangKy(
@@ -245,7 +244,7 @@ public final class DangKyManHinh {
                 Quyen.PAYMENT_PROCESS);
         dangKy(
                 MaManHinh.PRINT_INVOICE,
-                "In hóa đơn",
+                "Xem hóa đơn",
                 "Xem trước, in hoặc xuất PDF.",
                 Quyen.POS_SELL);
         dangKy(MaManHinh.PENDING_INVOICES, "Đơn nháp", "Danh sách đơn treo.", Quyen.POS_SELL);
@@ -256,15 +255,15 @@ public final class DangKyManHinh {
                 Quyen.POS_SELL);
         dangKy(
                 MaManHinh.RETURNS,
-                "Đổi trả hàng",
-                "Tìm hóa đơn gốc và lập phiếu hoàn trả.",
+                "Đổi hàng",
+                "Tìm hóa đơn gốc và đổi phụ kiện, thu chênh lệch.",
                 Quyen.POS_SELL);
 
         // 4. Xử lý: Spa (danh sách phiếu đang chạy, rồi 5 bước)
         dangKy(
                 MaManHinh.SPA,
-                "Dịch vụ Spa",
-                "Danh sách phiếu đang chạy. Bấm phiếu để mở đúng bước hiện tại.",
+                "Lập phiếu Spa",
+                "Tiếp nhận thú cưng, lập phiếu và thực hiện dịch vụ theo từng bước.",
                 Quyen.SPA_MANAGE);
         dangKy(
                 MaManHinh.SPA_SCHEDULE,
@@ -295,34 +294,34 @@ public final class DangKyManHinh {
         // 4. Xử lý: ThuCung Hotel (danh sách thú đang lưu trú, rồi 3 bước)
         dangKy(
                 MaManHinh.HOTEL,
-                "Pet Hotel",
+                "Quản lý lưu trú",
                 "Danh sách thú đang lưu trú. Bấm + Đặt phòng để bắt đầu.",
                 Quyen.HOTEL_MANAGE);
         dangKy(
                 MaManHinh.HOTEL_BOOKING,
-                "Hotel: Đặt phòng",
+                "Lưu trú: Đặt phòng",
                 "Chọn khách, thú, phòng trống, ngày vào ra, tiền cọc.",
                 Quyen.HOTEL_MANAGE);
         dangKy(
                 MaManHinh.HOTEL_JOURNAL,
-                "Hotel: Nhật ký lưu trú",
+                "Lưu trú: Nhật ký chăm sóc",
                 "Check-in, chăm sóc hằng ngày, gia hạn, dịch vụ thêm.",
                 Quyen.HOTEL_MANAGE);
         dangKy(
                 MaManHinh.CHECKOUT,
-                "Hotel: Trả phòng & quyết toán",
+                "Lưu trú: Trả phòng và quyết toán",
                 "Số ngày × giá phòng + phụ phí trễ + dịch vụ − tiền cọc.",
                 Quyen.HOTEL_MANAGE);
 
         // 4. Xử lý: kho, ca, lịch, phê duyệt
         dangKy(
                 MaManHinh.PURCHASE,
-                "Nhập kho",
+                "Lập phiếu nhập kho",
                 "Lập phiếu nhập: số lô, hạn dùng, công nợ.",
                 Quyen.INVENTORY_RECEIVE);
         dangKy(
                 MaManHinh.GOODS_WRITE_OFF,
-                "Xuất kho / Xuất hủy",
+                "Xuất hủy hàng hóa",
                 "Chọn lý do, lô và số lượng.",
                 Quyen.INVENTORY_ISSUE);
         dangKy(
@@ -332,7 +331,7 @@ public final class DangKyManHinh {
                 Quyen.INVENTORY_COUNT);
         dangKy(
                 MaManHinh.CASH_SHIFT,
-                "Mở ca / Kết ca / Bàn giao",
+                "Ca thu ngân",
                 "Quản lý ca và tiền mặt.",
                 Quyen.CASH_SHIFT_MANAGE);
         dangKy(
@@ -364,7 +363,7 @@ public final class DangKyManHinh {
                 Quyen.REPORT_VIEW_OWN_SHIFT);
         dangKy(
                 MaManHinh.REPORT_HOTEL,
-                "Thống kê Pet Hotel",
+                "Thống kê lưu trú",
                 "Công suất phòng, số ngày lưu trú, lượt quá hạn.",
                 Quyen.REPORT_VIEW_OWN_SHIFT);
         dangKy(
@@ -437,6 +436,9 @@ public final class DangKyManHinh {
      * @return kết quả tạo
      */
     public JPanel tao(MaManHinh id) {
+        if (!coTheTruyCap(id))
+            throw new com.petstation.service.PhanQuyenException(
+                    "Bạn không có quyền mở màn hình này.");
         return switch (id) {
             case DASHBOARD -> new TongQuanPanel(boDieuHuong, this::coTheTruyCap, caLamViec);
             // Hệ thống
@@ -480,7 +482,7 @@ public final class DangKyManHinh {
             case INVOICE_EDIT_REQUEST -> new YeuCauHoaDonPanel(boDieuHuong);
             case RETURNS -> new DoiTraPanel(banHang, boDieuHuong);
             // Xử lý: Spa
-            case SPA -> new DichVuSpaPanel(banHang, boDieuHuong);
+            case SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
             case SPA_SCHEDULE -> new LichHenSpaPanel(banHang, boDieuHuong);
             case SPA_INTAKE -> new TiepNhanSpaPanel(banHang, boDieuHuong);
             case SPA_SERVICE_SELECTION -> new ChonDichVuSpaPanel(banHang, boDieuHuong);

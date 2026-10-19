@@ -1,6 +1,6 @@
 package com.petstation.gui.reports;
 
-import static com.petstation.gui.reports.DuLieuBaoCao.taoKieuHienThi;
+import static com.petstation.gui.reports.DuLieuBaoCao.*;
 
 import com.petstation.gui.reports.BaoCaoPanel.*;
 import com.petstation.service.ThongKeService;
@@ -13,13 +13,30 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
     public ThongKeCongNoPanel() {
         super(
                 "Công nợ nhà cung cấp",
-                "Chọn kỳ để xem giao dịch đã lưu",
+                "Kỳ lọc ngày nhập chứng từ; số đã trả và dư nợ là số cập nhật hiện tại.",
                 "Công nợ nhà cung cấp".replace(' ', '_'),
                 List.of(
+                        taoKieuHienTai(
+                                "Dư nợ hiện tại",
+                                new String[] {
+                                    "Mã NCC",
+                                    "Nhà cung cấp",
+                                    "Tổng nhập",
+                                    "Đã trả hiện tại",
+                                    "Dư nợ hiện tại"
+                                },
+                                1,
+                                4,
+                                true,
+                                ThongKeService::layDuNoHienTai),
                         taoKieuHienThi(
                                 "Công nợ theo kỳ nhập",
                                 new String[] {
-                                    "Mã NCC", "Nhà cung cấp", "Tổng nhập", "Đã trả", "Còn nợ"
+                                    "Mã NCC",
+                                    "Nhà cung cấp",
+                                    "Tổng nhập trong kỳ",
+                                    "Đã trả hiện tại",
+                                    "Dư nợ chứng từ hiện tại"
                                 },
                                 1,
                                 4,

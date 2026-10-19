@@ -24,7 +24,7 @@ public final class NhapKhoPanel extends NghiepVuKhoPanel {
     public NhapKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.PURCHASE, banHang, dieuHuong);
 
-        themNut(pnlCacThaoTac, "+ Nhập kho", this::nhapKho);
+        themNut(pnlCacThaoTac, "+ Lập phiếu nhập kho", this::nhapKho);
         themNut(pnlCacThaoTac, "Chi tiết", this::layNhapKhoChiTiet);
         themNut(pnlCacThaoTac, "Trả công nợ", this::thanhToanNhaCungCap);
     }

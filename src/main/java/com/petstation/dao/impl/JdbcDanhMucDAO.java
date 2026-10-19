@@ -69,8 +69,12 @@ public final class JdbcDanhMucDAO {
                                 + " p.theo_doi_hsd WHEN 1 THEN N'Có' ELSE N'Không'"
                                 + " END,COALESCE((SELECT SUM(l.so_luong_ton) FROM lo_hang l WHERE"
                                 + " l.san_pham_id=p.id),0),CASE p.trang_thai WHEN 'SELLING' THEN"
-                                + " N'Đang kinh doanh' ELSE N'Ngừng kinh doanh' END FROM san_pham p"
-                                + " ORDER BY p.ma_san_pham";
+                                + " N'Đang kinh doanh' ELSE N'Ngừng kinh doanh'"
+                                + " END,COALESCE(p.anh,''),"
+                                + " COALESCE(p.thuong_hieu,''),COALESCE(p.quy_cach,''),COALESCE(p.doi_tuong_su_dung,''),"
+                                + " COALESCE(p.mo_ta,''),COALESCE(p.nguon_url,''),COALESCE(CONVERT(varchar(10),p.ngay_thu_thap,23),'')"
+                                + " FROM san_pham p ORDER BY CASE WHEN NULLIF(p.anh,'') IS NULL"
+                                + " THEN 1 ELSE 0 END,p.ma_san_pham";
                     case SUPPLIERS ->
                             "SELECT"
                                 + " ma_ncc,ten,nguoi_dai_dien,so_dien_thoai,dia_chi,ma_so_thue,dieu_khoan,CASE"
@@ -86,9 +90,12 @@ public final class JdbcDanhMucDAO {
                                 + " ma_chuong_trinh";
                     case VOUCHERS ->
                             "SELECT"
-                                + " ma_voucher,menh_gia,CONVERT(varchar(10),DATEADD(second,-1,hieu_luc_den),103),so_luong,da_dung,don_toi_thieu,CASE"
-                                + " trang_thai WHEN 'ACTIVE' THEN N'Còn hiệu lực' ELSE N'Ngừng' END"
-                                + " FROM voucher ORDER BY ma_voucher";
+                                + " v.ma_voucher,v.menh_gia,CONVERT(varchar(10),DATEADD(second,-1,v.hieu_luc_den),103),v.so_luong,v.da_dung,v.don_toi_thieu,CASE"
+                                + " v.trang_thai WHEN 'ACTIVE' THEN N'Còn hiệu lực' ELSE N'Ngừng'"
+                                + " END,COALESCE(k.ma_khach_hang+' - '+k.ho_ten,''),CASE WHEN"
+                                + " v.chi_ap_dung_spa=1 THEN N'Chỉ Spa' ELSE N'Mọi hóa đơn' END"
+                                + " FROM voucher v LEFT JOIN khach_hang k ON k.id=v.khach_hang_id"
+                                + " ORDER BY v.ma_voucher";
                     case SPA ->
                             "SELECT ma_goi,ten_goi,mo_ta,thoi_gian_du_kien,'',CASE trang_thai WHEN"
                                     + " 'ACTIVE' THEN N'Đang hoạt động' ELSE N'Ngừng hoạt động' END"
@@ -324,31 +331,36 @@ public final class JdbcDanhMucDAO {
         // Giá trị.
         Object[] giaTri2 = giaTri;
         switch (loai) {
-            case CUSTOMERS ->
-                    layThemHoacCapNhat(
-                            "khach_hang",
+            case CUSTOMERS -> {
+                var diem =
+                        truyVan(
+                                "SELECT diem_tich_luy,hang_thanh_vien FROM khach_hang"
+                                        + " WITH(UPDLOCK,HOLDLOCK) WHERE ma_khach_hang=?",
+                                khoa);
+                giaTri2[7] = diem.isEmpty() ? "0" : chuyenThanhChuoi(diem.get(0)[0]);
+                giaTri2[6] = diem.isEmpty() ? "Đồng" : chuyenThanhChuoi(diem.get(0)[1]);
+                if ("REGULAR".equals(giaTri2[6])) giaTri2[6] = "Đồng";
+                layThemHoacCapNhat(
+                        "khach_hang",
+                        "ma_khach_hang",
+                        khoa,
+                        new String[] {
                             "ma_khach_hang",
-                            khoa,
-                            new String[] {
-                                "ma_khach_hang",
-                                "ho_ten",
-                                "so_dien_thoai",
-                                "email",
-                                "dia_chi",
-                                "ghi_chu",
-                                "hang_thanh_vien",
-                                "diem_tich_luy",
-                                "dang_hoat_dong"
-                            },
-                            giaTri2[0],
-                            giaTri2[1],
-                            giaTri2[2],
-                            giaTri2[3],
-                            giaTri2[4],
-                            giaTri2[5],
-                            giaTri2[6],
-                            Integer.parseInt(chuyenThanhChuoi(giaTri2[7])),
-                            "Đang hoạt động".equals(giaTri2[8]));
+                            "ho_ten",
+                            "so_dien_thoai",
+                            "email",
+                            "dia_chi",
+                            "ghi_chu",
+                            "dang_hoat_dong"
+                        },
+                        giaTri2[0],
+                        giaTri2[1],
+                        giaTri2[2],
+                        giaTri2[3],
+                        giaTri2[4],
+                        giaTri2[5],
+                        "Đang hoạt động".equals(giaTri2[8]));
+            }
             case PETS ->
                     layThemHoacCapNhat(
                             "thu_cung",
@@ -496,6 +508,18 @@ public final class JdbcDanhMucDAO {
                         Integer.parseInt(chuyenThanhChuoi(giaTri2[6])),
                         "Có".equals(giaTri2[7]),
                         "Đang kinh doanh".equals(giaTri2[9]) ? "SELLING" : "STOPPED");
+                if (giaTri2.length >= 17) {
+                    capNhat(
+                            "UPDATE san_pham SET"
+                                    + " anh=?,thuong_hieu=?,quy_cach=?,doi_tuong_su_dung=?,mo_ta=?"
+                                    + " WHERE ma_san_pham=?",
+                            giaTri2[10],
+                            giaTri2[11],
+                            giaTri2[12],
+                            giaTri2[13],
+                            giaTri2[14],
+                            khoa);
+                }
                 // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                 if (cu == null || ((BigDecimal) cu).compareTo(docSoThapPhan(giaTri2[4])) != 0)
                     capNhat(
@@ -571,7 +595,8 @@ public final class JdbcDanhMucDAO {
                                 "so_luong",
                                 "don_toi_thieu",
                                 "trang_thai",
-                                "chi_ap_dung_spa"
+                                "chi_ap_dung_spa",
+                                "khach_hang_id"
                             },
                             giaTri2[0],
                             docSoThapPhan(giaTri2[1]),
@@ -579,7 +604,13 @@ public final class JdbcDanhMucDAO {
                             Integer.parseInt(chuyenThanhChuoi(giaTri2[3])),
                             docSoThapPhan(giaTri2[5]),
                             "Ngừng".equals(giaTri2[6]) ? "INACTIVE" : "ACTIVE",
-                            false);
+                            "Chỉ Spa".equals(giaTri2[8]),
+                            chuyenThanhChuoi(giaTri2[7]).isBlank()
+                                    ? null
+                                    : layId(
+                                            "khach_hang",
+                                            "ma_khach_hang",
+                                            chuyenThanhChuoi(giaTri2[7]).split(" - ", 2)[0]));
             case SPA -> {
                 layThemHoacCapNhat(
                         "goi_dich_vu_spa",

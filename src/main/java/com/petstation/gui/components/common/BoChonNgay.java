@@ -56,8 +56,8 @@ public class BoChonNgay extends JPanel {
     public BoChonNgay(LocalDate ngayBanDau) {
         setLayout(new BorderLayout(5, 0));
         this.ngayDuocChon = ngayBanDau;
-        this.hienTaiThang = ngayBanDau.getMonthValue();
-        this.hienTaiNam = ngayBanDau.getYear();
+        this.hienTaiThang = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getMonthValue();
+        this.hienTaiNam = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getYear();
 
         // Trường nhập để hiển thị ngày đã chọn
         txtTruongVanBan = new JTextField(10);
@@ -69,7 +69,14 @@ public class BoChonNgay extends JPanel {
         }
 
         // Nút mở lịch
-        btnNutLich = new JButton("Lịch");
+        btnNutLich =
+                new JButton(
+                        new com.petstation.gui.components.BieuTuongNet(
+                                com.petstation.gui.components.BieuTuongNet.Kieu.LICH,
+                                18,
+                                com.petstation.gui.components.MauUngDung.NAU));
+        btnNutLich.setToolTipText("Chọn ngày");
+        btnNutLich.getAccessibleContext().setAccessibleName("Chọn ngày");
         btnNutLich.setPreferredSize(new Dimension(35, 25));
         btnNutLich.setFocusPainted(false);
         btnNutLich.addActionListener(suKien -> hienThiLich());
@@ -97,7 +104,23 @@ public class BoChonNgay extends JPanel {
         // Hiển thị hộp thoại gần thành phần đang tương tác
         // Vị trí.
         Point viTri = txtTruongVanBan.getLocationOnScreen();
-        lichHopThoai.setLocation(viTri.x, viTri.y + txtTruongVanBan.getHeight());
+        lichHopThoai.pack();
+        Rectangle manHinh = getGraphicsConfiguration().getBounds();
+        Insets le = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
+        manHinh =
+                new Rectangle(
+                        manHinh.x + le.left,
+                        manHinh.y + le.top,
+                        manHinh.width - le.left - le.right,
+                        manHinh.height - le.top - le.bottom);
+        int doc = viTri.y + txtTruongVanBan.getHeight();
+        if (doc + lichHopThoai.getHeight() > manHinh.y + manHinh.height)
+            doc = viTri.y - lichHopThoai.getHeight();
+        lichHopThoai.setLocation(
+                Math.max(
+                        manHinh.x,
+                        Math.min(viTri.x, manHinh.x + manHinh.width - lichHopThoai.getWidth())),
+                Math.max(manHinh.y, doc));
         lichHopThoai.setVisible(true);
     }
 
@@ -124,7 +147,12 @@ public class BoChonNgay extends JPanel {
         pnlTieuDeVungHienThi.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Nút trước.
-        JButton btnNutTruoc = new JButton("◀");
+        JButton btnNutTruoc =
+                new JButton(
+                        new com.petstation.gui.components.BieuTuongGiaoDien(
+                                com.petstation.gui.components.BieuTuongGiaoDien.Kieu.TRUOC));
+        btnNutTruoc.setToolTipText("Tháng trước");
+        btnNutTruoc.getAccessibleContext().setAccessibleName("Tháng trước");
         btnNutTruoc.addActionListener(
                 suKien -> {
                     hienTaiThang--;
@@ -137,7 +165,12 @@ public class BoChonNgay extends JPanel {
                 });
 
         // Nút tiếp theo.
-        JButton btnNutTiepTheo = new JButton("▶");
+        JButton btnNutTiepTheo =
+                new JButton(
+                        new com.petstation.gui.components.BieuTuongGiaoDien(
+                                com.petstation.gui.components.BieuTuongGiaoDien.Kieu.SAU));
+        btnNutTiepTheo.setToolTipText("Tháng sau");
+        btnNutTiepTheo.getAccessibleContext().setAccessibleName("Tháng sau");
         btnNutTiepTheo.addActionListener(
                 suKien -> {
                     hienTaiThang++;
@@ -157,7 +190,7 @@ public class BoChonNgay extends JPanel {
         pnlTieuDeVungHienThi.add(btnNutTiepTheo, BorderLayout.EAST);
 
         // Panel chứa các ngày trong tháng
-        pnlSoNgayVungHienThi = new JPanel(new GridLayout(0, 7, 2, 2));
+        pnlSoNgayVungHienThi = new JPanel(new GridLayout(7, 7, 4, 4));
         pnlSoNgayVungHienThi.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Thêm tiêu đề cho các ngày trong tuần
@@ -167,7 +200,7 @@ public class BoChonNgay extends JPanel {
             // Nhãn.
             JLabel lblNhan = new JLabel(tenNgay, SwingConstants.CENTER);
             lblNhan.setFont(lblNhan.getFont().deriveFont(Font.BOLD));
-            lblNhan.setForeground(Color.BLUE);
+            lblNhan.setForeground(com.petstation.gui.components.MauUngDung.NAU);
             pnlSoNgayVungHienThi.add(lblNhan);
         }
 
@@ -187,8 +220,7 @@ public class BoChonNgay extends JPanel {
         JButton btnNutXoa = new JButton("Xóa");
         btnNutXoa.addActionListener(
                 suKien -> {
-                    ngayDuocChon = null;
-                    txtTruongVanBan.setText("");
+                    datNgayDuocChon(null);
                     lichHopThoai.setVisible(false);
                 });
 
@@ -200,7 +232,13 @@ public class BoChonNgay extends JPanel {
         lichHopThoai.add(pnlChanTrangVungHienThi, BorderLayout.SOUTH);
 
         lichHopThoai.pack();
-        lichHopThoai.setSize(300, 280);
+        lichHopThoai.setResizable(false);
+        lichHopThoai
+                .getRootPane()
+                .registerKeyboardAction(
+                        e -> lichHopThoai.setVisible(false),
+                        KeyStroke.getKeyStroke("ESCAPE"),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     /** Cập nhật lịch trong BoChonNgay. */
@@ -233,12 +271,20 @@ public class BoChonNgay extends JPanel {
             final LocalDate ngay2 = LocalDate.of(hienTaiNam, hienTaiThang, ngay);
             // Nút ngày.
             JButton btnNutNgay = new JButton(String.valueOf(ngay));
-            btnNutNgay.setFocusPainted(false);
+            btnNutNgay.setFocusPainted(true);
+            btnNutNgay.setMargin(new Insets(2, 2, 2, 2));
+            int canh =
+                    Math.max(
+                            com.formdev.flatlaf.util.UIScale.scale(34),
+                            btnNutNgay.getFontMetrics(btnNutNgay.getFont()).stringWidth("31")
+                                    + com.formdev.flatlaf.util.UIScale.scale(16));
+            btnNutNgay.setPreferredSize(new Dimension(canh, canh));
+            btnNutNgay.setName("ngay:" + ngay);
 
             // Làm nổi bật ngày được chọn
             // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (ngayDuocChon != null && ngay2.equals(ngayDuocChon)) {
-                btnNutNgay.setBackground(new Color(66, 133, 244));
+                btnNutNgay.setBackground(com.petstation.gui.components.MauUngDung.DO_THUONG_HIEU);
                 btnNutNgay.setForeground(Color.WHITE);
                 btnNutNgay.setOpaque(true);
             }
@@ -246,13 +292,17 @@ public class BoChonNgay extends JPanel {
             // Làm nổi bật ngày hôm nay
             // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (ngay2.equals(LocalDate.now())) {
-                btnNutNgay.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+                btnNutNgay.setBorder(
+                        BorderFactory.createLineBorder(
+                                com.petstation.gui.components.MauUngDung.DO_THUONG_HIEU, 2));
             }
 
             btnNutNgay.addActionListener(suKien -> chonNgay(ngay2));
             pnlSoNgayVungHienThi.add(btnNutNgay);
         }
 
+        while (pnlSoNgayVungHienThi.getComponentCount() < 49)
+            pnlSoNgayVungHienThi.add(new JLabel(""));
         pnlSoNgayVungHienThi.revalidate();
         pnlSoNgayVungHienThi.repaint();
     }
@@ -263,12 +313,8 @@ public class BoChonNgay extends JPanel {
      * @param ngay ngày
      */
     private void chonNgay(LocalDate ngay) {
-        this.ngayDuocChon = ngay;
-        txtTruongVanBan.setText(dinhDangNgay(ngay));
+        datNgayDuocChon(ngay);
         lichHopThoai.setVisible(false);
-
-        // Phát thông báo thay đổi thuộc tính cho các bộ lắng nghe
-        firePropertyChange("date", null, ngay);
     }
 
     /**
@@ -298,6 +344,7 @@ public class BoChonNgay extends JPanel {
      * @param ngay ngày
      */
     public void datNgayDuocChon(LocalDate ngay) {
+        LocalDate cu = this.ngayDuocChon;
         this.ngayDuocChon = ngay;
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngay != null) {
@@ -307,6 +354,7 @@ public class BoChonNgay extends JPanel {
         } else {
             txtTruongVanBan.setText("");
         }
+        firePropertyChange("date", cu, ngay);
     }
 
     /**

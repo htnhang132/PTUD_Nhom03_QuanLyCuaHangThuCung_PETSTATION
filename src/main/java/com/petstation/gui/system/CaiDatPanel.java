@@ -26,6 +26,9 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Có thể sửa. */
     private final boolean coTheSua;
 
+    private final Map<String, String> giaTriDaNap = new LinkedHashMap<>();
+    private Object mayInDaNap;
+
     /**
      * Khởi tạo CaiDatPanel với các giá trị được cung cấp.
      *
@@ -53,6 +56,8 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         if (cboMayIn.getItemCount() == 0) cboMayIn.addItem("Không có máy in");
         cboMayIn.setEnabled(coTheSua);
         pnlCuaHang.add(new JLabel("Máy in hóa đơn"));
+        cboMayIn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        cboMayIn.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlCuaHang.add(cboMayIn);
         // Kiểm thử.
         NutDinhDang btnKiemThu = new NutDinhDang("In thử", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -73,6 +78,9 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
                     }
                 });
         pnlCuaHang.add(btnKiemThu);
+        taoTruong(pnlCuaHang, "BANK_BIN", "BIN ngân hàng (6 số; Vietcombank: 970436)");
+        taoTruong(pnlCuaHang, "BANK_ACCOUNT", "Số tài khoản nhận chuyển khoản");
+        taoTruong(pnlCuaHang, "BANK_ACCOUNT_NAME", "Chủ tài khoản thực tế (viết HOA không dấu)");
         taoTruong(pnlNghiepVu, "VAT_PERCENT", "Thuế VAT (%)");
         taoTruong(pnlNghiepVu, "LOW_STOCK_THRESHOLD", "Ngưỡng tồn thấp");
         taoTruong(pnlNghiepVu, "EXPIRY_WARN_DAYS", "Cảnh báo hạn dùng (ngày)");
@@ -88,8 +96,16 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Các thao tác.
         JPanel pnlCacThaoTac = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT));
         // Tải lại.
-        NutDinhDang btnTaiLai = new NutDinhDang("Tải lại", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnTaiLai.addActionListener(suKien -> nap());
+        NutDinhDang btnTaiLai = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnTaiLai.setToolTipText("Đọc lại cài đặt đã lưu trong SQL Server");
+        btnTaiLai.addActionListener(
+                suKien -> {
+                    if (coThayDoiChuaLuu()
+                            && !HopThoai.xacNhan(
+                                    this, "Bỏ thay đổi cài đặt chưa lưu và đọc lại dữ liệu?"))
+                        return;
+                    nap();
+                });
         pnlCacThaoTac.add(btnTaiLai);
         // Lưu.
         NutDinhDang btnLuu = new NutDinhDang("Lưu cài đặt", NutDinhDang.KieuNut.CHINH);
@@ -108,8 +124,10 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
      */
     private JPanel layNhom(String tieuDe) {
         // Vùng hiển thị.
-        JPanel pnlVungHienThi = layThe(new GridLayout(0, 1, 5, 5));
+        JPanel pnlVungHienThi = layThe(new BorderLayout());
+        pnlVungHienThi.setLayout(new BoxLayout(pnlVungHienThi, BoxLayout.Y_AXIS));
         pnlVungHienThi.add(taoTieuDeMuc(tieuDe));
+        pnlVungHienThi.add(Box.createVerticalStrut(12));
         return pnlVungHienThi;
     }
 
@@ -125,18 +143,46 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Đầu vào.
         JTextField txtDauVao = new JTextField(24);
         txtDauVao.setEnabled(coTheSua);
+        txtDauVao.setAlignmentX(Component.LEFT_ALIGNMENT);
+        txtDauVao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        txtDauVao.setPreferredSize(new Dimension(280, 36));
         cacDauVao.put(khoa, txtDauVao);
         pnlVungHienThi.add(txtDauVao);
+        pnlVungHienThi.add(Box.createVerticalStrut(10));
     }
 
     /** Nạp trong CaiDatPanel. */
     private void nap() {
         for (var muc : cacDauVao.entrySet())
-            muc.getValue().setText(CaiDatService.lay(muc.getKey()));
+            muc.getValue()
+                    .setText(
+                            muc.getKey().startsWith("BANK_")
+                                    ? CaiDatService.layTuyChon(muc.getKey())
+                                    : CaiDatService.lay(muc.getKey()));
         // Đã chọn.
+        cacDauVao.get("RETURN_WINDOW_DAYS").setText("3");
+        cacDauVao.get("RETURN_WINDOW_DAYS").setEditable(false);
         String daChon = CaiDatService.lay("PRINTER");
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (!daChon.isBlank()) cboMayIn.setSelectedItem(daChon);
+        ghiNhanDaNap();
+    }
+
+    /** Giữ nguyên bản nháp khi điều hướng sang màn hình khác rồi quay lại. */
+    private boolean coThayDoiChuaLuu() {
+        return !Objects.equals(mayInDaNap, cboMayIn.getSelectedItem())
+                || cacDauVao.entrySet().stream()
+                        .anyMatch(
+                                e ->
+                                        !Objects.equals(
+                                                e.getValue().getText(),
+                                                giaTriDaNap.get(e.getKey())));
+    }
+
+    private void ghiNhanDaNap() {
+        giaTriDaNap.clear();
+        cacDauVao.forEach((k, v) -> giaTriDaNap.put(k, v.getText()));
+        mayInDaNap = cboMayIn.getSelectedItem();
     }
 
     /** Xử lý lưu trong CaiDatPanel. */
@@ -159,6 +205,14 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
             thucHienGiaoDich(
                     ketNoi -> {
                         CaiDatService.capNhat(vat, thap, hanSuDung, tre, doiTra, gioiHan);
+                        CaiDatService.capNhatNganHang(
+                                cacDauVao.get("BANK_BIN").getText().trim(),
+                                cacDauVao.get("BANK_ACCOUNT").getText().trim(),
+                                cacDauVao
+                                        .get("BANK_ACCOUNT_NAME")
+                                        .getText()
+                                        .trim()
+                                        .toUpperCase(java.util.Locale.ROOT));
                         for (var muc : cacDauVao.entrySet())
                             // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (muc.getKey().startsWith("STORE_"))
@@ -171,6 +225,7 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
                         NhatKyHeThongService.ghiNhatKy("Sửa", "Cài đặt hệ thống");
                         return null;
                     });
+            nap();
             HopThoai.hienThiThanhCong(this, "Đã lưu cài đặt.");
         } catch (RuntimeException ngoaiLe) {
             HopThoai.hienThiCanhBao(this, ngoaiLe.getMessage());
@@ -180,6 +235,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Xử lý hiển thị trong CaiDatPanel. */
     @Override
     public void xuLyHienThi() {
-        nap();
+        if (!coThayDoiChuaLuu()) nap();
     }
 }

@@ -23,7 +23,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Cung cấp giao diện và xử lý tương tác cho tích lũy các quy tắc vùng hiển thị.
  *
- * <p>Tích điểm & Voucher ▸ Quy tắc điểm: bao nhiêu đồng được 1 điểm, 1 điểm đổi bao nhiêu đồng,
+ * <p>Điểm thưởng và voucher ▸ Quy tắc điểm: bao nhiêu đồng được 1 điểm, 1 điểm đổi bao nhiêu đồng,
  * ngưỡng hạng thành viên.
  */
 public final class QuyTacTichDiemPanel extends CoSoPanel {
@@ -70,7 +70,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 pnlThe,
                 giaTriDangXet,
                 toaDoDoc++,
-                "1 điểm đổi được bao nhiêu đồng",
+                "200 điểm đổi voucher Spa (hạn 60 ngày)",
                 txtDoiDiem,
                 "₫");
         // Đầu.
@@ -98,7 +98,17 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         pnlThe.add(lblThongBao, giaTriDangXet);
         // Lưu.
         NutDinhDang btnLuu = new NutDinhDang("Lưu quy tắc", NutDinhDang.KieuNut.THANH_CONG);
-        btnLuu.addActionListener(suKien -> luu());
+        btnLuu.setEnabled(
+                com.petstation.service.PhienDangNhapService.layPhien()
+                        .kiemTraCo(com.petstation.model.Quyen.ACCOUNT_MANAGE));
+        btnLuu.addActionListener(
+                suKien -> {
+                    try {
+                        luu();
+                    } catch (RuntimeException loi) {
+                        HopThoai.hienThiCanhBao(this, loi.getMessage());
+                    }
+                });
         giaTriDangXet.gridy = toaDoDoc;
         giaTriDangXet.fill = GridBagConstraints.NONE;
         pnlThe.add(btnLuu, giaTriDangXet);
@@ -151,7 +161,9 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
     /** Nạp trong QuyTacTichDiemPanel. */
     private void nap() {
         txtTichDiem.setText(TienTe.dinhDang(CaiDatService.laySoTienChoMoiDiemTichLuy()));
-        txtDoiDiem.setText(TienTe.dinhDang(CaiDatService.layGiaTriQuyDoiMoiDiem()));
+        txtDoiDiem.setText("150.000");
+        txtTichDiem.setEditable(false);
+        txtDoiDiem.setEditable(false);
         // Giá trị tạm.
         long[] giaTriTam = CaiDatService.layHangChiTieu();
         for (int chiSo = 0; chiSo < 4; chiSo++)
@@ -163,13 +175,13 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         // Sự kiện.
         long suKien = TienTe.doc(txtTichDiem.getText());
         // Dòng dữ liệu.
-        long dongDuLieu = TienTe.doc(txtDoiDiem.getText());
+        long dongDuLieu = 0;
         // Giá trị tạm.
         long[] giaTriTam = new long[4];
         for (int chiSo = 0; chiSo < 4; chiSo++)
             giaTriTam[chiSo] = TienTe.doc(cacHang[chiSo].getText());
         // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-        if (suKien <= 0 || dongDuLieu <= 0) {
+        if (suKien != 10000) {
             HopThoai.hienThiCanhBao(this, "Số đồng cho 1 điểm và giá trị 1 điểm phải lớn hơn 0.");
             return;
         }

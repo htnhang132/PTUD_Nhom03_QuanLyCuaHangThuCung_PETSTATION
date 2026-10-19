@@ -26,6 +26,7 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
         // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục nhân viên", "nhân viên")
+                        .themBoLoc("Chức vụ", d -> String.valueOf(d[4]))
                         .datTienTo("NV")
                         .timKiem("Tìm theo tên, SĐT, mã NV...")
                         .datTrangThai(6, "Đang làm", "Nghỉ việc");

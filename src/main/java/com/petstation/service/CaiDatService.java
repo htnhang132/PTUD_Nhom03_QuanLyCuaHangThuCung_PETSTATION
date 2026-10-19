@@ -22,6 +22,24 @@ public final class CaiDatService {
      * @param khoa khóa
      * @return kết quả lấy
      */
+    public static String layTuyChon(String khoa) {
+        Object giaTri = JdbcCaiDatDAO.timGiaTri(khoa);
+        return giaTri == null ? "" : chuyenThanhChuoi(giaTri);
+    }
+
+    public static void capNhatNganHang(String bin, String taiKhoan, String chuTaiKhoan) {
+        yeuCau(Quyen.ACCOUNT_MANAGE);
+        if (!(bin.isBlank() && taiKhoan.isBlank() && chuTaiKhoan.isBlank()))
+            com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(bin, taiKhoan, chuTaiKhoan);
+        thucHienGiaoDich(
+                c -> {
+                    ghi("BANK_BIN", bin);
+                    ghi("BANK_ACCOUNT", taiKhoan);
+                    ghi("BANK_ACCOUNT_NAME", chuTaiKhoan);
+                    return null;
+                });
+    }
+
     public static String lay(String khoa) {
         // Giá trị.
         Object giaTri = JdbcCaiDatDAO.timGiaTri(khoa);
@@ -75,7 +93,7 @@ public final class CaiDatService {
      * @return kết quả lấy số tiền cho mỗi điểm tích lũy
      */
     public static long laySoTienChoMoiDiemTichLuy() {
-        return docSoTien("VND_PER_EARNED_POINT");
+        return TichDiemService.SO_TIEN_MOI_DIEM;
     }
 
     /**
@@ -84,7 +102,7 @@ public final class CaiDatService {
      * @return kết quả lấy giá trị quy đổi mỗi điểm
      */
     public static long layGiaTriQuyDoiMoiDiem() {
-        return docSoTien("VND_PER_REDEEMED_POINT");
+        return 0;
     }
 
     /**
@@ -138,7 +156,7 @@ public final class CaiDatService {
      * @return kết quả lấy số ngày được đổi trả
      */
     public static int laySoNgayDuocDoiTra() {
-        return laySoNguyen("RETURN_WINDOW_DAYS");
+        return 3;
     }
 
     /**
@@ -159,7 +177,7 @@ public final class CaiDatService {
      */
     public static void capNhatTichLuy(long tichDiem, long doiDiem, long[] cacHang) {
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-        if (tichDiem <= 0 || doiDiem < 0 || cacHang.length != 4)
+        if (tichDiem != 10000 || doiDiem != 0 || cacHang.length != 4)
             throw new IllegalArgumentException("Quy tắc điểm không hợp lệ.");
         for (int chiSo = 0; chiSo < cacHang.length; chiSo++)
             // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.

@@ -193,7 +193,18 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         dangKyBanPhimPhimTat("F4", suKien -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("ESCAPE", suKien -> btnHuy.doClick());
 
-        add(pnlNoiDung, BorderLayout.CENTER);
+        pnlNoiDung.setPreferredSize(new Dimension(520, 425));
+        JPanel pnlCanGiua = new JPanel(new GridBagLayout());
+        pnlCanGiua.setOpaque(false);
+        GridBagConstraints viTri = new GridBagConstraints();
+        viTri.anchor = GridBagConstraints.NORTH;
+        viTri.weightx = 1;
+        viTri.weighty = 1;
+        pnlCanGiua.add(pnlNoiDung, viTri);
+        javax.swing.JScrollPane scrNoiDung = new javax.swing.JScrollPane(pnlCanGiua);
+        scrNoiDung.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        scrNoiDung.getViewport().setBackground(MauUngDung.NEN_KEM);
+        add(scrNoiDung, BorderLayout.CENTER);
     }
 
     /**
@@ -204,7 +215,7 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     private TruongMatKhauAnHien taoTruongMatKhau() {
         // Trường.
         TruongMatKhauAnHien pnlTruong = new TruongMatKhauAnHien(20);
-        pnlTruong.setPreferredSize(new Dimension(350, 36));
+        pnlTruong.setPreferredSize(new Dimension(300, 36));
         return pnlTruong;
     }
 

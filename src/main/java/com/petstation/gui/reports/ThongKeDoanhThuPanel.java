@@ -1,6 +1,6 @@
 package com.petstation.gui.reports;
 
-import static com.petstation.gui.reports.DuLieuBaoCao.taoKieuHienThi;
+import static com.petstation.gui.reports.DuLieuBaoCao.*;
 
 import com.petstation.gui.reports.BaoCaoPanel.*;
 import com.petstation.service.ThongKeService;
@@ -13,40 +13,49 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
     public ThongKeDoanhThuPanel() {
         super(
                 "Thống kê doanh thu",
-                "Chọn kỳ để xem giao dịch đã lưu",
+                "Tiền thu trong kỳ gồm thanh toán và cọc lưu trú; doanh thu hoàn tất xem riêng.",
                 "Thống kê doanh thu".replace(' ', '_'),
                 List.of(
                         taoKieuHienThi(
+                                "Doanh thu hoàn tất",
+                                new String[] {
+                                    "Ngày", "Doanh thu hoàn tất (gồm cọc đã cấn trừ)", "Số hóa đơn"
+                                },
+                                0,
+                                1,
+                                true,
+                                ThongKeService::layDoanhThuHoanTat),
+                        taoKieuHienThi(
                                 "Theo ngày",
-                                new String[] {"Ngày", "Doanh thu sau hoàn trả"},
+                                new String[] {"Ngày", "Tiền thu ròng (gồm cọc)"},
                                 0,
                                 1,
                                 true,
                                 ThongKeService::layDoanhThuTheoNgay),
                         taoKieuHienThi(
                                 "Theo thanh toán",
-                                new String[] {"Phương thức", "Doanh thu", "Số hóa đơn"},
+                                new String[] {"Phương thức", "Tiền thu ròng", "Số hóa đơn"},
                                 0,
                                 1,
                                 true,
                                 ngayDangXet -> ThongKeService.layDoanhThu(ngayDangXet, "method")),
                         taoKieuHienThi(
                                 "Theo thu ngân",
-                                new String[] {"Nhân viên", "Doanh thu", "Số hóa đơn"},
+                                new String[] {"Nhân viên", "Tiền thu ròng", "Số hóa đơn"},
                                 0,
                                 1,
                                 true,
                                 ngayDangXet -> ThongKeService.layDoanhThu(ngayDangXet, "staff")),
                         taoKieuHienThi(
                                 "Theo nguồn",
-                                new String[] {"Nguồn", "Doanh thu", "Số hóa đơn"},
+                                new String[] {"Nguồn", "Tiền thu ròng", "Số hóa đơn"},
                                 0,
                                 1,
                                 true,
                                 ngayDangXet -> ThongKeService.layDoanhThu(ngayDangXet, "source")),
                         taoKieuHienThi(
                                 "Theo ca",
-                                new String[] {"Ca", "Doanh thu", "Số hóa đơn"},
+                                new String[] {"Ca", "Tiền thu ròng", "Số hóa đơn"},
                                 0,
                                 1,
                                 true,

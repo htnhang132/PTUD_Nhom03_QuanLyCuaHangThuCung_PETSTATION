@@ -39,7 +39,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,
-                        "Nhập kho",
+                        "Lập phiếu nhập kho",
                         taoLuaChon(
                                 "supplier",
                                 "Nhà cung cấp",
@@ -85,7 +85,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,
-                        "Xuất kho / Hủy hàng",
+                        "Xuất hủy hàng hóa",
                         layCacLoHang(),
                         layTruongVanBan("qty", "Số lượng", "1"),
                         layTruongVanBan("reason", "Lý do", ""));

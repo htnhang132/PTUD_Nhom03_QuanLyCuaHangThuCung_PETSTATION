@@ -26,7 +26,16 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Hồ sơ thú cưng", "thú cưng")
+                        .themBoLoc("Loài", d -> String.valueOf(d[2]))
+                        .themBoLoc("Chủ nuôi", d -> String.valueOf(d[8]))
                         .datTienTo("TC")
+                        .themThaoTacBoSung(
+                                "Lịch sử tiêm phòng",
+                                dong -> {
+                                    new LichSuTiemPhongDialog(null, String.valueOf(dong[0]))
+                                            .setVisible(true);
+                                    return null;
+                                })
                         .timKiem("Tìm theo tên thú, giống, chủ nuôi...")
                         .datTrangThai(13, "Đang hoạt động", "Ngừng hoạt động")
                         .datBoKiemTra(

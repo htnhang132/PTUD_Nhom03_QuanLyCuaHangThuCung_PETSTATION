@@ -25,7 +25,8 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
-                CauHinh.tao("Danh mục phòng Pet Hotel", "phòng")
+                CauHinh.tao("Danh mục phòng lưu trú", "phòng")
+                        .themBoLoc("Loại phòng", d -> String.valueOf(d[1]))
                         .timKiem("Tìm theo mã phòng, loại phòng...")
                         .datTrangThai(5, "Trống", "Ngừng hoạt động")
                         .datDieuKienXoa(

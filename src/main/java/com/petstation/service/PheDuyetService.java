@@ -20,7 +20,8 @@ public final class PheDuyetService {
         RETURN("Đổi trả vượt hạn mức"),
         WRITE_OFF("Xuất hủy giá trị lớn"),
         STOCKTAKE("Điều chỉnh kiểm kê"),
-        LEAVE("Nghỉ phép");
+        LEAVE("Nghỉ phép"),
+        PRICE("Đề xuất giá bán");
 
         /** Nhãn. */
         public final String nhan;
@@ -124,8 +125,20 @@ public final class PheDuyetService {
                     case WRITE_OFF -> Quyen.INVENTORY_ISSUE;
                     case STOCKTAKE -> Quyen.INVENTORY_COUNT;
                     case LEAVE -> Quyen.SCHEDULE_VIEW;
+                    case PRICE -> Quyen.PRICE_PROPOSE;
                 };
         yeuCau(quyen);
+        boolean dungThaoTac =
+                switch (loai) {
+                    case INVOICE -> Set.of("INVOICE_NOTE", "CANCEL_INVOICE").contains(thaoTac);
+                    case RETURN -> false;
+                    case WRITE_OFF -> "WRITE_OFF".equals(thaoTac);
+                    case STOCKTAKE -> "STOCKTAKE".equals(thaoTac);
+                    case LEAVE -> "LEAVE".equals(thaoTac);
+                    case PRICE -> "PRICE_CHANGE".equals(thaoTac);
+                };
+        if (!dungThaoTac || dich <= 0)
+            throw new IllegalArgumentException("Thao tác không phù hợp với loại phê duyệt.");
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (lyDo == null || lyDo.isBlank()) throw new IllegalArgumentException("Cần nhập lý do.");
         // Mã.
@@ -234,6 +247,8 @@ public final class PheDuyetService {
                     if ("STOCKTAKE".equals(dongDuLieu[0]))
                         JdbcPheDuyetDAO.capNhatTuChoi2(
                                 Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
+                    if ("PRICE_CHANGE".equals(dongDuLieu[0]))
+                        DeXuatGiaService.tuChoi(Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
                     JdbcPheDuyetDAO.capNhatTuChoi4(layIdTaiKhoan(), lyDo, yeuCau.id);
                     NhatKyHeThongService.ghiNhatKy("Từ chối", yeuCau.id + " / " + lyDo);
                     return null;
@@ -293,6 +308,7 @@ public final class PheDuyetService {
     public static void apDungPheDuyet(String thaoTac, long dich, String noiDungXuLy) {
         yeuCau(Quyen.APPROVAL_PROCESS);
         switch (thaoTac) {
+            case "PRICE_CHANGE" -> DeXuatGiaService.apDung(dich);
             case "WRITE_OFF" -> KhoService.apDungXuatHuy(dich);
             case "STOCKTAKE" -> KhoService.apDungKiemKe(dich);
             case "RETURN" -> DoiTraService.apDungDoiTra(dich);
@@ -309,5 +325,9 @@ public final class PheDuyetService {
             case "CANCEL_INVOICE" -> BanHangService.huyHoaDon(dich);
             default -> throw new IllegalArgumentException("Loại phê duyệt không được hỗ trợ.");
         }
+    }
+
+    public static void xoaBoLangNghe() {
+        CAC_BO_LANG_NGHE.clear();
     }
 }

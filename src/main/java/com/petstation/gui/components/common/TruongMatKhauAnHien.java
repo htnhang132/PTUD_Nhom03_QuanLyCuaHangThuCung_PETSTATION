@@ -35,22 +35,23 @@ public class TruongMatKhauAnHien extends JPanel {
         txtTruongMatKhau = new JPasswordField(cacCot);
 
         // Nút bật tắt có biểu tượng con mắt
-        btnNutBatTat = new JToggleButton("Hiện");
-        btnNutBatTat.setPreferredSize(new Dimension(64, 28));
+        btnNutBatTat = new JToggleButton();
+        btnNutBatTat.setIcon(taoBieuTuongMat(false));
+        btnNutBatTat.setSelectedIcon(taoBieuTuongMat(true));
+        btnNutBatTat.setPreferredSize(new Dimension(34, 28));
+        btnNutBatTat.setBorderPainted(false);
+        btnNutBatTat.setContentAreaFilled(false);
+        btnNutBatTat.getAccessibleContext().setAccessibleName("Hiển thị hoặc ẩn mật khẩu");
         btnNutBatTat.setFocusPainted(false);
         btnNutBatTat.setToolTipText("Hiển thị/Ẩn mật khẩu");
 
         btnNutBatTat.addActionListener(suKien -> batTatMatKhauHienThi());
 
         add(txtTruongMatKhau, BorderLayout.CENTER);
-        add(btnNutBatTat, BorderLayout.EAST);
+        txtTruongMatKhau.putClientProperty("JTextField.trailingComponent", btnNutBatTat);
 
         // Đặt đường viền cho khung chứa các thành phần bên trong
         setBorder(BorderFactory.createEmptyBorder());
-        txtTruongMatKhau.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.GRAY),
-                        BorderFactory.createEmptyBorder(3, 5, 3, 5)));
     }
 
     /** Bật tắt mật khẩu hiển thị trong TruongMatKhauAnHien. */
@@ -60,13 +61,47 @@ public class TruongMatKhauAnHien extends JPanel {
         // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhauHienThi) {
             txtTruongMatKhau.setEchoChar((char) 0); // Hiển thị nội dung thật
-            btnNutBatTat.setText("Ẩn");
+            btnNutBatTat.setToolTipText("Ẩn mật khẩu");
             btnNutBatTat.setSelected(true);
         } else {
             txtTruongMatKhau.setEchoChar('●'); // Ẩn với ký tự ●
-            btnNutBatTat.setText("Hiện");
+            btnNutBatTat.setToolTipText("Hiển thị mật khẩu");
             btnNutBatTat.setSelected(false);
         }
+    }
+
+    /** Vẽ biểu tượng bằng nét để giữ độ rõ trên màn hình có tỷ lệ phóng lớn. */
+    private static Icon taoBieuTuongMat(boolean an) {
+        return new Icon() {
+            public int getIconWidth() {
+                return 20;
+            }
+
+            public int getIconHeight() {
+                return 20;
+            }
+
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                Graphics2D net = (Graphics2D) g.create();
+                try {
+                    net.translate(x, y);
+                    net.setRenderingHint(
+                            RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    net.setColor(c.isEnabled() ? new Color(97, 52, 29) : Color.GRAY);
+                    net.setStroke(
+                            new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    java.awt.geom.Path2D mat = new java.awt.geom.Path2D.Double();
+                    mat.moveTo(1, 10);
+                    mat.curveTo(6, 2, 14, 2, 19, 10);
+                    mat.curveTo(14, 18, 6, 18, 1, 10);
+                    net.draw(mat);
+                    net.drawOval(7, 7, 6, 6);
+                    if (an) net.drawLine(2, 2, 18, 18);
+                } finally {
+                    net.dispose();
+                }
+            }
+        };
     }
 
     // Chuyển thao tác cho trường nhập mật khẩu bên trong

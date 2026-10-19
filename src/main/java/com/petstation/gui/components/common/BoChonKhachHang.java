@@ -111,7 +111,7 @@ public final class BoChonKhachHang extends JPanel {
         JPanel pnlSuDungDiem = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         pnlSuDungDiem.setOpaque(false);
         // Nhãn sử dụng.
-        JLabel lblNhanSuDung = new JLabel("Dùng điểm:");
+        JLabel lblNhanSuDung = new JLabel("Đổi 200 điểm → voucher Spa 150.000đ / 60 ngày");
         lblNhanSuDung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         spnDiem.setPreferredSize(new Dimension(80, 26));
         spnDiem.addChangeListener(
@@ -125,8 +125,10 @@ public final class BoChonKhachHang extends JPanel {
         lblDiemGoiY.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         lblDiemGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
         pnlSuDungDiem.add(lblNhanSuDung);
-        pnlSuDungDiem.add(spnDiem);
-        pnlSuDungDiem.add(lblDiemGoiY);
+        JButton btnDoiVoucher = new JButton("Đổi voucher");
+        btnDoiVoucher.addActionListener(e -> doiVoucher());
+        pnlSuDungDiem.add(btnDoiVoucher);
+
         // Văn bản.
         JPanel pnlVanBan = new JPanel(new BorderLayout(0, 2));
         pnlVanBan.setOpaque(false);
@@ -141,6 +143,35 @@ public final class BoChonKhachHang extends JPanel {
     }
 
     /** Tìm kiếm trong BoChonKhachHang. */
+    private String khoaDoiVoucher;
+
+    private void doiVoucher() {
+        if (banHang.layMaKhachHang().isBlank()) return;
+        if (JOptionPane.showConfirmDialog(
+                        this,
+                        "Trừ 200 điểm để nhận voucher Spa 150.000đ, hạn 60 ngày?",
+                        "Đổi voucher",
+                        JOptionPane.YES_NO_OPTION)
+                != JOptionPane.YES_OPTION) return;
+        try {
+            if (khoaDoiVoucher == null) khoaDoiVoucher = "DOI-" + java.util.UUID.randomUUID();
+            String ma =
+                    com.petstation.service.TichDiemService.doiVoucher(
+                            banHang.layMaKhachHang(), khoaDoiVoucher);
+            khoaDoiVoucher = null;
+            banHang.datKhachHang(
+                    banHang.layMaKhachHang(),
+                    banHang.layTenKhachHang(),
+                    banHang.layKhachHangDiem() - 200);
+            dongBo();
+            khiThayDoi.run();
+            HopThoai.hienThiThongTin(
+                    this, "Voucher: " + ma + "\nDùng tại thanh toán Spa của khách hàng này.");
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, loi.getMessage());
+        }
+    }
+
     private void timKiem() {
         // Từ khóa.
         String tuKhoa = txtDauVao.getText().trim();

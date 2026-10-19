@@ -189,7 +189,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                 caLamViec.kiemTraMo() ? "Kết ca" : "Mở ca",
                 MaManHinh.CASH_SHIFT,
                 NutDinhDang.KieuNut.TRONG_SUOT);
-        themPhimTat("Nhập kho", MaManHinh.PURCHASE, NutDinhDang.KieuNut.TRONG_SUOT);
+        themPhimTat("Lập phiếu nhập kho", MaManHinh.PURCHASE, NutDinhDang.KieuNut.TRONG_SUOT);
         // Đang chờ.
         long dangCho = PheDuyetService.demChoDuyet();
         themPhimTat(
@@ -216,7 +216,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         "Hóa đơn trong ca",
                         caLamViec.kiemTraMo() ? String.valueOf(caLamViec.demHoaDon()) : "—",
                         "",
-                        MauUngDung.XANH_DUONG));
+                        MauUngDung.NAU));
         pnlCacChiSo.add(
                 layChiSoThe(
                         "Sản phẩm tồn thấp",

@@ -88,6 +88,11 @@ public final class ThanhToanPanel extends CoSoPanel {
     /** Đang xử lý. */
     private boolean dangXuLy;
 
+    private final JLabel lblQR = new JLabel();
+    private final JLabel lblThongTinQR = new JLabel();
+    private final JCheckBox chkDaNhanTien = new JCheckBox("Tôi đã kiểm tra và nhận đủ tiền");
+    private boolean qrHopLe;
+
     /**
      * Khởi tạo ThanhToanPanel với các giá trị được cung cấp.
      *
@@ -214,6 +219,16 @@ public final class ThanhToanPanel extends CoSoPanel {
         lblVoucherThongBao.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblVoucherThongBao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
         pnlNoiDung.add(lblVoucherThongBao);
+        JPanel pnlVoucherKhach = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        pnlVoucherKhach.setOpaque(false);
+        pnlVoucherKhach.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JButton btnChonVoucher = new JButton("Voucher của khách");
+        btnChonVoucher.addActionListener(e -> chonVoucher());
+        JButton btnDoiDiem = new JButton("Đổi 200 điểm → voucher Spa");
+        btnDoiDiem.addActionListener(e -> doiVoucher());
+        pnlVoucherKhach.add(btnChonVoucher);
+        pnlVoucherKhach.add(btnDoiDiem);
+        pnlNoiDung.add(pnlVoucherKhach);
         pnlNoiDung.add(Box.createVerticalStrut(10));
 
         pnlNoiDung.add(layNhan("Tiền khách đưa"));
@@ -264,11 +279,26 @@ public final class ThanhToanPanel extends CoSoPanel {
         lblNhanThayDoi.setFont(MauUngDung.taoPhongChu(Font.BOLD, 16));
         lblNhanThayDoi.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlNoiDung.add(lblNhanThayDoi);
+        lblQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblThongTinQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        chkDaNhanTien.setAlignmentX(Component.LEFT_ALIGNMENT);
+        chkDaNhanTien.setOpaque(false);
+        chkDaNhanTien.addActionListener(
+                e -> {
+                    banHang.xacNhanDaNhanTien(layPhuongThuc(), chkDaNhanTien.isSelected());
+                    kiemTraDauVao();
+                });
+        pnlNoiDung.add(lblQR);
+        pnlNoiDung.add(lblThongTinQR);
+        pnlNoiDung.add(chkDaNhanTien);
         pnlNoiDung.add(Box.createVerticalGlue());
         // Nội dung vùng chứa.
         JPanel pnlNoiDungVungChua = taoVungTrongSuot(new BorderLayout());
         pnlNoiDungVungChua.add(pnlNoiDung, BorderLayout.NORTH);
-        pnlPhai.add(pnlNoiDungVungChua, BorderLayout.CENTER);
+        JScrollPane scrThanhToan = new JScrollPane(pnlNoiDungVungChua);
+        scrThanhToan.setBorder(null);
+        scrThanhToan.getVerticalScrollBar().setUnitIncrement(16);
+        pnlPhai.add(scrThanhToan, BorderLayout.CENTER);
 
         btnXacNhan.setPreferredSize(new Dimension(0, 46));
         btnXacNhan.addActionListener(suKien -> xacNhanThanhToan());
@@ -316,6 +346,73 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     /** Áp dụng voucher trong ThanhToanPanel. */
+    private String khoaDoiVoucher;
+
+    private void chonVoucher() {
+        if (banHang.layMaKhachHang().isBlank()) {
+            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng trước.");
+            return;
+        }
+        try {
+            var cacVoucher =
+                    com.petstation.service.TichDiemService.layVoucher(banHang.layMaKhachHang());
+            if (cacVoucher.isEmpty()) {
+                HopThoai.hienThiThongTin(this, "Khách hàng chưa có voucher riêng.");
+                return;
+            }
+            String[] cacMa =
+                    cacVoucher.stream()
+                            .map(
+                                    v ->
+                                            v[0]
+                                                    + " — "
+                                                    + TienTe.dinhDang(((Number) v[1]).longValue())
+                                                    + " — "
+                                                    + v[3]
+                                                    + " — hạn "
+                                                    + v[2])
+                            .toArray(String[]::new);
+            String chon =
+                    (String)
+                            JOptionPane.showInputDialog(
+                                    this,
+                                    "Chọn voucher của khách (voucher Spa chỉ áp dụng hóa đơn Spa)",
+                                    "Voucher",
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    cacMa,
+                                    cacMa[0]);
+            if (chon != null) {
+                txtTruongVoucher.setText(chon.split(" — ", 2)[0]);
+                apDungVoucher();
+            }
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, loi.getMessage());
+        }
+    }
+
+    private void doiVoucher() {
+        if (banHang.layMaKhachHang().isBlank()) {
+            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng trước.");
+            return;
+        }
+        if (!HopThoai.xacNhan(
+                this, "Trừ 200 điểm của khách để đổi voucher Spa 150.000đ, hạn 60 ngày?")) return;
+        if (khoaDoiVoucher == null) khoaDoiVoucher = "PAYREDEEM-" + java.util.UUID.randomUUID();
+        try {
+            String ma =
+                    com.petstation.service.TichDiemService.doiVoucher(
+                            banHang.layMaKhachHang(), khoaDoiVoucher);
+            khoaDoiVoucher = null;
+            txtTruongVoucher.setText(ma);
+            apDungVoucher();
+            HopThoai.hienThiThongTin(
+                    this, "Đã đổi voucher " + ma + ". Chỉ áp dụng cho Spa của khách hàng này.");
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, loi.getMessage());
+        }
+    }
+
     private void apDungVoucher() {
         // Lỗi.
         String loi = banHang.apDungVoucher(txtTruongVoucher.getText());
@@ -370,7 +467,9 @@ public final class ThanhToanPanel extends CoSoPanel {
                     });
         }
         pnlDongVungChua.removeAll();
-        pnlDongVungChua.add(taoBangDinhDang(moHinh), BorderLayout.CENTER);
+        JScrollPane scrHang = taoBangDinhDang(moHinh);
+        com.petstation.gui.components.common.BangChiTietHoaDon.apDung(layBang(scrHang));
+        pnlDongVungChua.add(scrHang, BorderLayout.CENTER);
         pnlDongVungChua.revalidate();
         txtTruongVoucher.setText(banHang.layMaVoucher());
         lblVoucherThongBao.setText("");
@@ -388,6 +487,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         long ngayDangXet = banHang.tinhGiamGia();
         lblGiamGia.setText(ngayDangXet == 0 ? "0₫" : "−" + TienTe.dinhDang(ngayDangXet));
         lblTong.setText(TienTe.dinhDang(banHang.tinhTong()));
+        capNhatQR();
         dungLaiNhanhCacSoTien();
         kiemTraDauVao();
     }
@@ -420,10 +520,53 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     /** Cập nhật phương thức trong ThanhToanPanel. */
+    private void capNhatQR() {
+        chkDaNhanTien.setSelected(false);
+        banHang.xacNhanDaNhanTien(layPhuongThuc(), false);
+        boolean chuyenKhoan = layPhuongThuc() == CaThuNganService.PhuongThuc.TRANSFER;
+        chkDaNhanTien.setVisible(layPhuongThuc() != CaThuNganService.PhuongThuc.CASH);
+        lblQR.setVisible(chuyenKhoan);
+        lblThongTinQR.setVisible(chuyenKhoan);
+        qrHopLe = false;
+        if (!chuyenKhoan) return;
+        try {
+            String bin = com.petstation.service.CaiDatService.layTuyChon("BANK_BIN");
+            String tk = com.petstation.service.CaiDatService.layTuyChon("BANK_ACCOUNT");
+            String ten = com.petstation.service.CaiDatService.layTuyChon("BANK_ACCOUNT_NAME");
+            com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(bin, tk, ten);
+            String thamChieu = banHang.layKhoaThanhToan().replace("-", "");
+            String noiDung =
+                    com.petstation.util.TaoMaVietQR.taoNoiDung(
+                            bin, tk, banHang.tinhTong(), thamChieu);
+            lblQR.setText("");
+            lblQR.setIcon(new ImageIcon(com.petstation.util.TaoMaVietQR.taoAnh(noiDung, 240)));
+            lblThongTinQR.setText(
+                    "<html>"
+                            + com.petstation.service.CaiDatService.lay("STORE_NAME")
+                            + "<br>"
+                            + ten
+                            + " · "
+                            + tk
+                            + "<br>BIN "
+                            + bin
+                            + " · "
+                            + thamChieu
+                            + "<br>"
+                            + TienTe.dinhDang(banHang.tinhTong())
+                            + "</html>");
+            qrHopLe = true;
+        } catch (IllegalArgumentException loi) {
+            lblQR.setIcon(null);
+            lblQR.setText(loi.getMessage());
+            lblThongTinQR.setText("Kiểm tra cấu hình ngân hàng trong Cài đặt.");
+        }
+    }
+
     private void capNhatPhuongThuc() {
         // Là tiền mặt.
         boolean laTienMat = layPhuongThuc() == CaThuNganService.PhuongThuc.CASH;
         txtDaNhan.setEnabled(laTienMat);
+        capNhatQR();
         for (Component giaTriDangXet : pnlNhanhCacSoTien.getComponents())
             giaTriDangXet.setEnabled(laTienMat);
         kiemTraDauVao();
@@ -445,7 +588,11 @@ public final class ThanhToanPanel extends CoSoPanel {
                             + (layPhuongThuc() == CaThuNganService.PhuongThuc.TRANSFER
                                     ? "chuyển khoản/QR"
                                     : "thẻ"));
-            btnXacNhan.setEnabled(!dangXuLy);
+            btnXacNhan.setEnabled(
+                    !dangXuLy
+                            && chkDaNhanTien.isSelected()
+                            && (layPhuongThuc() != CaThuNganService.PhuongThuc.TRANSFER
+                                    || qrHopLe));
             return;
         }
         // Dòng dữ liệu.
@@ -477,6 +624,10 @@ public final class ThanhToanPanel extends CoSoPanel {
     private void xacNhanThanhToan() {
         // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (dangXuLy || banHang.kiemTraTrong()) return;
+        if (!banHang.kiemTraDaNhanTien(layPhuongThuc())) {
+            HopThoai.hienThiCanhBao(this, "Hãy kiểm tra và xác nhận đã nhận đủ tiền.");
+            return;
+        }
         // Giá trị tạm.
         long giaTriTam = banHang.tinhTong();
         // Dòng dữ liệu.

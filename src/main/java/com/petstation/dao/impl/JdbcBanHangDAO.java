@@ -6,6 +6,19 @@ import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC bán hàng DAO. */
 public final class JdbcBanHangDAO {
+    public static List<Object[]> layNguonBienLai(String soHoaDon) {
+        return ThaoTacSQL.truyVan(
+                "SELECT CASE WHEN x.id IS NOT NULL THEN 'EXCHANGE' WHEN ht.id IS NOT NULL THEN"
+                    + " 'HOTEL' WHEN spa.id IS NOT NULL THEN 'SPA' ELSE ''"
+                    + " END,COALESCE(x.ma_phieu,ht.ma_hop_dong,spa.ma_phieu,''),COALESCE(x.gia_tri_duoc_doi,ht.tien_coc,0),COALESCE(goc.so_hoa_don,'')"
+                    + " FROM hoa_don h LEFT JOIN phieu_doi_tra x ON x.hoa_don_thay_the_id=h.id AND"
+                    + " x.loai_phieu='EXCHANGE' AND x.trang_thai='COMPLETED' LEFT JOIN hoa_don goc"
+                    + " ON goc.id=x.hoa_don_id LEFT JOIN hop_dong_luu_tru ht ON ht.hoa_don_id=h.id"
+                    + " LEFT JOIN phieu_tiep_nhan_spa spa ON spa.hoa_don_id=h.id WHERE"
+                    + " h.so_hoa_don=?",
+                soHoaDon);
+    }
+
     /** Khởi tạo JdbcBanHangDAO với các giá trị được cung cấp. */
     private JdbcBanHangDAO() {}
 
@@ -652,11 +665,23 @@ public final class JdbcBanHangDAO {
      */
     public static List<Object[]> layCoTheBanCacSanPham(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,COALESCE(SUM(l.so_luong_ton),0)"
+                "SELECT"
+                    + " p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,COALESCE(SUM(l.so_luong_ton),0),COALESCE(p.anh,'')"
                     + " FROM san_pham p LEFT JOIN lo_hang l ON l.san_pham_id=p.id AND"
                     + " l.trang_thai='AVAILABLE' AND (l.han_su_dung IS NULL OR"
                     + " l.han_su_dung>=CAST(GETDATE() AS date)) WHERE p.trang_thai='SELLING' GROUP"
-                    + " BY p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban ORDER BY p.ma_san_pham",
+                    + " BY p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,p.anh ORDER BY CASE WHEN"
+                    + " NULLIF(p.anh,'') IS NULL THEN 1 ELSE 0 END,p.ma_san_pham",
                 cacThamSo);
+    }
+
+    public static List<Object[]> layThongTinIn(String soHoaDon) {
+        return ThaoTacSQL.truyVan(
+                "SELECT COALESCE(k.so_dien_thoai,''),h.diem_cong,diem.so_du_sau FROM hoa_don h JOIN"
+                    + " don_hang d ON d.id=h.don_hang_id LEFT JOIN khach_hang k ON"
+                    + " k.id=d.khach_hang_id OUTER APPLY(SELECT TOP(1) l.so_du_sau FROM"
+                    + " lich_su_diem l WHERE l.hoa_don_id=h.id AND l.khach_hang_id=d.khach_hang_id"
+                    + " AND l.thay_doi=h.diem_cong ORDER BY l.id)diem WHERE h.so_hoa_don=?",
+                soHoaDon);
     }
 }

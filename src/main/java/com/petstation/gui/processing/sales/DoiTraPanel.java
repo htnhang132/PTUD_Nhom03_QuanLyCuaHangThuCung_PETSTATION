@@ -23,6 +23,6 @@ public final class DoiTraPanel extends NghiepVuBanHangPanel {
      */
     public DoiTraPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.RETURNS, banHang, dieuHuong);
-        themNut(pnlCacThaoTac, "+ Lập phiếu trả", this::traHang);
+        themNut(pnlCacThaoTac, "+ Đổi phụ kiện", this::traHang);
     }
 }

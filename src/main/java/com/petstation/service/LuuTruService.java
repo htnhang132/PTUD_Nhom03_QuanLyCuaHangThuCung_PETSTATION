@@ -30,13 +30,32 @@ public final class LuuTruService {
             LocalDateTime ketThuc,
             long tienCoc,
             String ghiChu) {
+        return datPhong(maThuCung, maPhong, batDau, ketThuc, tienCoc, ghiChu, false);
+    }
+
+    /** Chỉ ghi hợp đồng khi nhân viên xác nhận đã nhận đủ cọc. */
+    public static long datPhong(
+            String maThuCung,
+            String maPhong,
+            LocalDateTime batDau,
+            LocalDateTime ketThuc,
+            long tienCoc,
+            String ghiChu,
+            boolean daNhanCoc) {
         yeuCau(Quyen.HOTEL_MANAGE);
         // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-        if (!ketThuc.isAfter(batDau) || tienCoc < 0)
+        if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau) || tienCoc < 0)
             throw new IllegalArgumentException("Ngày ra phải sau ngày vào và tiền cọc không âm.");
+        if (!daNhanCoc)
+            throw new IllegalArgumentException("Cần xác nhận đã nhận cọc 50% tiền phòng dự kiến.");
         return thucHienGiaoDich(
                 ketNoi -> {
                     // Vùng đang xét.
+                    long phien =
+                            com.petstation.dao.impl.JdbcBanHangDAO.demThanhToan(layIdTaiKhoan());
+                    if (phien == 0)
+                        throw new IllegalArgumentException(
+                                "Cần mở ca trước khi nhận cọc Hotel bằng tiền mặt.");
                     Object[] vungDangXet = layThuCung(maThuCung);
                     // Các phòng.
                     List<Object[]> cacPhong = JdbcLuuTruDAO.timDatPhong(maPhong);
@@ -57,9 +76,9 @@ public final class LuuTruService {
                     // Giá.
                     long gia = layGiaTri(phong[1]);
                     // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (tienCoc > tinhSoNgay(batDau, ketThuc) * gia)
+                    if (tienCoc != (Math.multiplyExact(tinhSoNgay(batDau, ketThuc), gia) + 1) / 2)
                         throw new IllegalArgumentException(
-                                "Tiền cọc không được vượt tiền phòng dự kiến.");
+                                "Tiền cọc phải bằng 50% tiền phòng dự kiến.");
                     // Kết quả.
                     long ketQua =
                             JdbcLuuTruDAO.themDatPhong(
@@ -72,6 +91,7 @@ public final class LuuTruService {
                                     tienCoc,
                                     gia,
                                     ghiChu);
+                    JdbcLuuTruDAO.xacNhanCoc(ketQua, layIdTaiKhoan(), phien);
                     NhatKyHeThongService.ghiNhatKy("Đặt phòng", maPhong + " / " + maThuCung);
                     return ketQua;
                 });
@@ -82,6 +102,16 @@ public final class LuuTruService {
      *
      * @param hopDongLuuTru hợp đồng lưu trú
      */
+    public static long tinhCocDuKien(String maPhong, LocalDateTime batDau, LocalDateTime ketThuc) {
+        yeuCau(Quyen.HOTEL_MANAGE);
+        if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau))
+            throw new IllegalArgumentException("Ngày ra phải sau ngày vào.");
+        var phong = JdbcLuuTruDAO.timDatPhong(maPhong);
+        if (phong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy phòng.");
+        return (Math.multiplyExact(tinhSoNgay(batDau, ketThuc), layGiaTri(phong.get(0)[1])) + 1)
+                / 2;
+    }
+
     public static void kiemTraVao(long hopDongLuuTru) {
         yeuCau(Quyen.HOTEL_MANAGE);
         thucHienGiaoDich(
@@ -182,6 +212,11 @@ public final class LuuTruService {
                     NhatKyHeThongService.ghiNhatKy("Cập nhật phòng", "Hoàn thành dọn phòng");
                     return null;
                 });
+    }
+
+    public static List<Object[]> layPhongDangDon() {
+        yeuCau(Quyen.HOTEL_MANAGE);
+        return JdbcLuuTruDAO.layPhongDangDon();
     }
 
     /**

@@ -14,6 +14,18 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho voucher danh mục vùng hiển thị. */
 public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
+    @Override
+    protected boolean coTheChinhSua() {
+        return com.petstation.service.PhienDangNhapService.layPhien()
+                .kiemTraCo(com.petstation.model.Quyen.PROMOTION_MANAGE);
+    }
+
+    @Override
+    protected boolean coTheSuaBanGhi(Object[] dong) {
+        return dong != null
+                && com.petstation.service.TichDiemService.coTheSuaDanhMuc(String.valueOf(dong[0]));
+    }
+
     /** Khởi tạo DanhMucVoucherPanel với các giá trị được cung cấp. */
     public DanhMucVoucherPanel() {
         super(taoCauHinh(), taoCacTruong(), DanhMucService.layVoucher());
@@ -28,6 +40,8 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
         // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục voucher", "voucher")
+                        .themBoLoc("Chủ sở hữu", d -> String.valueOf(d[7]))
+                        .themBoLoc("Phạm vi", d -> String.valueOf(d[8]))
                         .timKiem("Tìm theo mã voucher...")
                         .datTrangThai(6, "Còn hiệu lực", "Ngừng")
                         .datBoChuanHoa(
@@ -70,10 +84,15 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Mã voucher", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Giá trị (₫)", Kieu.TIEN_TE).batBuoc(),
                 TruongDuLieu.tao("Hạn dùng", Kieu.NGAY).batBuoc(),
-                TruongDuLieu.tao("Số lượng", Kieu.SO_NGUYEN).batBuoc(),
+                TruongDuLieu.tao("Số lượt (voucher cá nhân: 1)", Kieu.SO_NGUYEN)
+                        .batBuoc()
+                        .datMacDinh("1"),
                 TruongDuLieu.tao("Đã dùng", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
                 TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
-                        .datLuaChon("Còn hiệu lực", "Hết hạn", "Hết lượt", "Ngừng"));
+                        .datLuaChon("Còn hiệu lực", "Hết hạn", "Hết lượt", "Ngừng"),
+                TruongDuLieu.tao("Khách hàng sở hữu", Kieu.HOP_CHON)
+                        .layDong(DanhMucService::layLuaChonKhachHang),
+                TruongDuLieu.tao("Phạm vi", Kieu.HOP_CHON).datLuaChon("Chỉ Spa", "Mọi hóa đơn"));
     }
 }

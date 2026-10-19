@@ -28,30 +28,22 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
         // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục khuyến mãi", "khuyến mãi")
+                        .themBoLoc("Loại giảm", d -> String.valueOf(d[2]))
+                        .themBoLoc("Phạm vi", d -> String.valueOf(d[3]))
+                        .themBoLoc(
+                                "Hiệu lực",
+                                d -> {
+                                    LocalDate tu = docNgay(d[6]), den = docNgay(d[7]);
+                                    if ("Ngừng áp dụng".equals(d[8])) return "Đã tắt";
+                                    if (den != null && den.isBefore(LocalDate.now()))
+                                        return "Hết hạn";
+                                    if (tu != null && tu.isAfter(LocalDate.now()))
+                                        return "Chưa đến ngày";
+                                    return "Trong thời gian áp dụng";
+                                })
                         .datTienTo("KM")
                         .timKiem("Tìm theo mã, tên chương trình...")
                         .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
-                        .datBoChuanHoa(
-                                dongDuLieu -> {
-                                    // Hôm nay.
-                                    LocalDate homNay = LocalDate.now();
-                                    // Từ.
-                                    LocalDate tu = docNgay(dongDuLieu[6]);
-                                    // Đến.
-                                    LocalDate den = docNgay(dongDuLieu[7]);
-                                    // Trạng thái.
-                                    String trangThai = String.valueOf(dongDuLieu[8]);
-                                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-                                    if (den != null && den.isBefore(homNay))
-                                        dongDuLieu[8] = "Ngừng áp dụng";
-                                    else // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang
-                                    // xét.
-                                    if (!"Ngừng áp dụng".equals(trangThai))
-                                        dongDuLieu[8] =
-                                                tu != null && tu.isAfter(homNay)
-                                                        ? "Chưa áp dụng"
-                                                        : "Đang áp dụng";
-                                })
                         .datBoKiemTra(
                                 dongDuLieu -> {
                                     // Từ.

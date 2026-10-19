@@ -29,7 +29,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
     protected final Consumer<MaManHinh> dieuHuong;
 
     /** Mô hình. */
-    private final DefaultTableModel moHinh;
+    protected final DefaultTableModel moHinh;
 
     /** Bảng. */
     protected final JTable tblBang;
@@ -62,7 +62,17 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         // Tìm kiếm.
         JTextField txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
         pnlCacThaoTac.add(txtTimKiem);
-        themNut(pnlCacThaoTac, "Tải lại", this::lamMoi);
+        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server, giữ bộ lọc hiện tại");
+        btnLamMoi.addActionListener(
+                e -> {
+                    try {
+                        lamMoi();
+                    } catch (RuntimeException loi) {
+                        HopThoai.hienThiCanhBao(this, loi.getMessage());
+                    }
+                });
+        pnlCacThaoTac.add(btnLamMoi);
         pnlCacThaoTac.add(lblSoLuong);
         pnlTren.add(pnlCacThaoTac, BorderLayout.CENTER);
         add(pnlTren, BorderLayout.NORTH);
@@ -85,6 +95,8 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         tblBang = layBang(scrCuon);
         tblBang.removeColumn(tblBang.getColumnModel().getColumn(0));
         lienKetBoLoc(txtTimKiem, tblBang);
+        tblBang.getRowSorter()
+                .addRowSorterListener(e -> lblSoLuong.setText(tblBang.getRowCount() + " kết quả"));
         add(scrCuon, BorderLayout.CENTER);
         // Xuất.
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -93,6 +105,25 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         JPanel pnlChanTrang = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT));
         pnlChanTrang.add(btnXuat);
         add(pnlChanTrang, BorderLayout.SOUTH);
+        tblBang.getSelectionModel()
+                .addListSelectionListener(
+                        e -> {
+                            if (e.getValueIsAdjusting() || tblBang.getSelectedRow() < 0) return;
+                            long id = layDongChon();
+                            switch (kieuNghiepVu) {
+                                case APPOINTMENTS -> banHang.layQuyTrinh().chonLichHen(id);
+                                case SPA_TICKETS,
+                                                SPA_INTAKE,
+                                                SPA_SERVICES,
+                                                SPA_PROGRESS,
+                                                SPA_CLOSE ->
+                                        banHang.layQuyTrinh().chonSpa(id);
+                                case HOTEL_STAY, HOTEL_BOOKING, HOTEL_JOURNAL, HOTEL_CHECKOUT ->
+                                        banHang.layQuyTrinh().chonHotel(id);
+                                default -> {}
+                            }
+                            capNhatThaoTac();
+                        });
         lamMoi();
     }
 
@@ -116,13 +147,38 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                     }
                 });
         pnlVungChua.add(btnNut);
+        capNhatThaoTac();
     }
 
     /** Làm mới trong BangNghiepVuPanel. */
+    protected void capNhatThaoTac() {}
+
     protected void lamMoi() {
+        Long daChon = tblBang.getSelectedRow() < 0 ? null : layDongChon();
+        var khoaSapXep = new java.util.ArrayList<>(tblBang.getRowSorter().getSortKeys());
+        Object[][] duLieu = NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
         moHinh.setRowCount(0);
-        for (Object[] dong : NghiepVuService.layCacDong(kieuNghiepVu)) moHinh.addRow(dong);
-        lblSoLuong.setText("  " + moHinh.getRowCount() + " bản ghi");
+        for (Object[] dong : duLieu) moHinh.addRow(dong);
+        tblBang.getRowSorter().setSortKeys(khoaSapXep);
+
+        lblSoLuong.setText(tblBang.getRowCount() + " kết quả");
+        long giu =
+                switch (kieuNghiepVu) {
+                    case APPOINTMENTS -> banHang.layQuyTrinh().layLichHen();
+                    case SPA_TICKETS, SPA_INTAKE, SPA_SERVICES, SPA_PROGRESS, SPA_CLOSE ->
+                            banHang.layQuyTrinh().layPhieuSpa();
+                    case HOTEL_STAY, HOTEL_BOOKING, HOTEL_JOURNAL, HOTEL_CHECKOUT ->
+                            banHang.layQuyTrinh().layHopDongHotel();
+                    default -> 0;
+                };
+        if (daChon != null) giu = daChon;
+        for (int dong = 0; giu > 0 && dong < moHinh.getRowCount(); dong++)
+            if (((Number) moHinh.getValueAt(dong, 0)).longValue() == giu) {
+                int hienThi = tblBang.convertRowIndexToView(dong);
+                if (hienThi >= 0) tblBang.setRowSelectionInterval(hienThi, hienThi);
+                break;
+            }
+        capNhatThaoTac();
     }
 
     /**
@@ -191,7 +247,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
      * @return kết quả lấy nội dung trợ giúp
      */
     protected String layNoiDungTroGiup() {
-        return "Chọn dòng trước khi xử lý. Các thay đổi được lưu vào SQL Server; nút Tải lại lấy dữ"
+        return "Chọn dòng trước khi xử lý. Các thay đổi được lưu vào SQL Server; nút Làm mới lấy dữ"
                 + " liệu mới nhất.";
     }
 }
