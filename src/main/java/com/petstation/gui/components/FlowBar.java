@@ -3,13 +3,17 @@ package com.petstation.gui.components;
 import com.petstation.gui.navigation.ScreenFlows;
 import com.petstation.gui.navigation.ScreenId;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-/** Thanh quy trình: hiển thị bước hiện tại của luồng nhiều bước (bán hàng, Spa, Hotel); bấm để chuyển bước. */
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
+/**
+ * Thanh quy trình: hiển thị bước hiện tại của luồng nhiều bước (bán hàng, Spa, Hotel); bấm để
+ * chuyển bước.
+ */
 public final class FlowBar extends JPanel {
     private final JLabel name = new JLabel();
     private final StepIndicator indicator = new StepIndicator(java.util.List.of(""));
@@ -25,8 +29,10 @@ public final class FlowBar extends JPanel {
         super(new BorderLayout(12, 0));
         this.navigator = navigator;
         setBackground(Color.WHITE);
-        setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, AppColors.BORDER), new EmptyBorder(0, 14, 0, 14)));
+        setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, AppColors.BORDER),
+                        new EmptyBorder(0, 14, 0, 14)));
         name.setFont(AppColors.font(Font.BOLD, 12));
         name.setForeground(AppColors.BROWN);
         name.setPreferredSize(new Dimension(110, 40));
@@ -37,14 +43,16 @@ public final class FlowBar extends JPanel {
         nav.add(prev);
         nav.add(next);
         add(nav, BorderLayout.EAST);
-        prev.addActionListener(e -> {
-            if (flow != null) flow.previous(currentScreen).ifPresent(navigator);
-        });
-        next.addActionListener(e -> {
-            if (flow == null) return;
-            if (flow.isLast(currentScreen)) navigator.accept(ScreenId.PAYMENT);
-            else flow.next(currentScreen).ifPresent(navigator);
-        });
+        prev.addActionListener(
+                e -> {
+                    if (flow != null) flow.previous(currentScreen).ifPresent(navigator);
+                });
+        next.addActionListener(
+                e -> {
+                    if (flow == null) return;
+                    if (flow.isLast(currentScreen)) navigator.accept(ScreenId.PAYMENT);
+                    else flow.next(currentScreen).ifPresent(navigator);
+                });
         setPreferredSize(new Dimension(0, 44));
         setVisible(false);
     }

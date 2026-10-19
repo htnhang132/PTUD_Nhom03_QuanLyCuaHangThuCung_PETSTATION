@@ -1,13 +1,12 @@
 package com.petstation.gui.components;
 
 public record ToolbarCapabilities(
-    boolean canCreate,
-    boolean canSave,
-    boolean canFind,
-    boolean canPrint,
-    boolean canUndo,
-    boolean canHelp
-) {
+        boolean canCreate,
+        boolean canSave,
+        boolean canFind,
+        boolean canPrint,
+        boolean canUndo,
+        boolean canHelp) {
     public static ToolbarCapabilities none() {
         return new ToolbarCapabilities(false, false, false, false, false, false);
     }

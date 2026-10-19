@@ -110,7 +110,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 
 - Mọi màn Danh mục đọc ghi CSDL; đóng mở lại ứng dụng dữ liệu còn.
 - Bộ test kiểm tra dữ liệu (SĐT, email, CCCD, ngày) vẫn đạt.
-- Nhật ký ghi từ CSDL, không còn AuditTrail trong bộ nhớ.
+- Nhật ký do AuditService ghi và đọc từ CSDL.
 
 ## Giai đoạn 3: Bán hàng POS, thanh toán, đổi trả, tích điểm
 
@@ -271,8 +271,8 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 | Rủi ro | Cách xử lý |
 |---|---|
 | Chỉ còn 17 ngày, nhiều việc song song. | Mỗi người tối đa 3 nhánh; ưu tiên luồng POS, kho, Spa, Hotel trước; chức năng ngoại tuyến cắt giảm nếu trễ mốc 19/10. |
-| Xung đột khi gộp mã ở ScreenRegistry, EntityPanel, CatalogScreens. | Mỗi người chỉ sửa tệp của phân hệ mình; rebase vào develop mỗi ngày; PR nhỏ dưới 400 dòng; họp đứng 15 phút mỗi sáng. |
+| Xung đột khi gộp mã ở ScreenRegistry, EntityPanel và các panel danh mục. | Mỗi người chỉ sửa tệp của phân hệ mình; rebase vào develop mỗi ngày; PR nhỏ dưới 400 dòng; họp đứng 15 phút mỗi sáng. |
 | Chưa thống nhất quy định (điểm, số ca, thanh toán). | Chốt 8 quyết định ở Giai đoạn 0 và ghi vào docs/DECISIONS.md; không bắt đầu code phần liên quan khi chưa chốt. |
-| Không có SQL Server hoặc thiết bị phần cứng. | Dùng SQL Server Express hoặc Docker; ứng dụng chạy chế độ InMemory khi chưa có CSDL; thiết bị quét/in được giả lập bằng bàn phím và PDF. |
+| Không có SQL Server hoặc thiết bị phần cứng. | Dùng SQL Server Express hoặc Docker và database kiểm thử riêng; thiết bị quét/in được kiểm tra bằng bàn phím và PDF. |
 | UAT tại cửa hàng không sắp xếp được. | Chuẩn bị kịch bản UAT và video demo để nhóm tự đóng vai; xin lịch sớm từ Giai đoạn 5. |
 | Tài liệu báo cáo lệch với sản phẩm cuối. | Mỗi PR chức năng kèm cập nhật tài liệu liên quan (docs:), báo cáo cuối chỉ lấy số liệu từ kết quả test thật. |

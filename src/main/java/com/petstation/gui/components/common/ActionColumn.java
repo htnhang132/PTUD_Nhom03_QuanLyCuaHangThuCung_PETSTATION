@@ -1,44 +1,42 @@
 package com.petstation.gui.components.common;
 
-import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.function.Consumer;
 
+import javax.swing.*;
+import javax.swing.table.*;
+
 /**
- * Renderer và Editor cho cột "Hành động"trong JTable
- * Hiển thị các nút Edit, Delete, hoặc custom actions
+ * Renderer và Editor cho cột "Hành động"trong JTable Hiển thị các nút Edit, Delete, hoặc custom
+ * actions
  */
 public class ActionColumn {
 
-    /**
-     * Thêm cột hành động vào table với các nút Edit và Delete
-     */
-    public static void addEditDeleteColumn(JTable table, String columnName, 
-                                          Consumer<Integer> onEdit, 
-                                          Consumer<Integer> onDelete) {
-        addActionColumn(table, columnName, new ActionButton[]{
-            new ActionButton("", "Sửa", onEdit),
-            new ActionButton("", "Xóa", onDelete)
-        });
+    /** Thêm cột hành động vào table với các nút Edit và Delete */
+    public static void addEditDeleteColumn(
+            JTable table, String columnName, Consumer<Integer> onEdit, Consumer<Integer> onDelete) {
+        addActionColumn(
+                table,
+                columnName,
+                new ActionButton[] {
+                    new ActionButton("", "Sửa", onEdit), new ActionButton("", "Xóa", onDelete)
+                });
     }
 
-    /**
-     * Thêm cột hành động với các nút tùy chỉnh
-     */
+    /** Thêm cột hành động với các nút tùy chỉnh */
     public static void addActionColumn(JTable table, String columnName, ActionButton[] buttons) {
         // Tìm hoặc thêm cột
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         int columnIndex = -1;
-        
+
         for (int i = 0; i < model.getColumnCount(); i++) {
             if (model.getColumnName(i).equals(columnName)) {
                 columnIndex = i;
                 break;
             }
         }
-        
+
         if (columnIndex == -1) {
             model.addColumn(columnName);
             columnIndex = model.getColumnCount() - 1;
@@ -54,9 +52,7 @@ public class ActionColumn {
         column.setPreferredWidth(width);
     }
 
-    /**
-     * Class định nghĩa một action button
-     */
+    /** Class định nghĩa một action button */
     public static class ActionButton {
         String icon;
         String tooltip;
@@ -80,7 +76,10 @@ public class ActionColumn {
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setFont(com.petstation.gui.components.AppColors.font(Font.BOLD, 12));
         boolean danger = spec.tooltip != null && spec.tooltip.contains("Xóa");
-        button.setForeground(danger ? com.petstation.gui.components.AppColors.DANGER_TEXT : com.petstation.gui.components.AppColors.BLUE);
+        button.setForeground(
+                danger
+                        ? com.petstation.gui.components.AppColors.DANGER_TEXT
+                        : com.petstation.gui.components.AppColors.BLUE);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         FontMetrics fm = button.getFontMetrics(button.getFont());
         button.setPreferredSize(new Dimension(fm.stringWidth(spec.icon) + 14, 28));
@@ -102,14 +101,21 @@ public class ActionColumn {
         JButton probe = new JButton();
         int total = 16;
         for (ActionButton b : buttons) {
-            total += probe.getFontMetrics(com.petstation.gui.components.AppColors.font(Font.BOLD, 12)).stringWidth(b.icon) + 16;
+            total +=
+                    probe.getFontMetrics(
+                                            com.petstation.gui.components.AppColors.font(
+                                                    Font.BOLD, 12))
+                                    .stringWidth(b.icon)
+                            + 16;
         }
         return total;
     }
 
     private static Color rowBackground(JTable table, boolean selected, int row) {
         if (selected) return table.getSelectionBackground();
-        return row % 2 == 0 ? table.getBackground() : com.petstation.gui.components.AppColors.ROW_ALT;
+        return row % 2 == 0
+                ? table.getBackground()
+                : com.petstation.gui.components.AppColors.ROW_ALT;
     }
 
     /** Renderer hiển thị các nút trong cell. */
@@ -121,9 +127,13 @@ public class ActionColumn {
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                      boolean isSelected, boolean hasFocus,
-                                                      int row, int column) {
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
             panel.setBackground(rowBackground(table, isSelected, row));
             return panel;
         }
@@ -139,18 +149,21 @@ public class ActionColumn {
             panel = actionPanel(buttons, created);
             for (int i = 0; i < created.size(); i++) {
                 ActionButton spec = buttons[i];
-                created.get(i).addActionListener(e -> {
-                    fireEditingStopped();
-                    if (spec.action != null) {
-                        SwingUtilities.invokeLater(() -> spec.action.accept(currentRow));
-                    }
-                });
+                created.get(i)
+                        .addActionListener(
+                                e -> {
+                                    fireEditingStopped();
+                                    if (spec.action != null) {
+                                        SwingUtilities.invokeLater(
+                                                () -> spec.action.accept(currentRow));
+                                    }
+                                });
             }
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                    boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(
+                JTable table, Object value, boolean isSelected, int row, int column) {
             this.currentRow = row;
             panel.setBackground(rowBackground(table, true, row));
             return panel;
@@ -162,80 +175,88 @@ public class ActionColumn {
         }
     }
 
-    /**
-     * Thêm checkbox column cho bulk actions
-     */
+    /** Thêm checkbox column cho bulk actions */
     public static void addCheckboxColumn(JTable table, String columnName) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        
+
         // Thêm cột checkbox ở đầu
         model.addColumn(columnName);
-        
+
         // Di chuyển cột mới về vị trí đầu tiên
         table.moveColumn(model.getColumnCount() - 1, 0);
-        
+
         // Set renderer và editor cho checkbox
         TableColumn column = table.getColumnModel().getColumn(0);
-        column.setCellRenderer(new DefaultTableCellRenderer() {
-            JCheckBox checkBox = new JCheckBox();
-            {
-                checkBox.setHorizontalAlignment(JLabel.CENTER);
-            }
-            
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                                          boolean isSelected, boolean hasFocus,
-                                                          int row, int column) {
-                checkBox.setSelected(value != null && (Boolean) value);
-                if (isSelected) {
-                    checkBox.setBackground(table.getSelectionBackground());
-                } else {
-                    checkBox.setBackground(table.getBackground());
-                }
-                return checkBox;
-            }
-        });
-        
+        column.setCellRenderer(
+                new DefaultTableCellRenderer() {
+                    JCheckBox checkBox = new JCheckBox();
+
+                    {
+                        checkBox.setHorizontalAlignment(JLabel.CENTER);
+                    }
+
+                    @Override
+                    public Component getTableCellRendererComponent(
+                            JTable table,
+                            Object value,
+                            boolean isSelected,
+                            boolean hasFocus,
+                            int row,
+                            int column) {
+                        checkBox.setSelected(value != null && (Boolean) value);
+                        if (isSelected) {
+                            checkBox.setBackground(table.getSelectionBackground());
+                        } else {
+                            checkBox.setBackground(table.getBackground());
+                        }
+                        return checkBox;
+                    }
+                });
+
         column.setCellEditor(new DefaultCellEditor(new JCheckBox()));
         column.setMaxWidth(50);
         column.setMinWidth(50);
-        
+
         // Thêm checkbox vào header để select all
         JCheckBox headerCheckbox = new JCheckBox();
-        headerCheckbox.addActionListener(e -> {
-            boolean selected = headerCheckbox.isSelected();
-            for (int i = 0; i < model.getRowCount(); i++) {
-                model.setValueAt(selected, i, 0);
-            }
-        });
-        
-        TableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                                          boolean isSelected, boolean hasFocus,
-                                                          int row, int column) {
-                headerCheckbox.setHorizontalAlignment(JLabel.CENTER);
-                return headerCheckbox;
-            }
-        };
-        
+        headerCheckbox.addActionListener(
+                e -> {
+                    boolean selected = headerCheckbox.isSelected();
+                    for (int i = 0; i < model.getRowCount(); i++) {
+                        model.setValueAt(selected, i, 0);
+                    }
+                });
+
+        TableCellRenderer headerRenderer =
+                new DefaultTableCellRenderer() {
+                    @Override
+                    public Component getTableCellRendererComponent(
+                            JTable table,
+                            Object value,
+                            boolean isSelected,
+                            boolean hasFocus,
+                            int row,
+                            int column) {
+                        headerCheckbox.setHorizontalAlignment(JLabel.CENTER);
+                        return headerCheckbox;
+                    }
+                };
+
         column.setHeaderRenderer(headerRenderer);
     }
 
-    /**
-     * Lấy danh sách các row đã được check
-     */
+    /** Lấy danh sách các row đã được check */
     public static java.util.List<Integer> getCheckedRows(JTable table, int checkboxColumnIndex) {
         java.util.List<Integer> checkedRows = new java.util.ArrayList<>();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        
+
         for (int i = 0; i < model.getRowCount(); i++) {
             Object value = model.getValueAt(i, checkboxColumnIndex);
             if (value != null && (Boolean) value) {
                 checkedRows.add(i);
             }
         }
-        
+
         return checkedRows;
     }
 }

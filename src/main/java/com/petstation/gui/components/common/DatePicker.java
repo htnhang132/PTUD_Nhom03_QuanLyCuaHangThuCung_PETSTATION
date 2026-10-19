@@ -1,17 +1,17 @@
 package com.petstation.gui.components.common;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+import javax.swing.*;
+
 /**
- * Custom DatePicker component with calendar popup
- * Thay thế cho việc nhập tay ngày tháng vào JTextField
+ * Custom DatePicker component with calendar popup Thay thế cho việc nhập tay ngày tháng vào
+ * JTextField
  */
 public class DatePicker extends JPanel {
     private JTextField textField;
@@ -56,15 +56,15 @@ public class DatePicker extends JPanel {
         if (calendarDialog == null) {
             createCalendarDialog();
         }
-        
+
         // Reset về tháng hiện tại hoặc tháng đã chọn
         if (selectedDate != null) {
             currentMonth = selectedDate.getMonthValue();
             currentYear = selectedDate.getYear();
         }
-        
+
         updateCalendar();
-        
+
         // Hiển thị dialog ở vị trí gần component
         Point location = textField.getLocationOnScreen();
         calendarDialog.setLocation(location.x, location.y + textField.getHeight());
@@ -89,24 +89,26 @@ public class DatePicker extends JPanel {
         headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         JButton prevButton = new JButton("◀");
-        prevButton.addActionListener(e -> {
-            currentMonth--;
-            if (currentMonth < 1) {
-                currentMonth = 12;
-                currentYear--;
-            }
-            updateCalendar();
-        });
+        prevButton.addActionListener(
+                e -> {
+                    currentMonth--;
+                    if (currentMonth < 1) {
+                        currentMonth = 12;
+                        currentYear--;
+                    }
+                    updateCalendar();
+                });
 
         JButton nextButton = new JButton("▶");
-        nextButton.addActionListener(e -> {
-            currentMonth++;
-            if (currentMonth > 12) {
-                currentMonth = 1;
-                currentYear++;
-            }
-            updateCalendar();
-        });
+        nextButton.addActionListener(
+                e -> {
+                    currentMonth++;
+                    if (currentMonth > 12) {
+                        currentMonth = 1;
+                        currentYear++;
+                    }
+                    updateCalendar();
+                });
 
         monthYearLabel = new JLabel("", SwingConstants.CENTER);
         monthYearLabel.setFont(monthYearLabel.getFont().deriveFont(Font.BOLD, 14f));
@@ -131,17 +133,19 @@ public class DatePicker extends JPanel {
         // Nút hôm nay và hủy
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton todayButton = new JButton("Hôm nay");
-        todayButton.addActionListener(e -> {
-            LocalDate today = LocalDate.now();
-            selectDate(today);
-        });
+        todayButton.addActionListener(
+                e -> {
+                    LocalDate today = LocalDate.now();
+                    selectDate(today);
+                });
 
         JButton clearButton = new JButton("Xóa");
-        clearButton.addActionListener(e -> {
-            selectedDate = null;
-            textField.setText("");
-            calendarDialog.setVisible(false);
-        });
+        clearButton.addActionListener(
+                e -> {
+                    selectedDate = null;
+                    textField.setText("");
+                    calendarDialog.setVisible(false);
+                });
 
         footerPanel.add(todayButton);
         footerPanel.add(clearButton);
@@ -203,13 +207,14 @@ public class DatePicker extends JPanel {
         this.selectedDate = date;
         textField.setText(formatDate(date));
         calendarDialog.setVisible(false);
-        
+
         // Fire property change để notify listeners
         firePropertyChange("date", null, date);
     }
 
     private String formatDate(LocalDate date) {
-        return String.format("%02d/%02d/%d", date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+        return String.format(
+                "%02d/%02d/%d", date.getDayOfMonth(), date.getMonthValue(), date.getYear());
     }
 
     // Getters and Setters

@@ -1,15 +1,44 @@
 package com.petstation.gui.components;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
 
+import javax.swing.*;
+
 public final class LineIcon implements Icon {
     public enum Type {
-        HOME, NEW, SAVE, SEARCH, PRINT, UNDO, HELP,
-        CART, USERS, PAW, BED, BOX, TRUCK, CHART, CALENDAR, CHECK, LOCK, CASH, TAG,
-        RETURN, FILE, DROPLET, GEAR, CLOCK, BACK, BELL, SHIELD, GIFT, TRASH, CLIPBOARD, KEY
+        HOME,
+        NEW,
+        SAVE,
+        SEARCH,
+        PRINT,
+        UNDO,
+        HELP,
+        CART,
+        USERS,
+        PAW,
+        BED,
+        BOX,
+        TRUCK,
+        CHART,
+        CALENDAR,
+        CHECK,
+        LOCK,
+        CASH,
+        TAG,
+        RETURN,
+        FILE,
+        DROPLET,
+        GEAR,
+        CLOCK,
+        BACK,
+        BELL,
+        SHIELD,
+        GIFT,
+        TRASH,
+        CLIPBOARD,
+        KEY
     }
 
     private final Type type;
@@ -22,8 +51,15 @@ public final class LineIcon implements Icon {
         this.color = color;
     }
 
-    @Override public int getIconWidth() { return size; }
-    @Override public int getIconHeight() { return size; }
+    @Override
+    public int getIconWidth() {
+        return size;
+    }
+
+    @Override
+    public int getIconHeight() {
+        return size;
+    }
 
     @Override
     public void paintIcon(Component component, Graphics graphics, int x, int y) {
@@ -37,7 +73,9 @@ public final class LineIcon implements Icon {
         if (type.ordinal() > Type.HELP.ordinal()) {
             double scale = size / 24.0;
             g.scale(scale, scale);
-            g.setStroke(new BasicStroke((float) (1.8 / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.setStroke(
+                    new BasicStroke(
+                            (float) (1.8 / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             drawGlyph(g);
             g.dispose();
             return;
@@ -195,7 +233,12 @@ public final class LineIcon implements Icon {
                 oval(g, 12, 12, 7);
                 for (int i = 0; i < 8; i++) {
                     double a = Math.toRadians(i * 45);
-                    line(g, 12 + 7 * Math.cos(a), 12 + 7 * Math.sin(a), 12 + 9.5 * Math.cos(a), 12 + 9.5 * Math.sin(a));
+                    line(
+                            g,
+                            12 + 7 * Math.cos(a),
+                            12 + 7 * Math.sin(a),
+                            12 + 9.5 * Math.cos(a),
+                            12 + 9.5 * Math.sin(a));
                 }
             }
             case CLOCK -> {
@@ -251,7 +294,7 @@ public final class LineIcon implements Icon {
                 line(g, 11, 12, 20, 3);
                 line(g, 17, 6, 20, 9);
             }
-            default -> { }
+            default -> {}
         }
     }
 }

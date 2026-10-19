@@ -43,6 +43,9 @@ dist/
 nbdist/
 .nb-gradle/
 
+# Local database credentials (copy db.properties.example for each machine)
+src/main/resources/db.properties
+
 # ==================================
 # System & OS Files
 # ==================================

@@ -1,7 +1,8 @@
 package com.petstation.gui.components;
 
-import javax.swing.*;
 import java.awt.*;
+
+import javax.swing.*;
 
 public class RoundedPanel extends JPanel {
     private int radius;
@@ -30,7 +31,13 @@ public class RoundedPanel extends JPanel {
         }
 
         g2.setColor(background);
-        g2.fillRoundRect(0, 0, getWidth() - (hasShadow ? 2 : 0), getHeight() - (hasShadow ? 2 : 0), radius, radius);
+        g2.fillRoundRect(
+                0,
+                0,
+                getWidth() - (hasShadow ? 2 : 0),
+                getHeight() - (hasShadow ? 2 : 0),
+                radius,
+                radius);
         g2.dispose();
         super.paintComponent(g);
     }

@@ -1,5 +1,11 @@
 package com.petstation.gui.components.common;
 
+import com.petstation.gui.components.AppColors;
+import com.petstation.gui.components.Dialogs;
+import com.petstation.model.SaleContext;
+import com.petstation.service.CatalogService;
+import com.petstation.util.Money;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -20,15 +26,9 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 
-import com.petstation.gui.components.AppColors;
-import com.petstation.gui.components.Dialogs;
-import com.petstation.gui.components.Money;
-import com.petstation.gui.data.DemoStore;
-import com.petstation.gui.navigation.SaleContext;
-
 /**
- * Chọn khách cho hóa đơn bằng MỘT ô tìm (SĐT, mã hoặc tên). Chọn xong hiện hạng, điểm và ô "Dùng điểm".
- * Không chọn thì là khách lẻ.
+ * Chọn khách cho hóa đơn bằng MỘT ô tìm (SĐT, mã hoặc tên). Chọn xong hiện hạng, điểm và ô "Dùng
+ * điểm". Không chọn thì là khách lẻ.
  */
 public final class CustomerPicker extends JPanel {
     private final SaleContext sale;
@@ -47,7 +47,8 @@ public final class CustomerPicker extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel label = new JLabel("Khách hàng (SĐT, mã hoặc tên — Enter để tìm; bỏ trống = khách lẻ)");
+        JLabel label =
+                new JLabel("Khách hàng (SĐT, mã hoặc tên — Enter để tìm; bỏ trống = khách lẻ)");
         label.setFont(AppColors.font(Font.PLAIN, 11));
         label.setForeground(AppColors.TEXT_GRAY);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -69,7 +70,10 @@ public final class CustomerPicker extends JPanel {
 
         chip.setLayout(new BorderLayout(8, 0));
         chip.setBackground(new Color(0xEA, 0xF3, 0xFF));
-        chip.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0xBF, 0xD6, 0xF5)), new EmptyBorder(6, 10, 6, 10)));
+        chip.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(0xBF, 0xD6, 0xF5)),
+                        new EmptyBorder(6, 10, 6, 10)));
         chip.setAlignmentX(Component.LEFT_ALIGNMENT);
         chip.setMaximumSize(new Dimension(Integer.MAX_VALUE, 66));
         chipText.setFont(AppColors.font(Font.BOLD, 12));
@@ -81,12 +85,13 @@ public final class CustomerPicker extends JPanel {
         JLabel useLabel = new JLabel("Dùng điểm:");
         useLabel.setFont(AppColors.font(Font.PLAIN, 12));
         points.setPreferredSize(new Dimension(80, 26));
-        points.addChangeListener(e -> {
-            if (updating) return;
-            sale.setPointsUsed(((Number) points.getValue()).longValue());
-            refreshPointsHint();
-            onChange.run();
-        });
+        points.addChangeListener(
+                e -> {
+                    if (updating) return;
+                    sale.setPointsUsed(((Number) points.getValue()).longValue());
+                    refreshPointsHint();
+                    onChange.run();
+                });
         pointsHint.setFont(AppColors.font(Font.PLAIN, 11));
         pointsHint.setForeground(AppColors.TEXT_GRAY);
         usePoints.add(useLabel);
@@ -106,27 +111,53 @@ public final class CustomerPicker extends JPanel {
 
     private void search() {
         String q = input.getText().trim();
-        if (q.isEmpty()) { clear(); return; }
+        if (q.isEmpty()) {
+            clear();
+            return;
+        }
         String digits = q.replaceAll("[\\s.]", "");
         List<Object[]> hits = new ArrayList<>();
-        for (Object[] r : DemoStore.customers()) {
+        for (Object[] r : CatalogService.customers()) {
             if ("Ngừng hoạt động".equals(r[8])) continue;
-            if (String.valueOf(r[2]).equals(digits) || String.valueOf(r[0]).equalsIgnoreCase(q)) { hits.clear(); hits.add(r); break; }
+            if (String.valueOf(r[2]).equals(digits) || String.valueOf(r[0]).equalsIgnoreCase(q)) {
+                hits.clear();
+                hits.add(r);
+                break;
+            }
             if (String.valueOf(r[1]).toLowerCase().contains(q.toLowerCase())) hits.add(r);
         }
         if (hits.isEmpty()) {
-            Dialogs.info(this, "Không tìm thấy khách \"" + q + "\".\nThêm khách mới tại Danh mục ▸ Khách hàng, hoặc để trống để bán cho khách lẻ.");
+            Dialogs.info(
+                    this,
+                    "Không tìm thấy khách \""
+                            + q
+                            + "\".\n"
+                            + "Thêm khách mới tại Danh mục ▸ Khách hàng, hoặc để trống để bán cho"
+                            + " khách lẻ.");
             return;
         }
         Object[] chosen = hits.get(0);
         if (hits.size() > 1) {
-            String[] opts = hits.stream().map(r -> r[0] + " - " + r[1] + " (" + r[2] + ")").toArray(String[]::new);
-            Object pick = JOptionPane.showInputDialog(this, "Có nhiều khách phù hợp, chọn một:", "Chọn khách hàng",
-                JOptionPane.QUESTION_MESSAGE, null, opts, opts[0]);
+            String[] opts =
+                    hits.stream()
+                            .map(r -> r[0] + " - " + r[1] + " (" + r[2] + ")")
+                            .toArray(String[]::new);
+            Object pick =
+                    JOptionPane.showInputDialog(
+                            this,
+                            "Có nhiều khách phù hợp, chọn một:",
+                            "Chọn khách hàng",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opts,
+                            opts[0]);
             if (pick == null) return;
             for (int i = 0; i < opts.length; i++) if (opts[i].equals(pick)) chosen = hits.get(i);
         }
-        sale.setCustomer(String.valueOf(chosen[0]), String.valueOf(chosen[1]), Money.parse(String.valueOf(chosen[7])));
+        sale.setCustomer(
+                String.valueOf(chosen[0]),
+                String.valueOf(chosen[1]),
+                Money.parse(String.valueOf(chosen[7])));
         input.setText("");
         sync();
         onChange.run();
@@ -145,12 +176,31 @@ public final class CustomerPicker extends JPanel {
         chip.setVisible(has);
         if (has) {
             String tier = "";
-            for (Object[] r : DemoStore.customers()) if (r[0].equals(sale.customerCode())) tier = String.valueOf(r[6]);
-            chipText.setText(sale.customerName() + "  ·  Hạng " + tier + "  ·  " + sale.customerPoints() + " điểm");
+            for (Object[] r : CatalogService.customers())
+                if (r[0].equals(sale.customerCode())) tier = String.valueOf(r[6]);
+            chipText.setText(
+                    sale.customerName()
+                            + "  ·  Hạng "
+                            + tier
+                            + "  ·  "
+                            + sale.customerPoints()
+                            + " điểm");
             updating = true;
-            long max = Math.max(0, Math.min(sale.customerPoints(),
-                (sale.subtotal() - sale.promotionDiscount() - sale.voucherAmount()) / Math.max(1, com.petstation.gui.navigation.AppSettings.vndPerRedeemedPoint())));
-            points.setModel(new SpinnerNumberModel((int) Math.min(sale.pointsUsed(), max), 0, (int) max, 1));
+            long max =
+                    Math.max(
+                            0,
+                            Math.min(
+                                    sale.customerPoints(),
+                                    (sale.subtotal()
+                                                    - sale.promotionDiscount()
+                                                    - sale.voucherAmount())
+                                            / Math.max(
+                                                    1,
+                                                    com.petstation.service.SettingsService
+                                                            .vndPerRedeemedPoint())));
+            points.setModel(
+                    new SpinnerNumberModel(
+                            (int) Math.min(sale.pointsUsed(), max), 0, (int) max, 1));
             updating = false;
             refreshPointsHint();
         }
@@ -159,7 +209,11 @@ public final class CustomerPicker extends JPanel {
     }
 
     private void refreshPointsHint() {
-        pointsHint.setText("= " + Money.format(sale.pointsValue()) + " (1 điểm = "
-            + Money.format(com.petstation.gui.navigation.AppSettings.vndPerRedeemedPoint()) + ")");
+        pointsHint.setText(
+                "= "
+                        + Money.format(sale.pointsValue())
+                        + " (1 điểm = "
+                        + Money.format(com.petstation.service.SettingsService.vndPerRedeemedPoint())
+                        + ")");
     }
 }

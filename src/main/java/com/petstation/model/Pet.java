@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Pet (thu_cung table)
- */
+/** Domain model for Pet (thu_cung table) */
 public class Pet {
     private Long id;
     private Long customerId;
@@ -179,13 +177,23 @@ public class Pet {
 
     @Override
     public String toString() {
-        return "Pet{" +
-                "id=" + id +
-                ", petCode='" + petCode + '\'' +
-                ", name='" + name + '\'' +
-                ", species='" + species + '\'' +
-                ", breed='" + breed + '\'' +
-                ", weight=" + weight +
-                '}';
+        return "Pet{"
+                + "id="
+                + id
+                + ", petCode='"
+                + petCode
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + ", species='"
+                + species
+                + '\''
+                + ", breed='"
+                + breed
+                + '\''
+                + ", weight="
+                + weight
+                + '}';
     }
 }

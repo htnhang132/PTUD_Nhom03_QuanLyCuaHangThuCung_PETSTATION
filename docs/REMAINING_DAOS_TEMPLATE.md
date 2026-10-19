@@ -19,8 +19,8 @@
 ```java
 package com.petstation.dao.impl;
 
-import com.petstation.config.DataAccessException;
-import com.petstation.dao.interfaces.XxxDao;
+import com.petstation.dao.DataAccessException;
+import com.petstation.dao.XxxDao;
 import com.petstation.model.Xxx;
 
 import java.sql.*;

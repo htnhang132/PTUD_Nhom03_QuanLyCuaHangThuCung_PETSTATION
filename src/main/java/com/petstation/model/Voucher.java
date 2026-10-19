@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Voucher (voucher table)
- */
+/** Domain model for Voucher (voucher table) */
 public class Voucher {
     private Long id;
     private String voucherCode;
@@ -32,8 +30,12 @@ public class Voucher {
         this.applySpaOnly = false;
     }
 
-    public Voucher(Long id, String voucherCode, String voucherType, 
-                   BigDecimal discountValue, String discountType) {
+    public Voucher(
+            Long id,
+            String voucherCode,
+            String voucherType,
+            BigDecimal discountValue,
+            String discountType) {
         this();
         this.id = id;
         this.voucherCode = voucherCode;
@@ -181,13 +183,22 @@ public class Voucher {
 
     @Override
     public String toString() {
-        return "Voucher{" +
-                "id=" + id +
-                ", voucherCode='" + voucherCode + '\'' +
-                ", voucherType='" + voucherType + '\'' +
-                ", discountValue=" + discountValue +
-                ", status='" + status + '\'' +
-                ", customerId=" + customerId +
-                '}';
+        return "Voucher{"
+                + "id="
+                + id
+                + ", voucherCode='"
+                + voucherCode
+                + '\''
+                + ", voucherType='"
+                + voucherType
+                + '\''
+                + ", discountValue="
+                + discountValue
+                + ", status='"
+                + status
+                + '\''
+                + ", customerId="
+                + customerId
+                + '}';
     }
 }

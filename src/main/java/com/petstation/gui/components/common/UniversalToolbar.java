@@ -1,12 +1,13 @@
 package com.petstation.gui.components.common;
 
 import com.petstation.gui.components.Dialogs;
-import javax.swing.*;
+
 import java.awt.*;
 
+import javax.swing.*;
+
 /**
- * Toolbar tối giản xuất hiện ở tất cả các panels
- * [ < Quay lại ] [  Màn hình chính ] [ ? Trợ giúp ]
+ * Toolbar tối giản xuất hiện ở tất cả các panels [ < Quay lại ] [ Màn hình chính ] [ ? Trợ giúp ]
  */
 public class UniversalToolbar extends JPanel {
     private JButton backButton;
@@ -57,36 +58,28 @@ public class UniversalToolbar extends JPanel {
         return helpButton;
     }
 
-    /**
-     * Set action cho nút Quay lại
-     */
+    /** Set action cho nút Quay lại */
     public void setBackAction(Runnable action) {
         if (backButton != null) {
             backButton.addActionListener(e -> action.run());
         }
     }
 
-    /**
-     * Set action cho nút Màn hình chính
-     */
+    /** Set action cho nút Màn hình chính */
     public void setHomeAction(Runnable action) {
         if (homeButton != null) {
             homeButton.addActionListener(e -> action.run());
         }
     }
 
-    /**
-     * Set action cho nút Trợ giúp
-     */
+    /** Set action cho nút Trợ giúp */
     public void setHelpAction(Runnable action) {
         if (helpButton != null) {
             helpButton.addActionListener(e -> action.run());
         }
     }
 
-    /**
-     * Tạo toolbar với navigation context (biết nơi quay về)
-     */
+    /** Tạo toolbar với navigation context (biết nơi quay về) */
     public static UniversalToolbar createWithNavigation(Runnable onBack, Runnable onHome) {
         UniversalToolbar toolbar = new UniversalToolbar();
         if (onBack != null) {
@@ -94,32 +87,32 @@ public class UniversalToolbar extends JPanel {
         } else {
             toolbar.getBackButton().setEnabled(false);
         }
-        
+
         if (onHome != null) {
             toolbar.setHomeAction(onHome);
         }
-        
+
         // Default help action - hiển thị hướng dẫn chung
-        toolbar.setHelpAction(() -> {
-            Dialogs.showMessageDialog(toolbar,
-                "Hướng dẫn sử dụng:\n\n"+
-                "• F2: Thêm mới\n"+
-                "• F3: Tìm kiếm\n"+
-                "• F4: Lưu\n"+
-                "• F8: Thanh toán (POS)\n"+
-                "• ESC: Hủy/Đóng\n"+
-                "• Ctrl+K: Tìm kiếm toàn cục\n\n"+
-                "Liên hệ hỗ trợ: support@petstation.com",
-                "Trợ giúp",
-                JOptionPane.INFORMATION_MESSAGE);
-        });
-        
+        toolbar.setHelpAction(
+                () -> {
+                    Dialogs.showMessageDialog(
+                            toolbar,
+                            "Hướng dẫn sử dụng:\n\n"
+                                    + "• F2: Thêm mới\n"
+                                    + "• F3: Tìm kiếm\n"
+                                    + "• F4: Lưu\n"
+                                    + "• F8: Thanh toán (POS)\n"
+                                    + "• ESC: Hủy/Đóng\n"
+                                    + "• Ctrl+K: Tìm kiếm toàn cục\n\n"
+                                    + "Liên hệ hỗ trợ: support@petstation.com",
+                            "Trợ giúp",
+                            JOptionPane.INFORMATION_MESSAGE);
+                });
+
         return toolbar;
     }
 
-    /**
-     * Disable nút Back khi không có màn hình trước
-     */
+    /** Disable nút Back khi không có màn hình trước */
     public void setBackEnabled(boolean enabled) {
         if (backButton != null) {
             backButton.setEnabled(enabled);

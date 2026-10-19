@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Hotel Booking (dat_phong_hotel table)
- */
+/** Domain model for Hotel Booking (dat_phong_hotel table) */
 public class HotelBooking {
     private Long id;
     private String bookingCode;
@@ -188,13 +186,21 @@ public class HotelBooking {
 
     @Override
     public String toString() {
-        return "HotelBooking{" +
-                "id=" + id +
-                ", bookingCode='" + bookingCode + '\'' +
-                ", petId=" + petId +
-                ", roomId=" + roomId +
-                ", status='" + status + '\'' +
-                ", totalAmount=" + totalAmount +
-                '}';
+        return "HotelBooking{"
+                + "id="
+                + id
+                + ", bookingCode='"
+                + bookingCode
+                + '\''
+                + ", petId="
+                + petId
+                + ", roomId="
+                + roomId
+                + ", status='"
+                + status
+                + '\''
+                + ", totalAmount="
+                + totalAmount
+                + '}';
     }
 }

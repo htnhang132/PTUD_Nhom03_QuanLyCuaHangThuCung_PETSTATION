@@ -18,7 +18,14 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 public final class DesktopToolBar extends JPanel {
-    public enum Action { NEW, SAVE, FIND, PRINT, UNDO, HELP }
+    public enum Action {
+        NEW,
+        SAVE,
+        FIND,
+        PRINT,
+        UNDO,
+        HELP
+    }
 
     private final Map<Action, JButton> buttons = new EnumMap<>(Action.class);
     private final Map<Action, String> tooltips = new EnumMap<>(Action.class);
@@ -46,9 +53,10 @@ public final class DesktopToolBar extends JPanel {
 
     public void setActivePanel(JPanel panel) {
         activePanel = panel instanceof ToolbarAware aware ? aware : null;
-        ToolbarCapabilities capabilities = activePanel == null
-            ? ToolbarCapabilities.none()
-            : activePanel.toolbarCapabilities();
+        ToolbarCapabilities capabilities =
+                activePanel == null
+                        ? ToolbarCapabilities.none()
+                        : activePanel.toolbarCapabilities();
         setEnabled(Action.NEW, capabilities.canCreate());
         setEnabled(Action.SAVE, capabilities.canSave());
         setEnabled(Action.FIND, capabilities.canFind());
@@ -82,30 +90,32 @@ public final class DesktopToolBar extends JPanel {
         JButton button = createButton(label, shortcut, iconType);
         button.addActionListener(event -> trigger(action));
         buttons.put(action, button);
-        tooltips.put(action, label + "("+ shortcut + ")");
+        tooltips.put(action, label + "(" + shortcut + ")");
         add(button);
     }
 
     private JButton createButton(String label, String shortcut, LineIcon.Type iconType) {
-        JButton button = new JButton(label, new LineIcon(iconType, 20, AppColors.BROWN)) {
-            @Override protected void paintComponent(Graphics graphics) {
-                Graphics2D g = (Graphics2D) graphics.create();
-                if (isEnabled() && getModel().isRollover()) {
-                    g.setColor(AppColors.RED_TINT);
-                    g.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-                }
-                if (isFocusOwner()) {
-                    g.setColor(AppColors.YELLOW);
-                    g.setStroke(new BasicStroke(2));
-                    g.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
-                }
-                g.dispose();
-                super.paintComponent(graphics);
-            }
-        };
+        JButton button =
+                new JButton(label, new LineIcon(iconType, 20, AppColors.BROWN)) {
+                    @Override
+                    protected void paintComponent(Graphics graphics) {
+                        Graphics2D g = (Graphics2D) graphics.create();
+                        if (isEnabled() && getModel().isRollover()) {
+                            g.setColor(AppColors.RED_TINT);
+                            g.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                        }
+                        if (isFocusOwner()) {
+                            g.setColor(AppColors.YELLOW);
+                            g.setStroke(new BasicStroke(2));
+                            g.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
+                        }
+                        g.dispose();
+                        super.paintComponent(graphics);
+                    }
+                };
         button.setFont(AppColors.font(Font.PLAIN, 12));
         button.setForeground(AppColors.TEXT_DARK);
-        button.setToolTipText(label + "("+ shortcut + ")");
+        button.setToolTipText(label + "(" + shortcut + ")");
         button.setBorder(new EmptyBorder(5, 8, 5, 8));
         button.setFocusPainted(false);
         button.setRolloverEnabled(true);
@@ -127,8 +137,9 @@ public final class DesktopToolBar extends JPanel {
         JButton button = buttons.get(action);
         if (button == null) return;
         button.setEnabled(enabled);
-        button.setToolTipText(enabled
-            ? tooltips.get(action)
-            : button.getText() + "– Chức năng chưa khả dụng trên màn hình này");
+        button.setToolTipText(
+                enabled
+                        ? tooltips.get(action)
+                        : button.getText() + "– Chức năng chưa khả dụng trên màn hình này");
     }
 }

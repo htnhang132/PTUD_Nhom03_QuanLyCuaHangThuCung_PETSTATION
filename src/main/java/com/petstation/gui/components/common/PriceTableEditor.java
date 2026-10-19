@@ -1,5 +1,8 @@
 package com.petstation.gui.components.common;
 
+import com.petstation.gui.components.AppColors;
+import com.petstation.util.Money;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -12,12 +15,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import com.petstation.gui.components.AppColors;
-import com.petstation.gui.components.Money;
-
-/** Bảng giá dịch vụ theo loài và khoảng cân nặng. Lưu dạng "Loài|Cân nặng|Giá;Loài|Cân nặng|Giá". */
+/**
+ * Bảng giá dịch vụ theo loài và khoảng cân nặng. Lưu dạng "Loài|Cân nặng|Giá;Loài|Cân nặng|Giá".
+ */
 public final class PriceTableEditor implements FieldEditor {
-    private final DefaultTableModel model = new DefaultTableModel(new String[]{"Loài", "Khoảng cân nặng", "Giá (₫)"}, 0);
+    private final DefaultTableModel model =
+            new DefaultTableModel(new String[] {"Loài", "Khoảng cân nặng", "Giá (₫)"}, 0);
     private final JTable table = new JTable(model);
     private final JPanel panel = new JPanel(new BorderLayout(0, 4));
     private final JButton add = new JButton("+ Thêm dòng");
@@ -29,12 +32,13 @@ public final class PriceTableEditor implements FieldEditor {
         JScrollPane sp = new JScrollPane(table);
         sp.setPreferredSize(new Dimension(300, 150));
         sp.setBorder(BorderFactory.createLineBorder(AppColors.BORDER));
-        add.addActionListener(e -> model.addRow(new Object[]{"Chó", "", ""}));
-        remove.addActionListener(e -> {
-            if (table.isEditing()) table.getCellEditor().stopCellEditing();
-            int r = table.getSelectedRow();
-            if (r >= 0) model.removeRow(table.convertRowIndexToModel(r));
-        });
+        add.addActionListener(e -> model.addRow(new Object[] {"Chó", "", ""}));
+        remove.addActionListener(
+                e -> {
+                    if (table.isEditing()) table.getCellEditor().stopCellEditing();
+                    int r = table.getSelectedRow();
+                    if (r >= 0) model.removeRow(table.convertRowIndexToModel(r));
+                });
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         bar.setOpaque(false);
         bar.add(add);
@@ -44,9 +48,13 @@ public final class PriceTableEditor implements FieldEditor {
         panel.add(bar, BorderLayout.SOUTH);
     }
 
-    @Override public JComponent component() { return panel; }
+    @Override
+    public JComponent component() {
+        return panel;
+    }
 
-    @Override public String get() {
+    @Override
+    public String get() {
         if (table.isEditing()) table.getCellEditor().stopCellEditing();
         StringBuilder sb = new StringBuilder();
         for (int r = 0; r < model.getRowCount(); r++) {
@@ -60,16 +68,22 @@ public final class PriceTableEditor implements FieldEditor {
         return sb.toString();
     }
 
-    @Override public void set(String value) {
+    @Override
+    public void set(String value) {
         model.setRowCount(0);
         if (value == null || value.isBlank()) return;
         for (String part : value.split(";")) {
             String[] f = part.split("\\|", -1);
-            if (f.length == 3) model.addRow(new Object[]{f[0], f[1], f[2].isEmpty() ? "" : Money.format(Money.parse(f[2]))});
+            if (f.length == 3)
+                model.addRow(
+                        new Object[] {
+                            f[0], f[1], f[2].isEmpty() ? "" : Money.format(Money.parse(f[2]))
+                        });
         }
     }
 
-    @Override public void setEnabled(boolean enabled) {
+    @Override
+    public void setEnabled(boolean enabled) {
         table.setEnabled(enabled);
         add.setEnabled(enabled);
         remove.setEnabled(enabled);
@@ -89,7 +103,10 @@ public final class PriceTableEditor implements FieldEditor {
         return min;
     }
 
-    /** Tìm giá theo loài và cân nặng (kg); trả -1 nếu không có dòng phù hợp. Dùng cho bước Chọn dịch vụ Spa. */
+    /**
+     * Tìm giá theo loài và cân nặng (kg); trả -1 nếu không có dòng phù hợp. Dùng cho bước Chọn dịch
+     * vụ Spa.
+     */
     public static long priceFor(String value, String species, double weightKg) {
         if (value == null) return -1;
         for (String part : value.split(";")) {
@@ -110,7 +127,8 @@ public final class PriceTableEditor implements FieldEditor {
                 String[] p = r.split("-");
                 return kg >= Double.parseDouble(p[0]) && kg <= Double.parseDouble(p[1]);
             }
-        } catch (NumberFormatException ignored) { }
+        } catch (NumberFormatException ignored) {
+        }
         return false;
     }
 }

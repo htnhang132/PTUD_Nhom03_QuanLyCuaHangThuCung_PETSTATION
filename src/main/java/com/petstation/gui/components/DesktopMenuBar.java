@@ -1,5 +1,10 @@
 package com.petstation.gui.components;
 
+import com.petstation.gui.navigation.MenuModel;
+import com.petstation.gui.navigation.ScreenDefinition;
+import com.petstation.gui.navigation.ScreenId;
+import com.petstation.gui.navigation.ScreenRegistry;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -18,11 +23,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
-import com.petstation.gui.navigation.MenuModel;
-import com.petstation.gui.navigation.ScreenDefinition;
-import com.petstation.gui.navigation.ScreenId;
-import com.petstation.gui.navigation.ScreenRegistry;
-
 public final class DesktopMenuBar extends JPanel {
     private final ScreenRegistry registry;
     private final Consumer<ScreenId> navigator;
@@ -32,11 +32,7 @@ public final class DesktopMenuBar extends JPanel {
     private final Map<Character, JPopupMenu> popups = new LinkedHashMap<>();
 
     public DesktopMenuBar(
-        ScreenRegistry registry,
-        Consumer<ScreenId> navigator,
-        Runnable logout,
-        Runnable exit
-    ) {
+            ScreenRegistry registry, Consumer<ScreenId> navigator, Runnable logout, Runnable exit) {
         this.registry = registry;
         this.navigator = navigator;
         this.logout = logout;
@@ -61,15 +57,24 @@ public final class DesktopMenuBar extends JPanel {
 
     private void addMenu(char mnemonic, String label, List<MenuModel.Item> entries) {
         int underline = Math.max(0, label.toLowerCase().indexOf(Character.toLowerCase(mnemonic)));
-        JButton button = new JButton("<html>"+ label.substring(0, underline) + "<u>"+ label.charAt(underline) + "</u>"+ label.substring(underline + 1) + "</html>") {
-            @Override protected void paintComponent(Graphics graphics) {
-                if (getModel().isRollover()) {
-                    graphics.setColor(AppColors.RED_TINT);
-                    graphics.fillRect(0, 0, getWidth(), getHeight());
-                }
-                super.paintComponent(graphics);
-            }
-        };
+        JButton button =
+                new JButton(
+                        "<html>"
+                                + label.substring(0, underline)
+                                + "<u>"
+                                + label.charAt(underline)
+                                + "</u>"
+                                + label.substring(underline + 1)
+                                + "</html>") {
+                    @Override
+                    protected void paintComponent(Graphics graphics) {
+                        if (getModel().isRollover()) {
+                            graphics.setColor(AppColors.RED_TINT);
+                            graphics.fillRect(0, 0, getWidth(), getHeight());
+                        }
+                        super.paintComponent(graphics);
+                    }
+                };
         button.setFont(AppColors.font(Font.PLAIN, 13));
         button.setForeground(AppColors.TEXT_DARK);
         button.setBorder(new EmptyBorder(5, 12, 5, 12));
@@ -81,7 +86,9 @@ public final class DesktopMenuBar extends JPanel {
         JPopupMenu popup = new JPopupMenu();
         for (MenuModel.Item entry : entries) {
             if (entry.isSeparator()) {
-                if (popup.getComponentCount() > 0 && !(popup.getComponent(popup.getComponentCount() - 1) instanceof JPopupMenu.Separator)) {
+                if (popup.getComponentCount() > 0
+                        && !(popup.getComponent(popup.getComponentCount() - 1)
+                                instanceof JPopupMenu.Separator)) {
                     popup.addSeparator();
                 }
                 continue;
@@ -91,9 +98,10 @@ public final class DesktopMenuBar extends JPanel {
             JMenuItem item = new JMenuItem(entry.label());
             item.setFont(AppColors.font(Font.PLAIN, 13));
             item.setEnabled(definition.implemented());
-            item.setToolTipText(definition.implemented()
-                ? definition.hint()
-                : "Chức năng sẽ được triển khai ở giai đoạn tiếp theo");
+            item.setToolTipText(
+                    definition.implemented()
+                            ? definition.hint()
+                            : "Chức năng sẽ được triển khai ở giai đoạn tiếp theo");
             if (entry.shortcut() != null) {
                 item.setAccelerator(parseShortcut(entry.shortcut()));
             }
@@ -112,7 +120,7 @@ public final class DesktopMenuBar extends JPanel {
         }
 
         button.setEnabled(popup.getComponentCount() > 0);
-        button.getAccessibleContext().setAccessibleName("Menu "+ label);
+        button.getAccessibleContext().setAccessibleName("Menu " + label);
         button.addActionListener(event -> popup.show(button, 0, button.getHeight()));
         menuButtons.put(mnemonic, button);
         popups.put(mnemonic, popup);

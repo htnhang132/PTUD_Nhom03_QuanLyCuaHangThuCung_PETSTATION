@@ -2,12 +2,13 @@ package com.petstation.gui.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-
 import com.petstation.gui.components.common.PriceTableEditor;
 
+import org.junit.jupiter.api.Test;
+
 class PriceTableEditorTest {
-    private static final String TABLE = "Chó|< 5kg|150000;Chó|5 - 10kg|200000;Chó|> 10kg|280000;Mèo|Mọi cân nặng|180000";
+    private static final String TABLE =
+            "Chó|< 5kg|150000;Chó|5 - 10kg|200000;Chó|> 10kg|280000;Mèo|Mọi cân nặng|180000";
 
     @Test
     void picksPriceByWeightRange() {

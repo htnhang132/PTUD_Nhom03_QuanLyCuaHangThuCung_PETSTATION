@@ -4,10 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Day Lock (chot_ngay table)
- * Lock transactions after day-end reconciliation
- */
+/** Domain model for Day Lock (chot_ngay table) Lock transactions after day-end reconciliation */
 public class DayLock {
     private Long id;
     private LocalDate lockDate;
@@ -139,12 +136,18 @@ public class DayLock {
 
     @Override
     public String toString() {
-        return "DayLock{" +
-                "id=" + id +
-                ", lockDate=" + lockDate +
-                ", totalRevenue=" + totalRevenue +
-                ", invoiceCount=" + invoiceCount +
-                ", status='" + status + '\'' +
-                '}';
+        return "DayLock{"
+                + "id="
+                + id
+                + ", lockDate="
+                + lockDate
+                + ", totalRevenue="
+                + totalRevenue
+                + ", invoiceCount="
+                + invoiceCount
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

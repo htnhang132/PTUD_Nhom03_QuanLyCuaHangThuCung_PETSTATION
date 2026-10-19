@@ -3,8 +3,8 @@ package com.petstation.model;
 import java.math.BigDecimal;
 
 /**
- * Domain model for Spa Ticket Detail (chi_tiet_phieu_spa table)
- * For individual services and surcharges
+ * Domain model for Spa Ticket Detail (chi_tiet_phieu_spa table) For individual services and
+ * surcharges
  */
 public class SpaTicketDetail {
     private Long id;
@@ -23,8 +23,12 @@ public class SpaTicketDetail {
         this.quantity = 1;
     }
 
-    public SpaTicketDetail(Long id, Long spaTicketId, String detailType, 
-                           String description, BigDecimal unitPrice) {
+    public SpaTicketDetail(
+            Long id,
+            Long spaTicketId,
+            String detailType,
+            String description,
+            BigDecimal unitPrice) {
         this();
         this.id = id;
         this.spaTicketId = spaTicketId;
@@ -126,12 +130,19 @@ public class SpaTicketDetail {
 
     @Override
     public String toString() {
-        return "SpaTicketDetail{" +
-                "id=" + id +
-                ", spaTicketId=" + spaTicketId +
-                ", detailType='" + detailType + '\'' +
-                ", description='" + description + '\'' +
-                ", lineTotal=" + lineTotal +
-                '}';
+        return "SpaTicketDetail{"
+                + "id="
+                + id
+                + ", spaTicketId="
+                + spaTicketId
+                + ", detailType='"
+                + detailType
+                + '\''
+                + ", description='"
+                + description
+                + '\''
+                + ", lineTotal="
+                + lineTotal
+                + '}';
     }
 }

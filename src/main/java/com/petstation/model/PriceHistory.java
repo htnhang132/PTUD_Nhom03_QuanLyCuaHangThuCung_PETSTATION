@@ -3,10 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Price History (lich_su_gia table)
- * Tracks all price changes for products
- */
+/** Domain model for Price History (lich_su_gia table) Tracks all price changes for products */
 public class PriceHistory {
     private Long id;
     private Long productId;
@@ -23,7 +20,8 @@ public class PriceHistory {
         this.changeType = "MANUAL";
     }
 
-    public PriceHistory(Long id, Long productId, BigDecimal oldPrice, BigDecimal newPrice, Long changedBy) {
+    public PriceHistory(
+            Long id, Long productId, BigDecimal oldPrice, BigDecimal newPrice, Long changedBy) {
         this();
         this.id = id;
         this.productId = productId;
@@ -108,13 +106,20 @@ public class PriceHistory {
 
     @Override
     public String toString() {
-        return "PriceHistory{" +
-                "id=" + id +
-                ", productId=" + productId +
-                ", oldPrice=" + oldPrice +
-                ", newPrice=" + newPrice +
-                ", changeType='" + changeType + '\'' +
-                ", changedAt=" + changedAt +
-                '}';
+        return "PriceHistory{"
+                + "id="
+                + id
+                + ", productId="
+                + productId
+                + ", oldPrice="
+                + oldPrice
+                + ", newPrice="
+                + newPrice
+                + ", changeType='"
+                + changeType
+                + '\''
+                + ", changedAt="
+                + changedAt
+                + '}';
     }
 }

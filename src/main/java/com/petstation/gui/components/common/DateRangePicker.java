@@ -1,12 +1,13 @@
 package com.petstation.gui.components.common;
 
-import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 
+import javax.swing.*;
+
 /**
- * Component chọn khoảng thời gian với preset options
- * Dùng cho các màn hình lọc theo ngày (Audit Log, Hóa đơn, Báo cáo)
+ * Component chọn khoảng thời gian với preset options Dùng cho các màn hình lọc theo ngày (Audit
+ * Log, Hóa đơn, Báo cáo)
  */
 public class DateRangePicker extends JPanel {
     private JComboBox<String> presetCombo;
@@ -20,7 +21,7 @@ public class DateRangePicker extends JPanel {
         // Preset options
         String[] presets = {
             "Hôm nay",
-            "Hôm qua", 
+            "Hôm qua",
             "7 ngày qua",
             "Tuần này",
             "Tuần trước",
@@ -38,11 +39,11 @@ public class DateRangePicker extends JPanel {
         customDatePanel.add(new JLabel("Từ:"));
         fromDatePicker = new DatePicker();
         customDatePanel.add(fromDatePicker);
-        
+
         customDatePanel.add(new JLabel("Đến:"));
         toDatePicker = new DatePicker();
         customDatePanel.add(toDatePicker);
-        
+
         customDatePanel.setVisible(false);
 
         // Layout
@@ -117,7 +118,7 @@ public class DateRangePicker extends JPanel {
             toDatePicker.setSelectedDate(to);
         }
 
-        firePropertyChange("dateRange", null, new LocalDate[]{from, to});
+        firePropertyChange("dateRange", null, new LocalDate[] {from, to});
     }
 
     // Getters

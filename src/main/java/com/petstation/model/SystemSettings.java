@@ -2,9 +2,7 @@ package com.petstation.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Domain model for System Settings (cai_dat table)
- */
+/** Domain model for System Settings (cai_dat table) */
 public class SystemSettings {
     private Long id;
     private String key;
@@ -104,12 +102,21 @@ public class SystemSettings {
 
     @Override
     public String toString() {
-        return "SystemSettings{" +
-                "id=" + id +
-                ", key='" + key + '\'' +
-                ", value='" + value + '\'' +
-                ", group='" + group + '\'' +
-                ", dataType='" + dataType + '\'' +
-                '}';
+        return "SystemSettings{"
+                + "id="
+                + id
+                + ", key='"
+                + key
+                + '\''
+                + ", value='"
+                + value
+                + '\''
+                + ", group='"
+                + group
+                + '\''
+                + ", dataType='"
+                + dataType
+                + '\''
+                + '}';
     }
 }

@@ -1,7 +1,8 @@
 package com.petstation.util;
 
-import com.petstation.config.DatabaseConfig;
-import com.petstation.config.DatabaseConnection;
+import com.petstation.dao.DatabaseConfig;
+import com.petstation.dao.DatabaseConnection;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.Console;
@@ -10,11 +11,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 /**
- * Tạo Cửa hàng trưởng đầu tiên sau khi chạy các script database.
- * Mật khẩu không được ghi vào source hoặc SQL seed.
+ * Tạo Cửa hàng trưởng đầu tiên sau khi chạy các script database. Mật khẩu không
+ * được ghi vào source
+ * hoặc SQL seed.
  */
 public final class AdminBootstrap {
-    private AdminBootstrap() {}
+    private AdminBootstrap() {
+    }
 
     public static void main(String[] args) throws Exception {
         Console console = System.console();
@@ -50,7 +53,8 @@ public final class AdminBootstrap {
                 long employeeId = insertEmployee(connection, fullName, phone);
                 insertAccount(connection, employeeId, username, hash);
                 connection.commit();
-                System.out.println("Đã tạo Cửa hàng trưởng. Hãy đăng nhập và đổi mật khẩu nếu cần.");
+                System.out.println(
+                        "Đã tạo Cửa hàng trưởng. Hãy đăng nhập và đổi mật khẩu nếu cần.");
             } catch (Exception exception) {
                 connection.rollback();
                 throw exception;
@@ -60,20 +64,22 @@ public final class AdminBootstrap {
 
     private static boolean managerExists(Connection connection) throws Exception {
         try (PreparedStatement statement = connection.prepareStatement(
-            "SELECT TOP 1 1 FROM tai_khoan WHERE vai_tro = 'STORE_MANAGER'"
-        ); ResultSet result = statement.executeQuery()) {
+                "SELECT TOP 1 1 FROM tai_khoan WHERE vai_tro = 'STORE_MANAGER' AND"
+                        + " trang_thai='ACTIVE'");
+                ResultSet result = statement.executeQuery()) {
             return result.next();
         }
     }
 
-    private static long insertEmployee(Connection connection, String fullName, String phone) throws Exception {
-        String code = "NV"+ System.currentTimeMillis();
+    private static long insertEmployee(Connection connection, String fullName, String phone)
+            throws Exception {
+        String code = "NV" + System.currentTimeMillis();
         String sql = """
-            INSERT INTO nhan_vien
-                (ma_nhan_vien, ho_ten, so_dien_thoai, chuc_vu, ngay_vao_lam)
-            OUTPUT INSERTED.id
-            VALUES (?, ?, ?, N'Cửa hàng trưởng', CAST(GETDATE() AS DATE))
-            """;
+                INSERT INTO nhan_vien
+                    (ma_nhan_vien, ho_ten, so_dien_thoai, chuc_vu, ngay_vao_lam)
+                OUTPUT INSERTED.id
+                VALUES (?, ?, ?, N'Cửa hàng trưởng', CAST(GETDATE() AS DATE))
+                """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, code);
             statement.setString(2, fullName);
@@ -86,16 +92,12 @@ public final class AdminBootstrap {
     }
 
     private static void insertAccount(
-        Connection connection,
-        long employeeId,
-        String username,
-        String hash
-    ) throws Exception {
+            Connection connection, long employeeId, String username, String hash) throws Exception {
         String sql = """
-            INSERT INTO tai_khoan
-                (nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, bat_buoc_doi_mat_khau)
-            VALUES (?, ?, ?, 'STORE_MANAGER', 0)
-            """;
+                INSERT INTO tai_khoan
+                    (nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, bat_buoc_doi_mat_khau)
+                VALUES (?, ?, ?, 'STORE_MANAGER', 0)
+                """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, employeeId);
             statement.setString(2, username);

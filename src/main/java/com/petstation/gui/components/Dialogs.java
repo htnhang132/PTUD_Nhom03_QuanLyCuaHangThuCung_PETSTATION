@@ -6,13 +6,15 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 /**
- * Hộp thoại dùng chung toàn hệ thống: cùng tiêu đề theo loại, cùng nhãn nút tiếng Việt.
- * Mọi màn gọi lớp này thay vì JOptionPane để giao diện nhất quán.
+ * Hộp thoại dùng chung toàn hệ thống: cùng tiêu đề theo loại, cùng nhãn nút tiếng Việt. Mọi màn gọi
+ * lớp này thay vì JOptionPane để giao diện nhất quán.
+ *
  * <ul>
- *   <li>Thông báo: tiêu đề "Thông báo", nút "Đóng"</li>
- *   <li>Thành công: tiêu đề "Thành công", nút "Đóng"</li>
- *   <li>Cảnh báo / Lỗi: tiêu đề "Cảnh báo" / "Lỗi", nút "Đóng"</li>
- *   <li>Xác nhận: tiêu đề "Xác nhận", nút "Đồng ý" và "Hủy" (mặc định chọn Hủy khi là thao tác nguy hiểm)</li>
+ *   <li>Thông báo: tiêu đề "Thông báo", nút "Đóng"
+ *   <li>Thành công: tiêu đề "Thành công", nút "Đóng"
+ *   <li>Cảnh báo / Lỗi: tiêu đề "Cảnh báo" / "Lỗi", nút "Đóng"
+ *   <li>Xác nhận: tiêu đề "Xác nhận", nút "Đồng ý" và "Hủy" (mặc định chọn Hủy khi là thao tác nguy
+ *       hiểm)
  * </ul>
  */
 public final class Dialogs {
@@ -28,7 +30,10 @@ public final class Dialogs {
 
     private Dialogs() {}
 
-    /** Gọi một lần lúc khởi động để các hộp thoại còn lại (nhập liệu, chọn file) cũng dùng tiếng Việt. */
+    /**
+     * Gọi một lần lúc khởi động để các hộp thoại còn lại (nhập liệu, chọn file) cũng dùng tiếng
+     * Việt.
+     */
     public static void installDefaults() {
         UIManager.put("OptionPane.okButtonText", OK);
         UIManager.put("OptionPane.cancelButtonText", CANCEL);
@@ -63,10 +68,19 @@ public final class Dialogs {
         return confirm(parent, message, confirmLabel, true);
     }
 
-    public static boolean confirm(Component parent, String message, String confirmLabel, boolean danger) {
+    public static boolean confirm(
+            Component parent, String message, String confirmLabel, boolean danger) {
         Object[] options = {confirmLabel, CANCEL};
-        int choice = JOptionPane.showOptionDialog(parent, message, CONFIRM_TITLE, JOptionPane.DEFAULT_OPTION,
-            danger ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE, null, options, danger ? CANCEL : confirmLabel);
+        int choice =
+                JOptionPane.showOptionDialog(
+                        parent,
+                        message,
+                        CONFIRM_TITLE,
+                        JOptionPane.DEFAULT_OPTION,
+                        danger ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        danger ? CANCEL : confirmLabel);
         return choice == 0;
     }
 
@@ -77,30 +91,56 @@ public final class Dialogs {
     }
 
     public static void showMessageDialog(Component parent, Object message, String title, int type) {
-        String normalized = switch (type) {
-            case JOptionPane.ERROR_MESSAGE -> ERROR_TITLE;
-            case JOptionPane.WARNING_MESSAGE -> WARNING_TITLE;
-            default -> title != null && title.toLowerCase().contains("thành công") ? SUCCESS_TITLE : INFO_TITLE;
-        };
+        String normalized =
+                switch (type) {
+                    case JOptionPane.ERROR_MESSAGE -> ERROR_TITLE;
+                    case JOptionPane.WARNING_MESSAGE -> WARNING_TITLE;
+                    default ->
+                            title != null && title.toLowerCase().contains("thành công")
+                                    ? SUCCESS_TITLE
+                                    : INFO_TITLE;
+                };
         show(parent, message, normalized, type);
     }
 
-    public static int showConfirmDialog(Component parent, Object message, String title, int optionType) {
+    public static int showConfirmDialog(
+            Component parent, Object message, String title, int optionType) {
         return showConfirmDialog(parent, message, title, optionType, JOptionPane.QUESTION_MESSAGE);
     }
 
-    /** Trả về YES_OPTION/OK_OPTION khi đồng ý, NO_OPTION/CANCEL_OPTION khi không (giữ mã trả về cũ). */
-    public static int showConfirmDialog(Component parent, Object message, String title, int optionType, int messageType) {
+    /**
+     * Trả về YES_OPTION/OK_OPTION khi đồng ý, NO_OPTION/CANCEL_OPTION khi không (giữ mã trả về cũ).
+     */
+    public static int showConfirmDialog(
+            Component parent, Object message, String title, int optionType, int messageType) {
         boolean yesNo = optionType == JOptionPane.YES_NO_OPTION;
-        boolean danger = messageType == JOptionPane.WARNING_MESSAGE || messageType == JOptionPane.ERROR_MESSAGE;
-        Object[] options = yesNo ? new Object[]{"Có", "Không"} : new Object[]{OK, CANCEL};
-        int choice = JOptionPane.showOptionDialog(parent, message, CONFIRM_TITLE, JOptionPane.DEFAULT_OPTION,
-            danger ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE, null, options, danger ? options[1] : options[0]);
+        boolean danger =
+                messageType == JOptionPane.WARNING_MESSAGE
+                        || messageType == JOptionPane.ERROR_MESSAGE;
+        Object[] options = yesNo ? new Object[] {"Có", "Không"} : new Object[] {OK, CANCEL};
+        int choice =
+                JOptionPane.showOptionDialog(
+                        parent,
+                        message,
+                        CONFIRM_TITLE,
+                        JOptionPane.DEFAULT_OPTION,
+                        danger ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        danger ? options[1] : options[0]);
         if (choice == 0) return yesNo ? JOptionPane.YES_OPTION : JOptionPane.OK_OPTION;
         return yesNo ? JOptionPane.NO_OPTION : JOptionPane.CANCEL_OPTION;
     }
 
     private static void show(Component parent, Object message, String title, int type) {
-        JOptionPane.showOptionDialog(parent, message, title, JOptionPane.DEFAULT_OPTION, type, null, new Object[]{CLOSE}, CLOSE);
+        JOptionPane.showOptionDialog(
+                parent,
+                message,
+                title,
+                JOptionPane.DEFAULT_OPTION,
+                type,
+                null,
+                new Object[] {CLOSE},
+                CLOSE);
     }
 }

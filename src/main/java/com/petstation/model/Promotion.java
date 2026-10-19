@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Promotion (khuyen_mai table)
- */
+/** Domain model for Promotion (khuyen_mai table) */
 public class Promotion {
     private Long id;
     private String promotionCode;
@@ -26,8 +24,12 @@ public class Promotion {
         this.status = "ACTIVE";
     }
 
-    public Promotion(Long id, String promotionCode, String promotionName, 
-                    String discountType, BigDecimal discountValue) {
+    public Promotion(
+            Long id,
+            String promotionCode,
+            String promotionName,
+            String discountType,
+            BigDecimal discountValue) {
         this();
         this.id = id;
         this.promotionCode = promotionCode;
@@ -143,13 +145,23 @@ public class Promotion {
 
     @Override
     public String toString() {
-        return "Promotion{" +
-                "id=" + id +
-                ", promotionCode='" + promotionCode + '\'' +
-                ", promotionName='" + promotionName + '\'' +
-                ", discountType='" + discountType + '\'' +
-                ", discountValue=" + discountValue +
-                ", status='" + status + '\'' +
-                '}';
+        return "Promotion{"
+                + "id="
+                + id
+                + ", promotionCode='"
+                + promotionCode
+                + '\''
+                + ", promotionName='"
+                + promotionName
+                + '\''
+                + ", discountType='"
+                + discountType
+                + '\''
+                + ", discountValue="
+                + discountValue
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

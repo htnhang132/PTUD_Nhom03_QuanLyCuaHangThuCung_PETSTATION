@@ -1,8 +1,9 @@
 package com.petstation.gui.components;
 
+import java.awt.*;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 
 /** Lưới biểu mẫu 2 cột: nhãn ở trên, ô nhập ở dưới. */
 public final class FormPanel extends JPanel {
@@ -25,7 +26,9 @@ public final class FormPanel extends JPanel {
         label.setFont(AppColors.font(Font.BOLD, 14));
         label.setForeground(AppColors.BROWN);
         label.setBorder(new EmptyBorder(4, 0, 0, 0));
-        c.gridx = 0; c.gridy = row++; c.gridwidth = 2;
+        c.gridx = 0;
+        c.gridy = row++;
+        c.gridwidth = 2;
         add(label, c);
         c.gridwidth = 1;
     }
@@ -44,7 +47,9 @@ public final class FormPanel extends JPanel {
 
     private void place(JComponent component, int span) {
         if (span == 2 && column != 0) endRow();
-        c.gridx = column; c.gridy = row; c.gridwidth = span;
+        c.gridx = column;
+        c.gridy = row;
+        c.gridwidth = span;
         add(component, c);
         c.gridwidth = 1;
         column += span;
@@ -52,7 +57,10 @@ public final class FormPanel extends JPanel {
     }
 
     private void endRow() {
-        if (column != 0) { column = 0; row++; }
+        if (column != 0) {
+            column = 0;
+            row++;
+        }
     }
 
     private JPanel wrap(String label, JComponent field) {
@@ -76,9 +84,10 @@ public final class FormPanel extends JPanel {
 
     public static void styleInput(JComponent f) {
         f.setFont(AppColors.font(Font.PLAIN, 13));
-        f.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(AppColors.BORDER, 1, true),
-            new EmptyBorder(6, 10, 6, 10)));
+        f.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(AppColors.BORDER, 1, true),
+                        new EmptyBorder(6, 10, 6, 10)));
         f.setPreferredSize(new Dimension(160, 36));
     }
 

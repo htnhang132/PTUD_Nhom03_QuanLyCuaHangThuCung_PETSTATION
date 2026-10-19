@@ -1,9 +1,10 @@
 package com.petstation.gui.navigation;
 
-import com.petstation.gui.components.Money;
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.petstation.util.Money;
+
+import org.junit.jupiter.api.Test;
 
 class ScreenFlowsTest {
     @Test
@@ -27,7 +28,8 @@ class ScreenFlowsTest {
         assertThat(spa.previous(ScreenId.SPA_INTAKE)).contains(ScreenId.SPA_SCHEDULE);
         assertThat(spa.next(ScreenId.SPA_INTAKE)).contains(ScreenId.SPA_SERVICE_SELECTION);
         assertThat(spa.isLast(ScreenId.SPA_CLOSE)).isTrue();
-        assertThat(ScreenFlows.find(ScreenId.CHECKOUT).orElseThrow().isLast(ScreenId.CHECKOUT)).isTrue();
+        assertThat(ScreenFlows.find(ScreenId.CHECKOUT).orElseThrow().isLast(ScreenId.CHECKOUT))
+                .isTrue();
         assertThat(ScreenFlows.find(ScreenId.POS).orElseThrow().linear()).isFalse();
     }
 }

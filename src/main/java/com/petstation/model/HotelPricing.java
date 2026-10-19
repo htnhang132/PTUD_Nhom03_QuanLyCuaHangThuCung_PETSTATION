@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Domain model for Hotel Room Pricing (bang_gia_hotel table)
- * Price by time frame (hourly, daily, overnight) and weight
+ * Domain model for Hotel Room Pricing (bang_gia_hotel table) Price by time frame (hourly, daily,
+ * overnight) and weight
  */
 public class HotelPricing {
     private Long id;
@@ -19,11 +19,15 @@ public class HotelPricing {
     private byte[] rowVersion;
 
     // Constructors
-    public HotelPricing() {
-    }
+    public HotelPricing() {}
 
-    public HotelPricing(Long id, Long roomId, String timeFrame, BigDecimal weightFrom, 
-                        BigDecimal weightTo, BigDecimal price) {
+    public HotelPricing(
+            Long id,
+            Long roomId,
+            String timeFrame,
+            BigDecimal weightFrom,
+            BigDecimal weightTo,
+            BigDecimal price) {
         this.id = id;
         this.roomId = roomId;
         this.timeFrame = timeFrame;
@@ -107,13 +111,20 @@ public class HotelPricing {
 
     @Override
     public String toString() {
-        return "HotelPricing{" +
-                "id=" + id +
-                ", roomId=" + roomId +
-                ", timeFrame='" + timeFrame + '\'' +
-                ", weightFrom=" + weightFrom +
-                ", weightTo=" + weightTo +
-                ", price=" + price +
-                '}';
+        return "HotelPricing{"
+                + "id="
+                + id
+                + ", roomId="
+                + roomId
+                + ", timeFrame='"
+                + timeFrame
+                + '\''
+                + ", weightFrom="
+                + weightFrom
+                + ", weightTo="
+                + weightTo
+                + ", price="
+                + price
+                + '}';
     }
 }

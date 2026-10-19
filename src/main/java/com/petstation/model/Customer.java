@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Customer (khach_hang table)
- */
+/** Domain model for Customer (khach_hang table) */
 public class Customer {
     private Long id;
     private String customerCode;
@@ -115,13 +113,23 @@ public class Customer {
 
     @Override
     public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", customerCode='" + customerCode + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", membershipTier='" + membershipTier + '\'' +
-                ", loyaltyPoints=" + loyaltyPoints +
-                '}';
+        return "Customer{"
+                + "id="
+                + id
+                + ", customerCode='"
+                + customerCode
+                + '\''
+                + ", fullName='"
+                + fullName
+                + '\''
+                + ", phoneNumber='"
+                + phoneNumber
+                + '\''
+                + ", membershipTier='"
+                + membershipTier
+                + '\''
+                + ", loyaltyPoints="
+                + loyaltyPoints
+                + '}';
     }
 }

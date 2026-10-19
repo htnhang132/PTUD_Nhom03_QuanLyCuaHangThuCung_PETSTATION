@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Spa Ticket (phieu_tiep_nhan_spa table)
- */
+/** Domain model for Spa Ticket (phieu_tiep_nhan_spa table) */
 public class SpaTicket {
     private Long id;
     private String ticketCode;
@@ -161,12 +159,19 @@ public class SpaTicket {
 
     @Override
     public String toString() {
-        return "SpaTicket{" +
-                "id=" + id +
-                ", ticketCode='" + ticketCode + '\'' +
-                ", petId=" + petId +
-                ", totalAmount=" + totalAmount +
-                ", status='" + status + '\'' +
-                '}';
+        return "SpaTicket{"
+                + "id="
+                + id
+                + ", ticketCode='"
+                + ticketCode
+                + '\''
+                + ", petId="
+                + petId
+                + ", totalAmount="
+                + totalAmount
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

@@ -1,11 +1,12 @@
 package com.petstation.gui.components;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.function.IntConsumer;
+
+import javax.swing.*;
 
 /** Thanh các bước của một quy trình. Bước đã qua hiện dấu tick, bước hiện tại tô đỏ. */
 public final class StepIndicator extends JComponent {
@@ -17,13 +18,15 @@ public final class StepIndicator extends JComponent {
         this.steps = List.copyOf(steps);
         setPreferredSize(new Dimension(0, 44));
         setOpaque(false);
-        addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
-                if (onClick == null) return;
-                int index = indexAt(e.getX());
-                if (index >= 0) onClick.accept(index);
-            }
-        });
+        addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (onClick == null) return;
+                        int index = indexAt(e.getX());
+                        if (index >= 0) onClick.accept(index);
+                    }
+                });
     }
 
     public void setCurrent(int index) {
@@ -38,7 +41,10 @@ public final class StepIndicator extends JComponent {
     /** Cho phép bấm vào từng bước (dùng trong thanh luồng của khung chính). */
     public void setOnClick(IntConsumer onClick) {
         this.onClick = onClick;
-        setCursor(onClick == null ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setCursor(
+                onClick == null
+                        ? Cursor.getDefaultCursor()
+                        : Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private int indexAt(int x) {
@@ -52,9 +58,13 @@ public final class StepIndicator extends JComponent {
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         int n = steps.size();
-        if (n == 0) { g.dispose(); return; }
+        if (n == 0) {
+            g.dispose();
+            return;
+        }
         int cell = getWidth() / n;
         int cy = getHeight() / 2;
         int r = 11;

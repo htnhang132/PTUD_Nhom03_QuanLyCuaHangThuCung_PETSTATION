@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Domain model for Spa Pricing Matrix (bang_gia_spa table)
- * Price = Species × Weight Range × Package
+ * Domain model for Spa Pricing Matrix (bang_gia_spa table) Price = Species × Weight Range × Package
  */
 public class SpaPriceMatrix {
     private Long id;
@@ -20,11 +19,15 @@ public class SpaPriceMatrix {
     private byte[] rowVersion;
 
     // Constructors
-    public SpaPriceMatrix() {
-    }
+    public SpaPriceMatrix() {}
 
-    public SpaPriceMatrix(Long id, Long packageId, String species, BigDecimal weightFrom, 
-                          BigDecimal weightTo, BigDecimal price) {
+    public SpaPriceMatrix(
+            Long id,
+            Long packageId,
+            String species,
+            BigDecimal weightFrom,
+            BigDecimal weightTo,
+            BigDecimal price) {
         this.id = id;
         this.packageId = packageId;
         this.species = species;
@@ -116,13 +119,20 @@ public class SpaPriceMatrix {
 
     @Override
     public String toString() {
-        return "SpaPriceMatrix{" +
-                "id=" + id +
-                ", packageId=" + packageId +
-                ", species='" + species + '\'' +
-                ", weightFrom=" + weightFrom +
-                ", weightTo=" + weightTo +
-                ", price=" + price +
-                '}';
+        return "SpaPriceMatrix{"
+                + "id="
+                + id
+                + ", packageId="
+                + packageId
+                + ", species='"
+                + species
+                + '\''
+                + ", weightFrom="
+                + weightFrom
+                + ", weightTo="
+                + weightTo
+                + ", price="
+                + price
+                + '}';
     }
 }

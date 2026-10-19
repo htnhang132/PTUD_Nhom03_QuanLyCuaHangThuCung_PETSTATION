@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Product Batch (lo_hang table)
- */
+/** Domain model for Product Batch (lo_hang table) */
 public class Batch {
     private Long id;
     private String batchCode;
@@ -25,7 +23,8 @@ public class Batch {
         this.status = "IN_STOCK";
     }
 
-    public Batch(Long id, String batchCode, Long productId, Integer quantity, BigDecimal costPrice) {
+    public Batch(
+            Long id, String batchCode, Long productId, Integer quantity, BigDecimal costPrice) {
         this();
         this.id = id;
         this.batchCode = batchCode;
@@ -125,13 +124,21 @@ public class Batch {
 
     @Override
     public String toString() {
-        return "Batch{" +
-                "id=" + id +
-                ", batchCode='" + batchCode + '\'' +
-                ", productId=" + productId +
-                ", quantity=" + quantity +
-                ", expiryDate=" + expiryDate +
-                ", status='" + status + '\'' +
-                '}';
+        return "Batch{"
+                + "id="
+                + id
+                + ", batchCode='"
+                + batchCode
+                + '\''
+                + ", productId="
+                + productId
+                + ", quantity="
+                + quantity
+                + ", expiryDate="
+                + expiryDate
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

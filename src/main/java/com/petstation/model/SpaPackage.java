@@ -2,9 +2,7 @@ package com.petstation.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Spa Service Package (goi_dich_vu_spa table)
- */
+/** Domain model for Spa Service Package (goi_dich_vu_spa table) */
 public class SpaPackage {
     private Long id;
     private String packageCode;
@@ -95,12 +93,21 @@ public class SpaPackage {
 
     @Override
     public String toString() {
-        return "SpaPackage{" +
-                "id=" + id +
-                ", packageCode='" + packageCode + '\'' +
-                ", packageName='" + packageName + '\'' +
-                ", packageType='" + packageType + '\'' +
-                ", status='" + status + '\'' +
-                '}';
+        return "SpaPackage{"
+                + "id="
+                + id
+                + ", packageCode='"
+                + packageCode
+                + '\''
+                + ", packageName='"
+                + packageName
+                + '\''
+                + ", packageType='"
+                + packageType
+                + '\''
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

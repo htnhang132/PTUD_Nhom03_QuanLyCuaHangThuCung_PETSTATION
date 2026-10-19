@@ -1,5 +1,7 @@
 package com.petstation.gui.components.common;
 
+import com.petstation.gui.components.AppColors;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,8 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 import javax.swing.JComponent;
-
-import com.petstation.gui.components.AppColors;
 
 /** Biểu đồ cột đơn giản vẽ bằng Java2D (không cần thư viện ngoài). */
 public final class SimpleBarChart extends JComponent {
@@ -34,7 +34,10 @@ public final class SimpleBarChart extends JComponent {
         repaint();
     }
 
-    public void setBarColor(Color c) { this.color = c; repaint(); }
+    public void setBarColor(Color c) {
+        this.color = c;
+        repaint();
+    }
 
     private String format(double v) {
         if (!money) return v == Math.rint(v) ? String.valueOf((long) v) : String.format("%.1f", v);
@@ -43,10 +46,12 @@ public final class SimpleBarChart extends JComponent {
         return String.valueOf((long) v);
     }
 
-    @Override protected void paintComponent(Graphics g0) {
+    @Override
+    protected void paintComponent(Graphics g0) {
         Graphics2D g = (Graphics2D) g0.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         int w = getWidth(), h = getHeight();
         if (values.length == 0) {
             g.setColor(AppColors.TEXT_GRAY);
@@ -81,7 +86,8 @@ public final class SimpleBarChart extends JComponent {
             String l = i < labels.length ? labels[i] : "";
             int maxChars = Math.max(4, (int) (slot / 6.5));
             if (l.length() > maxChars) l = l.substring(0, Math.max(1, maxChars - 1)) + "…";
-            g.drawString(l, (int) (left + slot * i + (slot - fm.stringWidth(l)) / 2), top + chartH + 16);
+            g.drawString(
+                    l, (int) (left + slot * i + (slot - fm.stringWidth(l)) / 2), top + chartH + 16);
         }
         g.dispose();
     }

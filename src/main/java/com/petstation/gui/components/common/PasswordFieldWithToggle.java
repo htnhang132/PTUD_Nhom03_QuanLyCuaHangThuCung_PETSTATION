@@ -1,14 +1,10 @@
 package com.petstation.gui.components.common;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-/**
- * JPasswordField với nút toggle hiển thị/ẩn mật khẩu
- * Icon con mắt ở cuối ô nhập
- */
+import javax.swing.*;
+
+/** JPasswordField với nút toggle hiển thị/ẩn mật khẩu Icon con mắt ở cuối ô nhập */
 public class PasswordFieldWithToggle extends JPanel {
     private JPasswordField passwordField;
     private JToggleButton toggleButton;
@@ -20,31 +16,31 @@ public class PasswordFieldWithToggle extends JPanel {
 
     public PasswordFieldWithToggle(int columns) {
         setLayout(new BorderLayout(5, 0));
-        
+
         passwordField = new JPasswordField(columns);
-        
+
         // Toggle button với icon con mắt
         toggleButton = new JToggleButton("Hiện");
         toggleButton.setPreferredSize(new Dimension(64, 28));
         toggleButton.setFocusPainted(false);
         toggleButton.setToolTipText("Hiển thị/Ẩn mật khẩu");
-        
+
         toggleButton.addActionListener(e -> togglePasswordVisibility());
-        
+
         add(passwordField, BorderLayout.CENTER);
         add(toggleButton, BorderLayout.EAST);
-        
+
         // Đặt border cho panel thay vì các component bên trong
         setBorder(BorderFactory.createEmptyBorder());
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.GRAY),
-            BorderFactory.createEmptyBorder(3, 5, 3, 5)
-        ));
+        passwordField.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        BorderFactory.createEmptyBorder(3, 5, 3, 5)));
     }
 
     private void togglePasswordVisibility() {
         passwordVisible = !passwordVisible;
-        
+
         if (passwordVisible) {
             passwordField.setEchoChar((char) 0); // Hiển thị text thật
             toggleButton.setText("Ẩn");

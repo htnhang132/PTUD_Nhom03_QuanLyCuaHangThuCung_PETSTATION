@@ -2,9 +2,7 @@ package com.petstation.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Supplier (nha_cung_cap table)
- */
+/** Domain model for Supplier (nha_cung_cap table) */
 public class Supplier {
     private Long id;
     private String supplierCode;
@@ -131,12 +129,20 @@ public class Supplier {
 
     @Override
     public String toString() {
-        return "Supplier{" +
-                "id=" + id +
-                ", supplierCode='" + supplierCode + '\'' +
-                ", supplierName='" + supplierName + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", isActive=" + isActive +
-                '}';
+        return "Supplier{"
+                + "id="
+                + id
+                + ", supplierCode='"
+                + supplierCode
+                + '\''
+                + ", supplierName='"
+                + supplierName
+                + '\''
+                + ", phoneNumber='"
+                + phoneNumber
+                + '\''
+                + ", isActive="
+                + isActive
+                + '}';
     }
 }

@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Product (san_pham table)
- */
+/** Domain model for Product (san_pham table) */
 public class Product {
     private Long id;
     private String productCode;
@@ -133,12 +131,19 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", productCode='" + productCode + '\'' +
-                ", productName='" + productName + '\'' +
-                ", sellingPrice=" + sellingPrice +
-                ", isActive=" + isActive +
-                '}';
+        return "Product{"
+                + "id="
+                + id
+                + ", productCode='"
+                + productCode
+                + '\''
+                + ", productName='"
+                + productName
+                + '\''
+                + ", sellingPrice="
+                + sellingPrice
+                + ", isActive="
+                + isActive
+                + '}';
     }
 }

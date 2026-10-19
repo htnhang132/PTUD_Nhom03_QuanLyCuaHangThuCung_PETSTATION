@@ -2,9 +2,7 @@ package com.petstation.model;
 
 import java.math.BigDecimal;
 
-/**
- * Domain model for Invoice Item (chi_tiet_hoa_don table)
- */
+/** Domain model for Invoice Item (chi_tiet_hoa_don table) */
 public class InvoiceItem {
     private Long id;
     private Long invoiceId;
@@ -22,7 +20,8 @@ public class InvoiceItem {
         this.discountAmount = BigDecimal.ZERO;
     }
 
-    public InvoiceItem(Long id, Long invoiceId, Long productId, Integer quantity, BigDecimal unitPrice) {
+    public InvoiceItem(
+            Long id, Long invoiceId, Long productId, Integer quantity, BigDecimal unitPrice) {
         this();
         this.id = id;
         this.invoiceId = invoiceId;
@@ -36,7 +35,8 @@ public class InvoiceItem {
     public void calculateLineTotal() {
         if (quantity != null && unitPrice != null) {
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
-            this.lineTotal = subtotal.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
+            this.lineTotal =
+                    subtotal.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
         }
     }
 
@@ -126,13 +126,19 @@ public class InvoiceItem {
 
     @Override
     public String toString() {
-        return "InvoiceItem{" +
-                "id=" + id +
-                ", invoiceId=" + invoiceId +
-                ", productId=" + productId +
-                ", quantity=" + quantity +
-                ", unitPrice=" + unitPrice +
-                ", lineTotal=" + lineTotal +
-                '}';
+        return "InvoiceItem{"
+                + "id="
+                + id
+                + ", invoiceId="
+                + invoiceId
+                + ", productId="
+                + productId
+                + ", quantity="
+                + quantity
+                + ", unitPrice="
+                + unitPrice
+                + ", lineTotal="
+                + lineTotal
+                + '}';
     }
 }

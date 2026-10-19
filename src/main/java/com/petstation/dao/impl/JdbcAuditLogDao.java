@@ -1,6 +1,6 @@
 package com.petstation.dao.impl;
 
-import com.petstation.dao.interfaces.AuditLogDao;
+import com.petstation.dao.AuditLogDao;
 import com.petstation.model.AuditLogEntry;
 
 import java.sql.Connection;
@@ -9,12 +9,13 @@ import java.sql.PreparedStatement;
 public final class JdbcAuditLogDao implements AuditLogDao {
     @Override
     public void insert(Connection connection, AuditLogEntry entry) throws Exception {
-        String sql = """
-            INSERT INTO nhat_ky_he_thong
-                (tai_khoan_id, hanh_dong, loai_doi_tuong, ma_doi_tuong,
-                 gia_tri_cu, gia_tri_moi, ghi_chu, thoi_gian)
-            VALUES (?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME())
-            """;
+        String sql =
+                """
+                INSERT INTO nhat_ky_he_thong
+                    (tai_khoan_id, hanh_dong, loai_doi_tuong, ma_doi_tuong,
+                     gia_tri_cu, gia_tri_moi, ghi_chu, thoi_gian)
+                VALUES (?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME())
+                """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             if (entry.actorAccountId() == null) {
                 statement.setNull(1, java.sql.Types.BIGINT);

@@ -3,9 +3,7 @@ package com.petstation.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Domain model for Invoice (hoa_don table)
- */
+/** Domain model for Invoice (hoa_don table) */
 public class Invoice {
     private Long id;
     private String invoiceCode;
@@ -198,13 +196,22 @@ public class Invoice {
 
     @Override
     public String toString() {
-        return "Invoice{" +
-                "id=" + id +
-                ", invoiceCode='" + invoiceCode + '\'' +
-                ", customerId=" + customerId +
-                ", totalAmount=" + totalAmount +
-                ", paymentMethod='" + paymentMethod + '\'' +
-                ", status='" + status + '\'' +
-                '}';
+        return "Invoice{"
+                + "id="
+                + id
+                + ", invoiceCode='"
+                + invoiceCode
+                + '\''
+                + ", customerId="
+                + customerId
+                + ", totalAmount="
+                + totalAmount
+                + ", paymentMethod='"
+                + paymentMethod
+                + '\''
+                + ", status='"
+                + status
+                + '\''
+                + '}';
     }
 }

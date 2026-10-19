@@ -1,5 +1,7 @@
 package com.petstation.gui.components;
 
+import com.petstation.gui.navigation.ScreenId;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -23,8 +25,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-
-import com.petstation.gui.navigation.ScreenId;
 
 public final class DesktopTitleBar extends JPanel {
     private final JFrame frame;
@@ -58,37 +58,47 @@ public final class DesktopTitleBar extends JPanel {
         controls.add(windowButton("×", event -> closeAction.run(), true));
         add(controls, BorderLayout.EAST);
 
-        MouseAdapter dragHandler = new MouseAdapter() {
-            @Override public void mousePressed(MouseEvent event) {
-                dragOrigin = event.getPoint();
-            }
+        MouseAdapter dragHandler =
+                new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent event) {
+                        dragOrigin = event.getPoint();
+                    }
 
-            @Override public void mouseDragged(MouseEvent event) {
-                if (dragOrigin == null || isMaximized()) return;
-                Point screen = event.getLocationOnScreen();
-                frame.setLocation(screen.x - dragOrigin.x, screen.y - dragOrigin.y);
-            }
+                    @Override
+                    public void mouseDragged(MouseEvent event) {
+                        if (dragOrigin == null || isMaximized()) return;
+                        Point screen = event.getLocationOnScreen();
+                        frame.setLocation(screen.x - dragOrigin.x, screen.y - dragOrigin.y);
+                    }
 
-            @Override public void mouseClicked(MouseEvent event) {
-                if (event.getClickCount() == 2) toggleMaximize();
-            }
-        };
+                    @Override
+                    public void mouseClicked(MouseEvent event) {
+                        if (event.getClickCount() == 2) toggleMaximize();
+                    }
+                };
         addMouseListener(dragHandler);
         addMouseMotionListener(dragHandler);
         brand.addMouseListener(dragHandler);
         brand.addMouseMotionListener(dragHandler);
     }
 
-    private JButton windowButton(String text, java.awt.event.ActionListener listener, boolean close) {
-        JButton button = new JButton(text) {
-            @Override protected void paintComponent(Graphics graphics) {
-                if (getModel().isRollover()) {
-                    graphics.setColor(close ? new Color(0xDC, 0x26, 0x26) : new Color(255, 255, 255, 28));
-                    graphics.fillRect(0, 0, getWidth(), getHeight());
-                }
-                super.paintComponent(graphics);
-            }
-        };
+    private JButton windowButton(
+            String text, java.awt.event.ActionListener listener, boolean close) {
+        JButton button =
+                new JButton(text) {
+                    @Override
+                    protected void paintComponent(Graphics graphics) {
+                        if (getModel().isRollover()) {
+                            graphics.setColor(
+                                    close
+                                            ? new Color(0xDC, 0x26, 0x26)
+                                            : new Color(255, 255, 255, 28));
+                            graphics.fillRect(0, 0, getWidth(), getHeight());
+                        }
+                        super.paintComponent(graphics);
+                    }
+                };
         button.setPreferredSize(new Dimension(46, 34));
         button.setFont(AppColors.font(Font.PLAIN, 16));
         button.setForeground(Color.WHITE);
@@ -117,7 +127,8 @@ public final class DesktopTitleBar extends JPanel {
     private Icon loadLogo() {
         URL resource = DesktopTitleBar.class.getResource("/images/pet-station-logo.png");
         if (resource == null) return null;
-        Image image = new ImageIcon(resource).getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH);
+        Image image =
+                new ImageIcon(resource).getImage().getScaledInstance(22, 22, Image.SCALE_SMOOTH);
         return new ImageIcon(image);
     }
 }

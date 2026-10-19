@@ -1,9 +1,10 @@
 package com.petstation.gui.components;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import javax.swing.*;
 
 /** Cho phép kéo cạnh/góc của cửa sổ không viền hệ thống để đổi kích thước. */
 public final class WindowResizer extends MouseAdapter {
@@ -52,27 +53,32 @@ public final class WindowResizer extends MouseAdapter {
         };
     }
 
-    @Override public void mouseMoved(MouseEvent e) {
+    @Override
+    public void mouseMoved(MouseEvent e) {
         host.setCursor(Cursor.getPredefinedCursor(cursorFor(directionAt(e.getPoint()))));
     }
 
-    @Override public void mouseExited(MouseEvent e) {
+    @Override
+    public void mouseExited(MouseEvent e) {
         if (pressPoint == null) host.setCursor(Cursor.getDefaultCursor());
     }
 
-    @Override public void mousePressed(MouseEvent e) {
+    @Override
+    public void mousePressed(MouseEvent e) {
         direction = directionAt(e.getPoint());
         if (direction == 0) return;
         pressPoint = e.getLocationOnScreen();
         pressBounds = frame.getBounds();
     }
 
-    @Override public void mouseReleased(MouseEvent e) {
+    @Override
+    public void mouseReleased(MouseEvent e) {
         pressPoint = null;
         direction = 0;
     }
 
-    @Override public void mouseDragged(MouseEvent e) {
+    @Override
+    public void mouseDragged(MouseEvent e) {
         if (direction == 0 || pressPoint == null) return;
         Point now = e.getLocationOnScreen();
         int dx = now.x - pressPoint.x;
