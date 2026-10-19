@@ -37,7 +37,7 @@ Với database hoàn toàn mới chưa có quản lý đang hoạt động, tạ
 
 ```powershell
 mvn -B -ntp package
-java -cp target/petstation.jar com.petstation.util.AdminBootstrap
+java -cp target/petstation.jar com.petstation.util.KhoiTaoQuanTri
 ```
 
 Tiện ích hỏi tên đăng nhập, họ tên, số điện thoại và mật khẩu trong terminal. Không có mật khẩu chung được kích hoạt tự động.

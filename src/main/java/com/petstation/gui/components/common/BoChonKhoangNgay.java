@@ -1,0 +1,207 @@
+package com.petstation.gui.components.common;
+
+import java.awt.*;
+import java.time.LocalDate;
+
+import javax.swing.*;
+
+/**
+ * Cung cấp giao diện và xử lý tương tác cho khoảng ngày bộ chọn.
+ *
+ * <p>Component chọn khoảng thời gian với preset options Dùng cho các màn hình lọc theo ngày (Audit
+ * Log, Hóa đơn, Báo cáo)
+ */
+public class BoChonKhoangNgay extends JPanel {
+    /** Giá trị có sẵn hộp chọn. */
+    private JComboBox<String> cboGiaTriCoSanHopChon;
+
+    /** Ngày bắt đầu bộ chọn. */
+    private BoChonNgay pnlNgayBatDauBoChon;
+
+    /** Ngày kết thúc bộ chọn. */
+    private BoChonNgay pnlNgayKetThucBoChon;
+
+    /** Tùy chỉnh ngày vùng hiển thị. */
+    private JPanel pnlTuyChinhNgayVungHienThi;
+
+    /** Khởi tạo BoChonKhoangNgay với các giá trị được cung cấp. */
+    public BoChonKhoangNgay() {
+        setLayout(new BorderLayout(10, 5));
+
+        // Các khoảng ngày có sẵn
+        // Các giá trị có sẵn.
+        String[] cacGiaTriCoSan = {
+            "Hôm nay",
+            "Hôm qua",
+            "7 ngày qua",
+            "Tuần này",
+            "Tuần trước",
+            "Tháng này",
+            "Tháng trước",
+            "30 ngày qua",
+            "Tùy chọn..."
+        };
+
+        cboGiaTriCoSanHopChon = new JComboBox<>(cacGiaTriCoSan);
+        cboGiaTriCoSanHopChon.addActionListener(suKien -> xuLyGiaTriCoSanThayDoi());
+
+        // Khung chọn khoảng ngày tùy chỉnh
+        pnlTuyChinhNgayVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlTuyChinhNgayVungHienThi.add(new JLabel("Từ:"));
+        pnlNgayBatDauBoChon = new BoChonNgay();
+        pnlTuyChinhNgayVungHienThi.add(pnlNgayBatDauBoChon);
+
+        pnlTuyChinhNgayVungHienThi.add(new JLabel("Đến:"));
+        pnlNgayKetThucBoChon = new BoChonNgay();
+        pnlTuyChinhNgayVungHienThi.add(pnlNgayKetThucBoChon);
+
+        pnlTuyChinhNgayVungHienThi.setVisible(false);
+
+        // Bố cục
+        // Trên vùng hiển thị.
+        JPanel pnlTrenVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pnlTrenVungHienThi.add(new JLabel("Khoảng thời gian:"));
+        pnlTrenVungHienThi.add(cboGiaTriCoSanHopChon);
+
+        add(pnlTrenVungHienThi, BorderLayout.NORTH);
+        add(pnlTuyChinhNgayVungHienThi, BorderLayout.CENTER);
+
+        // Chọn sẵn khoảng ngày hôm nay
+        cboGiaTriCoSanHopChon.setSelectedIndex(0);
+        xuLyGiaTriCoSanThayDoi();
+    }
+
+    /** Xử lý giá trị có sẵn thay đổi trong BoChonKhoangNgay. */
+    private void xuLyGiaTriCoSanThayDoi() {
+        // Đã chọn.
+        String daChon = (String) cboGiaTriCoSanHopChon.getSelectedItem();
+        // Hôm nay.
+        LocalDate homNay = LocalDate.now();
+        // Từ.
+        LocalDate tu = null;
+        // Đến.
+        LocalDate den = null;
+
+        switch (daChon) {
+            case "Hôm nay":
+                tu = den = homNay;
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Hôm qua":
+                tu = den = homNay.minusDays(1);
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "7 ngày qua":
+                tu = homNay.minusDays(6);
+                den = homNay;
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Tuần này":
+                tu = homNay.minusDays(homNay.getDayOfWeek().getValue() - 1);
+                den = homNay;
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Tuần trước":
+                // Cuối cùng tuần bắt đầu.
+                LocalDate cuoiCungTuanBatDau =
+                        homNay.minusDays(homNay.getDayOfWeek().getValue() + 6);
+                tu = cuoiCungTuanBatDau;
+                den = cuoiCungTuanBatDau.plusDays(6);
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Tháng này":
+                tu = homNay.withDayOfMonth(1);
+                den = homNay;
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Tháng trước":
+                // Cuối cùng tháng.
+                LocalDate cuoiCungThang = homNay.minusMonths(1);
+                tu = cuoiCungThang.withDayOfMonth(1);
+                den = cuoiCungThang.withDayOfMonth(cuoiCungThang.lengthOfMonth());
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "30 ngày qua":
+                tu = homNay.minusDays(29);
+                den = homNay;
+                pnlTuyChinhNgayVungHienThi.setVisible(false);
+                break;
+            case "Tùy chọn...":
+                pnlTuyChinhNgayVungHienThi.setVisible(true);
+                // Để trống ngày bắt đầu và kết thúc cho người dùng tự chọn
+                return;
+        }
+
+        // Gán ngày tương ứng với lựa chọn có sẵn
+        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+        if (tu != null && den != null) {
+            pnlNgayBatDauBoChon.datNgayDuocChon(tu);
+            pnlNgayKetThucBoChon.datNgayDuocChon(den);
+        }
+
+        firePropertyChange("dateRange", null, new LocalDate[] {tu, den});
+    }
+
+    // Truy xuất thuộc tính
+    /**
+     * Lấy ngày bắt đầu trong BoChonKhoangNgay.
+     *
+     * @return kết quả lấy ngày bắt đầu
+     */
+    public LocalDate layNgayBatDau() {
+        return pnlNgayBatDauBoChon.layNgayDuocChon();
+    }
+
+    /**
+     * Lấy ngày kết thúc trong BoChonKhoangNgay.
+     *
+     * @return kết quả lấy ngày kết thúc
+     */
+    public LocalDate layNgayKetThuc() {
+        return pnlNgayKetThucBoChon.layNgayDuocChon();
+    }
+
+    /**
+     * Lấy ngày bắt đầu SQL trong BoChonKhoangNgay.
+     *
+     * @return kết quả lấy ngày bắt đầu SQL
+     */
+    public java.sql.Date layNgayBatDauSQL() {
+        return pnlNgayBatDauBoChon.layNgaySQL();
+    }
+
+    /**
+     * Lấy ngày kết thúc SQL trong BoChonKhoangNgay.
+     *
+     * @return kết quả lấy ngày kết thúc SQL
+     */
+    public java.sql.Date layNgayKetThucSQL() {
+        return pnlNgayKetThucBoChon.layNgaySQL();
+    }
+
+    /**
+     * Đặt ngày bắt đầu trong BoChonKhoangNgay.
+     *
+     * @param ngay ngày
+     */
+    public void datNgayBatDau(LocalDate ngay) {
+        cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
+        pnlNgayBatDauBoChon.datNgayDuocChon(ngay);
+    }
+
+    /**
+     * Đặt ngày kết thúc trong BoChonKhoangNgay.
+     *
+     * @param ngay ngày
+     */
+    public void datNgayKetThuc(LocalDate ngay) {
+        cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
+        pnlNgayKetThucBoChon.datNgayDuocChon(ngay);
+    }
+
+    /** Đặt lại trong BoChonKhoangNgay. */
+    public void datLai() {
+        cboGiaTriCoSanHopChon.setSelectedIndex(0);
+        xuLyGiaTriCoSanThayDoi();
+    }
+}

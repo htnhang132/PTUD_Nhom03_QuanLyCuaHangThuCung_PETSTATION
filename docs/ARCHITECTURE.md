@@ -5,8 +5,7 @@
 ```text
 com.petstation
 ├── App.java
-├── ApplicationContext.java
-├── model/                 Các thực thể, UserSession, SaleContext, loại danh mục/màn dữ liệu
+├── model/                 Các thực thể, PhienDangNhap, GioHang, loại danh mục/màn dữ liệu
 ├── dao/                   Interface DAO, cấu hình, kết nối, transaction, lỗi truy cập dữ liệu
 │   └── impl/              Các lớp Jdbc*: câu SQL và ánh xạ kết quả
 ├── service/               Xác thực, quyền, kiểm tra nghiệp vụ và phối hợp transaction
@@ -26,8 +25,8 @@ com.petstation
 │   ├── reports/           Mỗi nhóm báo cáo một panel
 │   ├── components/        Bảng, bộ lọc, form, lịch tuần và thành phần Swing dùng chung
 │   │   └── common/        Chọn khách/ngày, nhập/xuất Excel và editor dùng chung
-│   └── navigation/        ScreenId, ScreenRegistry, menu, luồng chuyển màn hình
-└── util/                  Money và tiện ích khởi tạo quản lý
+│   └── navigation/        MaManHinh, DangKyManHinh, menu, luồng chuyển màn hình
+└── util/                  KhoiTaoUngDung, TienTe và tiện ích khởi tạo quản lý
 ```
 
 ## Tìm đúng nơi để sửa
@@ -35,22 +34,22 @@ com.petstation
 | Công việc | Nơi sửa |
 | --- | --- |
 | Đổi trường/form của một danh mục | Panel tương ứng trong `gui/catalog` hoặc `gui/system` |
-| Đọc/ghi danh mục | `CatalogService` và `JdbcCatalogDao`; giữ các interface DAO thực thể trong `dao` |
-| Đổi dữ liệu bảng nghiệp vụ | `WorkflowType`, `WorkflowService`, `JdbcWorkflowDao` |
-| Thêm/sửa nút xử lý | Panel cụ thể; form dùng chung của phân hệ nằm ở `SpaWorkflowPanel`, `HotelWorkflowPanel`, `InventoryWorkflowPanel`, `SalesWorkflowPanel` |
-| Spa, Hotel, kho, đổi trả | `SpaService`, `HotelService`, `InventoryService`, `ReturnService` và DAO tương ứng |
-| Thanh toán, nạp hóa đơn dịch vụ, đơn treo | `SalesService` và `JdbcSalesDao` |
-| Phê duyệt và tác động của quyết định | `ApprovalService`; phối hợp các service nghiệp vụ trong cùng transaction |
-| Cài đặt, nhật ký, lịch, quyền, ca | `SettingsService`, `AuditService`, `ScheduleService`, `PermissionService`, `CashShiftService` |
-| Đăng nhập và phiên | `AuthenticationService`, `AccountService`, `SessionContext`, `SessionService`, `AuthorizationService`; dữ liệu phiên là `model.UserSession` |
-| Nhóm menu, quyền màn hình, phím tắt, điều hướng | `MenuModel`, `ScreenRegistry`, `ScreenFlows` |
-| Tổng hợp báo cáo | `ReportingService`, `JdbcReportingDao` và panel trong `gui/reports` |
+| Đọc/ghi danh mục | `DanhMucService` và `JdbcDanhMucDAO`; giữ các interface DAO thực thể trong `dao` |
+| Đổi dữ liệu bảng nghiệp vụ | `LoaiNghiepVu`, `NghiepVuService`, `JdbcNghiepVuDAO` |
+| Thêm/sửa nút xử lý | Panel cụ thể; form dùng chung của phân hệ nằm ở `NghiepVuSpaPanel`, `NghiepVuHotelPanel`, `NghiepVuKhoPanel`, `NghiepVuBanHangPanel` |
+| Spa, Hotel, kho, đổi trả | `SpaService`, `LuuTruService`, `KhoService`, `DoiTraService` và DAO tương ứng |
+| Thanh toán, nạp hóa đơn dịch vụ, đơn treo | `BanHangService` và `JdbcBanHangDAO` |
+| Phê duyệt và tác động của quyết định | `PheDuyetService`; phối hợp các service nghiệp vụ trong cùng transaction |
+| Cài đặt, nhật ký, lịch, quyền, ca | `CaiDatService`, `NhatKyHeThongService`, `LichLamViecService`, `QuyenVaiTroService`, `CaThuNganService` |
+| Đăng nhập và phiên | `XacThucService`, `TaiKhoanService`, `NguCanhPhienService`, `PhienDangNhapService`, `PhanQuyenService`; dữ liệu phiên là `model.PhienDangNhap` |
+| Nhóm menu, quyền màn hình, phím tắt, điều hướng | `CauTrucMenu`, `DangKyManHinh`, `QuyTrinhManHinh` |
+| Tổng hợp báo cáo | `ThongKeService`, `JdbcThongKeDAO` và panel trong `gui/reports` |
 
 Panel thu thập đầu vào và hiển thị kết quả. Service kiểm tra quyền/nghiệp vụ và mở transaction. DAO chứa SQL với tham số ràng buộc; các lệnh JDBC dùng chung kết nối của transaction hiện tại. Transaction lồng nhau dùng savepoint. Các truy vấn báo cáo nhận phạm vi tài khoản/nhân viên đã xác định ở service.
 
-`WorkflowTablePanel` chỉ dựng bảng, lọc, tải lại, chọn dòng, xem chi tiết và xuất Excel. Panel con chọn loại dữ liệu và tự đăng ký các hành động; không có switch tổng xử lý mọi nghiệp vụ trong GUI.
+`BangNghiepVuPanel` chỉ dựng bảng, lọc, tải lại, chọn dòng, xem chi tiết và xuất Excel. Panel con chọn loại dữ liệu và tự đăng ký các hành động; không có switch tổng xử lý mọi nghiệp vụ trong GUI.
 
-Các tab được giữ: sản phẩm/lịch sử giá, quy tắc điểm/voucher, tài khoản/ma trận quyền. Mỗi `ScreenId` có panel riêng; mã màn hình và nhóm menu giữ nguyên.
+Các tab được giữ: sản phẩm/lịch sử giá, quy tắc điểm/voucher, tài khoản/ma trận quyền. Mỗi `MaManHinh` có panel riêng; mã màn hình và nhóm menu giữ nguyên.
 
 ## Database và kiểm tra
 

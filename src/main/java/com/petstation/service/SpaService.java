@@ -1,131 +1,224 @@
 package com.petstation.service;
 
-import static com.petstation.dao.SqlDatabase.*;
-import static com.petstation.service.SessionService.*;
-import static com.petstation.service.WorkflowSupport.*;
+import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.service.HoTroNghiepVuService.*;
+import static com.petstation.service.PhienDangNhapService.*;
 
-import com.petstation.dao.impl.JdbcSpaDao;
-import com.petstation.model.Permission;
+import com.petstation.dao.impl.JdbcXuLySpaDAO;
+import com.petstation.model.Quyen;
 
 import java.time.*;
 import java.util.*;
 
+/** Quản lý tiếp nhận, lựa chọn dịch vụ, tiến độ và hoàn thành phiếu Spa. */
 public final class SpaService {
-    public static long appointment(
-            String petCode, String packageCode, String staffCode, LocalDateTime start) {
-        require(Permission.SPA_MANAGE);
-        return transaction(
-                c -> {
-                    Object[] p = pet(petCode);
-                    long pkg = id("goi_dich_vu_spa", "ma_goi", packageCode),
-                            staff = id("nhan_vien", "ma_nhan_vien", staffCode);
-                    positive(JdbcSpaDao.countAppointment(pkg));
-                    positive(JdbcSpaDao.countAppointment2(staff));
-                    LocalDateTime end = start.plusMinutes(JdbcSpaDao.countAppointment3(pkg));
-                    if (JdbcSpaDao.countAppointment4(staff, p[0], end, start) > 0)
+    /**
+     * Đặt lịch hẹn trong SpaService.
+     *
+     * @param maThuCung mã thú cưng
+     * @param maGoiDichVu mã gói dịch vụ
+     * @param maNhanVien mã nhân viên
+     * @param batDau bắt đầu
+     * @return kết quả đặt lịch hẹn
+     */
+    public static long datLichHen(
+            String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {
+        yeuCau(Quyen.SPA_MANAGE);
+        return thucHienGiaoDich(
+                ketNoi -> {
+                    // Vùng đang xét.
+                    Object[] vungDangXet = layThuCung(maThuCung);
+                    // Gói dịch vụ.
+                    long goiDichVu = layId("goi_dich_vu_spa", "ma_goi", maGoiDichVu),
+                            nhanVien = layId("nhan_vien", "ma_nhan_vien", maNhanVien);
+                    kiemTraDuong(JdbcXuLySpaDAO.demLichHen(goiDichVu));
+                    kiemTraDuong(JdbcXuLySpaDAO.demLichHen2(nhanVien));
+                    // Kết thúc.
+                    LocalDateTime ketThuc =
+                            batDau.plusMinutes(JdbcXuLySpaDAO.demLichHen3(goiDichVu));
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (JdbcXuLySpaDAO.demLichHen4(nhanVien, vungDangXet[0], ketThuc, batDau) > 0)
                         throw new IllegalArgumentException(
                                 "Nhân viên hoặc thú cưng đã có lịch trùng giờ.");
-                    long result =
-                            JdbcSpaDao.insertAppointment(
-                                    code("LH"), p[1], p[0], start, end, staff, pkg);
-                    AuditService.log("Tạo lịch hẹn", petCode);
-                    return result;
+                    // Kết quả.
+                    long ketQua =
+                            JdbcXuLySpaDAO.themLichHen(
+                                    taoMa("LH"),
+                                    vungDangXet[1],
+                                    vungDangXet[0],
+                                    batDau,
+                                    ketThuc,
+                                    nhanVien,
+                                    goiDichVu);
+                    NhatKyHeThongService.ghiNhatKy("Tạo lịch hẹn", maThuCung);
+                    return ketQua;
                 });
     }
 
-    public static long intake(String petCode, String appointmentCode, double weight, String note) {
-        require(Permission.SPA_MANAGE);
-        if (!Double.isFinite(weight) || weight <= 0)
+    /**
+     * Tiếp nhận trong SpaService.
+     *
+     * @param maThuCung mã thú cưng
+     * @param maLichHen mã lịch hẹn
+     * @param canNang cân nặng
+     * @param ghiChu ghi chú
+     * @return kết quả tiếp nhận
+     */
+    public static long tiepNhan(String maThuCung, String maLichHen, double canNang, String ghiChu) {
+        yeuCau(Quyen.SPA_MANAGE);
+        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+        if (!Double.isFinite(canNang) || canNang <= 0)
             throw new IllegalArgumentException("Cân nặng phải lớn hơn 0.");
-        return transaction(
-                c -> {
-                    Object[] p = pet(petCode);
-                    Long appointment = null;
-                    long staff = employeeId();
-                    if (appointmentCode != null && !appointmentCode.isBlank()) {
-                        List<Object[]> rows = JdbcSpaDao.findIntake(appointmentCode, p[0]);
-                        if (rows.isEmpty())
+        return thucHienGiaoDich(
+                ketNoi -> {
+                    // Vùng đang xét.
+                    Object[] vungDangXet = layThuCung(maThuCung);
+                    // Lịch hẹn.
+                    Long lichHen = null;
+                    // Nhân viên.
+                    long nhanVien = layIdNhanVien();
+                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                    if (maLichHen != null && !maLichHen.isBlank()) {
+                        // Các dòng.
+                        List<Object[]> cacDong =
+                                JdbcXuLySpaDAO.timTiepNhan(maLichHen, vungDangXet[0]);
+                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                        if (cacDong.isEmpty())
                             throw new IllegalArgumentException(
                                     "Lịch hẹn không phù hợp hoặc đã tiếp nhận.");
-                        appointment = value(rows.get(0)[0]);
-                        if (rows.get(0)[1] != null) staff = value(rows.get(0)[1]);
-                        JdbcSpaDao.updateIntake(appointment);
+                        lichHen = layGiaTri(cacDong.get(0)[0]);
+                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                        if (cacDong.get(0)[1] != null) nhanVien = layGiaTri(cacDong.get(0)[1]);
+                        JdbcXuLySpaDAO.capNhatTiepNhan(lichHen);
                     }
-                    long result =
-                            JdbcSpaDao.insertIntake(
-                                    code("SPA"), appointment, p[0], weight, staff, note);
-                    JdbcSpaDao.updateIntake2(weight, note, p[0]);
-                    if (appointment != null) {
-                        Object pkg = JdbcSpaDao.getIntake(appointment);
-                        if (pkg != null) addSpaService(result, text(pkg));
+                    // Kết quả.
+                    long ketQua =
+                            JdbcXuLySpaDAO.themTiepNhan(
+                                    taoMa("SPA"),
+                                    lichHen,
+                                    vungDangXet[0],
+                                    canNang,
+                                    nhanVien,
+                                    ghiChu);
+                    JdbcXuLySpaDAO.capNhatTiepNhan2(canNang, ghiChu, vungDangXet[0]);
+                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                    if (lichHen != null) {
+                        // Gói dịch vụ.
+                        Object goiDichVu = JdbcXuLySpaDAO.layTiepNhan(lichHen);
+                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                        if (goiDichVu != null) themDichVuSpa(ketQua, chuyenThanhChuoi(goiDichVu));
                     }
-                    AuditService.log("Tiếp nhận Spa", petCode);
-                    return result;
+                    NhatKyHeThongService.ghiNhatKy("Tiếp nhận Spa", maThuCung);
+                    return ketQua;
                 });
     }
 
-    public static void addSpaService(long ticket, String packageCode) {
-        require(Permission.SPA_MANAGE);
-        transaction(
-                c -> {
-                    List<Object[]> tickets = JdbcSpaDao.findAddSpaService(ticket);
-                    if (tickets.isEmpty()
-                            || !Set.of("RECEIVED", "IN_PROGRESS").contains(text(tickets.get(0)[2])))
+    /**
+     * Thêm dịch vụ Spa trong SpaService.
+     *
+     * @param phieuSpa phiếu Spa
+     * @param maGoiDichVu mã gói dịch vụ
+     */
+    public static void themDichVuSpa(long phieuSpa, String maGoiDichVu) {
+        yeuCau(Quyen.SPA_MANAGE);
+        thucHienGiaoDich(
+                ketNoi -> {
+                    // Các phiếu Spa.
+                    List<Object[]> cacPhieuSpa = JdbcXuLySpaDAO.timThemDichVuSpa(phieuSpa);
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (cacPhieuSpa.isEmpty()
+                            || !Set.of("RECEIVED", "IN_PROGRESS")
+                                    .contains(chuyenThanhChuoi(cacPhieuSpa.get(0)[2])))
                         throw new IllegalArgumentException(
                                 "Phiếu không còn cho phép thêm dịch vụ.");
-                    Object[] t = tickets.get(0);
-                    List<Object[]> prices =
-                            JdbcSpaDao.findAddSpaService2(packageCode, t[1], t[0], t[0]);
-                    if (prices.isEmpty())
+                    // Giá trị tạm.
+                    Object[] giaTriTam = cacPhieuSpa.get(0);
+                    // Các giá.
+                    List<Object[]> cacGia =
+                            JdbcXuLySpaDAO.timThemDichVuSpa2(
+                                    maGoiDichVu, giaTriTam[1], giaTriTam[0], giaTriTam[0]);
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (cacGia.isEmpty())
                         throw new IllegalArgumentException(
                                 "Chưa có bảng giá phù hợp với loài và cân nặng.");
-                    Object[] price = prices.get(0);
-                    JdbcSpaDao.updateAddSpaService(ticket, price[0], price[2], price[1]);
-                    JdbcSpaDao.updateAddSpaService2(ticket, ticket);
-                    AuditService.log("Thêm dịch vụ Spa", packageCode + " / " + ticket);
+                    // Giá.
+                    Object[] gia = cacGia.get(0);
+                    JdbcXuLySpaDAO.capNhatThemDichVuSpa(phieuSpa, gia[0], gia[2], gia[1]);
+                    JdbcXuLySpaDAO.capNhatThemDichVuSpa2(phieuSpa, phieuSpa);
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Thêm dịch vụ Spa", maGoiDichVu + " / " + phieuSpa);
                     return null;
                 });
     }
 
-    public static void spaStatus(long ticket, String next) {
-        require(Permission.SPA_MANAGE);
-        String expected =
-                switch (next) {
+    /**
+     * Lấy trạng thái Spa trong SpaService.
+     *
+     * @param phieuSpa phiếu Spa
+     * @param tiepTheo tiếp theo
+     */
+    public static void layTrangThaiSpa(long phieuSpa, String tiepTheo) {
+        yeuCau(Quyen.SPA_MANAGE);
+        // Dự kiến.
+        String duKien =
+                switch (tiepTheo) {
                     case "IN_PROGRESS" -> "RECEIVED";
                     case "COMPLETED" -> "IN_PROGRESS";
                     default -> throw new IllegalArgumentException("Trạng thái không hợp lệ.");
                 };
-        transaction(
-                c -> {
-                    if (JdbcSpaDao.countSpaStatus(ticket) == 0)
+        thucHienGiaoDich(
+                ketNoi -> {
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (JdbcXuLySpaDAO.demTrangThaiSpa(phieuSpa) == 0)
                         throw new IllegalArgumentException("Cần chọn dịch vụ cho phiếu.");
-                    if (JdbcSpaDao.updateSpaStatus(next, ticket, expected) != 1)
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (JdbcXuLySpaDAO.capNhatTrangThaiSpa(tiepTheo, phieuSpa, duKien) != 1)
                         throw new IllegalArgumentException(
                                 "Phiếu đã chuyển trạng thái. Hãy tải lại.");
-                    if (next.equals("COMPLETED")) JdbcSpaDao.updateSpaStatus2(ticket);
-                    AuditService.log("Cập nhật Spa", ticket + " / " + next);
+                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                    if (tiepTheo.equals("COMPLETED")) JdbcXuLySpaDAO.capNhatSpaTrangThai2(phieuSpa);
+                    NhatKyHeThongService.ghiNhatKy("Cập nhật Spa", phieuSpa + " / " + tiepTheo);
                     return null;
                 });
     }
 
-    public static void cancelAppointment(long id, String code) {
-        require(Permission.SPA_MANAGE);
-        transaction(
-                c -> {
-                    if (JdbcSpaDao.cancelAppointmentRecord(id) != 1)
+    /**
+     * Hủy lịch hẹn trong SpaService.
+     *
+     * @param id id
+     * @param ma mã
+     */
+    public static void huyLichHen(long id, String ma) {
+        yeuCau(Quyen.SPA_MANAGE);
+        thucHienGiaoDich(
+                ketNoi -> {
+                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    if (JdbcXuLySpaDAO.huyLichHenBanGhi(id) != 1)
                         throw new IllegalArgumentException("Chỉ có thể hủy lịch chưa tiếp nhận.");
-                    AuditService.log("Hủy lịch hẹn", code);
+                    NhatKyHeThongService.ghiNhatKy("Hủy lịch hẹn", ma);
                     return null;
                 });
     }
 
-    public static Object appointmentPetCode(long appointment) {
-        SessionService.require(com.petstation.model.Permission.SPA_MANAGE);
-        return JdbcSpaDao.appointmentPetCode(appointment);
+    /**
+     * Lấy mã lịch hẹn thú cưng trong SpaService.
+     *
+     * @param lichHen lịch hẹn
+     * @return kết quả lấy mã lịch hẹn thú cưng
+     */
+    public static Object layMaLichHenThuCung(long lichHen) {
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.SPA_MANAGE);
+        return JdbcXuLySpaDAO.layMaLichHenThuCung(lichHen);
     }
 
-    public static List<Object[]> ticketDetails(long ticket) {
-        SessionService.require(com.petstation.model.Permission.SPA_MANAGE);
-        return JdbcSpaDao.ticketDetails(ticket);
+    /**
+     * Lấy phiếu Spa chi tiết trong SpaService.
+     *
+     * @param phieuSpa phiếu Spa
+     * @return kết quả lấy phiếu Spa chi tiết
+     */
+    public static List<Object[]> layPhieuSpaChiTiet(long phieuSpa) {
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.SPA_MANAGE);
+        return JdbcXuLySpaDAO.layPhieuSpaChiTiet(phieuSpa);
     }
 }

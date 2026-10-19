@@ -32,72 +32,72 @@
 
 ### 2. Domain Models (17/17 = 100%)
 ✅ **Core entities:**
-- `Customer.java` - Customer with loyalty points
-- `Pet.java` - Pet with health info and vaccinations
-- `Product.java` - Product catalog
+- `KhachHang.java` - KhachHang with loyalty points
+- `ThuCung.java` - ThuCung with health info and vaccinations
+- `SanPham.java` - SanPham catalog
 
 ✅ **Inventory:**
-- `Batch.java` - Inventory batches with expiry tracking
-- `Supplier.java` - Supplier management
+- `LoHang.java` - Inventory batches with expiry tracking
+- `NhaCungCap.java` - NhaCungCap management
 
 ✅ **Promotions & Discounts:**
-- `Promotion.java` - Campaign promotions
+- `ChuongTrinhKhuyenMai.java` - Campaign promotions
 - `Voucher.java` - Voucher with loyalty rewards
 
 ✅ **Sales:**
-- `Invoice.java` - Invoice with multiple payment methods
-- `InvoiceItem.java` - Invoice line items
+- `HoaDon.java` - HoaDon with multiple payment methods
+- `ChiTietDonHang.java` - HoaDon line items
 
 ✅ **Spa Services:**
-- `SpaPackage.java` - Service packages
-- `SpaPriceMatrix.java` - Dynamic pricing by weight/species
-- `SpaTicket.java` - Service tickets
-- `SpaTicketDetail.java` - Service details with surcharges
+- `GoiDichVuSpa.java` - Service packages
+- `BangGiaSpa.java` - Dynamic pricing by weight/species
+- `PhieuTiepNhanSpa.java` - Service tickets
+- `ChiTietPhieuSpa.java` - Service details with surcharges
 
 ✅ **Hotel Services:**
-- `HotelBooking.java` - Room bookings
-- `HotelPricing.java` - Pricing by time frame
+- `HopDongLuuTru.java` - Room bookings
+- `BangGiaHotel.java` - Pricing by time frame
 
 ✅ **System:**
-- `SystemSettings.java` - Configurable settings
-- `PriceHistory.java` - Price change audit trail
-- `DayLock.java` - Day-end reconciliation lock
+- `CaiDatHeThong.java` - Configurable settings
+- `LichSuGia.java` - Price change audit trail
+- `ChotNgay.java` - Day-end reconciliation lock
 
 ### 3. DAO Interfaces (15/15 = 100%)
 ✅ **All interfaces created:**
-- `CustomerDao` - Customer CRUD with tier management
-- `PetDao` - Pet CRUD with customer filtering
-- `ProductDao` - Product catalog with category filtering
-- `BatchDao` - Inventory batch management with expiry tracking
-- `SupplierDao` - Supplier management
-- `InvoiceDao` - Sales with revenue calculations
-- `VoucherDao` - Voucher management
-- `SpaPackageDao` - Spa package CRUD
-- `SpaPriceMatrixDao` - Dynamic spa pricing
-- `SpaTicketDao` - Spa service tracking
-- `HotelBookingDao` - Hotel reservations with availability check
-- `HotelPricingDao` - Hotel pricing management
-- `SystemSettingsDao` - Settings with type-safe get/set
-- `PriceHistoryDao` - Price audit queries
-- `DayLockDao` - Day lock with date validation
+- `KhachHangDAO` - KhachHang CRUD with tier management
+- `ThuCungDAO` - ThuCung CRUD with customer filtering
+- `SanPhamDAO` - SanPham catalog with category filtering
+- `LoHangDAO` - Inventory batch management with expiry tracking
+- `NhaCungCapDAO` - NhaCungCap management
+- `HoaDonDAO` - Sales with revenue calculations
+- `VoucherDAO` - Voucher management
+- `GoiDichVuSpaDAO` - Spa package CRUD
+- `BangGiaSpaDAO` - Dynamic spa pricing
+- `PhieuTiepNhanSpaDAO` - Spa service tracking
+- `HopDongLuuTruDAO` - Hotel reservations with availability check
+- `BangGiaHotelDAO` - Hotel pricing management
+- `CaiDatHeThongDAO` - Settings with type-safe get/set
+- `LichSuGiaDAO` - Price audit queries
+- `ChotNgayDAO` - Day lock with date validation
 
 ### 4. JDBC DAO Implementations (15/15 = 100% ✅)
 ✅ **All implementations completed:**
-1. `JdbcCustomerDao` - Full CRUD + search + loyalty management
-2. `JdbcSpaPackageDao` - Package management
-3. `JdbcPetDao` - Pet CRUD with weight tracking
-4. `JdbcProductDao` - Product catalog with price updates
-5. `JdbcSpaPriceMatrixDao` - Dynamic pricing by weight/species
-6. `JdbcSystemSettingsDao` - Type-safe settings management
-7. `JdbcInvoiceDao` - Sales tracking with revenue calculations
-8. `JdbcVoucherDao` - Loyalty program and validation
-9. `JdbcSpaTicketDao` - Service queue and workflow management
-10. `JdbcBatchDao` - Inventory batch tracking with expiry alerts
-11. `JdbcSupplierDao` - Vendor management
-12. `JdbcHotelBookingDao` - Room reservations with availability check
-13. `JdbcHotelPricingDao` - Hotel pricing lookup by time frame
-14. `JdbcPriceHistoryDao` - Price audit trail
-15. `JdbcDayLockDao` - Day-end reconciliation and lock validation
+1. `JdbcKhachHangDAO` - Full CRUD + search + loyalty management
+2. `JdbcGoiDichVuSpaDAO` - Package management
+3. `JdbcThuCungDAO` - ThuCung CRUD with weight tracking
+4. `JdbcSanPhamDAO` - SanPham catalog with price updates
+5. `JdbcBangGiaSpaDAO` - Dynamic pricing by weight/species
+6. `JdbcCaiDatHeThongDAO` - Type-safe settings management
+7. `JdbcHoaDonDAO` - Sales tracking with revenue calculations
+8. `JdbcVoucherDAO` - Loyalty program and validation
+9. `JdbcPhieuTiepNhanSpaDAO` - Service queue and workflow management
+10. `JdbcLoHangDAO` - Inventory batch tracking with expiry alerts
+11. `JdbcNhaCungCapDAO` - Vendor management
+12. `JdbcHopDongLuuTruDAO` - Room reservations with availability check
+13. `JdbcBangGiaHotelDAO` - Hotel pricing lookup by time frame
+14. `JdbcLichSuGiaDAO` - Price audit trail
+15. `JdbcChotNgayDAO` - Day-end reconciliation and lock validation
 
 ---
 
@@ -121,8 +121,8 @@
 
 ### Priority 2: Integration testing
 - [ ] Test DAO implementations with actual database
-- [ ] Test transactions with TransactionManager
-- [ ] Test ApplicationContext wiring
+- [ ] Test transactions with QuanLyGiaoDich
+- [ ] Test KhoiTaoUngDung wiring
 - [ ] Verify optimistic locking with ROWVERSION
 
 **Estimated time:** ~1-2 hours
@@ -155,10 +155,10 @@
 2. `384ae11` - feat(dao): add DAO interfaces and JDBC implementations for core entities
 3. `1088897` - feat(model): add domain models for inventory, sales and services
 4. `7570d6a` - feat(dao): add DAO interfaces for all remaining entities
-5. `68d5f1c` - feat(dao): add JDBC implementations for Pet and Product DAOs
-6. `c2aa110` - feat(dao): add implementations for SpaPriceMatrix and SystemSettings DAOs
-7. `92ec443` - feat(dao): add Invoice and Voucher DAO implementations
-8. `328f486` - feat(dao): add SpaTicket DAO implementation
+5. `68d5f1c` - feat(dao): add JDBC implementations for ThuCung and SanPham DAOs
+6. `c2aa110` - feat(dao): add implementations for BangGiaSpa and CaiDatHeThong DAOs
+7. `92ec443` - feat(dao): add HoaDon and Voucher DAO implementations
+8. `328f486` - feat(dao): add PhieuTiepNhanSpa DAO implementation
 9. `9c740d2` - docs: add templates and guide for remaining DAO implementations
 10. `5113e96` - feat(dao): complete all remaining DAO implementations - 100% Giai đoạn 1
 
@@ -179,7 +179,7 @@
    - Code review
    - Deploy
 
-4. **Bắt đầu Giai đoạn 2: Product Catalog** (sau 27/10/2026)
+4. **Bắt đầu Giai đoạn 2: SanPham Catalog** (sau 27/10/2026)
 
 ---
 
@@ -187,7 +187,7 @@
 
 - Code follows repository pattern với proper separation of concerns
 - Tất cả DAOs use PreparedStatement để prevent SQL injection
-- Error handling với DataAccessException
+- Error handling với TruyCapDuLieuException
 - Optimistic locking với ROWVERSION columns
 - Code đã được commit với conventional commit messages
 - Nhánh `feature/db-schema-v2` sẵn sàng để tiếp tục develop
@@ -211,7 +211,7 @@
 
 **Key achievements:**
 - ✅ Full spa pricing matrix with dynamic weight/species lookup
-- ✅ Invoice tracking with revenue calculations by date range
+- ✅ HoaDon tracking with revenue calculations by date range
 - ✅ Voucher system with loyalty program integration
 - ✅ Service queue management for spa operations
 - ✅ Hotel booking system with room availability check

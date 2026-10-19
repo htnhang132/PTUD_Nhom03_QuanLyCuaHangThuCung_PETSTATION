@@ -10,7 +10,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 | Quy trình một chức năng | git checkout develop && git pull → git checkout -b feature/<tên> → commit nhỏ, đúng tiền tố → git fetch && git rebase origin/develop → git push -u origin feature/<tên> → mở Pull Request vào develop → ít nhất 1 thành viên duyệt → Squash and merge → xóa nhánh. |
 | Commit message | Dùng Conventional Commits: feat, fix, docs, refactor (và có thể chore, test, ci, build). Dạng “feat(phạm-vi): mô tả ngắn bằng tiếng Anh, thì hiện tại”. Cấm commit chung chung như update, fix bug, 123, asdf. |
 | Pull Request | Tiêu đề theo commit; mô tả: làm gì, ảnh chụp màn hình (nếu có giao diện), cách kiểm tra, quy định/UC liên quan. Danh sách kiểm tra: biên dịch xanh, test mới/đã cập nhật, không để mã dữ liệu mẫu, đã cập nhật tài liệu, đúng quy ước đặt tên. |
-| Quy ước đặt tên | Lớp PascalCase (PetController, InvoiceService); biến/hàm camelCase (calculateTotalPrice, petName); bảng CSDL snake_case thống nhất; gói gui, service, dao, model tách tầng. |
+| Quy ước đặt tên | Tên tiếng Việt không dấu theo SQL: lớp/file PascalCase (KhachHang, BanHangService); biến/hàm camelCase (hoTen, tinhTongTien); hằng UPPER_SNAKE_CASE; giữ hậu tố DAO/Service/Panel/Frame/Dialog/Exception/Test, tiền tố Swing và package hiện tại. Xem CONTRIBUTING.md và docs/TEN_MA_NGUON.md. |
 | Phát hành | Từ develop tạo release/v1.0, sửa lỗi cuối, Pull Request vào main, gắn tag v1.0.0 (ngày 25/10/2026). Sau tag chỉ nhận hotfix qua nhánh fix/*. |
 
 ## Quyết định cần chốt (Giai đoạn 0)
@@ -63,7 +63,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 **Công việc**
 
 1. Vỉ: viết 005_schema_v2.sql theo OOAD đã chốt: bảng goi_dich_vu_spa, bang_gia_spa, chi_tiet_phieu_spa, bang_gia_hotel, cai_dat, lich_su_gia, chot_ngay; sửa voucher (chủ sở hữu, loại), thu_cung, tiem_phong, hoa_don, phien_lam_viec, yeu_cau_phe_duyet; cập nhật dữ liệu mẫu; script chạy từ đầu run_all.sql; vẽ lại ERD.
-2. Nhàng: chuẩn hóa gói gui → service (BLL) → dao (DAL) → model (DTO); mỗi nghiệp vụ có interface Service và Repository; cài đặt InMemory (để giao diện chạy khi chưa có CSDL) và Jdbc; dùng TransactionManager cho giao dịch nhiều bước.
+2. Nhàng: chuẩn hóa gói gui → service (BLL) → dao (DAL) → model (DTO); mỗi nghiệp vụ có interface Service và Repository; cài đặt InMemory (để giao diện chạy khi chưa có CSDL) và Jdbc; dùng QuanLyGiaoDich cho giao dịch nhiều bước.
 3. Thay dần DemoStore bằng Repository; giao diện không gọi trực tiếp dữ liệu mẫu.
 4. Thêm test tích hợp DAO gắn thẻ db, chạy khi có biến môi trường kết nối SQL Server.
 
@@ -94,7 +94,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 2. Nhàng – Sản phẩm và giá: mã vạch, ngành hàng, quy cách, vị trí kệ, nhà cung cấp; Nhân viên kho đề xuất giá, Cửa hàng trưởng duyệt; Lịch sử giá lưu CSDL.
 3. Đạt – Dịch vụ Spa và Phòng Hotel: 4 gói × loài × khoảng cân nặng, dịch vụ lẻ và phụ thu; bảng giá Hotel theo khung giờ và cân nặng.
 4. Vy – Nhà cung cấp, Khuyến mãi, Voucher: voucher đổi điểm (cá nhân) tách khỏi voucher chương trình; trạng thái tự tính theo ngày lưu CSDL.
-5. Nhàng và Vỉ – Tài khoản và nhật ký: AuditLogDao dùng ở mọi dịch vụ, nghỉ việc khóa tài khoản trong cùng transaction.
+5. Nhàng và Vỉ – Tài khoản và nhật ký: NhatKyHeThongDAO dùng ở mọi dịch vụ, nghỉ việc khóa tài khoản trong cùng transaction.
 
 **Commit mẫu**
 
@@ -110,7 +110,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 
 - Mọi màn Danh mục đọc ghi CSDL; đóng mở lại ứng dụng dữ liệu còn.
 - Bộ test kiểm tra dữ liệu (SĐT, email, CCCD, ngày) vẫn đạt.
-- Nhật ký do AuditService ghi và đọc từ CSDL.
+- Nhật ký do NhatKyHeThongService ghi và đọc từ CSDL.
 
 ## Giai đoạn 3: Bán hàng POS, thanh toán, đổi trả, tích điểm
 
@@ -271,7 +271,7 @@ Lập ngày 10/10/2026, hạn nộp 27/10/2026. Bản đầy đủ kèm rà soá
 | Rủi ro | Cách xử lý |
 |---|---|
 | Chỉ còn 17 ngày, nhiều việc song song. | Mỗi người tối đa 3 nhánh; ưu tiên luồng POS, kho, Spa, Hotel trước; chức năng ngoại tuyến cắt giảm nếu trễ mốc 19/10. |
-| Xung đột khi gộp mã ở ScreenRegistry, EntityPanel và các panel danh mục. | Mỗi người chỉ sửa tệp của phân hệ mình; rebase vào develop mỗi ngày; PR nhỏ dưới 400 dòng; họp đứng 15 phút mỗi sáng. |
+| Xung đột khi gộp mã ở DangKyManHinh, QuanLyDanhMucPanel và các panel danh mục. | Mỗi người chỉ sửa tệp của phân hệ mình; rebase vào develop mỗi ngày; PR nhỏ dưới 400 dòng; họp đứng 15 phút mỗi sáng. |
 | Chưa thống nhất quy định (điểm, số ca, thanh toán). | Chốt 8 quyết định ở Giai đoạn 0 và ghi vào docs/DECISIONS.md; không bắt đầu code phần liên quan khi chưa chốt. |
 | Không có SQL Server hoặc thiết bị phần cứng. | Dùng SQL Server Express hoặc Docker và database kiểm thử riêng; thiết bị quét/in được kiểm tra bằng bàn phím và PDF. |
 | UAT tại cửa hàng không sắp xếp được. | Chuẩn bị kịch bản UAT và video demo để nhóm tự đóng vai; xin lịch sớm từ Giai đoạn 5. |
