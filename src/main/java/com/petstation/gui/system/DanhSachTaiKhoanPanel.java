@@ -13,16 +13,10 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho tài khoản danh sách vùng hiển thị. */
 public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhSachTaiKhoanPanel với các giá trị được cung cấp. */
     public DanhSachTaiKhoanPanel() {
         super(taoCauHinh(), taoCacTruong(), DanhMucService.layTaiKhoan());
     }
 
-    /**
-     * Tạo cấu hình trong DanhSachTaiKhoanPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -34,7 +28,6 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                                 dongDuLieu -> {
                                     // Đã khóa.
                                     boolean daKhoa = "Đã khóa".equals(dongDuLieu[3]);
-                                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                                     if ("admin".equals(dongDuLieu[0]) && !daKhoa)
                                         return "Không thể khóa tài khoản admin.";
                                     dongDuLieu[3] = daKhoa ? "Hoạt động" : "Đã khóa";
@@ -74,11 +67,6 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhSachTaiKhoanPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Tên đăng nhập", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),

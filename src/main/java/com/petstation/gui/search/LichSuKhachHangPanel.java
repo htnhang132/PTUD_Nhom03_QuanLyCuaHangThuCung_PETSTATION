@@ -47,11 +47,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     /** Mô hình. */
     private DefaultTableModel moHinh;
 
-    /**
-     * Tải lại các khách hàng trong LichSuKhachHangPanel.
-     *
-     * @param moHinhDangXet mô hình đang xét
-     */
     private static void taiLaiCacKhachHang(DefaultTableModel moHinhDangXet) {
         moHinhDangXet.setRowCount(0);
         for (Object[] dongDuLieu : com.petstation.service.DanhMucService.layKhachHang()) {
@@ -71,7 +66,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private final NutDinhDang btnHienThi =
             new NutDinhDang("Xem lịch sử ▸", NutDinhDang.KieuNut.CHINH);
 
-    /** Khởi tạo LichSuKhachHangPanel với các giá trị được cung cấp. */
     public LichSuKhachHangPanel() {
         setLayout(new BorderLayout());
         pnlGoc.setOpaque(false);
@@ -88,13 +82,13 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         // Thanh.
         JPanel pnlThanh = new JPanel(new BorderLayout(10, 0));
         pnlThanh.setOpaque(false);
-        pnlThanh.add(lblTieuDe, BorderLayout.WEST);
+        pnlThanh.add(lblTieuDe, BorderLayout.NORTH);
         // Phải.
-        JPanel pnlPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel pnlPhai = new com.petstation.gui.components.ThanhDanhSach();
         pnlPhai.setOpaque(false);
         pnlPhai.add(txtTimKiem);
         pnlPhai.add(btnHienThi);
-        pnlThanh.add(pnlPhai, BorderLayout.EAST);
+        pnlThanh.add(pnlPhai, BorderLayout.CENTER);
         pnlChon.add(pnlThanh, BorderLayout.NORTH);
 
         // Các cột.
@@ -142,7 +136,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                      */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (suKien.getClickCount() == 2 && tblBang.getSelectedRow() >= 0)
                             moDaChon();
                     }
@@ -170,15 +163,12 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         add(pnlGoc, BorderLayout.CENTER);
     }
 
-    /** Mở đã chọn trong LichSuKhachHangPanel. */
     private void moDaChon() {
         // Dòng.
         int dong = tblBang.getSelectedRow();
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (dong < 0) return;
         // Mô hình đang xét.
         int moHinhDangXet = tblBang.convertRowIndexToModel(dong);
-        // Giá trị.
         java.util.function.IntFunction<String> giaTri =
                 giaTriDangXet ->
                         String.valueOf(tblBang.getModel().getValueAt(moHinhDangXet, giaTriDangXet));
@@ -197,7 +187,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         cacThe.show(pnlGoc, CHI_TIET);
     }
 
-    /** Xử lý hiển thị trong LichSuKhachHangPanel. */
     @Override
     public void xuLyHienThi() {
         taiLaiCacKhachHang(moHinh);
@@ -205,21 +194,11 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         tblBang.clearSelection();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong LichSuKhachHangPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Lịch sử khách hàng";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong LichSuKhachHangPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Bước 1: tìm và chọn khách hàng.\n"

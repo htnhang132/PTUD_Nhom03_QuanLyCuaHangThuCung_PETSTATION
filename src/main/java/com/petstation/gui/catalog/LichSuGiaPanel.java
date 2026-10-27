@@ -39,6 +39,9 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                 }
             };
 
+    private final javax.swing.table.TableRowSorter<DefaultTableModel> sapXep =
+            new javax.swing.table.TableRowSorter<>(moHinh);
+
     private final javax.swing.JComboBox<String> cboSanPham = new javax.swing.JComboBox<>();
     private final com.petstation.gui.components.common.BoChonKhoangNgay pnlKhoangNgay =
             new com.petstation.gui.components.common.BoChonKhoangNgay();
@@ -47,7 +50,6 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
     private JTextField txtTuKhoa;
     private java.time.LocalDate tuNgay, denNgay;
 
-    /** Khởi tạo LichSuGiaPanel với các giá trị được cung cấp. */
     public LichSuGiaPanel() {
         setLayout(new BorderLayout(0, 10));
         // Tìm kiếm.
@@ -58,7 +60,7 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
         JTable tblBang = layBang(scrCuon);
         tblLichSu = tblBang;
         txtTuKhoa = txtTimKiem;
-        tblBang.setAutoCreateRowSorter(true);
+        tblBang.setRowSorter(sapXep);
         txtTimKiem
                 .getDocument()
                 .addDocumentListener(
@@ -83,19 +85,29 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
         denNgay = pnlKhoangNgay.layNgayKetThuc();
         // Trên.
         javax.swing.JPanel pnlTren = taoVungTrongSuot(new BorderLayout(10, 0));
-        pnlTren.add(taoTieuDeMuc("Lịch sử thay đổi giá bán"), BorderLayout.WEST);
-        pnlTren.add(txtTimKiem, BorderLayout.EAST);
+        pnlTren.add(
+                com.petstation.gui.components.ThanhDanhSach.tieuDe(
+                        taoTieuDeMuc("Lịch sử thay đổi giá bán"), lblKetQua),
+                BorderLayout.CENTER);
+
         javax.swing.JPanel pnlDau = taoVungTrongSuot(new BorderLayout(0, 8));
-        javax.swing.JPanel pnlLoc =
-                taoVungTrongSuot(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 0));
-        pnlLoc.add(new javax.swing.JLabel("Sản phẩm:"));
-        pnlLoc.add(cboSanPham);
+        com.petstation.gui.components.ThanhDanhSach pnlLoc =
+                new com.petstation.gui.components.ThanhDanhSach();
+        pnlLoc.add(txtTimKiem);
+        pnlLoc.themBoLoc(pnlKhoangNgay);
+        cboSanPham.setPreferredSize(new java.awt.Dimension(150, 36));
+        pnlLoc.themBoLoc("Sản phẩm:", cboSanPham);
         javax.swing.JButton btnLoc = new javax.swing.JButton("Xem lịch sử");
         btnLoc.addActionListener(
                 e -> {
-                    if (pnlKhoangNgay.layNgayBatDau()==null || pnlKhoangNgay.layNgayKetThuc()==null || pnlKhoangNgay.layNgayBatDau().isAfter(pnlKhoangNgay.layNgayKetThuc())) {
+                    if (pnlKhoangNgay.layNgayBatDau() == null
+                            || pnlKhoangNgay.layNgayKetThuc() == null
+                            || pnlKhoangNgay
+                                    .layNgayBatDau()
+                                    .isAfter(pnlKhoangNgay.layNgayKetThuc())) {
                         com.petstation.gui.components.HopThoai.hienThiCanhBao(
-                                this, "Chọn đủ hai ngày; ngày bắt đầu không được sau ngày kết thúc.");
+                                this,
+                                "Chọn đủ hai ngày; ngày bắt đầu không được sau ngày kết thúc.");
                         return;
                     }
                     tuNgay = pnlKhoangNgay.layNgayBatDau();
@@ -112,16 +124,15 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                     txtTimKiem.setText("");
                     apDungBoLoc();
                 });
-        pnlLoc.add(btnXoa);
+        pnlLoc.themBoLoc(btnXoa);
         javax.swing.JButton btnXuat = new javax.swing.JButton("Xuất Excel");
         btnXuat.addActionListener(
                 e ->
                         com.petstation.gui.components.common.XuatExcel.xuatBang(
                                 this, tblBang, "Lich_su_gia"));
         pnlLoc.add(btnXuat);
-        pnlLoc.add(lblKetQua);
+
         pnlDau.add(pnlTren, BorderLayout.NORTH);
-        pnlDau.add(pnlKhoangNgay, BorderLayout.CENTER);
         pnlDau.add(pnlLoc, BorderLayout.SOUTH);
         add(pnlDau, BorderLayout.NORTH);
         add(scrCuon, BorderLayout.CENTER);
@@ -138,10 +149,8 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                                 }));
     }
 
-    /** Tải lại trong LichSuGiaPanel. */
     private void taiLai() {
         moHinh.setRowCount(0);
-        // Các dòng.
         java.util.List<Object[]> cacDong = new java.util.ArrayList<>(DanhMucService.layLichSuGia());
 
         Object daChon = cboSanPham.getSelectedItem();
@@ -170,7 +179,6 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
 
     private void apDungBoLoc() {
         if (tblLichSu == null) return;
-        var sapXep = (javax.swing.table.TableRowSorter<DefaultTableModel>) tblLichSu.getRowSorter();
         sapXep.setRowFilter(
                 new javax.swing.RowFilter<DefaultTableModel, Integer>() {
                     public boolean include(
@@ -197,32 +205,24 @@ public final class LichSuGiaPanel extends CoSoPanel implements HoTroThanhCongCu 
                         return true;
                     }
                 });
-        lblKetQua.setText(tblLichSu.getRowCount() + " kết quả");
+        lblKetQua.setText(
+                com.petstation.gui.components.ThanhDanhSach.soKetQua(
+                        tblLichSu.getRowCount(), moHinh.getRowCount()));
     }
 
-    /** Xử lý hiển thị trong LichSuGiaPanel. */
     @Override
     public void xuLyHienThi() {
         taiLai();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong LichSuGiaPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Lịch sử giá";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong LichSuGiaPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chỉ xem. Giá được duyệt tại Phê duyệt yêu cầu sẽ tự ghi lịch sử. Lọc sản phẩm và khoảng ngày để tra cứu hoặc xuất Excel.";
+        return "Chỉ xem. Giá được duyệt tại Phê duyệt yêu cầu sẽ tự ghi lịch sử. Lọc sản phẩm và"
+                + " khoảng ngày để tra cứu hoặc xuất Excel.";
     }
 }

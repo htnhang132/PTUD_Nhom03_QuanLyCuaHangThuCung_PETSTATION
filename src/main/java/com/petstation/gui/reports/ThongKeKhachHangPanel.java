@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho khách hàng báo cáo vùng hiển thị. */
 public final class ThongKeKhachHangPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeKhachHangPanel với các giá trị được cung cấp. */
     public ThongKeKhachHangPanel() {
         super(
                 "Thống kê khách hàng",

@@ -6,7 +6,6 @@ import javax.swing.JPanel;
 
 /** Cung cấp giao diện và xử lý tương tác cho sản phẩm danh mục vùng hiển thị. */
 public final class DanhMucSanPhamPanel extends DanhMucNhieuTabPanel {
-    /** Khởi tạo DanhMucSanPhamPanel với các giá trị được cung cấp. */
     public DanhMucSanPhamPanel() {
         super(
                 new String[] {"Danh sách sản phẩm", "Lịch sử giá"},

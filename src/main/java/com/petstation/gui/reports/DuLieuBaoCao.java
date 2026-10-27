@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 /** Cung cấp giao diện và xử lý tương tác cho báo cáo các kiểu hiển thị. */
 public final class DuLieuBaoCao {
-    /** Khởi tạo DuLieuBaoCao với các giá trị được cung cấp. */
     private DuLieuBaoCao() {}
 
     public static KieuHienThi taoKieuHienTai(
@@ -42,17 +41,6 @@ public final class DuLieuBaoCao {
                 true);
     }
 
-    /**
-     * Tạo kiểu hiển thị trong DuLieuBaoCao.
-     *
-     * @param tieuDe tiêu đề
-     * @param cacCot các cột
-     * @param nhan nhãn
-     * @param chiSo chỉ số
-     * @param tienTe tiền tệ
-     * @param truyVan truy vấn
-     * @return kết quả tạo kiểu hiển thị
-     */
     public static KieuHienThi taoKieuHienThi(
             String tieuDe,
             String[] cacCot,
@@ -63,7 +51,6 @@ public final class DuLieuBaoCao {
         return new KieuHienThi(
                 tieuDe,
                 soNgay -> {
-                    // Các dòng.
                     List<Object[]> cacDong = truyVan.apply(soNgay);
                     // Các nhãn.
                     String[] cacNhan = new String[cacDong.size()];
@@ -73,7 +60,6 @@ public final class DuLieuBaoCao {
                     double tong = 0;
                     for (int chiSo2 = 0; chiSo2 < cacDong.size(); chiSo2++) {
                         cacNhan[chiSo2] = String.valueOf(cacDong.get(chiSo2)[nhan]);
-                        // Giá trị.
                         Object giaTri = cacDong.get(chiSo2)[chiSo];
                         cacGiaTri[chiSo2] = giaTri == null ? 0 : ((Number) giaTri).doubleValue();
                         tong += cacGiaTri[chiSo2];

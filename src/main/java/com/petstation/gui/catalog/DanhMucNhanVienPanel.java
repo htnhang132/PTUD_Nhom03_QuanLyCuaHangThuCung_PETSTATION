@@ -12,16 +12,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho nhân viên danh mục vùng hiển thị. */
 public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhMucNhanVienPanel với các giá trị được cung cấp. */
     public DanhMucNhanVienPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layNhanVien());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.STAFF,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucNhanVienPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -33,11 +33,6 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucNhanVienPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã NV", Kieu.VAN_BAN).chiDoc(),

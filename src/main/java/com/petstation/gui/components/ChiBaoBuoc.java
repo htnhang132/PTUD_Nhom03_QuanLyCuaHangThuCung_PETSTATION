@@ -23,11 +23,6 @@ public final class ChiBaoBuoc extends JComponent {
     /** Khi bấm. */
     private IntConsumer khiBam;
 
-    /**
-     * Khởi tạo ChiBaoBuoc với các giá trị được cung cấp.
-     *
-     * @param cacBuoc các bước
-     */
     public ChiBaoBuoc(List<String> cacBuoc) {
         this.cacBuoc = List.copyOf(cacBuoc);
         setPreferredSize(new Dimension(0, 44));
@@ -41,31 +36,19 @@ public final class ChiBaoBuoc extends JComponent {
                      */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (khiBam == null) return;
                         // Chỉ số.
                         int chiSo = layChiSoTai(suKien.getX());
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (chiSo >= 0) khiBam.accept(chiSo);
                     }
                 });
     }
 
-    /**
-     * Đặt hiện tại trong ChiBaoBuoc.
-     *
-     * @param chiSo chỉ số
-     */
     public void datHienTai(int chiSo) {
         this.hienTai = Math.max(0, Math.min(chiSo, cacBuoc.size() - 1));
         repaint();
     }
 
-    /**
-     * Lấy hiện tại trong ChiBaoBuoc.
-     *
-     * @return kết quả lấy hiện tại
-     */
     public int layHienTai() {
         return hienTai;
     }
@@ -85,14 +68,7 @@ public final class ChiBaoBuoc extends JComponent {
                         : Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    /**
-     * Lấy chỉ số tại trong ChiBaoBuoc.
-     *
-     * @param toaDoNgang tọa độ ngang
-     * @return kết quả lấy chỉ số tại
-     */
     private int layChiSoTai(int toaDoNgang) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacBuoc.isEmpty()) return -1;
         // Ô.
         int o = getWidth() / cacBuoc.size();
@@ -101,11 +77,6 @@ public final class ChiBaoBuoc extends JComponent {
         return chiSo >= 0 && chiSo < cacBuoc.size() ? chiSo : -1;
     }
 
-    /**
-     * Vẽ thành phần trong ChiBaoBuoc.
-     *
-     * @param doHoa đồ họa
-     */
     @Override
     protected void paintComponent(Graphics doHoa) {
         // Đồ họa.
@@ -115,7 +86,6 @@ public final class ChiBaoBuoc extends JComponent {
                 RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         // Số phần tử.
         int soPhanTu = cacBuoc.size();
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (soPhanTu == 0) {
             doHoa2.dispose();
             return;
@@ -138,7 +108,6 @@ public final class ChiBaoBuoc extends JComponent {
             boolean daHoanTat = chiSo < hienTai;
             // Hoạt động.
             boolean hoatDong = chiSo == hienTai;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (chiSo < soPhanTu - 1) {
                 doHoa2.setColor(daHoanTat ? MauUngDung.XANH_LA : MauUngDung.VIEN);
                 doHoa2.setStroke(new BasicStroke(2f));
@@ -155,7 +124,6 @@ public final class ChiBaoBuoc extends JComponent {
             doHoa2.fillOval(
                     tamNgang - dongDuLieu, tamDoc - dongDuLieu, 2 * dongDuLieu, 2 * dongDuLieu);
             doHoa2.setColor(hoatDong || daHoanTat ? Color.WHITE : MauUngDung.VAN_BAN_XAM);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!hoatDong && !daHoanTat) {
                 doHoa2.setColor(MauUngDung.VIEN);
                 doHoa2.setStroke(new BasicStroke(1.5f));
@@ -163,7 +131,6 @@ public final class ChiBaoBuoc extends JComponent {
                         tamNgang - dongDuLieu, tamDoc - dongDuLieu, 2 * dongDuLieu, 2 * dongDuLieu);
                 doHoa2.setColor(MauUngDung.VAN_BAN_XAM);
             }
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (daHoanTat) {
                 doHoa2.setStroke(
                         new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -178,10 +145,12 @@ public final class ChiBaoBuoc extends JComponent {
                         tamDoc + thongSoPhongChu.getAscent() / 2 - 1);
             }
             doHoa2.setColor(hoatDong ? MauUngDung.VAN_BAN_TOI : MauUngDung.VAN_BAN_XAM);
+            String nhan = cacBuoc.get(chiSo);
+            int rong = Math.max(0, o - 54);
+            while (nhan.length() > 1 && thongSoPhongChu.stringWidth(nhan) > rong)
+                nhan = nhan.substring(0, nhan.length() - 2) + "…";
             doHoa2.drawString(
-                    cacBuoc.get(chiSo),
-                    tamNgang + dongDuLieu + 8,
-                    tamDoc + thongSoPhongChu.getAscent() / 2 - 1);
+                    nhan, tamNgang + dongDuLieu + 8, tamDoc + thongSoPhongChu.getAscent() / 2 - 1);
         }
         doHoa2.dispose();
     }

@@ -43,14 +43,39 @@ public final class XuatExcel {
                                 "Xuất Excel",
                                 JOptionPane.YES_NO_OPTION)
                         != JOptionPane.YES_OPTION) return;
-        try {
-            ghiBang(bang, tep, ten);
-            HopThoai.hienThiThanhCong(
-                    cha,
-                    "Đã xuất " + bang.getRowCount() + " dòng đang lọc:\n" + tep.getAbsolutePath());
-        } catch (IOException | RuntimeException loi) {
-            HopThoai.hienThiLoi(cha, "Không xuất được Excel: " + loi.getMessage());
+        String[] cot = new String[bang.getColumnCount()];
+        Object[][] dong = new Object[bang.getRowCount()][cot.length];
+        for (int c = 0; c < cot.length; c++) {
+            cot[c] = bang.getColumnName(c);
+            for (int r = 0; r < dong.length; r++) dong[r][c] = bang.getValueAt(r, c);
         }
+        JTable snapshot = new JTable(new javax.swing.table.DefaultTableModel(dong, cot));
+        final File dich = tep;
+        new SwingWorker<Void, Void>() {
+            protected Void doInBackground() throws Exception {
+                ghiBang(snapshot, dich, ten);
+                return null;
+            }
+
+            protected void done() {
+                try {
+                    get();
+                    HopThoai.hienThiThanhCong(
+                            cha,
+                            "Đã xuất "
+                                    + dong.length
+                                    + " dòng đang lọc:\n"
+                                    + dich.getAbsolutePath());
+                } catch (Exception ex) {
+                    HopThoai.hienThiLoi(
+                            cha,
+                            "Không xuất được Excel: "
+                                    + (ex.getCause() == null
+                                            ? ex.getMessage()
+                                            : ex.getCause().getMessage()));
+                }
+            }
+        }.execute();
     }
 
     /** Chuỗi luôn được ghi như văn bản, không thực thi công thức từ dữ liệu nhập. */
@@ -100,7 +125,8 @@ public final class XuatExcel {
                     boolean laTien =
                             nhan.matches(
                                             ".*(tiền|giá|doanh thu|công nợ|đã trả|phải trả|chênh"
-                                                    + " lệch|tạm tính|giảm).*")
+                                                    + " lệch|tạm tính|giảm|cọc|chi tiêu|thực đếm|dư"
+                                                    + " nợ|tổng nhập|thu hóa đơn).*")
                                     && !nhan.contains("%");
                     if (giaTri instanceof java.util.Date v) {
                         o.setCellValue(v);

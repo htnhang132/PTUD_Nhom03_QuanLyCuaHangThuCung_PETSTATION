@@ -52,47 +52,22 @@ public final class BieuTuongNet implements Icon {
     /** Màu. */
     private final Color mau;
 
-    /**
-     * Khởi tạo BieuTuongNet với các giá trị được cung cấp.
-     *
-     * @param kieu kiểu
-     * @param kichThuoc kích thước
-     * @param mau màu
-     */
     public BieuTuongNet(Kieu kieu, int kichThuoc, Color mau) {
         this.kieu = kieu;
         this.kichThuoc = kichThuoc;
         this.mau = mau;
     }
 
-    /**
-     * Lấy chiều rộng biểu tượng trong BieuTuongNet.
-     *
-     * @return kết quả lấy chiều rộng biểu tượng
-     */
     @Override
     public int getIconWidth() {
         return kichThuoc;
     }
 
-    /**
-     * Lấy chiều cao biểu tượng trong BieuTuongNet.
-     *
-     * @return kết quả lấy chiều cao biểu tượng
-     */
     @Override
     public int getIconHeight() {
         return kichThuoc;
     }
 
-    /**
-     * Vẽ biểu tượng trong BieuTuongNet.
-     *
-     * @param thanhPhan thành phần
-     * @param doHoa đồ họa
-     * @param toaDoNgang tọa độ ngang
-     * @param toaDoDoc tọa độ dọc
-     */
     @Override
     public void paintIcon(Component thanhPhan, Graphics doHoa, int toaDoNgang, int toaDoDoc) {
         // Đồ họa.
@@ -105,7 +80,6 @@ public final class BieuTuongNet implements Icon {
         int moHinhDangXet = 3;
         // Sự kiện.
         int suKien = kichThuoc - 4;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (kieu.ordinal() > Kieu.TRO_GIUP.ordinal()) {
             // Tỷ lệ.
             double tyLe = kichThuoc / 24.0;
@@ -159,12 +133,6 @@ public final class BieuTuongNet implements Icon {
         doHoa2.dispose();
     }
 
-    /**
-     * Lấy đường dẫn trong BieuTuongNet.
-     *
-     * @param vungDangXet vùng đang xét
-     * @return kết quả lấy đường dẫn
-     */
     private static Path2D layDuongDan(double... vungDangXet) {
         // Đường dẫn.
         Path2D duongDan = new Path2D.Double();
@@ -174,15 +142,6 @@ public final class BieuTuongNet implements Icon {
         return duongDan;
     }
 
-    /**
-     * Lấy dòng trong BieuTuongNet.
-     *
-     * @param doHoa đồ họa
-     * @param toaDoNgang1 tọa độ ngang 1
-     * @param toaDoDoc1 tọa độ dọc 1
-     * @param toaDoNgang2 tọa độ ngang 2
-     * @param toaDoDoc2 tọa độ dọc 2
-     */
     private static void layDong(
             Graphics2D doHoa,
             double toaDoNgang1,
@@ -192,14 +151,6 @@ public final class BieuTuongNet implements Icon {
         doHoa.draw(new java.awt.geom.Line2D.Double(toaDoNgang1, toaDoDoc1, toaDoNgang2, toaDoDoc2));
     }
 
-    /**
-     * Lấy elip trong BieuTuongNet.
-     *
-     * @param doHoa đồ họa
-     * @param tamNgang tâm ngang
-     * @param tamDoc tâm dọc
-     * @param dongDuLieu dòng dữ liệu
-     */
     private static void layElip(
             Graphics2D doHoa, double tamNgang, double tamDoc, double dongDuLieu) {
         doHoa.draw(

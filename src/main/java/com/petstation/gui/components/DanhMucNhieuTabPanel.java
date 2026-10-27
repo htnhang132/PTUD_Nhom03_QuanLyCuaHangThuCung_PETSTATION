@@ -18,12 +18,6 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
     /** Các thành phần con. */
     private final JPanel[] cacThanhPhanCon;
 
-    /**
-     * Khởi tạo DanhMucNhieuTabPanel với các giá trị được cung cấp.
-     *
-     * @param cacTieuDe các tiêu đề
-     * @param cacThanhPhanCon các thành phần con
-     */
     public DanhMucNhieuTabPanel(String[] cacTieuDe, JPanel[] cacThanhPhanCon) {
         this.cacThanhPhanCon = cacThanhPhanCon;
         setLayout(new BorderLayout());
@@ -37,29 +31,17 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
         add(tabCacTab, BorderLayout.CENTER);
     }
 
-    /** Xử lý hiển thị trong DanhMucNhieuTabPanel. */
     @Override
     public void xuLyHienThi() {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
             giaTriTam.xuLyHienThi();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong DanhMucNhieuTabPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Danh mục";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong DanhMucNhieuTabPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Chuyển giữa các tab ở phía trên.";

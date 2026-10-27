@@ -1,11 +1,11 @@
 package com.petstation.gui.components;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.util.DuLieu.*;
 
 import com.petstation.gui.components.common.XuatExcel;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.NghiepVuService;
 
 import java.awt.*;
@@ -37,16 +37,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
     /** Các thao tác. */
     protected final JPanel pnlCacThaoTac;
 
+    protected final JTextField txtTimKiem;
+
     /** Số lượng. */
     private final JLabel lblSoLuong = new JLabel();
 
-    /**
-     * Khởi tạo BangNghiepVuPanel với các giá trị được cung cấp.
-     *
-     * @param kieuNghiepVu kiểu nghiệp vụ
-     * @param banHang bán hàng
-     * @param dieuHuong điều hướng
-     */
     protected BangNghiepVuPanel(
             LoaiNghiepVu kieuNghiepVu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         this.kieuNghiepVu = kieuNghiepVu;
@@ -57,23 +52,24 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         setLayout(new BorderLayout(0, 12));
         // Trên.
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout());
-        pnlTren.add(taoTieuDeMuc(hienThi.tieuDe()), BorderLayout.NORTH);
-        pnlCacThaoTac = taoVungTrongSuot(new GridLayout(0, 4, 8, 6));
+        pnlTren.add(
+                ThanhDanhSach.tieuDe(taoTieuDeMuc(hienThi.tieuDe()), lblSoLuong),
+                BorderLayout.NORTH);
+        pnlCacThaoTac = new ThanhDanhSach();
         // Tìm kiếm.
-        JTextField txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
+        txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
         pnlCacThaoTac.add(txtTimKiem);
         NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
         btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server, giữ bộ lọc hiện tại");
         btnLamMoi.addActionListener(
                 e -> {
                     try {
-                        lamMoi();
+                        taiLaiNen();
                     } catch (RuntimeException loi) {
                         HopThoai.hienThiCanhBao(this, loi.getMessage());
                     }
                 });
-        pnlCacThaoTac.add(btnLamMoi);
-        pnlCacThaoTac.add(lblSoLuong);
+        ((ThanhDanhSach) pnlCacThaoTac).themBoLoc(btnLamMoi);
         pnlTren.add(pnlCacThaoTac, BorderLayout.CENTER);
         add(pnlTren, BorderLayout.NORTH);
         moHinh =
@@ -96,15 +92,16 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         tblBang.removeColumn(tblBang.getColumnModel().getColumn(0));
         lienKetBoLoc(txtTimKiem, tblBang);
         tblBang.getRowSorter()
-                .addRowSorterListener(e -> lblSoLuong.setText(tblBang.getRowCount() + " kết quả"));
+                .addRowSorterListener(
+                        e ->
+                                lblSoLuong.setText(
+                                        ThanhDanhSach.soKetQua(
+                                                tblBang.getRowCount(), moHinh.getRowCount())));
         add(scrCuon, BorderLayout.CENTER);
         // Xuất.
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuat.addActionListener(suKien -> XuatExcel.xuatBang(this, tblBang, hienThi.tieuDe()));
-        // Chân trang.
-        JPanel pnlChanTrang = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT));
-        pnlChanTrang.add(btnXuat);
-        add(pnlChanTrang, BorderLayout.SOUTH);
+        pnlCacThaoTac.add(btnXuat);
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
@@ -127,16 +124,14 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         lamMoi();
     }
 
-    /**
-     * Thêm nút trong BangNghiepVuPanel.
-     *
-     * @param pnlVungChua vùng chứa
-     * @param nhan nhãn
-     * @param thaoTac thao tác
-     */
     protected void themNut(JPanel pnlVungChua, String nhan, Runnable thaoTac) {
         // Nút.
-        NutDinhDang btnNut = new NutDinhDang(nhan, NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnNut =
+                new NutDinhDang(
+                        nhan,
+                        nhan.startsWith("+")
+                                ? NutDinhDang.KieuNut.CHINH
+                                : NutDinhDang.KieuNut.TRONG_SUOT);
         btnNut.addActionListener(
                 suKien -> {
                     try {
@@ -150,18 +145,32 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         capNhatThaoTac();
     }
 
-    /** Làm mới trong BangNghiepVuPanel. */
     protected void capNhatThaoTac() {}
 
+    public boolean dangTaiDuLieu() {
+        return dangTai;
+    }
+
+    private boolean dangTai;
+
     protected void lamMoi() {
+        if (SwingUtilities.isEventDispatchThread()
+                && com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()) {
+            taiLaiNen();
+            return;
+        }
+        Object[][] duLieu = NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
+        apDungDuLieu(duLieu);
+    }
+
+    private void apDungDuLieu(Object[][] duLieu) {
         Long daChon = tblBang.getSelectedRow() < 0 ? null : layDongChon();
         var khoaSapXep = new java.util.ArrayList<>(tblBang.getRowSorter().getSortKeys());
-        Object[][] duLieu = NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
         moHinh.setRowCount(0);
         for (Object[] dong : duLieu) moHinh.addRow(dong);
         tblBang.getRowSorter().setSortKeys(khoaSapXep);
 
-        lblSoLuong.setText(tblBang.getRowCount() + " kết quả");
+        lblSoLuong.setText(ThanhDanhSach.soKetQua(tblBang.getRowCount(), moHinh.getRowCount()));
         long giu =
                 switch (kieuNghiepVu) {
                     case APPOINTMENTS -> banHang.layQuyTrinh().layLichHen();
@@ -179,15 +188,45 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                 break;
             }
         capNhatThaoTac();
+        sauKhiTaiLai();
+        com.petstation.gui.navigation.NguCanhMoBanGhi.apDung(this);
     }
 
-    /**
-     * Lấy dòng chọn trong BangNghiepVuPanel.
-     *
-     * @return kết quả lấy dòng chọn
-     */
+    protected void sauKhiTaiLai() {}
+
+    private int phienTaiLai;
+
+    protected void taiLaiNen() {
+        if (!com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()) {
+            lamMoi();
+            return;
+        }
+        dangTai = true;
+        int token = ++phienTaiLai;
+        var session = com.petstation.service.PhienDangNhapService.layPhienHienTai();
+        new SwingWorker<Object[][], Void>() {
+            protected Object[][] doInBackground() {
+                return NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
+            }
+
+            protected void done() {
+                if (token != phienTaiLai
+                        || com.petstation.service.PhienDangNhapService.layPhienHienTai() != session)
+                    return;
+                try {
+                    apDungDuLieu(get());
+                    dangTai = false;
+                } catch (Exception ex) {
+                    dangTai = false;
+                    HopThoai.hienThiCanhBao(
+                            BangNghiepVuPanel.this,
+                            ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage());
+                }
+            }
+        }.execute();
+    }
+
     protected long layDongChon() {
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (tblBang.getSelectedRow() < 0) throw new IllegalArgumentException("Hãy chọn một dòng.");
         return ((Number)
                         moHinh.getValueAt(
@@ -195,25 +234,12 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                 .longValue();
     }
 
-    /**
-     * Lấy nội dung dòng chọn trong BangNghiepVuPanel.
-     *
-     * @param cot cột
-     * @return kết quả lấy nội dung dòng chọn
-     */
     protected String layNoiDungDongChon(int cot) {
         layDongChon();
         return chuyenThanhChuoi(
                 moHinh.getValueAt(tblBang.convertRowIndexToModel(tblBang.getSelectedRow()), cot));
     }
 
-    /**
-     * Hiển thị chi tiết trong BangNghiepVuPanel.
-     *
-     * @param tieuDe tiêu đề
-     * @param cacCot các cột
-     * @param cacDong các dòng
-     */
     protected void hienThiChiTiet(String tieuDe, String[] cacCot, List<Object[]> cacDong) {
         // Chi tiết.
         DefaultTableModel chiTiet =
@@ -236,16 +262,10 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         HopThoai.hienThiThongBaoHopThoai(this, scrCuon, tieuDe, JOptionPane.PLAIN_MESSAGE);
     }
 
-    /** Xử lý hiển thị trong BangNghiepVuPanel. */
     public void xuLyHienThi() {
         lamMoi();
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong BangNghiepVuPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     protected String layNoiDungTroGiup() {
         return "Chọn dòng trước khi xử lý. Các thay đổi được lưu vào SQL Server; nút Làm mới lấy dữ"
                 + " liệu mới nhất.";

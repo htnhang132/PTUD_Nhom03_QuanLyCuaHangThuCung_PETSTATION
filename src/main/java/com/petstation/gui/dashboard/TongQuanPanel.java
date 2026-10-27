@@ -8,7 +8,7 @@ import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
 import com.petstation.gui.components.common.BieuDoCot;
 import com.petstation.gui.components.common.DinhDangBang;
-import com.petstation.gui.navigation.MaManHinh;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.CaThuNganService;
 import com.petstation.service.DanhMucService;
 import com.petstation.service.PheDuyetService;
@@ -31,6 +31,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -60,6 +61,8 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Biểu đồ. */
     private final BieuDoCot bieuDo = new BieuDoCot();
 
+    private com.petstation.gui.components.ViecCanLamPanel viec;
+
     /** Trên mô hình. */
     private final DefaultTableModel trenMoHinh =
             new DefaultTableModel(new String[] {"#", "Sản phẩm", "Đã bán", "Doanh thu"}, 0) {
@@ -76,13 +79,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                 }
             };
 
-    /**
-     * Khởi tạo TongQuanPanel với các giá trị được cung cấp.
-     *
-     * @param boDieuHuong bộ điều hướng
-     * @param coTheTruyCap có thể truy cập
-     * @param caLamViec ca làm việc
-     */
     public TongQuanPanel(
             Consumer<MaManHinh> boDieuHuong,
             Predicate<MaManHinh> coTheTruyCap,
@@ -157,20 +153,16 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlGiua.setOpaque(false);
         pnlGiua.add(pnlBieuDoThe);
         pnlGiua.add(pnlTrenThe);
-        add(pnlGiua, BorderLayout.CENTER);
+        viec = new com.petstation.gui.components.ViecCanLamPanel(boDieuHuong);
+        JSplitPane tach = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlGiua, viec);
+        tach.setResizeWeight(.5);
+        tach.setBorder(null);
+        add(tach, BorderLayout.CENTER);
         caLamViec.themBoLangNghe(this::lamMoi);
         lamMoi();
     }
 
-    /**
-     * Thêm phím tắt trong TongQuanPanel.
-     *
-     * @param vanBan văn bản
-     * @param dich đích
-     * @param kieu kiểu
-     */
     private void themPhimTat(String vanBan, MaManHinh dich, NutDinhDang.KieuNut kieu) {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!coTheTruyCap.test(dich)) return;
         // Giá trị sau.
         NutDinhDang btnGiaTriSau = new NutDinhDang(vanBan, kieu);
@@ -179,8 +171,8 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlCacPhimTat.add(btnGiaTriSau);
     }
 
-    /** Làm mới trong TongQuanPanel. */
     private void lamMoi() {
+        if (viec != null) viec.taiLai();
         pnlCacPhimTat.removeAll();
         themPhimTat("Lập hóa đơn (F2)", MaManHinh.POS, NutDinhDang.KieuNut.CHINH);
         themPhimTat("Tạo lịch hẹn Spa", MaManHinh.SPA_SCHEDULE, NutDinhDang.KieuNut.PHU);
@@ -204,10 +196,11 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         long doanhThu =
                 caLamViec.layDoanhThuTienMat()
                         + caLamViec.layDoanhThuChuyenKhoan()
-                        + caLamViec.layDoanhThuThe();
+                        + caLamViec.layDoanhThuThe()
+                        + caLamViec.layTongCocHotel();
         pnlCacChiSo.add(
                 layChiSoThe(
-                        caLamViec.kiemTraMo() ? "Doanh thu ca hiện tại" : "Chưa mở ca",
+                        caLamViec.kiemTraMo() ? "Thu tiền ca hiện tại" : "Chưa mở ca",
                         caLamViec.kiemTraMo() ? TienTe.dinhDang(doanhThu) : "—",
                         caLamViec.kiemTraMo() ? caLamViec.layTenCa() : "Mở ca để bán hàng",
                         MauUngDung.XANH_LA));
@@ -262,7 +255,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                 || PhienDangNhapService.layPhien()
                         .kiemTraCo(com.petstation.model.Quyen.REPORT_VIEW_OWN_SHIFT)) {
             for (Object[] sanPham : com.petstation.service.ThongKeService.laySanPhamBanChay(7)) {
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (hang > 5) break;
                 trenMoHinh.addRow(
                         new Object[] {
@@ -275,43 +267,26 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /**
-     * Lấy thấp tồn kho trong TongQuanPanel.
-     *
-     * @return kết quả lấy thấp tồn kho
-     */
     private static long layThapTonKho() {
         // Số phần tử.
         long soPhanTu = 0;
         for (Object[] vungDangXet : DanhMucService.laySanPham()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (TienTe.doc(String.valueOf(vungDangXet[8]))
                     <= Math.max(0, TienTe.doc(String.valueOf(vungDangXet[6])))) soPhanTu++;
         }
         return soPhanTu;
     }
 
-    /** Xử lý hiển thị trong TongQuanPanel. */
     @Override
     public void xuLyHienThi() {
         lamMoi();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong TongQuanPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Màn hình chính";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong TongQuanPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Các nút phía trên là lối tắt việc hằng ngày (chỉ hiện chức năng bạn được phép"

@@ -1,8 +1,9 @@
 package com.petstation.service;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.database.ThaoTacSQL.*;
 
-import com.petstation.dao.impl.JdbcTichDiemDAO;
+import com.petstation.dao.TichDiemDAO;
+import com.petstation.dao.impl.TichDiemImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,8 @@ import java.util.List;
 
 /** Quy tắc tích điểm và đổi voucher Spa của khách hàng. */
 public final class TichDiemService {
+    private static final TichDiemDAO tichDiemDAO = new TichDiemImpl();
+
     public static final long SO_TIEN_MOI_DIEM = 10_000;
     public static final int DIEM_DOI_VOUCHER = 200;
 
@@ -17,7 +20,7 @@ public final class TichDiemService {
 
     public static boolean coTheSuaDanhMuc(String ma) {
         if (!PhienDangNhapService.layPhien().kiemTraCo(Quyen.PROMOTION_MANAGE)) return false;
-        var dong = JdbcTichDiemDAO.layRangBuocVoucher(ma);
+        var dong = tichDiemDAO.layRangBuocVoucher(ma);
         return !dong.isEmpty()
                 && dong.get(0)[1] == null
                 && ((Number) dong.get(0)[0]).longValue() == 0;
@@ -30,11 +33,11 @@ public final class TichDiemService {
             throw new IllegalArgumentException("Thiếu khóa đổi voucher.");
         return thucHienGiaoDich(
                 ketNoi -> {
-                    var khach = JdbcTichDiemDAO.timKhachHang(maKhachHang);
+                    var khach = tichDiemDAO.timKhachHang(maKhachHang);
                     if (khach.isEmpty() || !Boolean.TRUE.equals(khach.get(0)[2]))
                         throw new IllegalArgumentException("Khách hàng không hoạt động.");
                     long id = ((Number) khach.get(0)[0]).longValue();
-                    var cu = JdbcTichDiemDAO.timTheoKhoa(khoa);
+                    var cu = tichDiemDAO.timTheoKhoa(khoa);
                     if (!cu.isEmpty()) {
                         if (((Number) cu.get(0)[1]).longValue() != id)
                             throw new IllegalArgumentException(
@@ -44,7 +47,7 @@ public final class TichDiemService {
                     if (((Number) khach.get(0)[1]).longValue() < DIEM_DOI_VOUCHER)
                         throw new IllegalArgumentException(
                                 "Cần đủ 200 điểm để đổi voucher Spa 150.000đ.");
-                    String ma = JdbcTichDiemDAO.taoVoucher(id, khoa);
+                    String ma = tichDiemDAO.taoVoucher(id, khoa);
                     NhatKyHeThongService.ghiNhatKy("Đổi voucher", maKhachHang + " / " + ma);
                     return ma;
                 });
@@ -56,7 +59,7 @@ public final class TichDiemService {
      */
     public static long kiemTraVoucher(String ma, String khachHang, String nguon, long tamTinh) {
         PhienDangNhapService.layPhien();
-        var cacDong = JdbcTichDiemDAO.timVoucher(ma);
+        var cacDong = tichDiemDAO.timVoucher(ma);
         if (cacDong.isEmpty()) throw new IllegalArgumentException("Mã voucher không tồn tại.");
         Object[] v = cacDong.get(0);
         if (!"ACTIVE".equals(v[5]) || ((Number) v[2]).longValue() >= ((Number) v[3]).longValue())
@@ -74,6 +77,6 @@ public final class TichDiemService {
 
     public static List<Object[]> layVoucher(String maKhachHang) {
         PhienDangNhapService.yeuCau(Quyen.POS_SELL);
-        return JdbcTichDiemDAO.layCuaKhach(maKhachHang);
+        return tichDiemDAO.layCuaKhach(maKhachHang);
     }
 }

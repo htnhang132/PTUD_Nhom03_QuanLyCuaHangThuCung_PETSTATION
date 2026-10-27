@@ -1,7 +1,7 @@
 package com.petstation.util;
 
-import com.petstation.dao.CauHinhCSDL;
-import com.petstation.dao.KetNoiCSDL;
+import com.petstation.database.CauHinhCSDL;
+import com.petstation.database.KetNoiCSDL;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -12,19 +12,11 @@ import java.sql.ResultSet;
 
 /** Tạo tài khoản quản trị ban đầu theo cấu hình và thông tin do người vận hành cung cấp. */
 public final class KhoiTaoQuanTri {
-    /** Khởi tạo KhoiTaoQuanTri với các giá trị được cung cấp. */
     private KhoiTaoQuanTri() {}
 
-    /**
-     * Lấy chính trong KhoiTaoQuanTri.
-     *
-     * @param cacDoiSo các đối số
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     public static void main(String[] cacDoiSo) throws Exception {
         // Bàn điều khiển.
         Console banDieuKhien = System.console();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banDieuKhien == null) {
             System.err.println("Hãy chạy lệnh trong terminal tương tác.");
             System.exit(1);
@@ -41,11 +33,9 @@ public final class KhoiTaoQuanTri {
         // Xác nhận.
         char[] xacNhan = banDieuKhien.readPassword("Nhập lại mật khẩu: ");
 
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (tenDangNhap.isBlank() || hoTen.isBlank() || soDienThoai.isBlank()) {
             throw new IllegalArgumentException("Tên đăng nhập, họ tên và SĐT không được trống.");
         }
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (matKhau.length < 8 || !java.util.Arrays.equals(matKhau, xacNhan)) {
             throw new IllegalArgumentException("Mật khẩu không hợp lệ hoặc nhập lại không khớp.");
         }
@@ -60,7 +50,6 @@ public final class KhoiTaoQuanTri {
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
             try {
-                // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                 if (layQuanLyTonTai(ketNoi)) {
                     throw new IllegalStateException("Hệ thống đã có tài khoản Cửa hàng trưởng.");
                 }
@@ -77,13 +66,6 @@ public final class KhoiTaoQuanTri {
         }
     }
 
-    /**
-     * Lấy quản lý tồn tại trong KhoiTaoQuanTri.
-     *
-     * @param ketNoi kết nối
-     * @return kết quả kiểm tra điều kiện xử lý
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     private static boolean layQuanLyTonTai(Connection ketNoi) throws Exception {
         try (PreparedStatement cauLenh =
                         ketNoi.prepareStatement(
@@ -94,15 +76,6 @@ public final class KhoiTaoQuanTri {
         }
     }
 
-    /**
-     * Thêm nhân viên trong KhoiTaoQuanTri.
-     *
-     * @param ketNoi kết nối
-     * @param hoTen họ tên
-     * @param soDienThoai số điện thoại
-     * @return kết quả thêm nhân viên
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     private static long themNhanVien(Connection ketNoi, String hoTen, String soDienThoai)
             throws Exception {
         // Mã.
@@ -126,15 +99,6 @@ public final class KhoiTaoQuanTri {
         }
     }
 
-    /**
-     * Thêm tài khoản trong KhoiTaoQuanTri.
-     *
-     * @param ketNoi kết nối
-     * @param idNhanVien id nhân viên
-     * @param tenDangNhap tên đăng nhập
-     * @param maBam mã băm
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     private static void themTaiKhoan(
             Connection ketNoi, long idNhanVien, String tenDangNhap, String maBam) throws Exception {
         // SQL.

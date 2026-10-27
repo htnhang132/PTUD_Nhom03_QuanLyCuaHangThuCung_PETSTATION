@@ -26,16 +26,16 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 && com.petstation.service.TichDiemService.coTheSuaDanhMuc(String.valueOf(dong[0]));
     }
 
-    /** Khởi tạo DanhMucVoucherPanel với các giá trị được cung cấp. */
     public DanhMucVoucherPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layVoucher());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.VOUCHERS,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucVoucherPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -54,9 +54,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                                     long soLuong = TienTe.doc(String.valueOf(dongDuLieu[3]));
                                     // Đã dùng.
                                     long daDung = TienTe.doc(String.valueOf(dongDuLieu[4]));
-                                    // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
                                     if ("Ngừng".equals(trangThai)) return;
-                                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                     if (hanDung != null && hanDung.isBefore(LocalDate.now()))
                                         dongDuLieu[6] = "Hết hạn";
                                     else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp
@@ -74,11 +72,6 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucVoucherPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã voucher", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),

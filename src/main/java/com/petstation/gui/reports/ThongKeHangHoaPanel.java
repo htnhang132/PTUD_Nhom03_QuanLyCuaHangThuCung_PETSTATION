@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho hàng hóa báo cáo vùng hiển thị. */
 public final class ThongKeHangHoaPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeHangHoaPanel với các giá trị được cung cấp. */
     public ThongKeHangHoaPanel() {
         super(
                 "Thống kê hàng hóa",

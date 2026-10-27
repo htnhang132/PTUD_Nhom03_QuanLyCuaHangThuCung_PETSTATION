@@ -1,7 +1,7 @@
 package com.petstation.gui.components;
 
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.gui.navigation.QuyTrinhManHinh;
+import com.petstation.model.MaManHinh;
 
 import java.awt.*;
 import java.util.Optional;
@@ -37,20 +37,15 @@ public final class ThanhQuyTrinh extends JPanel {
 
     /** Trước. */
     private final NutDinhDang btnTruoc =
-            new NutDinhDang("◀ Bước trước", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("‹ Bước trước", NutDinhDang.KieuNut.TRONG_SUOT);
 
     /** Tiếp theo. */
     private final NutDinhDang btnTiepTheo =
-            new NutDinhDang("Bước tiếp ▶", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Bước tiếp ›", NutDinhDang.KieuNut.CHINH);
 
     /** Điều hướng. */
-    private final JPanel pnlDieuHuong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 5));
+    private final JPanel pnlDieuHuong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
 
-    /**
-     * Khởi tạo ThanhQuyTrinh với các giá trị được cung cấp.
-     *
-     * @param boDieuHuong bộ điều hướng
-     */
     public ThanhQuyTrinh(Consumer<MaManHinh> boDieuHuong) {
         super(new BorderLayout(12, 0));
         this.boDieuHuong = boDieuHuong;
@@ -71,15 +66,12 @@ public final class ThanhQuyTrinh extends JPanel {
         add(pnlDieuHuong, BorderLayout.EAST);
         btnTruoc.addActionListener(
                 suKien -> {
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (quyTrinh != null)
                         quyTrinh.layTruocDo(hienTaiManHinh).ifPresent(boDieuHuong);
                 });
         btnTiepTheo.addActionListener(
                 suKien -> {
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (quyTrinh == null) return;
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if (quyTrinh.kiemTraCuoiCung(hienTaiManHinh))
                         boDieuHuong.accept(MaManHinh.PAYMENT);
                     else quyTrinh.layTiepTheo(hienTaiManHinh).ifPresent(boDieuHuong);
@@ -88,23 +80,15 @@ public final class ThanhQuyTrinh extends JPanel {
         setVisible(false);
     }
 
-    /**
-     * Hiển thị trong ThanhQuyTrinh.
-     *
-     * @param manHinh màn hình
-     */
     public void hienThi(MaManHinh manHinh) {
         // Tìm thấy.
         Optional<QuyTrinhManHinh.QuyTrinh> timThay = QuyTrinhManHinh.tim(manHinh);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (timThay.isEmpty()) {
             quyTrinh = null;
             setVisible(false);
             return;
         }
-        // Trường đang xét.
         QuyTrinhManHinh.QuyTrinh truongDangXet = timThay.get();
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (truongDangXet != quyTrinh) {
             quyTrinh = truongDangXet;
             pnlVungChua.removeAll();
@@ -122,7 +106,7 @@ public final class ThanhQuyTrinh extends JPanel {
         pnlDieuHuong.setVisible(truongDangXet.tuanTu());
         btnTruoc.setVisible(truongDangXet.layTruocDo(manHinh).isPresent());
         btnTiepTheo.setText(
-                truongDangXet.kiemTraCuoiCung(manHinh) ? "Thanh toán ▶" : "Bước tiếp ▶");
+                truongDangXet.kiemTraCuoiCung(manHinh) ? "Thanh toán ›" : "Bước tiếp ▶");
         setVisible(true);
         revalidate();
         repaint();

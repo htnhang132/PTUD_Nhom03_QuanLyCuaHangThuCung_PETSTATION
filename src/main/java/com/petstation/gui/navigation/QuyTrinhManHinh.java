@@ -1,5 +1,7 @@
 package com.petstation.gui.navigation;
 
+import com.petstation.model.MaManHinh;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -19,23 +21,11 @@ public final class QuyTrinhManHinh {
      */
     public record QuyTrinh(
             String ten, List<MaManHinh> cacBuoc, List<String> cacNhan, boolean tuanTu) {
-        /**
-         * Lấy chỉ số của trong QuyTrinh.
-         *
-         * @param id id
-         * @return kết quả lấy chỉ số của
-         */
         public int layChiSoCua(MaManHinh id) {
             if (id == MaManHinh.SPA) id = MaManHinh.SPA_INTAKE;
             return cacBuoc.indexOf(id);
         }
 
-        /**
-         * Lấy tiếp theo trong QuyTrinh.
-         *
-         * @param id id
-         * @return kết quả lấy tiếp theo
-         */
         public Optional<MaManHinh> layTiepTheo(MaManHinh id) {
             // Chỉ số.
             int chiSo = layChiSoCua(id);
@@ -44,24 +34,12 @@ public final class QuyTrinhManHinh {
                     : Optional.empty();
         }
 
-        /**
-         * Lấy trước đó trong QuyTrinh.
-         *
-         * @param id id
-         * @return kết quả lấy trước đó
-         */
         public Optional<MaManHinh> layTruocDo(MaManHinh id) {
             // Chỉ số.
             int chiSo = layChiSoCua(id);
             return chiSo > 0 ? Optional.of(cacBuoc.get(chiSo - 1)) : Optional.empty();
         }
 
-        /**
-         * Kiểm tra cuối cùng trong QuyTrinh.
-         *
-         * @param id id
-         * @return kết quả kiểm tra điều kiện xử lý
-         */
         public boolean kiemTraCuoiCung(MaManHinh id) {
             return layChiSoCua(id) == cacBuoc.size() - 1;
         }
@@ -99,15 +77,8 @@ public final class QuyTrinhManHinh {
                             List.of("Đặt phòng", "Nhật ký lưu trú", "Trả phòng"),
                             true));
 
-    /** Khởi tạo QuyTrinhManHinh với các giá trị được cung cấp. */
     private QuyTrinhManHinh() {}
 
-    /**
-     * Tìm trong QuyTrinhManHinh.
-     *
-     * @param id id
-     * @return kết quả tìm
-     */
     public static Optional<QuyTrinh> tim(MaManHinh id) {
         return CAC_QUY_TRINH.stream()
                 .filter(truongDangXet -> truongDangXet.layChiSoCua(id) >= 0)

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.petstation.gui.components.common.HoaDonDocPanel;
 import com.petstation.model.*;
-import com.petstation.service.CaThuNganService;
+import com.petstation.model.PhuongThuc;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ class HoaDonDocPanelTest {
                         9840000,
                         0,
                         9840000,
-                        CaThuNganService.PhuongThuc.CASH,
+                        PhuongThuc.CASH,
                         10000000,
                         160000,
                         "Khách lẻ",

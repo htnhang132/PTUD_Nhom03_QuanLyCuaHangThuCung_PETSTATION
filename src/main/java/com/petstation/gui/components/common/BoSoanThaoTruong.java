@@ -9,31 +9,11 @@ import javax.swing.JComponent;
  * Spa).
  */
 public interface BoSoanThaoTruong {
-    /**
-     * Lấy thành phần trong BoSoanThaoTruong.
-     *
-     * @return kết quả lấy thành phần
-     */
     JComponent layThanhPhan();
 
-    /**
-     * Lấy trong BoSoanThaoTruong.
-     *
-     * @return kết quả lấy
-     */
     String lay();
 
-    /**
-     * Đặt trong BoSoanThaoTruong.
-     *
-     * @param giaTri giá trị
-     */
     void dat(String giaTri);
 
-    /**
-     * Đặt được bật trong BoSoanThaoTruong.
-     *
-     * @param duocBat được bật
-     */
     void datDuocBat(boolean duocBat);
 }

@@ -1,6 +1,5 @@
 package com.petstation.gui.system;
 
-import com.petstation.dao.TruyCapDuLieuException;
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
@@ -87,11 +86,6 @@ public class DangNhapFrame extends JFrame {
     private final NutDinhDang btnNutDangNhap =
             new NutDinhDang("Đăng nhập", NutDinhDang.KieuNut.CHINH);
 
-    /**
-     * Khởi tạo DangNhapFrame với các giá trị được cung cấp.
-     *
-     * @param nguCanh ngữ cảnh
-     */
     public DangNhapFrame(KhoiTaoUngDung nguCanh) {
         this.nguCanh = nguCanh;
         setTitle("Pet Station – Đăng nhập");
@@ -301,11 +295,6 @@ public class DangNhapFrame extends JFrame {
         SwingUtilities.invokeLater(txtVanBanNguoiDung::requestFocusInWindow);
     }
 
-    /**
-     * Tạo trên thanh trong DangNhapFrame.
-     *
-     * @return kết quả tạo trên thanh
-     */
     private JPanel taoTrenThanh() {
         // Thanh.
         JPanel pnlThanh = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
@@ -374,9 +363,7 @@ public class DangNhapFrame extends JFrame {
                      */
                     @Override
                     public void mouseDragged(MouseEvent suKien) {
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (goc == null) return;
-                        // Vùng đang xét.
                         Point vungDangXet = suKien.getLocationOnScreen();
                         setLocation(vungDangXet.x - goc.x, vungDangXet.y - goc.y);
                     }
@@ -386,7 +373,6 @@ public class DangNhapFrame extends JFrame {
         return pnlThanh;
     }
 
-    /** Cập nhật chữ hoa khóa trong DangNhapFrame. */
     private void capNhatChuHoaKhoa() {
         // Chữ hoa.
         boolean chuHoa;
@@ -395,23 +381,24 @@ public class DangNhapFrame extends JFrame {
         } catch (UnsupportedOperationException ngoaiLe) {
             chuHoa = false;
         }
-        lblNhanChuHoa.setIcon(chuHoa ? new com.petstation.gui.components.BieuTuongGiaoDien(com.petstation.gui.components.BieuTuongGiaoDien.Kieu.CANH_BAO) : null);
+        lblNhanChuHoa.setIcon(
+                chuHoa
+                        ? new com.petstation.gui.components.BieuTuongGiaoDien(
+                                com.petstation.gui.components.BieuTuongGiaoDien.Kieu.CANH_BAO)
+                        : null);
         lblNhanChuHoa.setText(chuHoa ? "Caps Lock đang bật" : "");
     }
 
-    /** Lấy thực hiện đăng nhập trong DangNhapFrame. */
     private void layThucHienDangNhap() {
         // Tên đăng nhập.
         String tenDangNhap = txtVanBanNguoiDung.getText().trim();
         // Mật khẩu.
         char[] matKhau = txtVanBanMatKhau.getPassword();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tenDangNhap.isEmpty()) {
             hienThiThongBao("Vui lòng nhập tên đăng nhập.", MauUngDung.VAN_BAN_NGUY_HIEM);
             txtVanBanNguoiDung.requestFocusInWindow();
             return;
         }
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (matKhau.length == 0) {
             hienThiThongBao("Vui lòng nhập mật khẩu.", MauUngDung.VAN_BAN_NGUY_HIEM);
             txtVanBanMatKhau.requestFocusInWindow();
@@ -451,7 +438,6 @@ public class DangNhapFrame extends JFrame {
                     // Thông báo.
                     String thongBao =
                             nguyenNhan instanceof XacThucException
-                                            || nguyenNhan instanceof TruyCapDuLieuException
                                     ? nguyenNhan.getMessage()
                                     : "Không thể đăng nhập. Vui lòng thử lại.";
                     hienThiThongBao(thongBao, MauUngDung.VAN_BAN_NGUY_HIEM);
@@ -463,11 +449,6 @@ public class DangNhapFrame extends JFrame {
         }.execute();
     }
 
-    /**
-     * Đặt biểu mẫu được bật trong DangNhapFrame.
-     *
-     * @param duocBat được bật
-     */
     private void datBieuMauDuocBat(boolean duocBat) {
         txtVanBanNguoiDung.setEnabled(duocBat);
         txtVanBanMatKhau.setEnabled(duocBat);
@@ -483,7 +464,6 @@ public class DangNhapFrame extends JFrame {
     private JLabel taoLogo() {
         // Tài nguyên.
         URL taiNguyen = DangNhapFrame.class.getResource("/images/pet-station-logo.png");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (taiNguyen == null) {
             // Hiển thị tên thương hiệu được định dạng khi thiếu ảnh biểu trưng
             // Thay thế.
@@ -550,11 +530,6 @@ public class DangNhapFrame extends JFrame {
         return lblNhan;
     }
 
-    /**
-     * Định dạng trường trong DangNhapFrame.
-     *
-     * @param txtTruongDangXet trường đang xét
-     */
     private void dinhDangTruong(JTextField txtTruongDangXet) {
         txtTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 14));
         txtTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -570,12 +545,6 @@ public class DangNhapFrame extends JFrame {
         txtTruongDangXet.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
-    /**
-     * Lấy nhãn trường trong DangNhapFrame.
-     *
-     * @param vanBan văn bản
-     * @return kết quả lấy nhãn trường
-     */
     private JComponent layNhanTruong(String vanBan) {
         // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
@@ -616,7 +585,6 @@ public class DangNhapFrame extends JFrame {
      */
     private void hienThiThongBao(String vanBan, Color mau) {
         lblNhanLoi.setForeground(mau);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (vanBan == null || vanBan.isEmpty()) {
             lblNhanLoi.setText("");
             return;

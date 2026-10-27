@@ -20,7 +20,6 @@ public final class BieuMauPanel extends JPanel {
     /** Dòng. */
     private int dong;
 
-    /** Khởi tạo BieuMauPanel với các giá trị được cung cấp. */
     public BieuMauPanel() {
         super(new GridBagLayout());
         setOpaque(false);
@@ -30,11 +29,6 @@ public final class BieuMauPanel extends JPanel {
         giaTriDangXet.anchor = GridBagConstraints.NORTHWEST;
     }
 
-    /**
-     * Thêm mục trong BieuMauPanel.
-     *
-     * @param tieuDe tiêu đề
-     */
     public void themMuc(String tieuDe) {
         layKetThucDong();
         // Nhãn.
@@ -49,43 +43,19 @@ public final class BieuMauPanel extends JPanel {
         giaTriDangXet.gridwidth = 1;
     }
 
-    /**
-     * Thêm trường trong BieuMauPanel.
-     *
-     * @param nhan nhãn
-     * @param truong trường
-     */
     public void themTruong(String nhan, JComponent truong) {
         dat(boc(nhan, truong), 1);
     }
 
-    /**
-     * Thêm rộng trong BieuMauPanel.
-     *
-     * @param nhan nhãn
-     * @param truong trường
-     */
     public void themRong(String nhan, JComponent truong) {
         dat(boc(nhan, truong), 2);
     }
 
-    /**
-     * Thêm đầy đủ trong BieuMauPanel.
-     *
-     * @param thanhPhan thành phần
-     */
     public void themDayDu(JComponent thanhPhan) {
         dat(thanhPhan, 2);
     }
 
-    /**
-     * Đặt trong BieuMauPanel.
-     *
-     * @param thanhPhan thành phần
-     * @param doRong độ rộng
-     */
     private void dat(JComponent thanhPhan, int doRong) {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (doRong == 2 && cot != 0) layKetThucDong();
         giaTriDangXet.gridx = cot;
         giaTriDangXet.gridy = dong;
@@ -93,26 +63,16 @@ public final class BieuMauPanel extends JPanel {
         add(thanhPhan, giaTriDangXet);
         giaTriDangXet.gridwidth = 1;
         cot += doRong;
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (cot >= 2) layKetThucDong();
     }
 
-    /** Lấy kết thúc dòng trong BieuMauPanel. */
     private void layKetThucDong() {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (cot != 0) {
             cot = 0;
             dong++;
         }
     }
 
-    /**
-     * Bọc trong BieuMauPanel.
-     *
-     * @param nhan nhãn
-     * @param truong trường
-     * @return kết quả bọc
-     */
     private JPanel boc(String nhan, JComponent truong) {
         // Hộp.
         JPanel pnlHop = new JPanel(new BorderLayout(0, 4));
@@ -136,17 +96,11 @@ public final class BieuMauPanel extends JPanel {
      * @return kết quả lấy trường văn bản
      */
     public static JTextField layTruongVanBan(String vanBan) {
-        // Trường đang xét.
         JTextField txtTruongDangXet = new JTextField(vanBan);
         dinhDangDauVao(txtTruongDangXet);
         return txtTruongDangXet;
     }
 
-    /**
-     * Định dạng đầu vào trong BieuMauPanel.
-     *
-     * @param truongDangXet trường đang xét
-     */
     public static void dinhDangDauVao(JComponent truongDangXet) {
         truongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         truongDangXet.setBorder(
@@ -156,13 +110,6 @@ public final class BieuMauPanel extends JPanel {
         truongDangXet.setPreferredSize(new Dimension(160, 36));
     }
 
-    /**
-     * Lấy hộp chọn trong BieuMauPanel.
-     *
-     * @param <KieuDuLieu> kiểu dữ liệu được xử lý
-     * @param cacMuc các mục
-     * @return kết quả lấy hộp chọn
-     */
     public static <KieuDuLieu> JComboBox<KieuDuLieu> layHopChon(KieuDuLieu[] cacMuc) {
         // Hộp.
         JComboBox<KieuDuLieu> cboHop = new JComboBox<>(cacMuc);

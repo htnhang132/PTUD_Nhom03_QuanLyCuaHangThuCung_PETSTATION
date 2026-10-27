@@ -14,7 +14,6 @@ import java.awt.GraphicsEnvironment;
  * #DANGER_TEXT}.
  */
 public final class MauUngDung {
-    /** Khởi tạo MauUngDung với các giá trị được cung cấp. */
     private MauUngDung() {}
 
     /** Nền kem. */
@@ -107,17 +106,11 @@ public final class MauUngDung {
     /** Nhóm. */
     private static final String NHOM = chonNhom();
 
-    /**
-     * Chọn nhóm trong MauUngDung.
-     *
-     * @return kết quả chọn nhóm
-     */
     private static String chonNhom() {
         try {
             for (String ten :
                     GraphicsEnvironment.getLocalGraphicsEnvironment()
                             .getAvailableFontFamilyNames()) {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if ("Segoe UI".equals(ten)) return ten;
             }
         } catch (Throwable boQua) {
@@ -148,11 +141,8 @@ public final class MauUngDung {
      * @return kết quả lấy màu tông màu
      */
     public static Color layMauTongMau(String vanBan) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (vanBan == null) return VAN_BAN_TOI;
-        // Giá trị tạm.
         String giaTriTam = vanBan.toLowerCase();
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (layChuaBatKy(
                 giaTriTam,
                 "hết hàng",
@@ -164,11 +154,9 @@ public final class MauUngDung {
                 "khóa",
                 "bảo trì",
                 "chênh lệch")) return VAN_BAN_NGUY_HIEM;
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (layChuaBatKy(
                 giaTriTam, "chờ", "sắp hết", "đang xử lý", "tạm tính", "cần", "nghỉ phép", "chưa"))
             return CAM;
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (layChuaBatKy(
                 giaTriTam,
                 "hoàn thành",
@@ -185,16 +173,8 @@ public final class MauUngDung {
         return VAN_BAN_TOI;
     }
 
-    /**
-     * Lấy chứa bất kỳ trong MauUngDung.
-     *
-     * @param vanBan văn bản
-     * @param cacTuKhoa các từ khóa
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private static boolean layChuaBatKy(String vanBan, String... cacTuKhoa) {
         for (String tuKhoa : cacTuKhoa) {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (vanBan.contains(tuKhoa)) return true;
         }
         return false;

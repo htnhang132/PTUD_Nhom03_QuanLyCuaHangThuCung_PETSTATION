@@ -14,16 +14,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho dịch vụ Spa danh mục vùng hiển thị. */
 public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhMucDichVuSpaPanel với các giá trị được cung cấp. */
     public DanhMucDichVuSpaPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layDichVuSpa());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.SPA,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucDichVuSpaPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -41,11 +41,6 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucDichVuSpaPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã DV", Kieu.VAN_BAN).chiDoc(),

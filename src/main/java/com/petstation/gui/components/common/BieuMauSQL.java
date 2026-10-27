@@ -37,26 +37,10 @@ public final class BieuMauSQL {
      * @param cacLuaChon các lựa chọn
      */
     public record TruongDuLieu(String khoa, String nhan, String banDau, List<LuaChon> cacLuaChon) {
-        /**
-         * Chuyển thành chuỗi trong TruongDuLieu.
-         *
-         * @param khoa khóa
-         * @param nhan nhãn
-         * @param banDau ban đầu
-         * @return kết quả chuyển thành chuỗi
-         */
         public static TruongDuLieu chuyenThanhChuoi(String khoa, String nhan, String banDau) {
             return new TruongDuLieu(khoa, nhan, banDau, null);
         }
 
-        /**
-         * Lấy lựa chọn trong TruongDuLieu.
-         *
-         * @param khoa khóa
-         * @param nhan nhãn
-         * @param cacDong các dòng
-         * @return kết quả lấy lựa chọn
-         */
         public static TruongDuLieu layLuaChon(String khoa, String nhan, List<Object[]> cacDong) {
             return new TruongDuLieu(
                     khoa,
@@ -72,17 +56,8 @@ public final class BieuMauSQL {
         }
     }
 
-    /** Khởi tạo BieuMauSQL với các giá trị được cung cấp. */
     private BieuMauSQL() {}
 
-    /**
-     * Lấy yêu cầu nhập trong BieuMauSQL.
-     *
-     * @param cha cha
-     * @param tieuDe tiêu đề
-     * @param cacTruong các trường
-     * @return kết quả lấy yêu cầu nhập
-     */
     public static Map<String, String> layYeuCauNhap(
             Component cha, String tieuDe, TruongDuLieu... cacTruong) {
         // Biểu mẫu.
@@ -94,7 +69,6 @@ public final class BieuMauSQL {
         // Các đầu vào.
         Map<String, JComponent> cacDauVao = new LinkedHashMap<>();
         for (int chiSo = 0; chiSo < cacTruong.length; chiSo++) {
-            // Trường đang xét.
             TruongDuLieu truongDangXet = cacTruong[chiSo];
             giaTriDangXet.gridy = chiSo;
             giaTriDangXet.gridx = 0;
@@ -102,11 +76,9 @@ public final class BieuMauSQL {
             pnlBieuMau.add(new JLabel(truongDangXet.nhan()), giaTriDangXet);
             // Đầu vào.
             JComponent dauVao;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (truongDangXet.cacLuaChon() == null)
                 dauVao = new JTextField(truongDangXet.banDau(), 28);
             else {
-                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                 if (truongDangXet.cacLuaChon().isEmpty()) {
                     HopThoai.hienThiCanhBao(
                             cha,
@@ -117,8 +89,11 @@ public final class BieuMauSQL {
                 }
                 dauVao = new JComboBox<>(truongDangXet.cacLuaChon().toArray(LuaChon[]::new));
             }
-            if(dauVao instanceof JComboBox<?> cbo && truongDangXet.banDau()!=null) {
-                for(int i=0;i<cbo.getItemCount();i++)if(cbo.getItemAt(i) instanceof LuaChon chon && chon.giaTri().equals(truongDangXet.banDau()))cbo.setSelectedIndex(i);
+            if (dauVao instanceof JComboBox<?> cbo && truongDangXet.banDau() != null) {
+                for (int i = 0; i < cbo.getItemCount(); i++)
+                    if (cbo.getItemAt(i) instanceof LuaChon chon
+                            && chon.giaTri().equals(truongDangXet.banDau()))
+                        cbo.setSelectedIndex(i);
             }
             dauVao.setName(truongDangXet.khoa());
             dauVao.getAccessibleContext().setAccessibleName(truongDangXet.nhan());
@@ -127,7 +102,6 @@ public final class BieuMauSQL {
             giaTriDangXet.weightx = 1;
             pnlBieuMau.add(dauVao, giaTriDangXet);
         }
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (HopThoai.hienThiXacNhanHopThoai(
                         cha,
                         pnlBieuMau,

@@ -9,15 +9,8 @@ public final class TienTe {
     private static final NumberFormat DINH_DANG =
             NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
 
-    /** Khởi tạo TienTe với các giá trị được cung cấp. */
     private TienTe() {}
 
-    /**
-     * Định dạng trong TienTe.
-     *
-     * @param soTien số tiền
-     * @return kết quả định dạng
-     */
     public static String dinhDang(long soTien) {
         synchronized (DINH_DANG) {
             return DINH_DANG.format(soTien) + "₫";
@@ -33,11 +26,9 @@ public final class TienTe {
      * @return kết quả đọc
      */
     public static long doc(String vanBan) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (vanBan == null) return -1;
         // Các chữ số.
         String cacChuSo = vanBan.replaceAll("[^0-9]", "");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacChuSo.isEmpty() || cacChuSo.length() > 12) return -1;
         return Long.parseLong(cacChuSo);
     }

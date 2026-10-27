@@ -7,8 +7,8 @@ import com.petstation.gui.components.KhaNangThanhCongCu;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
 import com.petstation.gui.components.common.BoChonKhachHang;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.BanHangService;
 import com.petstation.util.TienTe;
 
@@ -127,12 +127,6 @@ public class LapHoaDonPanel extends CoSoPanel {
     /** Nhóm hàng. */
     private String nhomHang = "Tất cả";
 
-    /**
-     * Khởi tạo LapHoaDonPanel với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param boDieuHuong bộ điều hướng
-     */
     public LapHoaDonPanel(GioHang banHang, Consumer<MaManHinh> boDieuHuong) {
         this.banHang = banHang;
         this.boDieuHuong = boDieuHuong;
@@ -195,8 +189,11 @@ public class LapHoaDonPanel extends CoSoPanel {
         JPanel pnlTrai = taoVungTrongSuot(new BorderLayout(0, 10));
         // Trên.
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout(0, 8));
-        pnlTren.add(txtTimKiem, BorderLayout.NORTH);
-        pnlTren.add(layNhomHangCacNhan(), BorderLayout.SOUTH);
+        com.petstation.gui.components.ThanhDanhSach thanh =
+                new com.petstation.gui.components.ThanhDanhSach();
+        thanh.add(txtTimKiem);
+        thanh.themBoLoc(layNhomHangCacNhan());
+        pnlTren.add(thanh, BorderLayout.CENTER);
         pnlTrai.add(pnlTren, BorderLayout.NORTH);
         pnlLuoi.setOpaque(false);
         // Lưới vùng chứa.
@@ -223,13 +220,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         dangKyPhimTat("Ctrl+K", "search", suKien -> txtTimKiem.requestFocusInWindow());
     }
 
-    /**
-     * Đăng ký phím tắt trong LapHoaDonPanel.
-     *
-     * @param khoa khóa
-     * @param ten tên
-     * @param thaoTac thao tác
-     */
     private void dangKyPhimTat(String khoa, String ten, java.awt.event.ActionListener thaoTac) {
         // Phím.
         KeyStroke phim = KeyStroke.getKeyStroke(khoa);
@@ -251,11 +241,6 @@ public class LapHoaDonPanel extends CoSoPanel {
     }
 
     // ── Bên trái: lưới sản phẩm ───────────────────────────────────
-    /**
-     * Lấy nhóm hàng các nhãn trong LapHoaDonPanel.
-     *
-     * @return kết quả lấy nhóm hàng các nhãn
-     */
     private JPanel layNhomHangCacNhan() {
         // Dòng.
         JPanel pnlDong = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
@@ -280,7 +265,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         return pnlDong;
     }
 
-    /** Dựng lại lưới trong LapHoaDonPanel. */
     private void dungLaiLuoi() {
         pnlLuoi.removeAll();
         // Từ khóa.
@@ -294,10 +278,8 @@ public class LapHoaDonPanel extends CoSoPanel {
                     tuKhoa.isEmpty()
                             || vungDangXet.ten().toLowerCase().contains(tuKhoa)
                             || vungDangXet.ma().toLowerCase().contains(tuKhoa);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (vaoNhomHang && khop) pnlLuoi.add(laySanPhamThe(vungDangXet));
         }
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (pnlLuoi.getComponentCount() == 0) {
             // Không có.
             JLabel lblKhongCo = new JLabel("Không tìm thấy sản phẩm phù hợp.");
@@ -310,12 +292,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         pnlLuoi.repaint();
     }
 
-    /**
-     * Lấy sản phẩm thẻ trong LapHoaDonPanel.
-     *
-     * @param vungDangXet vùng đang xét
-     * @return kết quả lấy sản phẩm thẻ
-     */
     private JPanel laySanPhamThe(SanPham vungDangXet) {
         // Ra.
         boolean ra = vungDangXet.tonKho() <= 0;
@@ -367,7 +343,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         pnlThe.add(pnlThongTin, BorderLayout.CENTER);
         pnlThe.add(pnlDuoi, BorderLayout.SOUTH);
 
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (!ra) {
             ganThaoTacThe(
                     pnlThe,
@@ -394,11 +369,9 @@ public class LapHoaDonPanel extends CoSoPanel {
             for (Component con : vung.getComponents()) ganThaoTacThe(con, thaoTac);
     }
 
-    /** Thêm theo quét trong LapHoaDonPanel. */
     private void themTheoQuet() {
         // Từ khóa.
         String tuKhoa = txtTimKiem.getText().trim().toLowerCase();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tuKhoa.isEmpty()) return;
         // Tìm thấy.
         List<SanPham> timThay =
@@ -408,9 +381,7 @@ public class LapHoaDonPanel extends CoSoPanel {
                                         vungDangXet.ma().equalsIgnoreCase(tuKhoa)
                                                 || vungDangXet.ten().toLowerCase().contains(tuKhoa))
                         .toList();
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (timThay.size() == 1) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (timThay.get(0).tonKho() <= 0) {
                 HopThoai.hienThiThongBaoHopThoai(
                         this,
@@ -432,11 +403,6 @@ public class LapHoaDonPanel extends CoSoPanel {
     }
 
     // ── Bên phải: giỏ hàng ────────────────────────────────────────
-    /**
-     * Tạo giỏ hàng trong LapHoaDonPanel.
-     *
-     * @return kết quả tạo giỏ hàng
-     */
     private BoGocPanel taoGioHang() {
         // Giỏ hàng vùng hiển thị.
         BoGocPanel pnlGioHangVungHienThi = layThe(new BorderLayout(0, 10));
@@ -518,12 +484,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         return pnlGioHangVungHienThi;
     }
 
-    /**
-     * Lấy nhãn nhỏ trong LapHoaDonPanel.
-     *
-     * @param vanBan văn bản
-     * @return kết quả lấy nhãn nhỏ
-     */
     private JLabel layNhanNho(String vanBan) {
         // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
@@ -533,14 +493,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         return lblDongDangXet;
     }
 
-    /**
-     * Tính tổng dòng trong LapHoaDonPanel.
-     *
-     * @param nhan nhãn
-     * @param lblGiaTri giá trị
-     * @param manh mạnh
-     * @return kết quả tính tổng dòng
-     */
     private JPanel tinhTongDong(String nhan, JLabel lblGiaTri, boolean manh) {
         // Dòng.
         JPanel pnlDong = taoVungTrongSuot(new BorderLayout());
@@ -557,18 +509,11 @@ public class LapHoaDonPanel extends CoSoPanel {
         return pnlDong;
     }
 
-    /**
-     * Thêm đến giỏ hàng trong LapHoaDonPanel.
-     *
-     * @param vungDangXet vùng đang xét
-     */
     private void themDenGioHang(SanPham vungDangXet) {
         for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
             // Dòng đang xét.
             GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (dongDangXet.ma().equals(vungDangXet.ma())) {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (dongDangXet.soLuong() >= vungDangXet.tonKho()) {
                     HopThoai.hienThiThongBaoHopThoai(
                             this,
@@ -599,17 +544,10 @@ public class LapHoaDonPanel extends CoSoPanel {
         lamMoiGioHang();
     }
 
-    /**
-     * Lấy thay đổi số lượng trong LapHoaDonPanel.
-     *
-     * @param ma mã
-     * @param chenhLech chênh lệch
-     */
     private void layThayDoiSoLuong(String ma, int chenhLech) {
         for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
             // Dòng đang xét.
             GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!dongDangXet.ma().equals(ma)) continue;
             // Tồn kho.
             int tonKho =
@@ -620,9 +558,7 @@ public class LapHoaDonPanel extends CoSoPanel {
                             .orElse(Integer.MAX_VALUE);
             // Số lượng.
             int soLuong = dongDangXet.soLuong() + chenhLech;
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (soLuong > tonKho) return;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (soLuong <= 0) gioHang.remove(chiSo);
             else
                 gioHang.set(
@@ -637,10 +573,8 @@ public class LapHoaDonPanel extends CoSoPanel {
         lamMoiGioHang();
     }
 
-    /** Làm mới giỏ hàng trong LapHoaDonPanel. */
     private void lamMoiGioHang() {
         pnlGioHangCacDong.removeAll();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (gioHang.isEmpty()) {
             // Vùng chứa.
             JPanel pnlVungChua = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 12));
@@ -655,12 +589,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         capNhatCacTong();
     }
 
-    /**
-     * Lấy giỏ hàng dòng trong LapHoaDonPanel.
-     *
-     * @param dong dòng
-     * @return kết quả lấy giỏ hàng dòng
-     */
     private JPanel layGioHangDong(GioHang.DongHang dong) {
         // Dòng.
         JPanel pnlDong = new JPanel(new BorderLayout(8, 0));
@@ -719,13 +647,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         return pnlDong;
     }
 
-    /**
-     * Lấy nút số lượng trong LapHoaDonPanel.
-     *
-     * @param vanBan văn bản
-     * @param tenTroNang tên trợ năng
-     * @return kết quả lấy nút số lượng
-     */
     private JButton layNutSoLuong(String vanBan, String tenTroNang) {
         // Giá trị sau.
         JButton btnGiaTriSau = new JButton(vanBan);
@@ -738,7 +659,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         return btnGiaTriSau;
     }
 
-    /** Cập nhật các tổng trong LapHoaDonPanel. */
     private void capNhatCacTong() {
         lblNhanTamTinh.setText(TienTe.dinhDang(banHang.tinhTamTinh()));
         lblNhanGiamGia.setText(
@@ -757,15 +677,8 @@ public class LapHoaDonPanel extends CoSoPanel {
         btnNutThanhToan.setEnabled(!gioHang.isEmpty());
     }
 
-    /**
-     * Xóa giỏ hàng trong LapHoaDonPanel.
-     *
-     * @param xacNhan xác nhận
-     */
     private void xoaGioHang(boolean xacNhan) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (gioHang.isEmpty()) return;
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (xacNhan
                 && HopThoai.hienThiXacNhanHopThoai(
                                 this,
@@ -781,15 +694,12 @@ public class LapHoaDonPanel extends CoSoPanel {
         lamMoiGioHang();
     }
 
-    /** Quyết toán trong LapHoaDonPanel. */
     private void quyetToan() {
         capNhatCacTong();
         boDieuHuong.accept(MaManHinh.PAYMENT);
     }
 
-    /** Treo giỏ hàng hiện tại trong LapHoaDonPanel. */
     private void treoGioHangHienTai() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (gioHang.isEmpty()) {
             HopThoai.hienThiCanhBao(this, "Giỏ hàng trống.");
             return;
@@ -804,40 +714,29 @@ public class LapHoaDonPanel extends CoSoPanel {
         }
     }
 
-    /** Hiển thị treo các giỏ hàng trong LapHoaDonPanel. */
     private void hienThiTreoCacGioHang() {
         boDieuHuong.accept(MaManHinh.PENDING_INVOICES);
     }
 
-    /**
-     * Lấy khả năng thanh công cụ trong LapHoaDonPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(true, false, true, false, true, true);
     }
 
-    /** Xử lý tạo mới trong LapHoaDonPanel. */
     @Override
     public void xuLyTaoMoi() {
         xoaGioHang(true);
     }
 
-    /** Xử lý hoàn tác trong LapHoaDonPanel. */
     @Override
     public void xuLyHoanTac() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (lichSuThem.isEmpty()) return;
         // Mã.
         String ma = lichSuThem.pop();
         for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
             // Dòng đang xét.
             GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!dongDangXet.ma().equals(ma)) continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (dongDangXet.soLuong() <= 1) gioHang.remove(chiSo);
             else
                 gioHang.set(
@@ -852,7 +751,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         lamMoiGioHang();
     }
 
-    /** Xử lý hiển thị trong LapHoaDonPanel. */
     @Override
     public void xuLyHienThi() {
         gioHang.clear();
@@ -861,7 +759,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         pnlBoChon.dongBo();
         lamMoiGioHang();
         // Đồng bộ thẻ sản phẩm với giá và tồn kho hiện tại từ SQL.
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banHang.kiemTraTrong() && !gioHang.isEmpty()) {
             gioHang.clear();
             lichSuThem.clear();
@@ -871,11 +768,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         txtTimKiem.requestFocusInWindow();
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong LapHoaDonPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Quét mã vạch hoặc gõ mã/tên rồi Enter để thêm vào giỏ.\n"
@@ -886,11 +778,6 @@ public class LapHoaDonPanel extends CoSoPanel {
                 + " Ctrl+K: Tìm SP.";
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong LapHoaDonPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Lập đơn hàng";
@@ -902,63 +789,31 @@ public class LapHoaDonPanel extends CoSoPanel {
      * <p>Panel luôn co theo bề rộng khung cuộn, tránh thanh cuộn ngang.
      */
     private static final class TheoChieuRongPanel extends JPanel implements Scrollable {
-        /** Khởi tạo TheoChieuRongPanel với các giá trị được cung cấp. */
         TheoChieuRongPanel() {
             super(new BorderLayout());
         }
 
-        /**
-         * Lấy kích thước ưu tiên có thể cuộn khung nhìn trong TheoChieuRongPanel.
-         *
-         * @return kết quả lấy kích thước ưu tiên có thể cuộn khung nhìn
-         */
         @Override
         public Dimension getPreferredScrollableViewportSize() {
             return getPreferredSize();
         }
 
-        /**
-         * Lấy có thể cuộn đơn vị bước tăng trong TheoChieuRongPanel.
-         *
-         * @param dongDuLieu dòng dữ liệu
-         * @param doiTuong đối tượng
-         * @param ngayDangXet ngày đang xét
-         * @return kết quả lấy có thể cuộn đơn vị bước tăng
-         */
         @Override
         public int getScrollableUnitIncrement(Rectangle dongDuLieu, int doiTuong, int ngayDangXet) {
             return 16;
         }
 
-        /**
-         * Lấy có thể cuộn khối bước tăng trong TheoChieuRongPanel.
-         *
-         * @param dongDuLieu dòng dữ liệu
-         * @param doiTuong đối tượng
-         * @param ngayDangXet ngày đang xét
-         * @return kết quả lấy có thể cuộn khối bước tăng
-         */
         @Override
         public int getScrollableBlockIncrement(
                 Rectangle dongDuLieu, int doiTuong, int ngayDangXet) {
             return 64;
         }
 
-        /**
-         * Lấy chiều rộng có thể cuộn theo dõi khung nhìn trong TheoChieuRongPanel.
-         *
-         * @return kết quả kiểm tra điều kiện xử lý
-         */
         @Override
         public boolean getScrollableTracksViewportWidth() {
             return true;
         }
 
-        /**
-         * Lấy chiều cao có thể cuộn theo dõi khung nhìn trong TheoChieuRongPanel.
-         *
-         * @return kết quả kiểm tra điều kiện xử lý
-         */
         @Override
         public boolean getScrollableTracksViewportHeight() {
             return false;

@@ -10,30 +10,14 @@ public enum VaiTro {
     /** Tên hiển thị. */
     private final String tenHienThi;
 
-    /**
-     * Khởi tạo VaiTro với các giá trị được cung cấp.
-     *
-     * @param tenHienThi tên hiển thị
-     */
     VaiTro(String tenHienThi) {
         this.tenHienThi = tenHienThi;
     }
 
-    /**
-     * Lấy tên hiển thị trong VaiTro.
-     *
-     * @return kết quả lấy tên hiển thị
-     */
     public String layTenHienThi() {
         return tenHienThi;
     }
 
-    /**
-     * Đọc từ CSDL trong VaiTro.
-     *
-     * @param giaTri giá trị
-     * @return kết quả đọc từ CSDL
-     */
     public static VaiTro docTuCSDL(String giaTri) {
         return VaiTro.valueOf(giaTri);
     }

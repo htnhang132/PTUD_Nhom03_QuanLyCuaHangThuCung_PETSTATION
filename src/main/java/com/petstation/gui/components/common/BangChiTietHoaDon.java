@@ -54,29 +54,42 @@ public final class BangChiTietHoaDon {
                                 return txtTen;
                             }
                         });
-        bang.getColumnModel().addColumnModelListener(new javax.swing.event.TableColumnModelListener() {
-            public void columnAdded(javax.swing.event.TableColumnModelEvent e) {}
-            public void columnRemoved(javax.swing.event.TableColumnModelEvent e) {}
-            public void columnMoved(javax.swing.event.TableColumnModelEvent e) {}
-            public void columnSelectionChanged(javax.swing.event.ListSelectionEvent e) {}
-            public void columnMarginChanged(javax.swing.event.ChangeEvent e) { capNhatChieuCao(bang); }
-        });
+        bang.getColumnModel()
+                .addColumnModelListener(
+                        new javax.swing.event.TableColumnModelListener() {
+                            public void columnAdded(javax.swing.event.TableColumnModelEvent e) {}
+
+                            public void columnRemoved(javax.swing.event.TableColumnModelEvent e) {}
+
+                            public void columnMoved(javax.swing.event.TableColumnModelEvent e) {}
+
+                            public void columnSelectionChanged(
+                                    javax.swing.event.ListSelectionEvent e) {}
+
+                            public void columnMarginChanged(javax.swing.event.ChangeEvent e) {
+                                capNhatChieuCao(bang);
+                            }
+                        });
         bang.getModel().addTableModelListener(e -> capNhatChieuCao(bang));
-        if(bang.getRowSorter()!=null) bang.getRowSorter().addRowSorterListener(e -> capNhatChieuCao(bang));
+        if (bang.getRowSorter() != null)
+            bang.getRowSorter().addRowSorterListener(e -> capNhatChieuCao(bang));
         capNhatChieuCao(bang);
     }
 
     /** Tính trước khi vẽ để khung cắt của ô đã đủ cao ngay từ lần hiển thị đầu. */
     private static void capNhatChieuCao(JTable bang) {
-        if(bang.getColumnCount()==0)return;
-        JTextArea txtDo=new JTextArea();txtDo.setFont(bang.getFont());
-        txtDo.setLineWrap(true);txtDo.setWrapStyleWord(true);
-        txtDo.setBorder(BorderFactory.createEmptyBorder(7,8,7,8));
-        int rong=Math.max(40,bang.getColumnModel().getColumn(0).getWidth());
-        for(int dong=0;dong<bang.getRowCount();dong++) {
-            txtDo.setText(String.valueOf(bang.getValueAt(dong,0)));txtDo.setSize(rong,Short.MAX_VALUE);
-            int cao=Math.max(38,txtDo.getPreferredSize().height);
-            if(bang.getRowHeight(dong)!=cao)bang.setRowHeight(dong,cao);
+        if (bang.getColumnCount() == 0) return;
+        JTextArea txtDo = new JTextArea();
+        txtDo.setFont(bang.getFont());
+        txtDo.setLineWrap(true);
+        txtDo.setWrapStyleWord(true);
+        txtDo.setBorder(BorderFactory.createEmptyBorder(7, 8, 7, 8));
+        int rong = Math.max(40, bang.getColumnModel().getColumn(0).getWidth());
+        for (int dong = 0; dong < bang.getRowCount(); dong++) {
+            txtDo.setText(String.valueOf(bang.getValueAt(dong, 0)));
+            txtDo.setSize(rong, Short.MAX_VALUE);
+            int cao = Math.max(38, txtDo.getPreferredSize().height);
+            if (bang.getRowHeight(dong) != cao) bang.setRowHeight(dong, cao);
         }
     }
 }

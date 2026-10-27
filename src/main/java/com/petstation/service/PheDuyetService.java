@@ -1,10 +1,12 @@
 package com.petstation.service;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.HoTroNghiepVuService.*;
 import static com.petstation.service.PhienDangNhapService.*;
+import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.impl.JdbcPheDuyetDAO;
+import com.petstation.dao.PheDuyetDAO;
+import com.petstation.dao.impl.PheDuyetImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDate;
@@ -14,6 +16,8 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho phê duyệt dịch vụ. */
 public final class PheDuyetService {
+    private static final PheDuyetDAO pheDuyetDAO = new PheDuyetImpl();
+
     /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho loại. */
     public enum Loai {
         INVOICE("Sửa/hủy hóa đơn"),
@@ -26,11 +30,6 @@ public final class PheDuyetService {
         /** Nhãn. */
         public final String nhan;
 
-        /**
-         * Khởi tạo Loai với các giá trị được cung cấp.
-         *
-         * @param nhan nhãn
-         */
         Loai(String nhan) {
             this.nhan = nhan;
         }
@@ -56,11 +55,6 @@ public final class PheDuyetService {
         /** Trạng thái. */
         public String trangThai, daQuyetDinhTheo, tuChoiLyDo;
 
-        /**
-         * Khởi tạo YeuCau với các giá trị được cung cấp.
-         *
-         * @param dongDuLieu dòng dữ liệu
-         */
         YeuCau(Object[] dongDuLieu) {
             id = chuyenThanhChuoi(dongDuLieu[0]);
             loai = Loai.valueOf(chuyenThanhChuoi(dongDuLieu[1]));
@@ -79,11 +73,6 @@ public final class PheDuyetService {
             tuChoiLyDo = chuyenThanhChuoi(dongDuLieu[9]);
         }
 
-        /**
-         * Lấy văn bản thời gian trong YeuCau.
-         *
-         * @return kết quả lấy văn bản thời gian
-         */
         public String layVanBanThoiGian() {
             return thoiGian.format(DateTimeFormatter.ofPattern("dd/MM HH:mm"));
         }
@@ -95,21 +84,8 @@ public final class PheDuyetService {
     /** Đã chọn hóa đơn. */
     public static String daChonHoaDon = "";
 
-    /** Khởi tạo PheDuyetService với các giá trị được cung cấp. */
     private PheDuyetService() {}
 
-    /**
-     * Gửi thao tác trong PheDuyetService.
-     *
-     * @param loai loại
-     * @param lyDo lý do
-     * @param truoc trước
-     * @param sau sau
-     * @param thaoTac thao tác
-     * @param dich đích
-     * @param noiDungXuLy nội dung xử lý
-     * @return kết quả gửi thao tác
-     */
     public static YeuCau guiThaoTac(
             Loai loai,
             String lyDo,
@@ -139,13 +115,12 @@ public final class PheDuyetService {
                 };
         if (!dungThaoTac || dich <= 0)
             throw new IllegalArgumentException("Thao tác không phù hợp với loại phê duyệt.");
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (lyDo == null || lyDo.isBlank()) throw new IllegalArgumentException("Cần nhập lý do.");
         // Mã.
         String ma = taoMa("YC");
         thucHienGiaoDich(
                 ketNoi -> {
-                    JdbcPheDuyetDAO.capNhatGuiThaoTac(
+                    pheDuyetDAO.capNhatGuiThaoTac(
                             ma,
                             loai.name(),
                             layIdTaiKhoan(),
@@ -165,40 +140,21 @@ public final class PheDuyetService {
                 .orElseThrow();
     }
 
-    /**
-     * Lấy tất cả trong PheDuyetService.
-     *
-     * @return kết quả lấy tất cả
-     */
     public static List<YeuCau> layTatCa() {
-        // Kết quả.
         List<YeuCau> ketQua = new ArrayList<>();
-        for (Object[] dongDuLieu : JdbcPheDuyetDAO.timTatCa()) ketQua.add(new YeuCau(dongDuLieu));
+        for (Object[] dongDuLieu : pheDuyetDAO.timTatCa()) ketQua.add(new YeuCau(dongDuLieu));
         return ketQua;
     }
 
-    /**
-     * Đếm chờ duyệt trong PheDuyetService.
-     *
-     * @return kết quả đếm chờ duyệt
-     */
     public static long demChoDuyet() {
-        return JdbcPheDuyetDAO.demSoLuongDangCho();
+        return pheDuyetDAO.demSoLuongDangCho();
     }
 
-    /**
-     * Duyệt trong PheDuyetService.
-     *
-     * @param yeuCau yêu cầu
-     * @param nguoiDuyet người duyệt
-     */
     public static void duyet(YeuCau yeuCau, String nguoiDuyet) {
         yeuCau(Quyen.APPROVAL_PROCESS);
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Các dòng.
-                    List<Object[]> cacDong = JdbcPheDuyetDAO.timDuyet(yeuCau.id);
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    List<Object[]> cacDong = pheDuyetDAO.timDuyet(yeuCau.id);
                     if (cacDong.isEmpty())
                         throw new IllegalArgumentException("Yêu cầu đã được xử lý.");
                     // Dòng dữ liệu.
@@ -207,7 +163,7 @@ public final class PheDuyetService {
                             chuyenThanhChuoi(dongDuLieu[0]),
                             Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])),
                             chuyenThanhChuoi(dongDuLieu[2]));
-                    JdbcPheDuyetDAO.capNhatDuyet(layIdTaiKhoan(), yeuCau.id);
+                    pheDuyetDAO.capNhatDuyet(layIdTaiKhoan(), yeuCau.id);
                     NhatKyHeThongService.ghiNhatKy("Duyệt", yeuCau.id);
                     return null;
                 });
@@ -216,40 +172,26 @@ public final class PheDuyetService {
         thongBao();
     }
 
-    /**
-     * Từ chối trong PheDuyetService.
-     *
-     * @param yeuCau yêu cầu
-     * @param nguoiDuyet người duyệt
-     * @param lyDo lý do
-     */
     public static void tuChoi(YeuCau yeuCau, String nguoiDuyet, String lyDo) {
         yeuCau(Quyen.APPROVAL_PROCESS);
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (lyDo.isBlank()) throw new IllegalArgumentException("Cần lý do từ chối.");
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Các dòng.
-                    List<Object[]> cacDong = JdbcPheDuyetDAO.timTuChoi(yeuCau.id);
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    List<Object[]> cacDong = pheDuyetDAO.timTuChoi(yeuCau.id);
                     if (cacDong.isEmpty()) throw new IllegalArgumentException("Yêu cầu đã xử lý.");
                     // Dòng dữ liệu.
                     Object[] dongDuLieu = cacDong.get(0);
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if ("RETURN".equals(dongDuLieu[0]))
-                        JdbcPheDuyetDAO.capNhatTuChoi3(
+                        pheDuyetDAO.tuChoiPhieuDoiTra(
                                 Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if ("WRITE_OFF".equals(dongDuLieu[0]))
-                        JdbcPheDuyetDAO.capNhatTuChoi(
-                                Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                        pheDuyetDAO.capNhatTuChoi(Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
                     if ("STOCKTAKE".equals(dongDuLieu[0]))
-                        JdbcPheDuyetDAO.capNhatTuChoi2(
+                        pheDuyetDAO.tuChoiBienBanKiemKe(
                                 Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
                     if ("PRICE_CHANGE".equals(dongDuLieu[0]))
                         DeXuatGiaService.tuChoi(Long.parseLong(chuyenThanhChuoi(dongDuLieu[1])));
-                    JdbcPheDuyetDAO.capNhatTuChoi4(layIdTaiKhoan(), lyDo, yeuCau.id);
+                    pheDuyetDAO.danhDauYeuCauTuChoi(layIdTaiKhoan(), lyDo, yeuCau.id);
                     NhatKyHeThongService.ghiNhatKy("Từ chối", yeuCau.id + " / " + lyDo);
                     return null;
                 });
@@ -259,33 +201,18 @@ public final class PheDuyetService {
         thongBao();
     }
 
-    /**
-     * Thêm bộ lắng nghe trong PheDuyetService.
-     *
-     * @param boLangNghe bộ lắng nghe
-     */
     public static void themBoLangNghe(Runnable boLangNghe) {
         CAC_BO_LANG_NGHE.add(boLangNghe);
     }
 
-    /** Thông báo trong PheDuyetService. */
     private static void thongBao() {
         for (Runnable boLangNghe : List.copyOf(CAC_BO_LANG_NGHE)) boLangNghe.run();
     }
 
-    /**
-     * Lấy hóa đơn yêu cầu trong PheDuyetService.
-     *
-     * @param hoaDon hóa đơn
-     * @param huy hủy
-     * @param lyDo lý do
-     * @param thayDoi thay đổi
-     */
     public static void layHoaDonYeuCau(String hoaDon, boolean huy, String lyDo, String thayDoi) {
         yeuCau(Quyen.POS_SELL);
         // Id.
         long id = layId("hoa_don", "so_hoa_don", hoaDon);
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (lyDo.isBlank() || !huy && thayDoi.isBlank())
             throw new IllegalArgumentException("Cần lý do và nội dung cần sửa.");
         PheDuyetService.guiThaoTac(
@@ -298,13 +225,6 @@ public final class PheDuyetService {
                 thayDoi);
     }
 
-    /**
-     * Áp dụng phê duyệt trong PheDuyetService.
-     *
-     * @param thaoTac thao tác
-     * @param dich đích
-     * @param noiDungXuLy nội dung xử lý
-     */
     public static void apDungPheDuyet(String thaoTac, long dich, String noiDungXuLy) {
         yeuCau(Quyen.APPROVAL_PROCESS);
         switch (thaoTac) {
@@ -316,11 +236,10 @@ public final class PheDuyetService {
                     com.petstation.service.LichLamViecService.danhDauNghiPhepDaDuyet(
                             dich, LocalDate.parse(noiDungXuLy));
             case "INVOICE_NOTE" -> {
-                // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                if (JdbcPheDuyetDAO.demApDungPheDuyet(dich) == 0)
+                if (pheDuyetDAO.demApDungPheDuyet(dich) == 0)
                     throw new IllegalArgumentException("Hóa đơn không còn hợp lệ.");
                 NhatKyHeThongService.ghiNhatKy("Sửa ghi chú hóa đơn", dich + ": " + noiDungXuLy);
-                JdbcPheDuyetDAO.capNhatApDungPheDuyet(noiDungXuLy, dich);
+                pheDuyetDAO.capNhatApDungPheDuyet(noiDungXuLy, dich);
             }
             case "CANCEL_INVOICE" -> BanHangService.huyHoaDon(dich);
             default -> throw new IllegalArgumentException("Loại phê duyệt không được hỗ trợ.");

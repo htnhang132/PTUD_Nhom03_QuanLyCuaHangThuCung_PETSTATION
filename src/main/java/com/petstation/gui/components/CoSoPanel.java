@@ -29,7 +29,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     /** Chưa ràng buộc tìm kiếm. */
     private JTextField txtChuaRangBuocTimKiem;
 
-    /** Khởi tạo CoSoPanel với các giá trị được cung cấp. */
     public CoSoPanel() {
         com.petstation.gui.components.common.HoTroCuon.theoDoi(this);
         setBackground(MauUngDung.NEN_KEM);
@@ -38,31 +37,22 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     // ── Thanh công cụ ─────────────────────────────────────────────
-    /**
-     * Lấy khả năng thanh công cụ trong CoSoPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(
                 false, false, txtChinhTimKiem != null, tblChinhBang != null, false, true);
     }
 
-    /** Xử lý tìm kiếm trong CoSoPanel. */
     @Override
     public void xuLyTimKiem() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtChinhTimKiem != null) {
             txtChinhTimKiem.requestFocusInWindow();
             txtChinhTimKiem.selectAll();
         }
     }
 
-    /** Xử lý in trong CoSoPanel. */
     @Override
     public void xuLyIn() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tblChinhBang == null) return;
         try {
             tblChinhBang.print(
@@ -78,27 +68,16 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         }
     }
 
-    /** Xử lý trợ giúp trong CoSoPanel. */
     @Override
     public void xuLyTroGiup() {
         HopThoai.hienThiThongBaoHopThoai(
                 this, layNoiDungTroGiup(), layTieuDeTroGiup(), JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong CoSoPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     protected String layTieuDeTroGiup() {
         return "Trợ giúp";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong CoSoPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     protected String layNoiDungTroGiup() {
         return txtChinhTimKiem != null
                 ? "Gõ vào ô tìm kiếm (Ctrl+F) để lọc danh sách. Bấm tiêu đề cột để sắp xếp."
@@ -128,7 +107,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         lblNhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblNhan.setForeground(MauUngDung.VAN_BAN_XAM);
 
-        // Giá trị.
         JLabel lblGiaTri = new JLabel(giaTri);
         lblGiaTri.setFont(MauUngDung.taoPhongChu(Font.BOLD, 22));
         lblGiaTri.setForeground(nhan2 == null ? MauUngDung.VAN_BAN_TOI : nhan2);
@@ -138,24 +116,11 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return pnlThe;
     }
 
-    /**
-     * Lấy chỉ số thẻ trong CoSoPanel.
-     *
-     * @param nhan nhãn
-     * @param giaTri giá trị
-     * @return kết quả lấy chỉ số thẻ
-     */
     protected JPanel layChiSoThe(String nhan, String giaTri) {
         return layChiSoThe(nhan, giaTri, null, MauUngDung.VAN_BAN_TOI);
     }
 
     // ── Tiêu đề ───────────────────────────────────────────────────
-    /**
-     * Tạo tiêu đề mục trong CoSoPanel.
-     *
-     * @param vanBan văn bản
-     * @return kết quả tạo tiêu đề mục
-     */
     protected JLabel taoTieuDeMuc(String vanBan) {
         // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
@@ -165,13 +130,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     // ── Bảng ──────────────────────────────────────────────────────
-    /**
-     * Tạo bảng định dạng trong CoSoPanel.
-     *
-     * @param cacCot các cột
-     * @param duLieu dữ liệu
-     * @return kết quả tạo bảng định dạng
-     */
     protected JScrollPane taoBangDinhDang(String[] cacCot, Object[][] duLieu) {
         // Mô hình.
         DefaultTableModel moHinh =
@@ -191,12 +149,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return taoBangDinhDang(moHinh);
     }
 
-    /**
-     * Tạo bảng định dạng trong CoSoPanel.
-     *
-     * @param moHinh mô hình
-     * @return kết quả tạo bảng định dạng
-     */
     protected JScrollPane taoBangDinhDang(TableModel moHinh) {
         // Bảng.
         JTable tblBang = new JTable(moHinh);
@@ -207,9 +159,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1));
         scrKhungCuon.getViewport().setBackground(MauUngDung.THE_NEN);
 
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tblChinhBang == null) tblChinhBang = tblBang;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtChuaRangBuocTimKiem != null) {
             lienKetBoLoc(txtChuaRangBuocTimKiem, tblBang);
             txtChuaRangBuocTimKiem = null;
@@ -221,12 +171,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     protected static final String NHAT_XOA_GHI_CHU =
             "Bản ghi sẽ chuyển sang \"Ngừng hoạt động\" (xóa mềm), vẫn giữ lịch sử giao dịch.";
 
-    /**
-     * Lấy bảng trong CoSoPanel.
-     *
-     * @param scrCuon cuộn
-     * @return kết quả lấy bảng
-     */
     protected static JTable layBang(JScrollPane scrCuon) {
         return (JTable) scrCuon.getViewport().getView();
     }
@@ -252,7 +196,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                                 @SuppressWarnings("unchecked")
                                 TableRowSorter<TableModel> boSapXep =
                                         (TableRowSorter<TableModel>) tblBang.getRowSorter();
-                                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                 if (boSapXep == null) return;
                                 boSapXep.setRowFilter(
                                         tuKhoa.isEmpty()
@@ -305,7 +248,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
      * @return kết quả tạo ô tìm kiếm
      */
     protected JTextField taoOTimKiem(String goiYNhap) {
-        // Trường đang xét.
         JTextField txtTruongDangXet =
                 new JTextField() {
                     /**
@@ -316,7 +258,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         super.paintComponent(doHoa);
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (getText().isEmpty() && !isFocusOwner()) {
                             // Đồ họa 2.
                             Graphics2D doHoa2 = (Graphics2D) doHoa.create();
@@ -368,21 +309,12 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                         txtTruongDangXet.repaint();
                     }
                 });
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtChinhTimKiem == null) txtChinhTimKiem = txtTruongDangXet;
         txtChuaRangBuocTimKiem = txtTruongDangXet;
         return txtTruongDangXet;
     }
 
     // ── Huy hiệu / thẻ ────────────────────────────────────────────
-    /**
-     * Lấy nhãn trong CoSoPanel.
-     *
-     * @param vanBan văn bản
-     * @param nen nền
-     * @param chu chữ
-     * @return kết quả lấy nhãn
-     */
     protected JLabel layNhan(String vanBan, Color nen, Color chu) {
         // Dòng đang xét.
         JLabel lblDongDangXet =
@@ -411,42 +343,21 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return lblDongDangXet;
     }
 
-    /**
-     * Lấy thẻ trong CoSoPanel.
-     *
-     * @param boCuc bố cục
-     * @return kết quả lấy thẻ
-     */
     protected BoGocPanel layThe(LayoutManager boCuc) {
-        // Vùng đang xét.
         BoGocPanel pnlVungDangXet = new BoGocPanel(12, MauUngDung.THE_NEN, true);
         pnlVungDangXet.setLayout(boCuc);
         pnlVungDangXet.setBorder(new EmptyBorder(18, 20, 18, 20));
         return pnlVungDangXet;
     }
 
-    /**
-     * Tạo hàng ngang trong CoSoPanel.
-     *
-     * @param cacThanhPhan các thành phần
-     * @return kết quả tạo hàng ngang
-     */
     protected JPanel taoHangNgang(Component... cacThanhPhan) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         pnlVungDangXet.setOpaque(false);
         for (Component giaTriDangXet : cacThanhPhan) pnlVungDangXet.add(giaTriDangXet);
         return pnlVungDangXet;
     }
 
-    /**
-     * Tạo vùng trong suốt trong CoSoPanel.
-     *
-     * @param boCuc bố cục
-     * @return kết quả tạo vùng trong suốt
-     */
     protected JPanel taoVungTrongSuot(LayoutManager boCuc) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(boCuc);
         pnlVungDangXet.setOpaque(false);
         return pnlVungDangXet;
@@ -467,7 +378,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         JPanel pnlHop = new JPanel();
         pnlHop.setOpaque(false);
         pnlHop.setLayout(new BoxLayout(pnlHop, BoxLayout.Y_AXIS));
-        // Giá trị tạm.
         JLabel lblGiaTriTam = new JLabel(tieuDe);
         lblGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
         lblGiaTriTam.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -480,7 +390,6 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         pnlHop.add(lblGiaTriTam);
         pnlHop.add(Box.createVerticalStrut(6));
         pnlHop.add(lblMoHinhDangXet);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (btnThaoTac != null) {
             btnThaoTac.setAlignmentX(Component.CENTER_ALIGNMENT);
             pnlHop.add(Box.createVerticalStrut(16));

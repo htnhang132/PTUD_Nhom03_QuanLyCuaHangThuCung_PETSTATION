@@ -43,16 +43,10 @@ public class BoChonNgay extends JPanel {
     /** Hiện tại năm. */
     private int hienTaiNam;
 
-    /** Khởi tạo BoChonNgay với các giá trị được cung cấp. */
     public BoChonNgay() {
         this(LocalDate.now());
     }
 
-    /**
-     * Khởi tạo BoChonNgay với các giá trị được cung cấp.
-     *
-     * @param ngayBanDau ngày ban đầu
-     */
     public BoChonNgay(LocalDate ngayBanDau) {
         setLayout(new BorderLayout(5, 0));
         this.ngayDuocChon = ngayBanDau;
@@ -63,7 +57,6 @@ public class BoChonNgay extends JPanel {
         txtTruongVanBan = new JTextField(10);
         txtTruongVanBan.setEditable(false);
         txtTruongVanBan.setBackground(Color.WHITE);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngayDuocChon != null) {
             txtTruongVanBan.setText(dinhDangNgay(ngayDuocChon));
         }
@@ -85,15 +78,12 @@ public class BoChonNgay extends JPanel {
         add(btnNutLich, BorderLayout.EAST);
     }
 
-    /** Hiển thị lịch trong BoChonNgay. */
     private void hienThiLich() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (lichHopThoai == null) {
             taoLichHopThoai();
         }
 
         // Đặt lại về tháng hiện tại hoặc tháng đã chọn
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngayDuocChon != null) {
             hienTaiThang = ngayDuocChon.getMonthValue();
             hienTaiNam = ngayDuocChon.getYear();
@@ -124,11 +114,9 @@ public class BoChonNgay extends JPanel {
         lichHopThoai.setVisible(true);
     }
 
-    /** Tạo lịch hộp thoại trong BoChonNgay. */
     private void taoLichHopThoai() {
         // Cửa sổ.
         Window cuaSo = SwingUtilities.getWindowAncestor(this);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (cuaSo instanceof Frame) {
             lichHopThoai = new JDialog((Frame) cuaSo, "Chọn ngày", true);
         } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
@@ -156,7 +144,6 @@ public class BoChonNgay extends JPanel {
         btnNutTruoc.addActionListener(
                 suKien -> {
                     hienTaiThang--;
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if (hienTaiThang < 1) {
                         hienTaiThang = 12;
                         hienTaiNam--;
@@ -174,7 +161,6 @@ public class BoChonNgay extends JPanel {
         btnNutTiepTheo.addActionListener(
                 suKien -> {
                     hienTaiThang++;
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if (hienTaiThang > 12) {
                         hienTaiThang = 1;
                         hienTaiNam++;
@@ -241,7 +227,6 @@ public class BoChonNgay extends JPanel {
                         JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
-    /** Cập nhật lịch trong BoChonNgay. */
     private void capNhatLich() {
         lblNhanThangNam.setText(String.format("Tháng %d/%d", hienTaiThang, hienTaiNam));
 
@@ -282,7 +267,6 @@ public class BoChonNgay extends JPanel {
             btnNutNgay.setName("ngay:" + ngay);
 
             // Làm nổi bật ngày được chọn
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (ngayDuocChon != null && ngay2.equals(ngayDuocChon)) {
                 btnNutNgay.setBackground(com.petstation.gui.components.MauUngDung.DO_THUONG_HIEU);
                 btnNutNgay.setForeground(Color.WHITE);
@@ -290,7 +274,6 @@ public class BoChonNgay extends JPanel {
             }
 
             // Làm nổi bật ngày hôm nay
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (ngay2.equals(LocalDate.now())) {
                 btnNutNgay.setBorder(
                         BorderFactory.createLineBorder(
@@ -307,46 +290,24 @@ public class BoChonNgay extends JPanel {
         pnlSoNgayVungHienThi.repaint();
     }
 
-    /**
-     * Chọn ngày trong BoChonNgay.
-     *
-     * @param ngay ngày
-     */
     private void chonNgay(LocalDate ngay) {
         datNgayDuocChon(ngay);
         lichHopThoai.setVisible(false);
     }
 
-    /**
-     * Định dạng ngày trong BoChonNgay.
-     *
-     * @param ngay ngày
-     * @return kết quả định dạng ngày
-     */
     private String dinhDangNgay(LocalDate ngay) {
         return String.format(
                 "%02d/%02d/%d", ngay.getDayOfMonth(), ngay.getMonthValue(), ngay.getYear());
     }
 
     // Truy xuất và cập nhật thuộc tính
-    /**
-     * Lấy ngày được chọn trong BoChonNgay.
-     *
-     * @return kết quả lấy ngày được chọn
-     */
     public LocalDate layNgayDuocChon() {
         return ngayDuocChon;
     }
 
-    /**
-     * Đặt ngày được chọn trong BoChonNgay.
-     *
-     * @param ngay ngày
-     */
     public void datNgayDuocChon(LocalDate ngay) {
         LocalDate cu = this.ngayDuocChon;
         this.ngayDuocChon = ngay;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngay != null) {
             txtTruongVanBan.setText(dinhDangNgay(ngay));
             hienTaiThang = ngay.getMonthValue();
@@ -357,24 +318,12 @@ public class BoChonNgay extends JPanel {
         firePropertyChange("date", cu, ngay);
     }
 
-    /**
-     * Lấy ngày trong BoChonNgay.
-     *
-     * @return kết quả lấy ngày
-     */
     public Date layNgay() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngayDuocChon == null) return null;
         return Date.from(ngayDuocChon.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-    /**
-     * Đặt ngày trong BoChonNgay.
-     *
-     * @param ngay ngày
-     */
     public void datNgay(Date ngay) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngay == null) {
             datNgayDuocChon(null);
         } else {
@@ -382,24 +331,12 @@ public class BoChonNgay extends JPanel {
         }
     }
 
-    /**
-     * Lấy ngày SQL trong BoChonNgay.
-     *
-     * @return kết quả lấy ngày SQL
-     */
     public java.sql.Date layNgaySQL() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngayDuocChon == null) return null;
         return java.sql.Date.valueOf(ngayDuocChon);
     }
 
-    /**
-     * Đặt ngày SQL trong BoChonNgay.
-     *
-     * @param ngay ngày
-     */
     public void datNgaySQL(java.sql.Date ngay) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ngay == null) {
             datNgayDuocChon(null);
         } else {
@@ -407,16 +344,10 @@ public class BoChonNgay extends JPanel {
         }
     }
 
-    /** Xóa trong BoChonNgay. */
     public void xoa() {
         datNgayDuocChon(null);
     }
 
-    /**
-     * Đặt được bật trong BoChonNgay.
-     *
-     * @param duocBat được bật
-     */
     @Override
     public void setEnabled(boolean duocBat) {
         super.setEnabled(duocBat);

@@ -46,7 +46,6 @@ public final class BoDemMenhGia extends JPanel {
     /** Khi hoàn tất. */
     private Runnable khiHoanTat = () -> {};
 
-    /** Khởi tạo BoDemMenhGia với các giá trị được cung cấp. */
     public BoDemMenhGia() {
         setOpaque(false);
         setLayout(new GridBagLayout());
@@ -70,7 +69,6 @@ public final class BoDemMenhGia extends JPanel {
             giaTriDangXet.weightx = 0.3;
             add(lblTen, giaTriDangXet);
 
-            // Trường đang xét.
             JTextField txtTruongDangXet = new JTextField("0", 5);
             txtTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
             txtTruongDangXet.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -120,12 +118,10 @@ public final class BoDemMenhGia extends JPanel {
                          */
                         @Override
                         public void keyPressed(KeyEvent suKien) {
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (suKien.getKeyCode() == KeyEvent.VK_ENTER
                                     || suKien.getKeyCode() == KeyEvent.VK_DOWN) {
                                 suKien.consume();
                                 chuanHoa(dong);
-                                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                                 if (dong + 1 < cacTruong.length) layTieuDiem(dong + 1);
                                 else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                                 if (suKien.getKeyCode() == KeyEvent.VK_ENTER) khiHoanTat.run();
@@ -173,13 +169,6 @@ public final class BoDemMenhGia extends JPanel {
         add(lblNhanTong, giaTriDangXet);
     }
 
-    /**
-     * Thêm tiêu đề trong BoDemMenhGia.
-     *
-     * @param vanBan văn bản
-     * @param cot cột
-     * @param giaTriDangXet giá trị đang xét
-     */
     private void themTieuDe(String vanBan, int cot, GridBagConstraints giaTriDangXet) {
         // Dòng đang xét.
         JLabel lblDongDangXet =
@@ -192,29 +181,14 @@ public final class BoDemMenhGia extends JPanel {
         add(lblDongDangXet, giaTriDangXet);
     }
 
-    /**
-     * Lấy khi thay đổi trong BoDemMenhGia.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     */
     public void layKhiThayDoi(Runnable dongDuLieu) {
         this.khiThayDoi = dongDuLieu == null ? () -> {} : dongDuLieu;
     }
 
-    /**
-     * Lấy khi hoàn tất trong BoDemMenhGia.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     */
     public void layKhiHoanTat(Runnable dongDuLieu) {
         this.khiHoanTat = dongDuLieu == null ? () -> {} : dongDuLieu;
     }
 
-    /**
-     * Tính tổng trong BoDemMenhGia.
-     *
-     * @return kết quả tính tổng
-     */
     public long tinhTong() {
         // Tổng.
         long tong = 0;
@@ -223,7 +197,6 @@ public final class BoDemMenhGia extends JPanel {
         return tong;
     }
 
-    /** Đặt lại trong BoDemMenhGia. */
     public void datLai() {
         for (int chiSo = 0; chiSo < cacTruong.length; chiSo++) {
             cacTruong[chiSo].setText("0");
@@ -233,7 +206,6 @@ public final class BoDemMenhGia extends JPanel {
         khiThayDoi.run();
     }
 
-    /** Lấy tiêu điểm đầu tiên trong BoDemMenhGia. */
     public void layTieuDiemDauTien() {
         SwingUtilities.invokeLater(
                 () -> {
@@ -242,45 +214,23 @@ public final class BoDemMenhGia extends JPanel {
                 });
     }
 
-    /**
-     * Lấy tiêu điểm trong BoDemMenhGia.
-     *
-     * @param dong dòng
-     */
     private void layTieuDiem(int dong) {
         cacTruong[dong].requestFocusInWindow();
         cacTruong[dong].selectAll();
     }
 
-    /**
-     * Đếm trong BoDemMenhGia.
-     *
-     * @param dong dòng
-     * @return kết quả đếm
-     */
     private int dem(int dong) {
         // Các chữ số.
         String cacChuSo = cacTruong[dong].getText().replaceAll("[^0-9]", "");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacChuSo.isEmpty() || cacChuSo.length() > 7) return 0;
         return Integer.parseInt(cacChuSo);
     }
 
-    /**
-     * Chuẩn hóa trong BoDemMenhGia.
-     *
-     * @param dong dòng
-     */
     private void chuanHoa(int dong) {
         cacTruong[dong].setText(String.valueOf(dem(dong)));
         lamMoi(dong);
     }
 
-    /**
-     * Làm mới trong BoDemMenhGia.
-     *
-     * @param dong dòng
-     */
     private void lamMoi(int dong) {
         cacSoTien[dong].setText(TienTe.dinhDang(dem(dong) * CAC_MENH_GIA[dong]));
         cacSoTien[dong].setForeground(

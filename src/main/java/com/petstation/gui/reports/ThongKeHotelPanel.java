@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho Hotel báo cáo vùng hiển thị. */
 public final class ThongKeHotelPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeHotelPanel với các giá trị được cung cấp. */
     public ThongKeHotelPanel() {
         super(
                 "Thống kê lưu trú",

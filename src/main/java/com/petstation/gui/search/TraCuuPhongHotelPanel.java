@@ -1,8 +1,8 @@
 package com.petstation.gui.search;
 
 import com.petstation.gui.components.*;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.*;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.QuyTrinhService;
 import com.petstation.util.TienTe;
 
@@ -39,18 +39,17 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         setLayout(new BorderLayout(0, 14));
         pnlPhong.setOpaque(false);
         JPanel dau = taoVungTrongSuot(new BorderLayout(0, 12));
-        dau.add(taoTieuDeMuc("Sơ đồ phòng lưu trú"), BorderLayout.NORTH);
-        JPanel loc = taoVungTrongSuot(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        dau.add(
+                ThanhDanhSach.tieuDe(taoTieuDeMuc("Sơ đồ phòng lưu trú"), lblKetQua),
+                BorderLayout.NORTH);
+        ThanhDanhSach loc = new ThanhDanhSach();
         txtLoc.setName("timPhong");
         txtLoc.setPreferredSize(new Dimension(190, 34));
         cboLoai.setName("loaiPhong");
         cboTrangThai.setName("trangThaiPhong");
-        loc.add(new JLabel("Mã phòng:"));
         loc.add(txtLoc);
-        loc.add(new JLabel("Loại:"));
-        loc.add(cboLoai);
-        loc.add(new JLabel("Trạng thái:"));
-        loc.add(cboTrangThai);
+        loc.themBoLoc("Loại:", cboLoai);
+        loc.themBoLoc("Trạng thái:", cboTrangThai);
         JButton xoa = new JButton("Xóa bộ lọc");
         xoa.addActionListener(
                 e -> {
@@ -59,7 +58,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                     cboTrangThai.setSelectedIndex(0);
                     loc();
                 });
-        loc.add(xoa);
+        loc.themBoLoc(xoa);
         JButton moi = new JButton("Làm mới");
         moi.setToolTipText("Đọc lại trạng thái phòng từ SQL Server");
         moi.addActionListener(e -> nap());
@@ -67,7 +66,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         JButton in = new JButton("In sơ đồ");
         in.addActionListener(e -> inSoDo());
         loc.add(in);
-        loc.add(lblKetQua);
+
         dau.add(loc, BorderLayout.SOUTH);
         add(dau, BorderLayout.NORTH);
         JPanel vung = taoVungTrongSuot(new BorderLayout());
@@ -79,7 +78,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         add(
                 new JLabel(
                         "Rê chuột hoặc dùng Tab để xem chi tiết. Bấm phòng để mở thao tác phù hợp"
-                            + " với trạng thái."),
+                                + " với trạng thái."),
                 BorderLayout.SOUTH);
         txtLoc.getDocument()
                 .addDocumentListener(
@@ -151,7 +150,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             pnlPhong.add(taoThe(p));
             so++;
         }
-        lblKetQua.setText(so + " kết quả");
+        lblKetQua.setText(ThanhDanhSach.soKetQua(so, cacPhong.size()));
         pnlPhong.revalidate();
         pnlPhong.repaint();
     }

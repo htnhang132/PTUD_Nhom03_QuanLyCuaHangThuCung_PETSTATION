@@ -1,8 +1,9 @@
 package com.petstation.service;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.database.ThaoTacSQL.*;
 
-import com.petstation.dao.impl.JdbcTiemPhongDAO;
+import com.petstation.dao.TiemPhongDAO;
+import com.petstation.dao.impl.TiemPhongImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDate;
@@ -10,10 +11,12 @@ import java.util.List;
 
 /** Quản lý mũi tiêm và sàng lọc điều kiện tiếp nhận Spa. */
 public final class TiemPhongService {
+    private static final TiemPhongDAO tiemPhongDAO = new TiemPhongImpl();
+
     private TiemPhongService() {}
 
     private static Object[] timThuCung(String ma) {
-        var cacDong = JdbcTiemPhongDAO.layThuCung(ma);
+        var cacDong = tiemPhongDAO.layThuCung(ma);
         if (cacDong.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy thú cưng đang hoạt động.");
         return cacDong.get(0);
@@ -22,7 +25,7 @@ public final class TiemPhongService {
     public static List<Object[]> layLichSu(String ma) {
         PhienDangNhapService.yeuCau(Quyen.PET_MANAGE);
         return thucHienGiaoDich(
-                c -> JdbcTiemPhongDAO.layLichSu(((Number) timThuCung(ma)[0]).longValue()));
+                c -> tiemPhongDAO.layLichSu(((Number) timThuCung(ma)[0]).longValue()));
     }
 
     public static void luu(
@@ -41,7 +44,7 @@ public final class TiemPhongService {
                     Object[] thu = timThuCung(ma);
                     if (thu[1] != null && ngay.isBefore(((java.sql.Date) thu[1]).toLocalDate()))
                         throw new IllegalArgumentException("Ngày tiêm không được trước ngày sinh.");
-                    JdbcTiemPhongDAO.luu(
+                    tiemPhongDAO.luu(
                             id, ((Number) thu[0]).longValue(), ten.trim(), ngay, han, ghiChu);
                     NhatKyHeThongService.ghiNhatKy(
                             "Lưu tiêm phòng", ma + " / " + ten + " / " + ngay);
@@ -53,7 +56,7 @@ public final class TiemPhongService {
         PhienDangNhapService.yeuCau(Quyen.PET_MANAGE);
         thucHienGiaoDich(
                 c -> {
-                    JdbcTiemPhongDAO.xoa(id, ((Number) timThuCung(ma)[0]).longValue());
+                    tiemPhongDAO.xoa(id, ((Number) timThuCung(ma)[0]).longValue());
                     NhatKyHeThongService.ghiNhatKy("Xóa tiêm phòng", ma + " / " + id);
                     return null;
                 });
@@ -67,7 +70,7 @@ public final class TiemPhongService {
         if (thu[1] == null || ((java.sql.Date) thu[1]).toLocalDate().plusMonths(2).isAfter(homNay))
             throw new IllegalArgumentException(
                     "Cần bổ sung ngày sinh; thú cưng phải đủ 2 tháng tuổi để nhận Spa.");
-        var lichSu = JdbcTiemPhongDAO.layLichSu(((Number) thu[0]).longValue());
+        var lichSu = tiemPhongDAO.layLichSu(((Number) thu[0]).longValue());
         if (lichSu.size() < 2)
             throw new IllegalArgumentException(
                     "Cần bổ sung hồ sơ đủ 2 mũi tiêm phòng trước khi nhận Spa.");

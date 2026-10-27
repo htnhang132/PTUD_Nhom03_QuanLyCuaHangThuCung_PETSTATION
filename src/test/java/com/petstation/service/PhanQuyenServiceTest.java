@@ -18,7 +18,6 @@ import java.util.Set;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho phân quyền dịch vụ kiểm thử. */
 class PhanQuyenServiceTest {
-    /** Lấy từ chối thiếu quyền trong PhanQuyenServiceTest. */
     @Test
     void layTuChoiThieuQuyen() {
         // Các phiên.

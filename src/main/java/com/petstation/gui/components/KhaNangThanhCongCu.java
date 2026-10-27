@@ -17,20 +17,10 @@ public record KhaNangThanhCongCu(
         boolean coTheIn,
         boolean coTheHoanTac,
         boolean coTheTroGiup) {
-    /**
-     * Tạo rỗng trong KhaNangThanhCongCu.
-     *
-     * @return kết quả tạo rỗng
-     */
     public static KhaNangThanhCongCu taoRong() {
         return new KhaNangThanhCongCu(false, false, false, false, false, false);
     }
 
-    /**
-     * Lấy trợ giúp chỉ trong KhaNangThanhCongCu.
-     *
-     * @return kết quả lấy trợ giúp chỉ
-     */
     public static KhaNangThanhCongCu layTroGiupChi() {
         return new KhaNangThanhCongCu(false, false, false, false, false, true);
     }

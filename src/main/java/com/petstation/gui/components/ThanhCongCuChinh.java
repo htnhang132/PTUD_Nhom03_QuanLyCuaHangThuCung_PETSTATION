@@ -41,12 +41,6 @@ public final class ThanhCongCuChinh extends JPanel {
     /** Nút quay lại. */
     private final JButton btnNutQuayLai;
 
-    /**
-     * Khởi tạo ThanhCongCuChinh với các giá trị được cung cấp.
-     *
-     * @param diTrangChinh đi trang chính
-     * @param diQuayLai đi quay lại
-     */
     public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai) {
         setLayout(new FlowLayout(FlowLayout.LEFT, 2, 4));
         setPreferredSize(new Dimension(0, 48));
@@ -66,11 +60,6 @@ public final class ThanhCongCuChinh extends JPanel {
         datHoatDongVungHienThi(null);
     }
 
-    /**
-     * Đặt hoạt động vùng hiển thị trong ThanhCongCuChinh.
-     *
-     * @param pnlVungHienThi vùng hiển thị
-     */
     public void datHoatDongVungHienThi(JPanel pnlVungHienThi) {
         hoatDongVungHienThi = pnlVungHienThi instanceof HoTroThanhCongCu hoTro ? hoTro : null;
         // Khả năng.
@@ -86,30 +75,17 @@ public final class ThanhCongCuChinh extends JPanel {
         datDuocBat(ThaoTac.TRO_GIUP, khaNang.coTheTroGiup());
     }
 
-    /**
-     * Đặt có thể đi quay lại trong ThanhCongCuChinh.
-     *
-     * @param duocBat được bật
-     */
     public void datCoTheDiQuayLai(boolean duocBat) {
         btnNutQuayLai.setEnabled(duocBat);
     }
 
-    /** Đi quay lại nếu có thể trong ThanhCongCuChinh. */
     public void diQuayLaiNeuCoThe() {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (btnNutQuayLai.isEnabled()) btnNutQuayLai.doClick(0);
     }
 
-    /**
-     * Kích hoạt trong ThanhCongCuChinh.
-     *
-     * @param thaoTac thao tác
-     */
     public void kichHoat(ThaoTac thaoTac) {
         // Nút.
         JButton btnNut = cacNut.get(thaoTac);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (btnNut == null || !btnNut.isEnabled() || hoatDongVungHienThi == null) return;
         switch (thaoTac) {
             case MOI -> hoatDongVungHienThi.xuLyTaoMoi();
@@ -121,14 +97,6 @@ public final class ThanhCongCuChinh extends JPanel {
         }
     }
 
-    /**
-     * Thêm thao tác trong ThanhCongCuChinh.
-     *
-     * @param thaoTac thao tác
-     * @param nhan nhãn
-     * @param phimTat phím tắt
-     * @param kieuBieuTuong kiểu biểu tượng
-     */
     private void themThaoTac(
             ThaoTac thaoTac, String nhan, String phimTat, BieuTuongNet.Kieu kieuBieuTuong) {
         // Nút.
@@ -139,14 +107,6 @@ public final class ThanhCongCuChinh extends JPanel {
         add(btnNut);
     }
 
-    /**
-     * Tạo nút trong ThanhCongCuChinh.
-     *
-     * @param nhan nhãn
-     * @param phimTat phím tắt
-     * @param kieuBieuTuong kiểu biểu tượng
-     * @return kết quả tạo nút
-     */
     private JButton taoNut(String nhan, String phimTat, BieuTuongNet.Kieu kieuBieuTuong) {
         // Nút.
         JButton btnNut =
@@ -160,12 +120,10 @@ public final class ThanhCongCuChinh extends JPanel {
                     protected void paintComponent(Graphics doHoa) {
                         // Đồ họa.
                         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (isEnabled() && getModel().isRollover()) {
                             doHoa2.setColor(MauUngDung.DO_NHAT);
                             doHoa2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
                         }
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (isFocusOwner()) {
                             doHoa2.setColor(MauUngDung.VANG);
                             doHoa2.setStroke(new BasicStroke(2));
@@ -188,11 +146,6 @@ public final class ThanhCongCuChinh extends JPanel {
         return btnNut;
     }
 
-    /**
-     * Lấy đường phân cách trong ThanhCongCuChinh.
-     *
-     * @return kết quả lấy đường phân cách
-     */
     private JSeparator layDuongPhanCach() {
         // Phân cách.
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);
@@ -201,16 +154,9 @@ public final class ThanhCongCuChinh extends JPanel {
         return phanCach;
     }
 
-    /**
-     * Đặt được bật trong ThanhCongCuChinh.
-     *
-     * @param thaoTac thao tác
-     * @param duocBat được bật
-     */
     private void datDuocBat(ThaoTac thaoTac, boolean duocBat) {
         // Nút.
         JButton btnNut = cacNut.get(thaoTac);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (btnNut == null) return;
         btnNut.setEnabled(duocBat);
         btnNut.setToolTipText(

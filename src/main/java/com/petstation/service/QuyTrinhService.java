@@ -1,6 +1,7 @@
 package com.petstation.service;
 
-import com.petstation.dao.impl.JdbcQuyTrinhDAO;
+import com.petstation.dao.QuyTrinhDAO;
+import com.petstation.dao.impl.QuyTrinhImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
@@ -8,6 +9,8 @@ import java.util.List;
 
 /** Kiểm tra chuyển bước bằng trạng thái lưu trong SQL Server. */
 public final class QuyTrinhService {
+    private static final QuyTrinhDAO quyTrinhDAO = new QuyTrinhImpl();
+
     private QuyTrinhService() {}
 
     public static void chuyenBuoc(String tu, String den, GioHang gio) {
@@ -15,7 +18,7 @@ public final class QuyTrinhService {
         if (den.startsWith("SPA_")) {
             PhienDangNhapService.yeuCau(Quyen.SPA_MANAGE);
             if (den.equals("SPA_SCHEDULE") || den.equals("SPA_INTAKE")) return;
-            var dong = JdbcQuyTrinhDAO.laySpa(q.layPhieuSpa());
+            var dong = quyTrinhDAO.laySpa(q.layPhieuSpa());
             if (dong.isEmpty())
                 throw new IllegalArgumentException(
                         "Hãy chọn hoặc tiếp nhận một phiếu Spa trước khi chuyển bước.");
@@ -30,7 +33,7 @@ public final class QuyTrinhService {
         }
         if (den.equals("HOTEL_JOURNAL") || den.equals("CHECKOUT")) {
             PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
-            String trangThai = JdbcQuyTrinhDAO.layTrangThaiHotel(q.layHopDongHotel());
+            String trangThai = quyTrinhDAO.layTrangThaiHotel(q.layHopDongHotel());
             if (!List.of("BOOKED", "CHECKED_IN").contains(trangThai))
                 throw new IllegalArgumentException(
                         "Hãy chọn hợp đồng Hotel đang đặt hoặc đang lưu trú.");
@@ -49,18 +52,18 @@ public final class QuyTrinhService {
 
     public static List<Object[]> layLichHen(long id) {
         PhienDangNhapService.yeuCau(Quyen.SPA_MANAGE);
-        return JdbcQuyTrinhDAO.layLichHen(id);
+        return quyTrinhDAO.layLichHen(id);
     }
 
     public static List<Object[]> layPhong() {
         PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
-        return JdbcQuyTrinhDAO.layPhong();
+        return quyTrinhDAO.layPhong();
     }
 
     public static List<com.petstation.model.ThongTinPhong> layThongTinPhong() {
         PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
-        var lich = JdbcQuyTrinhDAO.layLichPhong();
-        return JdbcQuyTrinhDAO.layPhongChiTiet().stream()
+        var lich = quyTrinhDAO.layLichPhong();
+        return quyTrinhDAO.layPhongChiTiet().stream()
                 .map(
                         p -> {
                             long id = ((Number) p[0]).longValue();

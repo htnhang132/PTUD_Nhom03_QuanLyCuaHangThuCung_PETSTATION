@@ -5,7 +5,7 @@ import com.petstation.gui.components.HoTroThanhCongCu;
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
-import com.petstation.gui.navigation.MaManHinh;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.PheDuyetService;
 
 import java.awt.BorderLayout;
@@ -48,11 +48,6 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
     /** Thay đổi. */
     private final JTextArea txtThayDoi = new JTextArea(4, 30);
 
-    /**
-     * Khởi tạo YeuCauHoaDonPanel với các giá trị được cung cấp.
-     *
-     * @param boDieuHuong bộ điều hướng
-     */
     public YeuCauHoaDonPanel(Consumer<MaManHinh> boDieuHuong) {
         this.boDieuHuong = boDieuHuong;
         setLayout(new BorderLayout(0, 12));
@@ -114,16 +109,6 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
         add(pnlVungChua, BorderLayout.CENTER);
     }
 
-    /**
-     * Thêm trong YeuCauHoaDonPanel.
-     *
-     * @param pnlVungDangXet vùng đang xét
-     * @param giaTriDangXet giá trị đang xét
-     * @param toaDoDoc tọa độ dọc
-     * @param nhan nhãn
-     * @param thanhPhan thành phần
-     * @return kết quả thêm
-     */
     private int them(
             JPanel pnlVungDangXet,
             GridBagConstraints giaTriDangXet,
@@ -143,9 +128,7 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
         return toaDoDoc;
     }
 
-    /** Gửi trong YeuCauHoaDonPanel. */
     private void gui() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtHoaDon.getText().isBlank()) {
             HopThoai.hienThiCanhBao(
                     this,
@@ -153,7 +136,6 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
                             + " sửa/hủy\".");
             return;
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtLyDo.getText().isBlank()) {
             HopThoai.hienThiCanhBao(this, "Cần nhập lý do.");
             txtLyDo.requestFocusInWindow();
@@ -161,7 +143,6 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
         }
         // Sửa.
         boolean sua = cboKieu.getSelectedIndex() == 0;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (sua && txtThayDoi.getText().isBlank()) {
             HopThoai.hienThiCanhBao(this, "Hãy mô tả nội dung cần sửa.");
             txtThayDoi.requestFocusInWindow();
@@ -184,27 +165,16 @@ public final class YeuCauHoaDonPanel extends CoSoPanel implements HoTroThanhCong
         boDieuHuong.accept(MaManHinh.ORDERS);
     }
 
-    /** Xử lý hiển thị trong YeuCauHoaDonPanel. */
     @Override
     public void xuLyHienThi() {
         txtHoaDon.setText(PheDuyetService.daChonHoaDon);
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong YeuCauHoaDonPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Yêu cầu sửa/hủy hóa đơn";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong YeuCauHoaDonPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Chọn hóa đơn ở Tìm kiếm, nhập lý do rồi gửi phê duyệt.";

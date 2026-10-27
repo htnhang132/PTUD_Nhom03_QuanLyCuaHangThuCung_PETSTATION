@@ -4,7 +4,6 @@ import java.awt.*;
 
 import javax.swing.*;
 
-/** Biểu tượng vẽ bằng nét, không phụ thuộc ký tự đặc biệt trong font. */
 public final class BieuTuongGiaoDien implements Icon {
     public enum Kieu {
         CHO_PHEP,

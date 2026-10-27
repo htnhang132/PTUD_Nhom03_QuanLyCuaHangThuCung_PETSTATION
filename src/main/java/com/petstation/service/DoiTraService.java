@@ -1,10 +1,12 @@
 package com.petstation.service;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
-import com.petstation.dao.impl.JdbcDoiHangDAO;
-import com.petstation.dao.impl.JdbcDoiTraDAO;
+import com.petstation.dao.DoiHangDAO;
+import com.petstation.dao.DoiTraDAO;
+import com.petstation.dao.impl.DoiHangImpl;
+import com.petstation.dao.impl.DoiTraImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
@@ -15,6 +17,9 @@ import java.util.List;
 
 /** Đổi phụ kiện trong ba ngày, thu phần chênh lệch; không phát sinh hoàn tiền. */
 public final class DoiTraService {
+    private static final DoiHangDAO doiHangDAO = new DoiHangImpl();
+    private static final DoiTraDAO doiTraDAO = new DoiTraImpl();
+
     private DoiTraService() {}
 
     /** API hoàn tiền cũ chỉ còn để báo rõ quy định khi gặp lời gọi cũ. */
@@ -47,19 +52,19 @@ public final class DoiTraService {
 
     private static DuLieu kiemTra(long dong, int soLuong) {
         if (soLuong <= 0) throw new IllegalArgumentException("Số lượng đổi phải dương.");
-        var cacDong = JdbcDoiHangDAO.timDongGoc(dong);
+        var cacDong = doiHangDAO.timDongGoc(dong);
         if (cacDong.isEmpty() || !"PAID".equals(cacDong.get(0)[6]))
             throw new IllegalArgumentException("Hóa đơn gốc không hợp lệ.");
         Object[] goc = cacDong.get(0);
         if (!"Phụ kiện".equals(goc[7]))
             throw new IllegalArgumentException("Chỉ được đổi hàng thuộc nhóm Phụ kiện.");
-        if (JdbcDoiHangDAO.laHoaDonThayThe(so(goc[0])))
+        if (doiHangDAO.laHoaDonThayThe(so(goc[0])))
             throw new IllegalArgumentException("Hàng thay thế đã đổi không được đổi tiếp.");
         LocalDate ngay = ((java.sql.Timestamp) goc[3]).toLocalDateTime().toLocalDate();
         if (ngay.isAfter(LocalDate.now()) || ngay.plusDays(3).isBefore(LocalDate.now()))
             throw new IllegalArgumentException(
                     "Chỉ được đổi phụ kiện trong ba ngày kể từ ngày mua.");
-        long daDoi = JdbcDoiTraDAO.demDoiTraMuc(dong);
+        long daDoi = doiTraDAO.demDoiTraMuc(dong);
         if (daDoi + soLuong > so(goc[5]))
             throw new IllegalArgumentException("Số lượng đổi vượt số đã mua chưa đổi.");
         return new DuLieu(goc, phanBo(daDoi + soLuong, goc) - phanBo(daDoi, goc), daDoi);
@@ -76,7 +81,7 @@ public final class DoiTraService {
         thucHienGiaoDich(
                 c -> {
                     DuLieu dl = kiemTra(dong, soLuong);
-                    var sp = JdbcDoiHangDAO.timThayThe(maThayThe);
+                    var sp = doiHangDAO.timThayThe(maThayThe);
                     if (sp.isEmpty() || !"Phụ kiện".equals(sp.get(0)[3]))
                         throw new IllegalArgumentException(
                                 "Hàng thay thế phải là phụ kiện đang kinh doanh.");
@@ -113,12 +118,12 @@ public final class DoiTraService {
             throw new IllegalArgumentException(
                     "Thông tin đổi hàng đã thay đổi; hãy lập lại phiếu.");
         for (var dong : gio.layCacDong()) {
-            var sp = JdbcDoiHangDAO.timThayThe(dong.ma());
+            var sp = doiHangDAO.timThayThe(dong.ma());
             if (sp.isEmpty() || !"Phụ kiện".equals(sp.get(0)[3]))
                 throw new IllegalArgumentException("Chỉ chọn phụ kiện thay thế.");
         }
         long phieu =
-                JdbcDoiHangDAO.taoPhieu(
+                doiHangDAO.taoPhieu(
                         so(dl.goc()[0]),
                         layIdTaiKhoan(),
                         gio.tinhTong(),
@@ -127,12 +132,12 @@ public final class DoiTraService {
                         gio.layKhoaThanhToan());
         int con = yc.soLuong();
         long tienCon = dl.giaTri();
-        for (Object[] lo : JdbcDoiTraDAO.timDoiTraMuc2(yc.dongGoc())) {
+        for (Object[] lo : doiTraDAO.laySoLuongLoConDuocDoi(yc.dongGoc())) {
             int luong = (int) Math.min(con, so(lo[1]));
             if (luong <= 0) continue;
             long tien = luong == con ? tienCon : dl.giaTri() * luong / yc.soLuong();
-            JdbcDoiTraDAO.capNhatDoiTraMuc(phieu, yc.dongGoc(), lo[0], luong, tien);
-            JdbcDoiTraDAO.capNhatApDungDoiTra(luong, lo[0]);
+            doiTraDAO.capNhatDoiTraMuc(phieu, yc.dongGoc(), lo[0], luong, tien);
+            doiTraDAO.capNhatApDungDoiTra(luong, lo[0]);
             con -= luong;
             tienCon -= tien;
             if (con == 0) break;
@@ -142,13 +147,13 @@ public final class DoiTraService {
     }
 
     static long tinhDiemCong(GioHang gio) {
-        var goc = JdbcDoiHangDAO.timDongGoc(gio.layDoiHang().dongGoc()).get(0);
-        long cu = Math.addExact(so(goc[1]), JdbcDoiHangDAO.layChenhLechTruoc(so(goc[0])));
+        var goc = doiHangDAO.timDongGoc(gio.layDoiHang().dongGoc()).get(0);
+        long cu = Math.addExact(so(goc[1]), doiHangDAO.layChenhLechTruoc(so(goc[0])));
         return Math.addExact(cu, gio.tinhTong()) / 10000 - cu / 10000;
     }
 
     static void hoanTat(long phieu, long hoaDon) {
-        JdbcDoiHangDAO.hoanTat(phieu, hoaDon);
+        doiHangDAO.hoanTat(phieu, hoaDon);
         NhatKyHeThongService.ghiNhatKy("Đổi phụ kiện", phieu + " / hóa đơn chênh lệch " + hoaDon);
     }
 }

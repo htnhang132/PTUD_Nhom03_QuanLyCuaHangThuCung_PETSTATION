@@ -6,8 +6,9 @@ import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.KhaNangThanhCongCu;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
+import com.petstation.model.MaManHinh;
+import com.petstation.model.PhuongThuc;
 import com.petstation.service.CaThuNganService;
 import com.petstation.util.TienTe;
 
@@ -93,14 +94,6 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final JCheckBox chkDaNhanTien = new JCheckBox("Tôi đã kiểm tra và nhận đủ tiền");
     private boolean qrHopLe;
 
-    /**
-     * Khởi tạo ThanhToanPanel với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param caLamViec ca làm việc
-     * @param thuNgan thu ngân
-     * @param boDieuHuong bộ điều hướng
-     */
     public ThanhToanPanel(
             GioHang banHang,
             CaThuNganService caLamViec,
@@ -142,11 +135,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         lamMoi();
     }
 
-    /**
-     * Tạo biểu mẫu trong ThanhToanPanel.
-     *
-     * @return kết quả tạo biểu mẫu
-     */
     private JPanel taoBieuMau() {
         // Biểu mẫu.
         JPanel pnlBieuMau = new JPanel(new GridLayout(1, 2, 16, 0));
@@ -196,6 +184,51 @@ public final class ThanhToanPanel extends CoSoPanel {
             nhom.add(btnDongDuLieu);
             pnlCacPhuongThuc.add(btnDongDuLieu);
         }
+        JButton ketHop = new JButton("Thanh toán kết hợp…");
+        ketHop.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ketHop.addActionListener(
+                e -> {
+                    if (dangXuLy || banHang.kiemTraTrong()) return;
+                    var dong =
+                            com.petstation.gui.components.common.ThuTienDialog.nhap(
+                                    this, banHang.tinhTong(), banHang.layKhoaThanhToan());
+                    if (dong == null) return;
+                    dangXuLy = true;
+                    btnXacNhan.setEnabled(false);
+                    ketHop.setEnabled(false);
+                    banHang.datDangGhiThanhToan(true);
+                    khoaNhap(pnlGoc);
+                    var phien = com.petstation.service.PhienDangNhapService.layPhien();
+                    new SwingWorker<GioHang.BienLai, Void>() {
+                        protected GioHang.BienLai doInBackground() throws Exception {
+                            return com.petstation.service.PhienDangNhapService.trongPhien(
+                                    phien, () -> banHang.hoanTat(dong, thuNgan));
+                        }
+
+                        protected void done() {
+                            try {
+                                var b = get();
+                                banHang.datDangGhiThanhToan(false);
+                                caLamViec.ghiNhanBanHang(b.phuongThuc(), b.tong());
+                                banHang.xoa();
+                                boDieuHuong.accept(MaManHinh.PRINT_INVOICE);
+                            } catch (Exception ex) {
+                                HopThoai.hienThiCanhBao(
+                                        ThanhToanPanel.this,
+                                        ex.getCause() == null
+                                                ? ex.getMessage()
+                                                : ex.getCause().getMessage());
+                            } finally {
+                                banHang.datDangGhiThanhToan(false);
+                                moNhap();
+                                dangXuLy = false;
+                                ketHop.setEnabled(true);
+                                kiemTraDauVao();
+                            }
+                        }
+                    }.execute();
+                });
+        pnlNoiDung.add(ketHop);
         pnlCacPhuongThuc.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlCacPhuongThuc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         pnlNoiDung.add(pnlCacPhuongThuc);
@@ -317,12 +350,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         return pnlBieuMau;
     }
 
-    /**
-     * Lấy nhãn trong ThanhToanPanel.
-     *
-     * @param vanBan văn bản
-     * @return kết quả lấy nhãn
-     */
     private JLabel layNhan(String vanBan) {
         // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
@@ -332,20 +359,12 @@ public final class ThanhToanPanel extends CoSoPanel {
         return lblDongDangXet;
     }
 
-    /**
-     * Lấy phương thức trong ThanhToanPanel.
-     *
-     * @return kết quả lấy phương thức
-     */
-    private CaThuNganService.PhuongThuc layPhuongThuc() {
+    private PhuongThuc layPhuongThuc() {
         return btnChuyenKhoan.isSelected()
-                ? CaThuNganService.PhuongThuc.TRANSFER
-                : btnTheThanhToan.isSelected()
-                        ? CaThuNganService.PhuongThuc.CARD
-                        : CaThuNganService.PhuongThuc.CASH;
+                ? PhuongThuc.TRANSFER
+                : btnTheThanhToan.isSelected() ? PhuongThuc.CARD : PhuongThuc.CASH;
     }
 
-    /** Áp dụng voucher trong ThanhToanPanel. */
     private String khoaDoiVoucher;
 
     private void chonVoucher() {
@@ -416,7 +435,6 @@ public final class ThanhToanPanel extends CoSoPanel {
     private void apDungVoucher() {
         // Lỗi.
         String loi = banHang.apDungVoucher(txtTruongVoucher.getText());
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (loi != null) {
             lblVoucherThongBao.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
             lblVoucherThongBao.setText(loi);
@@ -434,9 +452,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         lamMoiCacTong();
     }
 
-    /** Làm mới trong ThanhToanPanel. */
     private void lamMoi() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banHang.kiemTraTrong()) {
             cacThe.show(pnlGoc, "empty");
             return;
@@ -480,7 +496,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         lamMoiCacTong();
     }
 
-    /** Làm mới các tổng trong ThanhToanPanel. */
     private void lamMoiCacTong() {
         lblTamTinh.setText(TienTe.dinhDang(banHang.tinhTamTinh()));
         // Ngày đang xét.
@@ -492,10 +507,8 @@ public final class ThanhToanPanel extends CoSoPanel {
         kiemTraDauVao();
     }
 
-    /** Dựng lại nhanh các số tiền trong ThanhToanPanel. */
     private void dungLaiNhanhCacSoTien() {
         pnlNhanhCacSoTien.removeAll();
-        // Giá trị tạm.
         long giaTriTam = banHang.tinhTong();
         // Các lựa chọn.
         Set<Long> cacLuaChon = new LinkedHashSet<>();
@@ -503,7 +516,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         for (long buoc : new long[] {50_000, 100_000, 500_000}) {
             // Lên.
             long len = ((giaTriTam + buoc - 1) / buoc) * buoc;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (len >= giaTriTam) cacLuaChon.add(len);
         }
         for (long soTien : cacLuaChon) {
@@ -519,12 +531,11 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlNhanhCacSoTien.repaint();
     }
 
-    /** Cập nhật phương thức trong ThanhToanPanel. */
     private void capNhatQR() {
         chkDaNhanTien.setSelected(false);
         banHang.xacNhanDaNhanTien(layPhuongThuc(), false);
-        boolean chuyenKhoan = layPhuongThuc() == CaThuNganService.PhuongThuc.TRANSFER;
-        chkDaNhanTien.setVisible(layPhuongThuc() != CaThuNganService.PhuongThuc.CASH);
+        boolean chuyenKhoan = layPhuongThuc() == PhuongThuc.TRANSFER;
+        chkDaNhanTien.setVisible(layPhuongThuc() != PhuongThuc.CASH);
         lblQR.setVisible(chuyenKhoan);
         lblThongTinQR.setVisible(chuyenKhoan);
         qrHopLe = false;
@@ -564,7 +575,7 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private void capNhatPhuongThuc() {
         // Là tiền mặt.
-        boolean laTienMat = layPhuongThuc() == CaThuNganService.PhuongThuc.CASH;
+        boolean laTienMat = layPhuongThuc() == PhuongThuc.CASH;
         txtDaNhan.setEnabled(laTienMat);
         capNhatQR();
         for (Component giaTriDangXet : pnlNhanhCacSoTien.getComponents())
@@ -572,32 +583,24 @@ public final class ThanhToanPanel extends CoSoPanel {
         kiemTraDauVao();
     }
 
-    /** Kiểm tra đầu vào trong ThanhToanPanel. */
     private void kiemTraDauVao() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banHang.kiemTraTrong()) return;
-        // Giá trị tạm.
         long giaTriTam = banHang.tinhTong();
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
-        if (layPhuongThuc() != CaThuNganService.PhuongThuc.CASH) {
+        if (layPhuongThuc() != PhuongThuc.CASH) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_XAM);
             lblNhanThayDoi.setText(
                     "Thu đúng "
                             + TienTe.dinhDang(giaTriTam)
                             + "qua "
-                            + (layPhuongThuc() == CaThuNganService.PhuongThuc.TRANSFER
-                                    ? "chuyển khoản/QR"
-                                    : "thẻ"));
+                            + (layPhuongThuc() == PhuongThuc.TRANSFER ? "chuyển khoản/QR" : "thẻ"));
             btnXacNhan.setEnabled(
                     !dangXuLy
                             && chkDaNhanTien.isSelected()
-                            && (layPhuongThuc() != CaThuNganService.PhuongThuc.TRANSFER
-                                    || qrHopLe));
+                            && (layPhuongThuc() != PhuongThuc.TRANSFER || qrHopLe));
             return;
         }
         // Dòng dữ liệu.
         long dongDuLieu = TienTe.doc(txtDaNhan.getText());
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (txtDaNhan.getText().isBlank()) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_XAM);
             lblNhanThayDoi.setText("Nhập số tiền khách đưa");
@@ -620,22 +623,32 @@ public final class ThanhToanPanel extends CoSoPanel {
         }
     }
 
-    /** Xác nhận thanh toán trong ThanhToanPanel. */
+    private final java.util.Map<Component, Boolean> trangThaiNhap =
+            new java.util.IdentityHashMap<>();
+
+    private void khoaNhap(Container root) {
+        for (Component c : root.getComponents()) {
+            trangThaiNhap.put(c, c.isEnabled());
+            c.setEnabled(false);
+            if (c instanceof Container p) khoaNhap(p);
+        }
+    }
+
+    private void moNhap() {
+        trangThaiNhap.forEach(Component::setEnabled);
+        trangThaiNhap.clear();
+    }
+
     private void xacNhanThanhToan() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (dangXuLy || banHang.kiemTraTrong()) return;
         if (!banHang.kiemTraDaNhanTien(layPhuongThuc())) {
             HopThoai.hienThiCanhBao(this, "Hãy kiểm tra và xác nhận đã nhận đủ tiền.");
             return;
         }
-        // Giá trị tạm.
         long giaTriTam = banHang.tinhTong();
         // Dòng dữ liệu.
         long dongDuLieu =
-                layPhuongThuc() == CaThuNganService.PhuongThuc.CASH
-                        ? TienTe.doc(txtDaNhan.getText())
-                        : giaTriTam;
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
+                layPhuongThuc() == PhuongThuc.CASH ? TienTe.doc(txtDaNhan.getText()) : giaTriTam;
         if (dongDuLieu < giaTriTam) return;
         // Đồng ý.
         int dongY =
@@ -645,7 +658,6 @@ public final class ThanhToanPanel extends CoSoPanel {
                         "Xác nhận thanh toán",
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (dongY != JOptionPane.OK_OPTION) return;
         dangXuLy = true;
         btnXacNhan.setEnabled(false);
@@ -662,31 +674,19 @@ public final class ThanhToanPanel extends CoSoPanel {
         }
     }
 
-    /**
-     * Lấy khả năng thanh công cụ trong ThanhToanPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(false, false, false, false, false, true);
     }
 
-    /** Xử lý hiển thị trong ThanhToanPanel. */
     @Override
     public void xuLyHienThi() {
         lamMoi();
     }
 
-    /** Xử lý lưu trong ThanhToanPanel. */
     @Override
     public void xuLyLuu() {}
 
-    /**
-     * Lấy nội dung trợ giúp trong ThanhToanPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Chọn phương thức, nhập tiền khách đưa (nút gợi ý bên dưới ô nhập).\n"
@@ -694,11 +694,6 @@ public final class ThanhToanPanel extends CoSoPanel {
                 + " lượt và điều kiện trong SQL Server.";
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong ThanhToanPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Thanh toán";

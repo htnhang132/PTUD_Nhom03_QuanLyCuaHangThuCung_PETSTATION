@@ -4,8 +4,8 @@ import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.NhanVienDAO;
 import com.petstation.dao.NhatKyHeThongDAO;
-import com.petstation.dao.QuanLyGiaoDich;
 import com.petstation.dao.TaiKhoanDAO;
+import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.model.NhanVien;
 import com.petstation.model.NhatKyHeThong;
 import com.petstation.model.PhienDangNhap;
@@ -38,14 +38,6 @@ public final class XacThucService {
     /** Nhật ký hệ thống các nhật ký. */
     private final NhatKyHeThongDAO nhatKyHeThongCacNhatKy;
 
-    /**
-     * Khởi tạo XacThucService với các giá trị được cung cấp.
-     *
-     * @param cacGiaoDich các giao dịch
-     * @param danhSachTaiKhoan danh sách tài khoản
-     * @param cacNhanVien các nhân viên
-     * @param nhatKyHeThongCacNhatKy nhật ký hệ thống các nhật ký
-     */
     public XacThucService(
             QuanLyGiaoDich cacGiaoDich,
             TaiKhoanDAO danhSachTaiKhoan,
@@ -57,27 +49,17 @@ public final class XacThucService {
         this.nhatKyHeThongCacNhatKy = nhatKyHeThongCacNhatKy;
     }
 
-    /**
-     * Xác thực thông tin và đăng nhập trong XacThucService.
-     *
-     * @param chuaXuLyTenDangNhap chưa xử lý tên đăng nhập
-     * @param matKhau mật khẩu
-     * @return kết quả lấy đăng nhập
-     */
     public PhienDangNhap dangNhap(String chuaXuLyTenDangNhap, char[] matKhau) {
         // Tên đăng nhập.
         String tenDangNhap = chuaXuLyTenDangNhap == null ? "" : chuaXuLyTenDangNhap.trim();
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (tenDangNhap.isEmpty()) {
             throw new XacThucException("Vui lòng nhập tên đăng nhập.");
         }
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (matKhau == null || matKhau.length == 0) {
             throw new XacThucException("Vui lòng nhập mật khẩu.");
         }
 
         try {
-            // Kết quả.
             KetQuaDangNhap ketQua =
                     cacGiaoDich.thucThi(
                             ketNoi -> {
@@ -86,7 +68,6 @@ public final class XacThucService {
                                         danhSachTaiKhoan
                                                 .timTheoTenDangNhap(ketNoi, tenDangNhap)
                                                 .orElse(null);
-                                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                 if (taiKhoan == null) {
                                     return KetQuaDangNhap.taoLoi(
                                             "Tên đăng nhập hoặc mật khẩu không đúng.");
@@ -94,7 +75,6 @@ public final class XacThucService {
                                 // Hiện tại.
                                 LocalDateTime hienTai = LocalDateTime.now();
 
-                                // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
                                 if (taiKhoan.trangThai() != TrangThaiTaiKhoan.ACTIVE) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
@@ -105,7 +85,6 @@ public final class XacThucService {
                                             "Tài khoản đã bị khóa. Vui lòng liên hệ Cửa hàng"
                                                     + " trưởng.");
                                 }
-                                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                                 if (taiKhoan.layTamThoiDaKhoa(hienTai)) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
@@ -120,7 +99,6 @@ public final class XacThucService {
 
                                 // Được cung cấp mật khẩu.
                                 String duocCungCapMatKhau = new String(matKhau);
-                                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                                 if (!BCrypt.checkpw(duocCungCapMatKhau, taiKhoan.maBamMatKhau())) {
                                     // Số lượng thất bại.
                                     int soLuongThatBai = taiKhoan.soLanDangNhapSai() + 1;
@@ -136,7 +114,6 @@ public final class XacThucService {
                                             taiKhoan.id(),
                                             "LOGIN_FAILED",
                                             "Sai mật khẩu lần " + soLuongThatBai);
-                                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                     if (khoaDenLuc != null) {
                                         return KetQuaDangNhap.taoLoi(
                                                 "Tài khoản bị tạm khóa. Vui lòng liên hệ Cửa hàng"
@@ -155,7 +132,6 @@ public final class XacThucService {
                                                 .timTheoId(ketNoi, taiKhoan.idNhanVien())
                                                 .filter(NhanVien::hoatDong)
                                                 .orElse(null);
-                                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                 if (nhanVien == null) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
@@ -176,7 +152,6 @@ public final class XacThucService {
                                 return KetQuaDangNhap.hienThiThanhCong(
                                         new PhienDangNhap(taiKhoan, nhanVien, cacQuyen));
                             });
-            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
             if (ketQua.loiThongBao() != null) {
                 throw new XacThucException(ketQua.loiThongBao());
             }
@@ -186,15 +161,6 @@ public final class XacThucService {
         }
     }
 
-    /**
-     * Ghi nhật ký hệ thống trong XacThucService.
-     *
-     * @param ketNoi kết nối
-     * @param idTaiKhoan id tài khoản
-     * @param thaoTac thao tác
-     * @param ghiChu ghi chú
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     private void ghiNhatKyHeThong(
             java.sql.Connection ketNoi, Long idTaiKhoan, String thaoTac, String ghiChu)
             throws Exception {
@@ -219,22 +185,10 @@ public final class XacThucService {
      * @param loiThongBao lỗi thông báo
      */
     private record KetQuaDangNhap(PhienDangNhap phienDangNhap, String loiThongBao) {
-        /**
-         * Hiển thị kết quả thành công trong KetQuaDangNhap.
-         *
-         * @param phienDangNhap phiên đăng nhập
-         * @return kết quả lấy thành công
-         */
         static KetQuaDangNhap hienThiThanhCong(PhienDangNhap phienDangNhap) {
             return new KetQuaDangNhap(phienDangNhap, null);
         }
 
-        /**
-         * Tạo lỗi trong KetQuaDangNhap.
-         *
-         * @param thongBao thông báo
-         * @return kết quả tạo lỗi
-         */
         static KetQuaDangNhap taoLoi(String thongBao) {
             return new KetQuaDangNhap(null, thongBao);
         }

@@ -57,12 +57,6 @@ public final class BoChonKhachHang extends JPanel {
     /** Đang cập nhật. */
     private boolean dangCapNhat;
 
-    /**
-     * Khởi tạo BoChonKhachHang với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param khiThayDoi khi thay đổi
-     */
     public BoChonKhachHang(GioHang banHang, Runnable khiThayDoi) {
         this.banHang = banHang;
         this.khiThayDoi = khiThayDoi;
@@ -116,7 +110,6 @@ public final class BoChonKhachHang extends JPanel {
         spnDiem.setPreferredSize(new Dimension(80, 26));
         spnDiem.addChangeListener(
                 suKien -> {
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (dangCapNhat) return;
                     banHang.datDiemDaDung(((Number) spnDiem.getValue()).longValue());
                     lamMoiDiemGoiY();
@@ -142,7 +135,6 @@ public final class BoChonKhachHang extends JPanel {
         dongBo();
     }
 
-    /** Tìm kiếm trong BoChonKhachHang. */
     private String khoaDoiVoucher;
 
     private void doiVoucher() {
@@ -175,7 +167,6 @@ public final class BoChonKhachHang extends JPanel {
     private void timKiem() {
         // Từ khóa.
         String tuKhoa = txtDauVao.getText().trim();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tuKhoa.isEmpty()) {
             xoa();
             return;
@@ -185,20 +176,16 @@ public final class BoChonKhachHang extends JPanel {
         // Các kết quả.
         List<Object[]> cacKetQua = new ArrayList<>();
         for (Object[] dongDuLieu : DanhMucService.layKhachHang()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if ("Ngừng hoạt động".equals(dongDuLieu[8])) continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (String.valueOf(dongDuLieu[2]).equals(cacChuSo)
                     || String.valueOf(dongDuLieu[0]).equalsIgnoreCase(tuKhoa)) {
                 cacKetQua.clear();
                 cacKetQua.add(dongDuLieu);
                 break;
             }
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (String.valueOf(dongDuLieu[1]).toLowerCase().contains(tuKhoa.toLowerCase()))
                 cacKetQua.add(dongDuLieu);
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacKetQua.isEmpty()) {
             HopThoai.hienThiThongTin(
                     this,
@@ -211,7 +198,6 @@ public final class BoChonKhachHang extends JPanel {
         }
         // Đã chọn.
         Object[] daChon = cacKetQua.get(0);
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (cacKetQua.size() > 1) {
             // Các lựa chọn.
             String[] cacLuaChon =
@@ -235,7 +221,6 @@ public final class BoChonKhachHang extends JPanel {
                             null,
                             cacLuaChon,
                             cacLuaChon[0]);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (chon == null) return;
             for (int chiSo = 0;
                     chiSo < cacLuaChon.length;
@@ -251,7 +236,6 @@ public final class BoChonKhachHang extends JPanel {
         khiThayDoi.run();
     }
 
-    /** Xóa trong BoChonKhachHang. */
     public void xoa() {
         banHang.datKhachHang("", "", 0);
         txtDauVao.setText("");
@@ -268,12 +252,10 @@ public final class BoChonKhachHang extends JPanel {
         // Có.
         boolean co = !banHang.layMaKhachHang().isEmpty();
         pnlNhan.setVisible(co);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (co) {
             // Hạng.
             String hang = "";
             for (Object[] dongDuLieu : DanhMucService.layKhachHang())
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (dongDuLieu[0].equals(banHang.layMaKhachHang()))
                     hang = String.valueOf(dongDuLieu[6]);
             lblVanBanNhan.setText(
@@ -307,7 +289,6 @@ public final class BoChonKhachHang extends JPanel {
         repaint();
     }
 
-    /** Làm mới điểm gợi ý trong BoChonKhachHang. */
     private void lamMoiDiemGoiY() {
         lblDiemGoiY.setText(
                 "= "

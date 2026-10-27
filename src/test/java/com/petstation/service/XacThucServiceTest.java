@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.petstation.dao.KetNoiCSDL;
 import com.petstation.dao.NhanVienDAO;
 import com.petstation.dao.NhatKyHeThongDAO;
-import com.petstation.dao.QuanLyGiaoDich;
 import com.petstation.dao.TaiKhoanDAO;
+import com.petstation.database.KetNoiCSDL;
+import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.model.NhanVien;
 import com.petstation.model.PhienDangNhap;
 import com.petstation.model.Quyen;
@@ -41,15 +41,6 @@ class XacThucServiceTest {
     /** Dịch vụ. */
     private XacThucService dichVu;
 
-    /**
-     * Lấy tài khoản đang hoạt động trong XacThucServiceTest.
-     *
-     * @param tenDangNhap tên đăng nhập
-     * @param matKhau mật khẩu
-     * @param soLuongThatBai số lượng thất bại
-     * @param khoaDenLuc khóa đến lúc
-     * @return kết quả lấy tài khoản đang hoạt động
-     */
     private TaiKhoan layTaiKhoanDangHoatDong(
             String tenDangNhap, String matKhau, int soLuongThatBai, LocalDateTime khoaDenLuc) {
         return new TaiKhoan(
@@ -64,11 +55,6 @@ class XacThucServiceTest {
                 false);
     }
 
-    /**
-     * Đặt lên trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @BeforeEach
     void datLen() throws Exception {
         danhSachTaiKhoan = mock(TaiKhoanDAO.class);
@@ -85,25 +71,18 @@ class XacThucServiceTest {
                         cacGiaoDich, danhSachTaiKhoan, cacNhanVien, nhatKyHeThongCacNhatKy);
     }
 
-    /** Lấy từ chối trống tên đăng nhập trong XacThucServiceTest. */
     @Test
     void layTuChoiTrongTenDangNhap() {
         assertThatThrownBy(() -> dichVu.dangNhap("  ", "secret".toCharArray()))
                 .isInstanceOf(XacThucException.class);
     }
 
-    /** Lấy từ chối trống mật khẩu trong XacThucServiceTest. */
     @Test
     void layTuChoiTrongMatKhau() {
         assertThatThrownBy(() -> dichVu.dangNhap("admin", new char[0]))
                 .isInstanceOf(XacThucException.class);
     }
 
-    /**
-     * Lấy thất bại cho không xác định tên đăng nhập trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @Test
     void layThatBaiChoKhongXacDinhTenDangNhap() throws Exception {
         when(danhSachTaiKhoan.timTheoTenDangNhap(any(), eq("ghost"))).thenReturn(Optional.empty());
@@ -112,11 +91,6 @@ class XacThucServiceTest {
                 .isInstanceOf(XacThucException.class);
     }
 
-    /**
-     * Lấy thất bại cho không đúng mật khẩu và các bản ghi lỗi trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @Test
     void layThatBaiChoKhongDungMatKhauVaCacBanGhiLoi() throws Exception {
         // Tài khoản.
@@ -132,11 +106,6 @@ class XacThucServiceTest {
                 .them(any(), argThat(suKien -> "LOGIN_FAILED".equals(suKien.thaoTac())));
     }
 
-    /**
-     * Lấy khóa tài khoản sau năm các lần thất bại trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @Test
     void layKhoaTaiKhoanSauNamCacLanThatBai() throws Exception {
         // Tài khoản.
@@ -150,11 +119,6 @@ class XacThucServiceTest {
         verify(danhSachTaiKhoan).ghiNhanDangNhapThatBai(any(), eq(1L), eq(5), notNull());
     }
 
-    /**
-     * Lấy từ chối tạm thời đã khóa tài khoản trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @Test
     void layTuChoiTamThoiDaKhoaTaiKhoan() throws Exception {
         // Tài khoản.
@@ -172,11 +136,6 @@ class XacThucServiceTest {
                 .them(any(), argThat(suKien -> "LOGIN_REJECTED".equals(suKien.thaoTac())));
     }
 
-    /**
-     * Hiển thị kết quả thành công với hợp lệ thông tin đăng nhập trong XacThucServiceTest.
-     *
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     @Test
     void layThanhCongVoiHopLeThongTinDangNhap() throws Exception {
         // Tài khoản.

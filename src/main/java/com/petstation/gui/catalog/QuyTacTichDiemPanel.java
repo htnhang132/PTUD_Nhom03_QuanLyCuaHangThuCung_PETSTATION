@@ -42,7 +42,6 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
     /** Thông báo. */
     private final JLabel lblThongBao = new JLabel(" ");
 
-    /** Khởi tạo QuyTacTichDiemPanel với các giá trị được cung cấp. */
     public QuyTacTichDiemPanel() {
         setLayout(new BorderLayout(0, 10));
         add(taoTieuDeMuc("Quy tắc tích điểm và hạng thành viên"), BorderLayout.NORTH);
@@ -119,29 +118,13 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         nap();
     }
 
-    /**
-     * Tạo trường trong QuyTacTichDiemPanel.
-     *
-     * @return kết quả tạo trường
-     */
     private static JTextField taoTruong() {
-        // Giá trị tạm.
         JTextField txtGiaTriTam = new JTextField(14);
         txtGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtGiaTriTam.setHorizontalAlignment(JTextField.RIGHT);
         return txtGiaTriTam;
     }
 
-    /**
-     * Lấy dòng trong QuyTacTichDiemPanel.
-     *
-     * @param pnlThe thẻ
-     * @param giaTriDangXet giá trị đang xét
-     * @param toaDoDoc tọa độ dọc
-     * @param nhan nhãn
-     * @param txtTruongDangXet trường đang xét
-     * @param donVi đơn vị
-     */
     private void layDong(
             JPanel pnlThe,
             GridBagConstraints giaTriDangXet,
@@ -158,41 +141,34 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         pnlThe.add(new JLabel(donVi), giaTriDangXet);
     }
 
-    /** Nạp trong QuyTacTichDiemPanel. */
     private void nap() {
         txtTichDiem.setText(TienTe.dinhDang(CaiDatService.laySoTienChoMoiDiemTichLuy()));
         txtDoiDiem.setText("150.000");
         txtTichDiem.setEditable(false);
         txtDoiDiem.setEditable(false);
-        // Giá trị tạm.
         long[] giaTriTam = CaiDatService.layHangChiTieu();
         for (int chiSo = 0; chiSo < 4; chiSo++)
             cacHang[chiSo].setText(TienTe.dinhDang(giaTriTam[chiSo]));
     }
 
-    /** Lưu trong QuyTacTichDiemPanel. */
     private void luu() {
         // Sự kiện.
         long suKien = TienTe.doc(txtTichDiem.getText());
         // Dòng dữ liệu.
         long dongDuLieu = 0;
-        // Giá trị tạm.
         long[] giaTriTam = new long[4];
         for (int chiSo = 0; chiSo < 4; chiSo++)
             giaTriTam[chiSo] = TienTe.doc(cacHang[chiSo].getText());
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (suKien != 10000) {
             HopThoai.hienThiCanhBao(this, "Số đồng cho 1 điểm và giá trị 1 điểm phải lớn hơn 0.");
             return;
         }
         for (int chiSo = 0; chiSo < 4; chiSo++) {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (giaTriTam[chiSo] < 0) {
                 HopThoai.hienThiCanhBao(
                         this, "Ngưỡng hạng " + HANG_CAC_TEN[chiSo] + " không hợp lệ.");
                 return;
             }
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (chiSo > 0 && giaTriTam[chiSo] <= giaTriTam[chiSo - 1]) {
                 HopThoai.hienThiCanhBao(
                         this,
@@ -211,21 +187,11 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         lblThongBao.setText("Đã lưu quy tắc.");
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong QuyTacTichDiemPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Quy tắc điểm";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong QuyTacTichDiemPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Điểm của khách tự cộng/trừ theo hóa đơn, không sửa tay.";

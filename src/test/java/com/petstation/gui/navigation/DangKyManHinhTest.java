@@ -5,6 +5,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.petstation.model.*;
+import com.petstation.model.MaManHinh;
 import com.petstation.model.NhanVien;
 import com.petstation.model.PhienDangNhap;
 import com.petstation.model.Quyen;
@@ -20,7 +21,6 @@ import java.util.Set;
 
 /** Cung cấp giao diện và xử lý tương tác cho màn hình bộ đăng ký kiểm thử. */
 class DangKyManHinhTest {
-    /** Lấy quản lý có thể truy cập được bảo vệ các màn hình trong DangKyManHinhTest. */
     @Test
     void layQuanLyCoTheTruyCapDuocBaoVeCacManHinh() {
         // Bộ đăng ký.
@@ -33,7 +33,6 @@ class DangKyManHinhTest {
         assertThat(boDangKy.layDinhNghia(MaManHinh.DASHBOARD).tieuDe()).isEqualTo("Màn hình chính");
     }
 
-    /** Lấy bán hàng nhân viên không thể truy cập tài khoản quản lý trong DangKyManHinhTest. */
     @Test
     void layBanHangNhanVienKhongTheTruyCapTaiKhoanQuanLy() {
         // Bộ đăng ký.
@@ -46,13 +45,6 @@ class DangKyManHinhTest {
         assertThat(boDangKy.coTheTruyCap(MaManHinh.STAFF)).isFalse();
     }
 
-    /**
-     * Lấy phiên trong DangKyManHinhTest.
-     *
-     * @param vaiTro vai trò
-     * @param cacQuyen các quyền
-     * @return kết quả lấy phiên
-     */
     private PhienDangNhap layPhien(VaiTro vaiTro, Set<Quyen> cacQuyen) {
         return new PhienDangNhap(
                 new TaiKhoan(

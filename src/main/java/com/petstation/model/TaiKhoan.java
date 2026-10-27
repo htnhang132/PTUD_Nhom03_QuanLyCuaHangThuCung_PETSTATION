@@ -25,12 +25,6 @@ public record TaiKhoan(
         int soLanDangNhapSai,
         LocalDateTime khoaDenLuc,
         boolean batBuocDoiMatKhau) {
-    /**
-     * Lấy tạm thời đã khóa trong TaiKhoan.
-     *
-     * @param hienTai hiện tại
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public boolean layTamThoiDaKhoa(LocalDateTime hienTai) {
         return khoaDenLuc != null && khoaDenLuc.isAfter(hienTai);
     }

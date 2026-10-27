@@ -37,7 +37,6 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     /** Xóa. */
     private final JButton btnXoa = new JButton("Xóa dòng");
 
-    /** Khởi tạo BoSoanThaoBangGia với các giá trị được cung cấp. */
     public BoSoanThaoBangGia() {
         DinhDangBang.apDung(tblBang);
         tblBang.setRowHeight(30);
@@ -99,11 +98,9 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         btnThem.addActionListener(suKien -> moHinh.addRow(new Object[] {"Chó", "", ""}));
         btnXoa.addActionListener(
                 suKien -> {
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if (tblBang.isEditing()) tblBang.getCellEditor().stopCellEditing();
                     // Dòng dữ liệu.
                     int dongDuLieu = tblBang.getSelectedRow();
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if (dongDuLieu >= 0)
                         moHinh.removeRow(tblBang.convertRowIndexToModel(dongDuLieu));
                 });
@@ -117,24 +114,13 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         pnlVungHienThi.add(pnlThanh, BorderLayout.SOUTH);
     }
 
-    /**
-     * Lấy thành phần trong BoSoanThaoBangGia.
-     *
-     * @return kết quả lấy thành phần
-     */
     @Override
     public JComponent layThanhPhan() {
         return pnlVungHienThi;
     }
 
-    /**
-     * Lấy trong BoSoanThaoBangGia.
-     *
-     * @return kết quả lấy
-     */
     @Override
     public String lay() {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (tblBang.isEditing()) tblBang.getCellEditor().stopCellEditing();
         // Bộ ghép chuỗi.
         StringBuilder boGhepChuoi = new StringBuilder();
@@ -145,9 +131,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             String canNang = String.valueOf(moHinh.getValueAt(dongDuLieu, 1)).trim();
             // Giá.
             long gia = TienTe.doc(String.valueOf(moHinh.getValueAt(dongDuLieu, 2)));
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (loai.isEmpty() && canNang.isEmpty() && gia < 0) continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (boGhepChuoi.length() > 0) boGhepChuoi.append(';');
             boGhepChuoi
                     .append(loai)
@@ -159,20 +143,12 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         return boGhepChuoi.toString();
     }
 
-    /**
-     * Đặt trong BoSoanThaoBangGia.
-     *
-     * @param giaTri giá trị
-     */
     @Override
     public void dat(String giaTri) {
         moHinh.setRowCount(0);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri == null || giaTri.isBlank()) return;
         for (String phan : giaTri.split(";")) {
-            // Trường đang xét.
             String[] truongDangXet = phan.split("\\|", -1);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truongDangXet.length == 3)
                 moHinh.addRow(
                         new Object[] {
@@ -185,11 +161,6 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         }
     }
 
-    /**
-     * Đặt được bật trong BoSoanThaoBangGia.
-     *
-     * @param duocBat được bật
-     */
     @Override
     public void datDuocBat(boolean duocBat) {
         tblBang.setEnabled(duocBat);
@@ -208,16 +179,11 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     public static long layGiaNhoNhat(String giaTri) {
         // Nhỏ nhất.
         long nhoNhat = -1;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri == null) return nhoNhat;
         for (String phan : giaTri.split(";")) {
-            // Trường đang xét.
             String[] truongDangXet = phan.split("\\|", -1);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truongDangXet.length == 3) {
-                // Vùng đang xét.
                 long vungDangXet = TienTe.doc(truongDangXet[2]);
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (vungDangXet >= 0 && (nhoNhat < 0 || vungDangXet < nhoNhat))
                     nhoNhat = vungDangXet;
             }
@@ -237,40 +203,24 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
      * @return kết quả lấy giá cho
      */
     public static long layGiaCho(String giaTri, String loai, double canNangKg) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri == null) return -1;
         for (String phan : giaTri.split(";")) {
-            // Trường đang xét.
             String[] truongDangXet = phan.split("\\|", -1);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truongDangXet.length != 3 || !truongDangXet[0].trim().equalsIgnoreCase(loai))
                 continue;
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (layKhopCanNang(truongDangXet[1], canNangKg)) return TienTe.doc(truongDangXet[2]);
         }
         return -1;
     }
 
-    /**
-     * Lấy khớp cân nặng trong BoSoanThaoBangGia.
-     *
-     * @param khoang khoảng
-     * @param kg kg
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private static boolean layKhopCanNang(String khoang, double kg) {
         // Dòng dữ liệu.
         String dongDuLieu = khoang.toLowerCase().replace("kg", "").replace(" ", "");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (dongDuLieu.isEmpty() || dongDuLieu.contains("mọi")) return true;
         try {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (dongDuLieu.startsWith("<")) return kg < Double.parseDouble(dongDuLieu.substring(1));
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (dongDuLieu.startsWith(">")) return kg > Double.parseDouble(dongDuLieu.substring(1));
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (dongDuLieu.contains("-")) {
-                // Vùng đang xét.
                 String[] vungDangXet = dongDuLieu.split("-");
                 return kg >= Double.parseDouble(vungDangXet[0])
                         && kg <= Double.parseDouble(vungDangXet[1]);

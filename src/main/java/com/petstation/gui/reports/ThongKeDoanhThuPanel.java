@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho doanh thu báo cáo vùng hiển thị. */
 public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeDoanhThuPanel với các giá trị được cung cấp. */
     public ThongKeDoanhThuPanel() {
         super(
                 "Thống kê doanh thu",

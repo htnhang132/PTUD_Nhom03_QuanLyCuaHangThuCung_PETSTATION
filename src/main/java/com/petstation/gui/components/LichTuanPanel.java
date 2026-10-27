@@ -119,12 +119,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Tóm tắt. */
     private final JLabel lblTomTat = new JLabel(" ");
 
-    /**
-     * Khởi tạo LichTuanPanel với các giá trị được cung cấp.
-     *
-     * @param cheDo chế độ
-     * @param hienTaiNguoiDung hiện tại người dùng
-     */
     public LichTuanPanel(CheDo cheDo, String hienTaiNguoiDung) {
         this.cheDo = cheDo;
         this.hienTaiNguoiDung = hienTaiNguoiDung == null ? "" : hienTaiNguoiDung;
@@ -141,11 +135,10 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         JLabel lblTieuDe = taoTieuDeMuc(tieuDe);
         // Trên.
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout(0, 8));
-        pnlTren.add(lblTieuDe, BorderLayout.NORTH);
+        pnlTren.add(ThanhDanhSach.tieuDe(lblTieuDe, lblTomTat), BorderLayout.NORTH);
         pnlTren.add(taoThanhCongCu(), BorderLayout.CENTER);
         lblTomTat.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblTomTat.setForeground(MauUngDung.VAN_BAN_XAM);
-        pnlTren.add(lblTomTat, BorderLayout.SOUTH);
         add(pnlTren, BorderLayout.NORTH);
 
         pnlLuoiVungChu.setOpaque(false);
@@ -170,14 +163,9 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────── Thanh công cụ (giống form lịch tuần)
-    /**
-     * Tạo thanh công cụ trong LichTuanPanel.
-     *
-     * @return kết quả tạo thanh công cụ
-     */
     private JPanel taoThanhCongCu() {
         // Thanh.
-        JPanel pnlThanh = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        ThanhDanhSach pnlThanh = new ThanhDanhSach();
         pnlThanh.setOpaque(false);
         // Nhóm.
         ButtonGroup nhom = new ButtonGroup();
@@ -186,7 +174,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
             btnDongDuLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             btnDongDuLieu.addActionListener(suKien -> dungLai());
             nhom.add(btnDongDuLieu);
-            pnlThanh.add(btnDongDuLieu);
+            pnlThanh.themBoLoc(btnDongDuLieu);
         }
         txtTruongNgay.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtTruongNgay.setHorizontalAlignment(SwingConstants.CENTER);
@@ -202,17 +190,17 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                     dungLai();
                 });
         // In.
-        NutDinhDang btnIn = new NutDinhDang("In lịch", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnIn = new NutDinhDang("In lịch", NutDinhDang.KieuNut.TRONG_SUOT);
         btnIn.addActionListener(suKien -> inLichLamViec());
         // Quay lại.
-        NutDinhDang btnQuayLai = new NutDinhDang("‹ Trở về", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnQuayLai = new NutDinhDang("‹ Trở về", NutDinhDang.KieuNut.TRONG_SUOT);
         btnQuayLai.addActionListener(
                 suKien -> {
                     thuHai = thuHai.minusWeeks(1);
                     dungLai();
                 });
         // Tiếp theo.
-        NutDinhDang btnTiepTheo = new NutDinhDang("Tiếp ›", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnTiepTheo = new NutDinhDang("Tiếp ›", NutDinhDang.KieuNut.TRONG_SUOT);
         btnTiepTheo.addActionListener(
                 suKien -> {
                     thuHai = thuHai.plusWeeks(1);
@@ -222,7 +210,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlThanh.add(btnIn);
         pnlThanh.add(btnQuayLai);
         pnlThanh.add(btnTiepTheo);
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.CA_NHAN) {
             // Yêu cầu nhập.
             NutDinhDang btnYeuCauNhap =
@@ -233,7 +220,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlThanh;
     }
 
-    /** Chuyển ngày đến đã nhập trong LichTuanPanel. */
     private void chuyenNgayDenDaNhap() {
         try {
             thuHai =
@@ -246,11 +232,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /**
-     * Tạo chú giải trong LichTuanPanel.
-     *
-     * @return kết quả tạo chú giải
-     */
     private JPanel taoChuGiai() {
         // Chú giải.
         JPanel pnlChuGiai = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 4));
@@ -268,15 +249,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlChuGiai;
     }
 
-    /**
-     * Lấy nhãn trong LichTuanPanel.
-     *
-     * @param giaTriDangXet giá trị đang xét
-     * @param vanBan văn bản
-     * @return kết quả lấy nhãn
-     */
     private static JPanel layNhan(Color giaTriDangXet, String vanBan) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         pnlVungDangXet.setOpaque(false);
         // Hộp.
@@ -294,7 +267,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────── Lưới
-    /** Dựng lại trong LichTuanPanel. */
     private void dungLai() {
         txtTruongNgay.setText(thuHai.format(NGAY));
         pnlLuoiVungChu.removeAll();
@@ -338,16 +310,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlLuoiVungChu.repaint();
     }
 
-    /**
-     * Lấy ô tiêu đề trong LichTuanPanel.
-     *
-     * @param tren trên
-     * @param duoi dưới
-     * @param homNay hôm nay
-     * @return kết quả lấy ô tiêu đề
-     */
     private JPanel layOTieuDe(String tren, String duoi, boolean homNay) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new BorderLayout());
         pnlVungDangXet.setBackground(homNay ? new Color(0xD3, 0xE6, 0xFA) : TIEU_DE_NEN);
         pnlVungDangXet.setBorder(
@@ -367,14 +330,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlVungDangXet;
     }
 
-    /**
-     * Lấy nhãn dòng trong LichTuanPanel.
-     *
-     * @param caLamViec ca làm việc
-     * @return kết quả lấy nhãn dòng
-     */
     private JPanel layNhanDong(int caLamViec) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new BorderLayout());
         pnlVungDangXet.setBackground(DONG_NHAN_NEN);
         pnlVungDangXet.setBorder(
@@ -394,31 +350,14 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlVungDangXet;
     }
 
-    /**
-     * Kiểm tra hiển thị trong LichTuanPanel.
-     *
-     * @param suKien sự kiện
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private boolean kiemTraHienThi(Muc suKien) {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (btnLamViec.isSelected() && suKien.kiemTraNghiPhep()) return false;
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (btnNghiPhep.isSelected() && !suKien.kiemTraNghiPhep()) return false;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.CA_NHAN) return suKien.maNhanVien.equals(hienTaiNguoiDung);
         return true;
     }
 
-    /**
-     * Lấy ô trong LichTuanPanel.
-     *
-     * @param ngay ngày
-     * @param caLamViec ca làm việc
-     * @return kết quả lấy ô
-     */
     private JPanel layO(LocalDate ngay, int caLamViec) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet =
                 new JPanel() {
                     /**
@@ -461,7 +400,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
             pnlVungDangXet.add(layThe(suKien));
             pnlVungDangXet.add(javax.swing.Box.createVerticalStrut(4));
         }
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (ngan1 && !btnNghiPhep.isSelected()) {
             // Cần.
             long can =
@@ -474,7 +412,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
             lblCanhBao.setAlignmentX(Component.LEFT_ALIGNMENT);
             pnlVungDangXet.add(lblCanhBao);
         }
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.SUA) {
             // Thêm.
             JLabel lblThem = new JLabel("+ Thêm nhân viên");
@@ -499,12 +436,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlVungDangXet;
     }
 
-    /**
-     * Lấy thẻ trong LichTuanPanel.
-     *
-     * @param suKien sự kiện
-     * @return kết quả lấy thẻ
-     */
     private JPanel layThe(Muc suKien) {
         // Nhân viên.
         Object[] nhanVien = layNhanVienCua(suKien.maNhanVien);
@@ -556,7 +487,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlThe.add(lblDongDangXet, BorderLayout.CENTER);
         pnlThe.setMaximumSize(
                 new Dimension(Integer.MAX_VALUE, pnlThe.getPreferredSize().height + 4));
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.SUA) {
             pnlThe.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             pnlThe.setToolTipText("Bấm để bỏ " + ten + " khỏi ca này");
@@ -576,12 +506,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlThe;
     }
 
-    /**
-     * Lấy nhân viên của trong LichTuanPanel.
-     *
-     * @param ma mã
-     * @return kết quả lấy nhân viên của
-     */
     private static Object[] layNhanVienCua(String ma) {
         for (Object[] chuoi :
                 DanhMucService
@@ -591,23 +515,15 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────── Phân lịch
-    /**
-     * Thêm nhân viên trong LichTuanPanel.
-     *
-     * @param ngay ngày
-     * @param caLamViec ca làm việc
-     */
     private void themNhanVien(LocalDate ngay, int caLamViec) {
         // Các lựa chọn.
         List<String> cacLuaChon = new ArrayList<>();
         for (String doiTuong : DanhMucService.layLuaChonNhanVien()) {
             // Mã.
             String ma = doiTuong.substring(0, doiTuong.indexOf(' '));
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (LichLamViecService.layO(ngay, caLamViec).stream()
                     .noneMatch(suKien -> suKien.maNhanVien.equals(ma))) cacLuaChon.add(doiTuong);
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacLuaChon.isEmpty()) {
             HopThoai.hienThiThongTin(this, "Mọi nhân viên đã có trong ca này.");
             return;
@@ -626,13 +542,11 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         null,
                         cacLuaChon.toArray(),
                         cacLuaChon.get(0));
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (chon == null) return;
         // Mã.
         String ma = String.valueOf(chon).substring(0, String.valueOf(chon).indexOf(' '));
         // Lỗi.
         String loi = LichLamViecService.phanCong(ngay, caLamViec, ma);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (loi != null) {
             HopThoai.hienThiCanhBao(this, loi);
             return;
@@ -647,14 +561,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         + ngay.format(NGAY));
     }
 
-    /**
-     * Xóa nhân viên trong LichTuanPanel.
-     *
-     * @param suKien sự kiện
-     * @param ten tên
-     */
     private void xoaNhanVien(Muc suKien, String ten) {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!HopThoai.xacNhanNguyHiem(
                 this,
                 "Bỏ "
@@ -676,20 +583,16 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         + suKien.ngay.format(NGAY));
     }
 
-    /** Cập nhật tóm tắt trong LichTuanPanel. */
     private void capNhatTomTat() {
         // Kết thúc.
         LocalDate ketThuc = thuHai.plusDays(6);
         // Tuần.
         String tuan = "Tuần " + thuHai.format(NGAY) + " – " + ketThuc.format(NGAY);
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.CA_NHAN) {
             // Bản thân.
             Object[] banThan = null;
             for (Object[] chuoi : DanhMucService.layNhanVien())
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (String.valueOf(chuoi[0]).equals(hienTaiNguoiDung)) banThan = chuoi;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (banThan == null) {
                 lblTomTat.setText(
                         tuan + " · Chưa tìm thấy hồ sơ nhân viên của bạn nên chưa có ca nào.");
@@ -721,7 +624,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         int ngan1 = 0;
         for (int ngayDangXet = 0; ngayDangXet < 7; ngayDangXet++)
             for (int chuoi = 0; chuoi < 3; chuoi++)
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (LichLamViecService.demCaLamViec(thuHai.plusDays(ngayDangXet), chuoi)
                         < LichLamViecService.NHO_NHAT_NHAN_VIEN[chuoi]) ngan1++;
         lblTomTat.setText(
@@ -735,7 +637,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────── In lịch
-    /** In lịch làm việc trong LichTuanPanel. */
     private void inLichLamViec() {
         // Công việc.
         PrinterJob congViec = PrinterJob.getPrinterJob();
@@ -754,7 +655,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                     @Override
                     public int print(Graphics doHoa, PageFormat dinhDangTrang, int trang)
                             throws PrinterException {
-                        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                         if (trang > 0) return NO_SUCH_PAGE;
                         // Đích.
                         Component dich = pnlLuoiVungChu;
@@ -774,7 +674,6 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                     }
                 });
         try {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (congViec.printDialog()) {
                 congViec.print();
                 NhatKyHeThongService.ghiNhatKy(
@@ -787,27 +686,16 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /** Xử lý hiển thị trong LichTuanPanel. */
     @Override
     public void xuLyHienThi() {
         dungLai();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong LichTuanPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Lịch làm việc theo tuần";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong LichTuanPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return switch (cheDo) {

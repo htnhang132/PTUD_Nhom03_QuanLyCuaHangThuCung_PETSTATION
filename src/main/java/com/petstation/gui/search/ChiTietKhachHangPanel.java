@@ -1,6 +1,6 @@
 package com.petstation.gui.search;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.util.DuLieu.*;
 
 import com.petstation.gui.components.CoSoPanel;
 import com.petstation.gui.components.HopThoai;
@@ -18,16 +18,6 @@ import javax.swing.table.DefaultTableModel;
 
 /** Cung cấp giao diện và xử lý tương tác cho khách hàng chi tiết vùng hiển thị. */
 public final class ChiTietKhachHangPanel extends CoSoPanel {
-    /**
-     * Khởi tạo ChiTietKhachHangPanel với các giá trị được cung cấp.
-     *
-     * @param ma mã
-     * @param ten tên
-     * @param soDienThoai số điện thoại
-     * @param diaChi địa chỉ
-     * @param hang hạng
-     * @param diem điểm
-     */
     public ChiTietKhachHangPanel(
             String ma, String ten, String soDienThoai, String diaChi, String hang, String diem) {
         setLayout(new BorderLayout(0, 10));
@@ -79,14 +69,11 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
         btnXemTruoc.addActionListener(
                 suKien -> {
-                    // Giá trị tạm.
                     JTable tblGiaTriTam = layBang(scrHoaDonBang);
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (tblGiaTriTam.getSelectedRow() < 0) {
                         HopThoai.hienThiCanhBao(this, "Chọn hóa đơn cần xem.");
                         return;
                     }
-                    // Không.
                     String khong =
                             chuyenThanhChuoi(
                                     tblGiaTriTam
@@ -112,7 +99,6 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                     HopThoai.hienThiLoi(this, ngoaiLe.getMessage());
                                 }
                             });
-                    // Vùng đang xét.
                     JPanel pnlVungDangXet = new JPanel(new BorderLayout());
                     pnlVungDangXet.add(new JScrollPane(txtVanBan), BorderLayout.CENTER);
                     pnlVungDangXet.add(btnIn, BorderLayout.SOUTH);
@@ -158,13 +144,6 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         add(tabCacTab, BorderLayout.CENTER);
     }
 
-    /**
-     * Lấy bảng trong ChiTietKhachHangPanel.
-     *
-     * @param cacCot các cột
-     * @param cacDong các dòng
-     * @return kết quả lấy bảng
-     */
     private JScrollPane layBang(String[] cacCot, List<Object[]> cacDong) {
         // Mô hình.
         DefaultTableModel moHinh =

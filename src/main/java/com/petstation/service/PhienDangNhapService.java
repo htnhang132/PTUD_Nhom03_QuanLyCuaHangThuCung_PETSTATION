@@ -4,20 +4,32 @@ import com.petstation.model.PhienDangNhap;
 
 /** Cung cấp phiên hiện tại và các kiểm tra quyền dùng chung cho nghiệp vụ. */
 public final class PhienDangNhapService {
-    /** Khởi tạo PhienDangNhapService với các giá trị được cung cấp. */
     private PhienDangNhapService() {}
 
     /** Phiên đăng nhập. */
     private static volatile PhienDangNhap phienDangNhap;
 
-    /**
-     * Đặt phiên đăng nhập trong PhienDangNhapService.
-     *
-     * @param giaTri giá trị
-     */
+    private static final ThreadLocal<PhienDangNhap> phienCongViec = new ThreadLocal<>();
+
+    /** Công việc nền giữ danh tính người khởi tạo, không nhận nhầm phiên mới khi đăng xuất. */
+    public static <T> T trongPhien(PhienDangNhap phien, java.util.concurrent.Callable<T> viec)
+            throws Exception {
+        if (phien == null || phienDangNhap != phien)
+            throw new IllegalStateException("Phiên đã thay đổi; hãy mở lại chức năng.");
+        PhienDangNhap cu = phienCongViec.get();
+        phienCongViec.set(phien);
+        try {
+            return viec.call();
+        } finally {
+            if (cu == null) phienCongViec.remove();
+            else phienCongViec.set(cu);
+        }
+    }
+
     public static void datPhienDangNhap(PhienDangNhap giaTri) {
         phienDangNhap = giaTri;
         if (giaTri == null) {
+            DieuHuongBanGhiService.xoa();
             PheDuyetService.xoaBoLangNghe();
             NhatKyHeThongService.xoaBoLangNghe();
             LichLamViecService.xoaBoLangNghe();
@@ -26,50 +38,27 @@ public final class PhienDangNhapService {
         }
     }
 
-    /**
-     * Lấy phiên hiện tại trong PhienDangNhapService.
-     *
-     * @return kết quả lấy phiên hiện tại
-     */
     public static PhienDangNhap layPhienHienTai() {
         return phienDangNhap;
     }
 
-    /**
-     * Lấy phiên trong PhienDangNhapService.
-     *
-     * @return kết quả lấy phiên
-     */
     public static PhienDangNhap layPhien() {
+        PhienDangNhap nen = phienCongViec.get();
+        if (nen != null) return nen;
         // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
         if (phienDangNhap == null)
             throw new IllegalStateException("Bạn cần đăng nhập để thực hiện thao tác này.");
         return phienDangNhap;
     }
 
-    /**
-     * Lấy id tài khoản trong PhienDangNhapService.
-     *
-     * @return kết quả lấy id tài khoản
-     */
     public static long layIdTaiKhoan() {
         return layPhien().taiKhoan().id();
     }
 
-    /**
-     * Lấy id nhân viên trong PhienDangNhapService.
-     *
-     * @return kết quả lấy id nhân viên
-     */
     public static long layIdNhanVien() {
         return layPhien().nhanVien().id();
     }
 
-    /**
-     * Yêu cầu trong PhienDangNhapService.
-     *
-     * @param quyen quyền
-     */
     public static void yeuCau(com.petstation.model.Quyen quyen) {
         // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
         if (!layPhien().kiemTraCo(quyen))

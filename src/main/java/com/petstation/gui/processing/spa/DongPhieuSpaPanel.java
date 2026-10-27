@@ -1,10 +1,10 @@
 package com.petstation.gui.processing.spa;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.util.DuLieu.*;
 
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
+import com.petstation.model.MaManHinh;
 import com.petstation.service.SpaService;
 
 import java.awt.*;
@@ -16,12 +16,6 @@ import javax.swing.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho Spa đóng vùng hiển thị. */
 public final class DongPhieuSpaPanel extends NghiepVuSpaPanel {
-    /**
-     * Khởi tạo DongPhieuSpaPanel với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param dieuHuong điều hướng
-     */
     public DongPhieuSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.SPA_CLOSE, banHang, dieuHuong);
 

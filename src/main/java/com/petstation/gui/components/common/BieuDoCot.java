@@ -1,167 +1,126 @@
 package com.petstation.gui.components.common;
 
 import com.petstation.gui.components.MauUngDung;
+import com.petstation.util.TienTe;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.function.IntConsumer;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho đơn giản thanh biểu đồ.
- *
- * <p>Biểu đồ cột đơn giản vẽ bằng Java2D (không cần thư viện ngoài).
- */
+/** Biểu đồ cột có cuộn, trục âm và vùng tương tác riêng cho mỗi cột. */
 public final class BieuDoCot extends JComponent {
-    /** Các nhãn. */
-    private String[] cacNhan = new String[0];
-
-    /** Các giá trị. */
-    private double[] cacGiaTri = new double[0];
-
-    /** Đơn vị. */
+    private String[] nhan = new String[0];
+    private double[] giaTri = new double[0];
+    private boolean tienTe;
     private String donVi = "";
-
-    /** Tiền tệ. */
-    private boolean tienTe = true;
-
-    /** Màu. */
     private Color mau = MauUngDung.DO_THUONG_HIEU;
+    private final java.util.List<Rectangle> vung = new ArrayList<>();
+    private IntConsumer chon = i -> {};
 
-    /** Khởi tạo BieuDoCot với các giá trị được cung cấp. */
     public BieuDoCot() {
-        setPreferredSize(new Dimension(400, 240));
-        setOpaque(false);
+        setPreferredSize(new Dimension(400, 260));
+        setToolTipText("");
+        addMouseListener(
+                new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        int i = tim(e.getPoint());
+                        if (i >= 0) chon.accept(i);
+                    }
+                });
     }
 
-    /**
-     * Đặt dữ liệu trong BieuDoCot.
-     *
-     * @param cacNhan các nhãn
-     * @param cacGiaTri các giá trị
-     * @param tienTe tiền tệ
-     * @param donVi đơn vị
-     */
-    public void datDuLieu(String[] cacNhan, double[] cacGiaTri, boolean tienTe, String donVi) {
-        this.cacNhan = cacNhan;
-        this.cacGiaTri = cacGiaTri;
-        this.tienTe = tienTe;
-        this.donVi = donVi == null ? "" : donVi;
+    public void khiChon(IntConsumer c) {
+        chon = c;
+    }
+
+    public void datMauThanh(Color c) {
+        mau = c;
         repaint();
     }
 
-    /**
-     * Đặt màu thanh trong BieuDoCot.
-     *
-     * @param giaTriDangXet giá trị đang xét
-     */
-    public void datMauThanh(Color giaTriDangXet) {
-        this.mau = giaTriDangXet;
+    public void datDuLieu(String[] labels, double[] values, boolean money, String unit) {
+        nhan = labels.clone();
+        giaTri = values.clone();
+        tienTe = money;
+        donVi = unit == null ? "" : unit;
+        setPreferredSize(new Dimension(Math.max(400, values.length * 92 + 50), 260));
+        revalidate();
         repaint();
     }
 
-    /**
-     * Định dạng trong BieuDoCot.
-     *
-     * @param giaTri giá trị
-     * @return kết quả định dạng
-     */
-    private String dinhDang(double giaTri) {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-        if (!tienTe)
-            return giaTri == Math.rint(giaTri)
-                    ? String.valueOf((long) giaTri)
-                    : String.format("%.1f", giaTri);
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-        if (giaTri >= 1_000_000)
-            return String.format("%.1ftr", giaTri / 1_000_000).replace(".0tr", "tr");
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-        if (giaTri >= 1_000) return String.format("%.0fk", giaTri / 1_000);
-        return String.valueOf((long) giaTri);
+    private String format(double v) {
+        return tienTe
+                ? TienTe.dinhDang(Math.round(v))
+                : String.format(java.util.Locale.ROOT, "%,.1f", v).replace(".0", "") + " " + donVi;
     }
 
-    /**
-     * Vẽ thành phần trong BieuDoCot.
-     *
-     * @param doHoa0 đồ họa 0
-     */
+    private int tim(Point p) {
+        for (int i = 0; i < vung.size(); i++) if (vung.get(i).contains(p)) return i;
+        return -1;
+    }
+
     @Override
-    protected void paintComponent(Graphics doHoa0) {
-        // Đồ họa.
-        Graphics2D doHoa = (Graphics2D) doHoa0.create();
-        doHoa.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        doHoa.setRenderingHint(
-                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // Chiều rộng.
-        int chieuRong = getWidth(), chieuCao = getHeight();
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
-        if (cacGiaTri.length == 0) {
-            doHoa.setColor(MauUngDung.VAN_BAN_XAM);
-            doHoa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-            doHoa.drawString("Chưa có dữ liệu", chieuRong / 2 - 40, chieuCao / 2);
-            doHoa.dispose();
+    public String getToolTipText(MouseEvent e) {
+        int i = tim(e.getPoint());
+        return i < 0 ? null : DinhDangBang.tenTrangThai(nhan[i]) + ": " + format(giaTri[i]);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g0) {
+        Graphics2D g = (Graphics2D) g0.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+        vung.clear();
+        if (giaTri.length == 0) {
+            g.setColor(Color.GRAY);
+            g.drawString("Chưa có dữ liệu", 20, 50);
+            g.dispose();
             return;
         }
-        // Trái.
-        int trai = 10, phai = 10, tren = 26, duoi = 30;
-        // Lớn nhất.
-        double lonNhat = 0;
-        for (double giaTri : cacGiaTri) lonNhat = Math.max(lonNhat, giaTri);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-        if (lonNhat <= 0) lonNhat = 1;
-        doHoa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-        // Thông số phông chữ.
-        FontMetrics thongSoPhongChu = doHoa.getFontMetrics();
-        // Biểu đồ chiều cao.
-        int bieuDoChieuCao = chieuCao - tren - duoi;
-        doHoa.setColor(MauUngDung.VIEN);
-        doHoa.setStroke(new BasicStroke(1f));
-        doHoa.drawLine(trai, tren + bieuDoChieuCao, chieuRong - phai, tren + bieuDoChieuCao);
-        // Số phần tử.
-        int soPhanTu = cacGiaTri.length;
-        // Ô lịch.
-        double oLich = (chieuRong - trai - phai) / (double) soPhanTu;
-        // Thanh chiều rộng.
-        int thanhChieuRong = (int) Math.max(8, Math.min(60, oLich * 0.6));
-        for (int chiSo = 0; chiSo < soPhanTu; chiSo++) {
-            // Chiều cao nút.
-            int chieuCaoNut = (int) Math.round(cacGiaTri[chiSo] / lonNhat * (bieuDoChieuCao - 4));
-            // Tọa độ ngang.
-            int toaDoNgang = (int) (trai + oLich * chiSo + (oLich - thanhChieuRong) / 2);
-            // Tọa độ dọc.
-            int toaDoDoc = tren + bieuDoChieuCao - chieuCaoNut;
-            doHoa.setColor(mau);
-            doHoa.fillRoundRect(
-                    toaDoNgang, toaDoDoc, thanhChieuRong, Math.max(chieuCaoNut, 1), 6, 6);
-            doHoa.setColor(MauUngDung.VAN_BAN_TOI);
-            // Giá trị.
-            String giaTri = dinhDang(cacGiaTri[chiSo]) + (donVi.isEmpty() ? "" : " " + donVi);
-            doHoa.drawString(
-                    giaTri,
-                    toaDoNgang + (thanhChieuRong - thongSoPhongChu.stringWidth(giaTri)) / 2,
-                    toaDoDoc - 4);
-            doHoa.setColor(MauUngDung.VAN_BAN_XAM);
-            // Dòng đang xét.
-            String dongDangXet = chiSo < cacNhan.length ? cacNhan[chiSo] : "";
-            // Lớn nhất các ký tự.
-            int lonNhatCacKyTu = Math.max(4, (int) (oLich / 6.5));
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-            if (dongDangXet.length() > lonNhatCacKyTu)
-                dongDangXet = dongDangXet.substring(0, Math.max(1, lonNhatCacKyTu - 1)) + "…";
-            doHoa.drawString(
-                    dongDangXet,
-                    (int)
-                            (trai
-                                    + oLich * chiSo
-                                    + (oLich - thongSoPhongChu.stringWidth(dongDangXet)) / 2),
-                    tren + bieuDoChieuCao + 16);
+        double min = 0, max = 0;
+        for (double v : giaTri) {
+            min = Math.min(min, v);
+            max = Math.max(max, v);
         }
-        doHoa.dispose();
+        if (max == min) max = min + 1;
+        int top = 28, bottom = Math.max(top + 10, getHeight() - 64);
+        double scale = (bottom - top) / (max - min);
+        int zero = top + (int) Math.round(max * scale);
+        g.setColor(MauUngDung.VIEN);
+        g.drawLine(20, zero, getWidth() - 10, zero);
+        double slot = (getWidth() - 40d) / giaTri.length;
+        int bw = (int) Math.min(54, slot * .6);
+        for (int i = 0; i < giaTri.length; i++) {
+            int x = 20 + (int) (i * slot + (slot - bw) / 2),
+                    y = top + (int) Math.round((max - giaTri[i]) * scale);
+            Rectangle hit =
+                    new Rectangle(
+                            x - 5,
+                            Math.min(y, zero) - 10,
+                            bw + 10,
+                            Math.max(20, Math.abs(zero - y) + 20));
+            vung.add(hit);
+            g.setColor(giaTri[i] < 0 ? new Color(0xB45309) : mau);
+            g.fillRoundRect(x, Math.min(y, zero), bw, Math.max(1, Math.abs(y - zero)), 5, 5);
+            String value = format(giaTri[i]);
+            g.setColor(MauUngDung.VAN_BAN_TOI);
+            if (g.getFontMetrics().stringWidth(value) < slot - 4)
+                g.drawString(
+                        value,
+                        x + (bw - g.getFontMetrics().stringWidth(value)) / 2,
+                        giaTri[i] >= 0 ? y - 6 : y + 15);
+            String label = i < nhan.length ? DinhDangBang.tenTrangThai(nhan[i]) : "";
+            while (label.length() > 1 && g.getFontMetrics().stringWidth(label) > slot - 8)
+                label = label.substring(0, label.length() - 2) + "…";
+            g.setColor(Color.DARK_GRAY);
+            g.drawString(
+                    label,
+                    20 + (int) (i * slot + (slot - g.getFontMetrics().stringWidth(label)) / 2),
+                    bottom + 42);
+        }
+        g.dispose();
     }
 }

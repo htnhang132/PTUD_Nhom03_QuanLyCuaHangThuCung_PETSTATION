@@ -7,6 +7,7 @@ import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.KhaNangThanhCongCu;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
+import com.petstation.model.PhuongThuc;
 import com.petstation.service.CaThuNganService;
 import com.petstation.util.TienTe;
 
@@ -77,11 +78,6 @@ public final class CaThuNganPanel extends CoSoPanel {
     /** Nút đóng. */
     private final NutDinhDang btnNutDong = new NutDinhDang("Kết ca", NutDinhDang.KieuNut.CHINH);
 
-    /**
-     * Khởi tạo CaThuNganPanel với các giá trị được cung cấp.
-     *
-     * @param caLamViec ca làm việc
-     */
     public CaThuNganPanel(CaThuNganService caLamViec) {
         this.caLamViec = caLamViec;
         setLayout(new BorderLayout(0, 14));
@@ -101,11 +97,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         lamMoi();
     }
 
-    /**
-     * Tạo mở trong CaThuNganPanel.
-     *
-     * @return kết quả tạo mở
-     */
     private JPanel taoMo() {
         JPanel the = layThe(new BorderLayout(0, 12));
         JPanel dau = taoVungTrongSuot(new BorderLayout(0, 8));
@@ -151,13 +142,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         return canGiua;
     }
 
-    /**
-     * Tạo đang chạy trong CaThuNganPanel.
-     *
-     * @return kết quả tạo đang chạy
-     */
     private JPanel taoDangChay() {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = taoVungTrongSuot(new BorderLayout(0, 14));
         pnlCacChiSo.setOpaque(false);
         pnlVungDangXet.add(pnlCacChiSo, BorderLayout.NORTH);
@@ -244,12 +229,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         return pnlVungDangXet;
     }
 
-    /**
-     * Lấy nhỏ trong CaThuNganPanel.
-     *
-     * @param vanBan văn bản
-     * @return kết quả lấy nhỏ
-     */
     private JLabel layNho(String vanBan) {
         // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
@@ -259,7 +238,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         return lblDongDangXet;
     }
 
-    /** Mở ca làm việc trong CaThuNganPanel. */
     private void moCaLamViec() {
         // Tiền mặt.
         long tienMat;
@@ -269,7 +247,6 @@ public final class CaThuNganPanel extends CoSoPanel {
             HopThoai.hienThiCanhBao(this, e.getMessage());
             return;
         }
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (tienMat == 0 && !HopThoai.xacNhan(this, "Tiền đầu ca là 0₫. Vẫn mở ca?")) return;
         lblMoLoi.setText("");
         // Tên.
@@ -281,7 +258,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         }
     }
 
-    /** Đóng ca làm việc trong CaThuNganPanel. */
     private void dongCaLamViec() {
         // Tổng.
         long tong;
@@ -293,13 +269,11 @@ public final class CaThuNganPanel extends CoSoPanel {
         }
         // Chênh lệch.
         long chenhLech = tong - caLamViec.layTienMatDuKien();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cboHinhThuc.getSelectedIndex() == 1 && cboNguoiNhan.getSelectedItem() == null) {
             lblDongLoi.setText("Nhập tên người nhận bàn giao.");
             cboNguoiNhan.requestFocusInWindow();
             return;
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (chenhLech != 0 && txtGhiChu.getText().isBlank()) {
             lblDongLoi.setText(
                     "Có chênh lệch " + TienTe.dinhDang(chenhLech) + ": hãy nhập ghi chú bàn giao.");
@@ -322,7 +296,6 @@ public final class CaThuNganPanel extends CoSoPanel {
                                         ? "Nộp quỹ cửa hàng"
                                         : String.valueOf(cboNguoiNhan.getSelectedItem()))
                                 + "\nSau khi đóng ca không thể bán hàng cho đến khi mở ca mới.");
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (dongY) {
             try {
                 var nguoiNhan = (CaThuNganService.NguoiNhan) cboNguoiNhan.getSelectedItem();
@@ -343,7 +316,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         }
     }
 
-    /** Cập nhật số lượng tóm tắt trong CaThuNganPanel. */
     private void capNhatSoLuongTomTat() {
         // Chênh lệch.
         long chenhLech;
@@ -362,20 +334,13 @@ public final class CaThuNganPanel extends CoSoPanel {
                 chenhLech == 0 ? MauUngDung.XANH_LA : MauUngDung.VAN_BAN_NGUY_HIEM);
     }
 
-    /**
-     * Lấy đề xuất ca làm việc trong CaThuNganPanel.
-     *
-     * @return kết quả lấy đề xuất ca làm việc
-     */
     private static String layDeXuatCaLamViec() {
         // Chiều cao.
         int chieuCao = LocalTime.now().getHour();
         return chieuCao < 12 ? "Ca sáng" : chieuCao < 18 ? "Ca chiều" : "Ca tối";
     }
 
-    /** Làm mới trong CaThuNganPanel. */
     private void lamMoi() {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!caLamViec.kiemTraMo()) {
             lblCuoiCungBanGiao.setText(
                     caLamViec.layBanGiaoGanNhat().isEmpty()
@@ -413,7 +378,10 @@ public final class CaThuNganPanel extends CoSoPanel {
                 layChiSoThe(
                         "Chuyển khoản / thẻ",
                         TienTe.dinhDang(
-                                caLamViec.layDoanhThuChuyenKhoan() + caLamViec.layDoanhThuThe())));
+                                caLamViec.layDoanhThuChuyenKhoan()
+                                        + caLamViec.layDoanhThuThe()
+                                        + caLamViec.layCocHotel(PhuongThuc.TRANSFER)
+                                        + caLamViec.layCocHotel(PhuongThuc.CARD))));
         pnlCacChiSo.add(
                 layChiSoThe("Cọc Hotel tiền mặt", TienTe.dinhDang(caLamViec.layTienCocHotel())));
         pnlCacChiSo.add(
@@ -430,27 +398,16 @@ public final class CaThuNganPanel extends CoSoPanel {
         cacThe.show(pnlGoc, "running");
     }
 
-    /**
-     * Lấy khả năng thanh công cụ trong CaThuNganPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(false, false, false, false, false, true);
     }
 
-    /** Xử lý hiển thị trong CaThuNganPanel. */
     @Override
     public void xuLyHienThi() {
         lamMoi();
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong CaThuNganPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Mở ca: chọn ca và nhập tổng tiền mặt đầu ca. Kiểm đếm mệnh giá là tùy chọn.\n"
@@ -459,11 +416,6 @@ public final class CaThuNganPanel extends CoSoPanel {
                 + "Có chênh lệch thì nhập lý do; xác nhận để kết ca.";
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong CaThuNganPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Ca thu ngân";

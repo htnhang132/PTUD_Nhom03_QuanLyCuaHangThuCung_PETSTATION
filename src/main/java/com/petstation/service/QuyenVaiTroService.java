@@ -1,6 +1,7 @@
 package com.petstation.service;
 
-import com.petstation.dao.impl.JdbcQuyenVaiTroDAO;
+import com.petstation.dao.QuyenVaiTroDAO;
+import com.petstation.dao.impl.QuyenVaiTroImpl;
 import com.petstation.model.Quyen;
 import com.petstation.model.VaiTro;
 
@@ -13,29 +14,18 @@ import java.util.Set;
  * <p>Quyền theo vai trò (khớp database/002_sample_data.sql) để hiển thị ma trận phân quyền.
  */
 public final class QuyenVaiTroService {
-    /** Khởi tạo QuyenVaiTroService với các giá trị được cung cấp. */
+    private static final QuyenVaiTroDAO quyenVaiTroDAO = new QuyenVaiTroImpl();
+
     private QuyenVaiTroService() {}
 
-    /**
-     * Tạo trong QuyenVaiTroService.
-     *
-     * @param vaiTro vai trò
-     * @return kết quả tạo
-     */
     public static Set<Quyen> tao(VaiTro vaiTro) {
         // Các quyền.
         Set<Quyen> cacQuyen = EnumSet.noneOf(Quyen.class);
-        for (Object[] dong : JdbcQuyenVaiTroDAO.timCua(vaiTro.name()))
+        for (Object[] dong : quyenVaiTroDAO.timCua(vaiTro.name()))
             cacQuyen.add(Quyen.valueOf(String.valueOf(dong[0])));
         return cacQuyen;
     }
 
-    /**
-     * Lấy nhãn trong QuyenVaiTroService.
-     *
-     * @param vungDangXet vùng đang xét
-     * @return kết quả lấy nhãn
-     */
     public static String layNhan(Quyen vungDangXet) {
         return switch (vungDangXet) {
             case DASHBOARD_VIEW -> "Xem màn hình chính";

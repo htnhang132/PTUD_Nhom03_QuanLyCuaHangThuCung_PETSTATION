@@ -12,7 +12,6 @@ class BoSoanThaoBangGiaTest {
     private static final String BANG =
             "Chó|< 5kg|150000;Chó|5 - 10kg|200000;Chó|> 10kg|280000;Mèo|Mọi cân nặng|180000";
 
-    /** Lấy khoảng chọn được giá theo cân nặng trong BoSoanThaoBangGiaTest. */
     @Test
     void layKhoangChonDuocGiaTheoCanNang() {
         assertThat(BoSoanThaoBangGia.layGiaCho(BANG, "Chó", 3.2)).isEqualTo(150_000);
@@ -22,7 +21,6 @@ class BoSoanThaoBangGiaTest {
         assertThat(BoSoanThaoBangGia.layGiaCho(BANG, "Khác", 4)).isEqualTo(-1);
     }
 
-    /** Lấy nhỏ nhất giá là thấp nhất dòng trong BoSoanThaoBangGiaTest. */
     @Test
     void layNhoNhatGiaLaThapNhatDong() {
         assertThat(BoSoanThaoBangGia.layGiaNhoNhat(BANG)).isEqualTo(150_000);

@@ -3,15 +3,13 @@ package com.petstation.dao;
 import com.petstation.model.NhatKyHeThong;
 
 import java.sql.Connection;
+import java.util.List;
 
-/** Khai báo thao tác truy cập dữ liệu của nhật ký hệ thống nhật ký DAO. */
+/** Thao tác dữ liệu cho NhatKyHeThong; service gọi qua hợp đồng này. */
 public interface NhatKyHeThongDAO {
-    /**
-     * Thêm trong NhatKyHeThongDAO.
-     *
-     * @param ketNoi kết nối
-     * @param muc mục
-     * @throws Exception nếu thao tác không thể hoàn tất
-     */
     void them(Connection ketNoi, NhatKyHeThong muc) throws Exception;
+
+    int capNhatNhatKy(Object... cacThamSo);
+
+    List<Object[]> timCacMuc(Object... cacThamSo);
 }

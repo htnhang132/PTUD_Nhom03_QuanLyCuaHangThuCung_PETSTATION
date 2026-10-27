@@ -1,5 +1,7 @@
 package com.petstation.gui.navigation;
 
+import com.petstation.model.MaManHinh;
+
 import java.util.List;
 
 /** Khai báo năm nhóm menu, các mục chức năng và phím tắt dùng trong điều hướng. */
@@ -12,11 +14,6 @@ public final class CauTrucMenu {
      * @param phimTat phím tắt
      */
     public record Muc(String nhan, MaManHinh manHinh, String phimTat) {
-        /**
-         * Kiểm tra phân cách trong Muc.
-         *
-         * @return kết quả kiểm tra điều kiện xử lý
-         */
         public boolean kiemTraPhanCach() {
             return manHinh == null;
         }
@@ -34,25 +31,10 @@ public final class CauTrucMenu {
     /** Phân cách. */
     private static final Muc PHAN_CACH = new Muc(null, null, null);
 
-    /**
-     * Lấy mục trong CauTrucMenu.
-     *
-     * @param nhan nhãn
-     * @param manHinh màn hình
-     * @return kết quả lấy mục
-     */
     private static Muc layMuc(String nhan, MaManHinh manHinh) {
         return new Muc(nhan, manHinh, null);
     }
 
-    /**
-     * Lấy mục trong CauTrucMenu.
-     *
-     * @param nhan nhãn
-     * @param manHinh màn hình
-     * @param khoa khóa
-     * @return kết quả lấy mục
-     */
     private static Muc layMuc(String nhan, MaManHinh manHinh, String khoa) {
         return new Muc(nhan, manHinh, khoa);
     }
@@ -126,14 +108,8 @@ public final class CauTrucMenu {
                                     layMuc("Công nợ nhà cung cấp", MaManHinh.REPORT_SUPPLIER_DEBT),
                                     layMuc("Nhân viên", MaManHinh.REPORT_STAFF))));
 
-    /** Khởi tạo CauTrucMenu với các giá trị được cung cấp. */
     private CauTrucMenu() {}
 
-    /**
-     * Lấy các nhóm trong CauTrucMenu.
-     *
-     * @return kết quả lấy các nhóm
-     */
     public static List<Nhom> layCacNhom() {
         return CAC_NHOM;
     }

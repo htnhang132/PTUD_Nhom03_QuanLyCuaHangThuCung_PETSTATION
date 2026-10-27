@@ -30,12 +30,6 @@ public final class ThanhTrangThai extends JPanel {
     /** Nhãn ca làm việc. */
     private final JLabel lblNhanCaLamViec = layNhanGiaTri("");
 
-    /**
-     * Khởi tạo ThanhTrangThai với các giá trị được cung cấp.
-     *
-     * @param phienDangNhap phiên đăng nhập
-     * @param caLamViec ca làm việc
-     */
     public ThanhTrangThai(PhienDangNhap phienDangNhap, CaThuNganService caLamViec) {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setPreferredSize(new Dimension(0, 26));
@@ -61,26 +55,14 @@ public final class ThanhTrangThai extends JPanel {
         new Timer(15000, suKien -> capNhatDongHo()).start();
     }
 
-    /**
-     * Đặt gợi ý trong ThanhTrangThai.
-     *
-     * @param vanBan văn bản
-     */
     public void datGoiY(String vanBan) {
         lblGoiY.setText(vanBan);
     }
 
-    /** Cập nhật đồng hồ trong ThanhTrangThai. */
     private void capNhatDongHo() {
         lblDongHo.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
     }
 
-    /**
-     * Lấy nhãn giá trị trong ThanhTrangThai.
-     *
-     * @param giaTri giá trị
-     * @return kết quả lấy nhãn giá trị
-     */
     private static JLabel layNhanGiaTri(String giaTri) {
         // Nhãn.
         JLabel lblNhan = new JLabel(giaTri);
@@ -90,11 +72,6 @@ public final class ThanhTrangThai extends JPanel {
         return lblNhan;
     }
 
-    /**
-     * Lấy phân cách trong ThanhTrangThai.
-     *
-     * @return kết quả lấy phân cách
-     */
     private JSeparator layPhanCach() {
         // Phân cách.
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);

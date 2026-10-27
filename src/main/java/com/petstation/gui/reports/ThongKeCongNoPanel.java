@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho nhà cung cấp công nợ báo cáo vùng hiển thị. */
 public final class ThongKeCongNoPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeCongNoPanel với các giá trị được cung cấp. */
     public ThongKeCongNoPanel() {
         super(
                 "Công nợ nhà cung cấp",

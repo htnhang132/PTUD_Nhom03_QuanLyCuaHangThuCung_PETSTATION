@@ -12,16 +12,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho sản phẩm danh sách vùng hiển thị. */
 public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhSachSanPhamPanel với các giá trị được cung cấp. */
     public DanhSachSanPhamPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.laySanPham());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.PRODUCTS,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhSachSanPhamPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -70,11 +70,6 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhSachSanPhamPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static TruongDuLieu taoTruongGia() {
         var gia = TruongDuLieu.tao("Giá bán", Kieu.TIEN_TE).batBuoc().datMacDinh("0");
         if (com.petstation.service.PhienDangNhapService.layPhien().docVaiTro()

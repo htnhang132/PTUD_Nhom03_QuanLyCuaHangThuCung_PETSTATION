@@ -5,9 +5,9 @@ import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.KhaNangThanhCongCu;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.model.GioHang;
-import com.petstation.service.CaThuNganService;
+import com.petstation.model.MaManHinh;
+import com.petstation.model.PhuongThuc;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
@@ -45,12 +45,6 @@ public final class InHoaDonPanel extends CoSoPanel {
     /** Biểu ngữ. */
     private final JLabel lblBieuNgu = new JLabel();
 
-    /**
-     * Khởi tạo InHoaDonPanel với các giá trị được cung cấp.
-     *
-     * @param banHang bán hàng
-     * @param boDieuHuong bộ điều hướng
-     */
     public InHoaDonPanel(GioHang banHang, Consumer<MaManHinh> boDieuHuong) {
         this.banHang = banHang;
         this.boDieuHuong = boDieuHuong;
@@ -138,11 +132,9 @@ public final class InHoaDonPanel extends CoSoPanel {
         lamMoi();
     }
 
-    /** Làm mới trong InHoaDonPanel. */
     private void lamMoi() {
         // Dòng dữ liệu.
         GioHang.BienLai dongDuLieu = banHang.layBienLaiCuoi();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (dongDuLieu == null) {
             cacThe.show(pnlGoc, "empty");
             return;
@@ -150,7 +142,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         cacThe.show(pnlGoc, "receipt");
         // Thay đổi.
         String thayDoi =
-                dongDuLieu.phuongThuc() == CaThuNganService.PhuongThuc.CASH
+                dongDuLieu.phuongThuc() == PhuongThuc.CASH
                         ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.thayDoi())
                         : "";
         lblBieuNgu.setText(
@@ -163,12 +155,6 @@ public final class InHoaDonPanel extends CoSoPanel {
                 com.petstation.service.BanHangService.layChiTietBienLai(dongDuLieu.soHoaDon()));
     }
 
-    /**
-     * Hiển thị trong InHoaDonPanel.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     * @return kết quả hiển thị
-     */
     public static String hienThi(GioHang.BienLai dongDuLieu) {
         var nguon = com.petstation.service.BanHangService.layNguonBienLai(dongDuLieu.soHoaDon());
         // Bộ ghép chuỗi.
@@ -224,7 +210,6 @@ public final class InHoaDonPanel extends CoSoPanel {
         }
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         boGhepChuoi.append(layCap("Tạm tính", TienTe.dinhDang(dongDuLieu.tamTinh()))).append('\n');
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (dongDuLieu.giamGia() > 0) {
             boGhepChuoi
                     .append(
@@ -245,6 +230,7 @@ public final class InHoaDonPanel extends CoSoPanel {
                     case CASH -> "Tiền mặt";
                     case TRANSFER -> "Chuyển khoản/QR";
                     case CARD -> "Thẻ";
+                    case MIXED -> "Kết hợp";
                 };
         boGhepChuoi
                 .append(
@@ -252,8 +238,11 @@ public final class InHoaDonPanel extends CoSoPanel {
                                 "Thanh toán (" + phuongThuc + ")",
                                 TienTe.dinhDang(dongDuLieu.daNhan())))
                 .append('\n');
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
-        if (dongDuLieu.phuongThuc() == CaThuNganService.PhuongThuc.CASH)
+        for (var d : dongDuLieu.cacKhoanThu())
+            boGhepChuoi
+                    .append(layCap(tenPhuongThuc(d.phuongThuc()), TienTe.dinhDang(d.soTien())))
+                    .append('\n');
+        if (dongDuLieu.thayDoi() > 0)
             boGhepChuoi
                     .append(layCap("Tiền thừa", TienTe.dinhDang(dongDuLieu.thayDoi())))
                     .append('\n');
@@ -325,12 +314,23 @@ public final class InHoaDonPanel extends CoSoPanel {
                     case CASH -> "Tiền mặt";
                     case TRANSFER -> "Chuyển khoản / QR";
                     case CARD -> "Thẻ";
+                    case MIXED -> "Kết hợp";
                 };
         themTong(html, "Đã nhận — " + phuongThuc, bienLai.daNhan());
-        if (bienLai.phuongThuc() == CaThuNganService.PhuongThuc.CASH)
-            themTong(html, "Tiền thừa", bienLai.thayDoi());
+        for (var d : bienLai.cacKhoanThu())
+            themTong(html, tenPhuongThuc(d.phuongThuc()), d.soTien());
+        if (bienLai.thayDoi() > 0) themTong(html, "Tiền thừa", bienLai.thayDoi());
         return html.append("</table><p align='center'>Cảm ơn quý khách!</p></body></html>")
                 .toString();
+    }
+
+    private static String tenPhuongThuc(PhuongThuc pt) {
+        return switch (pt) {
+            case CASH -> "Tiền mặt";
+            case TRANSFER -> "Chuyển khoản / QR";
+            case CARD -> "Thẻ";
+            case MIXED -> "Kết hợp";
+        };
     }
 
     private static void themTong(StringBuilder html, String nhan, long tien) {
@@ -351,57 +351,30 @@ public final class InHoaDonPanel extends CoSoPanel {
                         .replace("'", "&#39;");
     }
 
-    /**
-     * Lấy giữa trong InHoaDonPanel.
-     *
-     * @param chuoi chuỗi
-     * @return kết quả lấy giữa
-     */
     private static String layGiua(String chuoi) {
         // Đệm.
         int dem = Math.max(0, (CHIEU_RONG - chuoi.length()) / 2);
         return " ".repeat(dem) + chuoi;
     }
 
-    /**
-     * Lấy cắt trong InHoaDonPanel.
-     *
-     * @param chuoi chuỗi
-     * @param lonNhat lớn nhất
-     * @return kết quả lấy cắt
-     */
     private static String layCat(String chuoi, int lonNhat) {
         return chuoi.length() <= lonNhat ? chuoi : chuoi.substring(0, lonNhat - 1) + "…";
     }
 
-    /**
-     * Lấy cặp trong InHoaDonPanel.
-     *
-     * @param trai trái
-     * @param phai phải
-     * @return kết quả lấy cặp
-     */
     private static String layCap(String trai, String phai) {
         // Khoảng cách.
         int khoangCach = Math.max(1, CHIEU_RONG - trai.length() - phai.length());
         return trai + " ".repeat(khoangCach) + phai;
     }
 
-    /**
-     * Lấy khả năng thanh công cụ trong InHoaDonPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(
                 false, false, false, banHang.layBienLaiCuoi() != null, false, true);
     }
 
-    /** Xử lý in trong InHoaDonPanel. */
     @Override
     public void xuLyIn() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banHang.layBienLaiCuoi() == null) return;
         try {
             java.awt.print.PrinterJob congViec = java.awt.print.PrinterJob.getPrinterJob();
@@ -422,27 +395,16 @@ public final class InHoaDonPanel extends CoSoPanel {
         }
     }
 
-    /** Xử lý hiển thị trong InHoaDonPanel. */
     @Override
     public void xuLyHienThi() {
         lamMoi();
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong InHoaDonPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Bấm In hóa đơn để gửi tới máy in. Bấm Lập đơn mới để bắt đầu đơn tiếp theo.";
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong InHoaDonPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Xem hóa đơn";

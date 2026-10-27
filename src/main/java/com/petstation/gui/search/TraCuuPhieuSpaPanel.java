@@ -1,9 +1,9 @@
 package com.petstation.gui.search;
 
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.gui.processing.spa.NghiepVuSpaPanel;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
+import com.petstation.model.MaManHinh;
 
 import java.util.function.Consumer;
 

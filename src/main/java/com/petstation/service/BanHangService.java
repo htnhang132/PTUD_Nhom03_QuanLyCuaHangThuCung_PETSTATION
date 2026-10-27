@@ -1,11 +1,19 @@
 package com.petstation.service;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.HoTroNghiepVuService.*;
 import static com.petstation.service.PhienDangNhapService.*;
+import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.impl.JdbcBanHangDAO;
+import com.petstation.dao.BanHangDAO;
+import com.petstation.dao.DoiHangDAO;
+import com.petstation.dao.KhoanThuDAO;
+import com.petstation.dao.impl.BanHangImpl;
+import com.petstation.dao.impl.DoiHangImpl;
+import com.petstation.dao.impl.KhoanThuImpl;
+import com.petstation.model.DongThuTien;
 import com.petstation.model.GioHang;
+import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
 
 import java.time.*;
@@ -15,7 +23,10 @@ import java.util.*;
  * Kiểm tra và lưu thanh toán, phân bổ tồn kho, điểm thưởng và hóa đơn dịch vụ trong cùng giao dịch.
  */
 public final class BanHangService {
-    /** Khởi tạo BanHangService với các giá trị được cung cấp. */
+    private static final BanHangDAO banHangDAO = new BanHangImpl();
+    private static final DoiHangDAO doiHangDAO = new DoiHangImpl();
+    private static final KhoanThuDAO khoanThuDAO = new KhoanThuImpl();
+
     private BanHangService() {}
 
     /** Nguồn và khoản đã cấn trừ vẫn đọc được khi in lại sau khi khởi động ứng dụng. */
@@ -23,7 +34,7 @@ public final class BanHangService {
 
     public static NguonBienLai layNguonBienLai(String soHoaDon) {
         layPhien();
-        var dong = JdbcBanHangDAO.layNguonBienLai(soHoaDon);
+        var dong = banHangDAO.layNguonBienLai(soHoaDon);
         if (dong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hóa đơn.");
         Object[] d = dong.get(0);
         return new NguonBienLai(
@@ -33,38 +44,38 @@ public final class BanHangService {
                 chuyenThanhChuoi(d[3]));
     }
 
-    /**
-     * Thanh toán trong BanHangService.
-     *
-     * @param banHang bán hàng
-     * @param phuongThuc phương thức
-     * @param daNhan đã nhận
-     * @param thuNgan thu ngân
-     * @return kết quả thanh toán
-     */
     public static GioHang.BienLai thanhToan(
-            GioHang banHang, CaThuNganService.PhuongThuc phuongThuc, long daNhan, String thuNgan) {
+            GioHang banHang, PhuongThuc phuongThuc, long daNhan, String thuNgan) {
+        return thanhToan(
+                banHang,
+                List.of(
+                        new DongThuTien(
+                                phuongThuc,
+                                banHang.tinhTong(),
+                                phuongThuc == PhuongThuc.CASH ? daNhan : banHang.tinhTong(),
+                                banHang.kiemTraDaNhanTien(phuongThuc))),
+                thuNgan);
+    }
+
+    public static GioHang.BienLai thanhToan(
+            GioHang banHang, List<DongThuTien> cacKhoanThu, String thuNgan) {
         yeuCau(Quyen.PAYMENT_PROCESS);
+        final List<DongThuTien> khoanThu = List.copyOf(cacKhoanThu);
         return thucHienGiaoDich(
                 ketNoi -> {
                     // Hiện có.
-                    Object hienCo = JdbcBanHangDAO.layThanhToan(banHang.layKhoaThanhToan());
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                    Object hienCo = banHangDAO.timHoaDonTheoKhoaThu(banHang.layKhoaThanhToan());
                     if (hienCo != null) return layBienLai(chuyenThanhChuoi(hienCo));
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                     if (banHang.kiemTraTrong())
                         throw new IllegalArgumentException("Hóa đơn chưa có hàng.");
                     // Ca làm việc.
-                    long caLamViec = JdbcBanHangDAO.demThanhToan(layIdTaiKhoan());
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                    long caLamViec = banHangDAO.demThanhToan(layIdTaiKhoan());
                     if (caLamViec == 0)
                         throw new IllegalStateException("Cần mở ca trước khi thanh toán.");
                     // Khóa ca thu ngân để xử lý tuần tự các yêu cầu đồng thời từ cùng tài khoản.
-                    hienCo = JdbcBanHangDAO.layThanhToan2(banHang.layKhoaThanhToan());
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                    hienCo = banHangDAO.timHoaDonTheoKhoaThu(banHang.layKhoaThanhToan());
                     if (hienCo != null) return layBienLai(chuyenThanhChuoi(hienCo));
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (JdbcBanHangDAO.demThanhToan2() > 0)
+                    if (banHangDAO.demNgayDaChot() > 0)
                         throw new IllegalStateException("Ngày đã chốt, không thể ghi giao dịch.");
                     // Khách hàng.
                     long phieuDoi =
@@ -78,28 +89,22 @@ public final class BanHangService {
                                             "khach_hang",
                                             "ma_khach_hang",
                                             banHang.layMaKhachHang());
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (khachHang != null) {
                         // Các khách hàng.
-                        List<Object[]> cacKhachHang = JdbcBanHangDAO.timThanhToan(khachHang);
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                        List<Object[]> cacKhachHang = banHangDAO.timThanhToan(khachHang);
                         if (cacKhachHang.isEmpty() || !Boolean.TRUE.equals(cacKhachHang.get(0)[1]))
                             throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                         if (((Number) cacKhachHang.get(0)[0]).longValue() < banHang.layDiemDaDung())
                             throw new IllegalArgumentException(
                                     "Điểm khách hàng đã thay đổi, hãy chọn lại số điểm.");
                     } else // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                     if (banHang.layDiemDaDung() > 0)
                         throw new IllegalArgumentException("Chưa chọn khách hàng để dùng điểm.");
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (!banHang.layMaVoucher().isBlank()) {
                         // Lỗi.
                         String loi = banHang.apDungVoucher(banHang.layMaVoucher());
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                         if (loi != null) throw new IllegalArgumentException(loi);
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                        if (JdbcBanHangDAO.capNhatThanhToan2(
+                        if (banHangDAO.ghiNhanSuDungVoucher(
                                         banHang.layMaVoucher(),
                                         banHang.tinhTamTinh(),
                                         khachHang,
@@ -110,39 +115,32 @@ public final class BanHangService {
                                             + " này.");
                     }
                     // Tổng.
-                    if (!banHang.kiemTraDaNhanTien(phuongThuc))
-                        throw new IllegalArgumentException(
-                                "Nhân viên cần xác nhận đã nhận tiền trước khi lưu thanh toán.");
                     long tong = banHang.tinhTong();
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (tong < 0 || phuongThuc == CaThuNganService.PhuongThuc.CASH && daNhan < tong)
-                        throw new IllegalArgumentException("Tiền khách đưa chưa đủ.");
-                    // Không.
+                    DongThuTien.kiemTra(khoanThu, tong);
+                    PhuongThuc phuongThuc =
+                            khoanThu.size() == 1 ? khoanThu.get(0).phuongThuc() : PhuongThuc.MIXED;
+                    long daNhan = khoanThu.stream().mapToLong(DongThuTien::khachDua).sum();
+                    long tienThua = khoanThu.stream().mapToLong(DongThuTien::tienThua).sum();
                     String khong = taoMa("HD");
                     // Hiện tại.
                     LocalDateTime hienTai = LocalDateTime.now();
                     // Đơn hàng.
                     long donHang =
-                            JdbcBanHangDAO.themThanhToan(
-                                    taoMa("DH"), caLamViec, khachHang, hienTai);
+                            banHangDAO.themThanhToan(taoMa("DH"), caLamViec, khachHang, hienTai);
                     for (GioHang.DongHang dong : banHang.layCacDong()) {
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                         if (dong.soLuong() <= 0 || dong.donGia() < 0)
                             throw new IllegalArgumentException(
                                     "Số lượng hoặc đơn giá không hợp lệ.");
                         // Sản phẩm.
                         Long sanPham = null;
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (banHang.layKieuNguon().isBlank()
                                 || "EXCHANGE".equals(banHang.layKieuNguon())) {
                             // Các sản phẩm.
-                            List<Object[]> cacSanPham = JdbcBanHangDAO.timThanhToan2(dong.ma());
-                            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                            List<Object[]> cacSanPham = banHangDAO.khoaSanPhamDeBan(dong.ma());
                             if (cacSanPham.isEmpty() || !"SELLING".equals(cacSanPham.get(0)[2]))
                                 throw new IllegalArgumentException(
                                         "Sản phẩm " + dong.ma() + " không còn bán.");
                             sanPham = ((Number) cacSanPham.get(0)[0]).longValue();
-                            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                             if (((Number) cacSanPham.get(0)[1]).longValue() != dong.donGia())
                                 throw new IllegalArgumentException(
                                         "Giá sản phẩm "
@@ -151,32 +149,26 @@ public final class BanHangService {
                         }
                         // Mục.
                         long muc =
-                                JdbcBanHangDAO.themThanhToan2(
+                                banHangDAO.themDongDonHang(
                                         donHang,
                                         sanPham,
                                         sanPham == null ? dong.ma() : null,
                                         dong.ten(),
                                         dong.soLuong(),
                                         dong.donGia());
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (sanPham != null) {
                             // Còn lại.
                             int conLai = dong.soLuong();
-                            for (Object[] loHang : JdbcBanHangDAO.timThanhToan3(sanPham)) {
+                            for (Object[] loHang : banHangDAO.layLoTheoFEFO(sanPham)) {
                                 // Số lượng.
                                 int soLuong = Math.min(conLai, ((Number) loHang[1]).intValue());
-                                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                                 if (soLuong <= 0) continue;
-                                // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                                if (JdbcBanHangDAO.capNhatThanhToan3(soLuong, loHang[0], soLuong)
-                                        != 1)
+                                if (banHangDAO.truTonLo(soLuong, loHang[0], soLuong) != 1)
                                     throw new IllegalStateException("Tồn kho vừa thay đổi.");
-                                JdbcBanHangDAO.capNhatThanhToan4(muc, loHang[0], soLuong);
+                                banHangDAO.ghiPhanBoLo(muc, loHang[0], soLuong);
                                 conLai -= soLuong;
-                                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                                 if (conLai == 0) break;
                             }
-                            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                             if (conLai > 0)
                                 throw new IllegalArgumentException(
                                         "Không đủ tồn kho còn hạn cho " + dong.ten() + ".");
@@ -191,15 +183,13 @@ public final class BanHangService {
                                             : tong / CaiDatService.laySoTienChoMoiDiemTichLuy();
                     // Hóa đơn.
                     long hoaDon =
-                            JdbcBanHangDAO.themThanhToan3(
+                            banHangDAO.themHoaDon(
                                     khong,
                                     donHang,
                                     tong,
                                     phuongThuc.name(),
-                                    phuongThuc == CaThuNganService.PhuongThuc.CASH ? daNhan : tong,
-                                    phuongThuc == CaThuNganService.PhuongThuc.CASH
-                                            ? daNhan - tong
-                                            : 0,
+                                    daNhan,
+                                    tienThua,
                                     duocTich,
                                     banHang.layKhoaThanhToan(),
                                     hienTai,
@@ -207,53 +197,48 @@ public final class BanHangService {
                                     banHang.tinhGiamGia(),
                                     banHang.layDiemDaDung(),
                                     banHang.layMaVoucher());
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (khachHang != null) {
-                        JdbcBanHangDAO.capNhatThanhToan(
-                                banHang.layDiemDaDung(), duocTich, khachHang);
-                        JdbcBanHangDAO.capNhatThanhToan5(
+                        banHangDAO.capNhatThanhToan(banHang.layDiemDaDung(), duocTich, khachHang);
+                        banHangDAO.ghiDiemThanhToan(
                                 hoaDon, duocTich - banHang.layDiemDaDung(), khachHang);
                         capNhatHang(khachHang);
                     }
-                    // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if ("SPA".equals(banHang.layKieuNguon())) {
                         // Số tiền.
-                        long soTien = JdbcBanHangDAO.demThanhToan3(banHang.layIdNguon());
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+                        long soTien = banHangDAO.layTienSpaChoThanhToan(banHang.layIdNguon());
                         if (soTien != banHang.tinhTamTinh())
                             throw new IllegalStateException(
                                     "Phiếu Spa chưa hoàn thành hoặc số tiền đã thay đổi.");
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                        if (JdbcBanHangDAO.capNhatThanhToan6(hoaDon, banHang.layIdNguon()) != 1)
+                        if (banHangDAO.ganHoaDonSpa(hoaDon, banHang.layIdNguon()) != 1)
                             throw new IllegalStateException("Phiếu Spa đã thanh toán.");
                     } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                     if ("HOTEL".equals(banHang.layKieuNguon())) {
                         // Dự kiến.
                         long duKien = LuuTruService.tinhTienLuuTruConLai(banHang.layIdNguon());
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
                         if (duKien != banHang.tinhTamTinh())
                             throw new IllegalStateException(
                                     "Quyết toán Hotel đã thay đổi, hãy nạp lại.");
-                        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                        if (JdbcBanHangDAO.capNhatThanhToan7(hoaDon, banHang.layIdNguon()) != 1)
+                        if (banHangDAO.ganHoaDonHotel(hoaDon, banHang.layIdNguon()) != 1)
                             throw new IllegalStateException(
                                     "Hợp đồng đã trả phòng hoặc chưa check-in.");
-                        JdbcBanHangDAO.capNhatThanhToan8(banHang.layIdNguon());
+                        banHangDAO.chuyenPhongChoDon(banHang.layIdNguon());
                     }
+                    khoanThuDAO.ghi(
+                            hoaDon,
+                            null,
+                            caLamViec,
+                            layIdTaiKhoan(),
+                            banHang.layKhoaThanhToan(),
+                            khoanThu);
                     if (phieuDoi > 0) DoiTraService.hoanTat(phieuDoi, hoaDon);
                     NhatKyHeThongService.ghiNhatKy("Thanh toán", "Hóa đơn " + khong + ": " + tong);
                     return layBienLai(khong);
                 });
     }
 
-    /**
-     * Cập nhật hạng trong BanHangService.
-     *
-     * @param khachHang khách hàng
-     */
     static void capNhatHang(long khachHang) {
         // Chi tiêu.
-        long chiTieu = JdbcBanHangDAO.demCapNhatHang(khachHang);
+        long chiTieu = banHangDAO.demCapNhatHang(khachHang);
         // Các hạng.
         long[] cacHang = CaiDatService.layHangChiTieu();
         // Các tên.
@@ -261,26 +246,17 @@ public final class BanHangService {
         // Hạng.
         int hang = 0;
         while (hang < cacHang.length && chiTieu >= cacHang[hang]) hang++;
-        JdbcBanHangDAO.capNhatCapNhatHang(cacTen[hang], khachHang);
+        banHangDAO.capNhatCapNhatHang(cacTen[hang], khachHang);
     }
 
-    /**
-     * Lấy biên lai trong BanHangService.
-     *
-     * @param khong không
-     * @return kết quả lấy biên lai
-     */
     public static GioHang.BienLai layBienLai(String khong) {
-        // Các dòng.
-        List<Object[]> cacDong = JdbcBanHangDAO.timBienLai(khong);
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+        List<Object[]> cacDong = banHangDAO.timBienLai(khong);
         if (cacDong.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy hóa đơn " + khong);
         // Dòng dữ liệu.
         Object[] dongDuLieu = cacDong.get(0);
-        // Các dòng.
         List<GioHang.DongHang> cacDong2 = new ArrayList<>();
-        for (Object[] dongDangXet : JdbcBanHangDAO.timBienLai2(dongDuLieu[1]))
+        for (Object[] dongDangXet : banHangDAO.layDongBienLai(dongDuLieu[1]))
             cacDong2.add(
                     new GioHang.DongHang(
                             chuyenThanhChuoi(dongDangXet[0]),
@@ -294,23 +270,17 @@ public final class BanHangService {
                 ((Number) dongDuLieu[2]).longValue(),
                 ((Number) dongDuLieu[3]).longValue(),
                 ((Number) dongDuLieu[4]).longValue(),
-                CaThuNganService.PhuongThuc.valueOf(chuyenThanhChuoi(dongDuLieu[5])),
+                PhuongThuc.valueOf(chuyenThanhChuoi(dongDuLieu[5])),
                 dongDuLieu[6] == null ? 0 : ((Number) dongDuLieu[6]).longValue(),
                 dongDuLieu[7] == null ? 0 : ((Number) dongDuLieu[7]).longValue(),
                 chuyenThanhChuoi(dongDuLieu[8]),
                 chuyenThanhChuoi(dongDuLieu[9]),
-                chuyenThanhChuoi(dongDuLieu[10]));
+                chuyenThanhChuoi(dongDuLieu[10]),
+                khoanThuDAO.lay(khong));
     }
 
-    /**
-     * Treo trong BanHangService.
-     *
-     * @param banHang bán hàng
-     * @return kết quả treo
-     */
     public static long treo(GioHang banHang) {
         yeuCau(Quyen.POS_SELL);
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
         if (banHang.kiemTraTrong()) throw new IllegalArgumentException("Giỏ hàng trống.");
         if (!banHang.layKieuNguon().isBlank())
             throw new IllegalArgumentException(
@@ -319,7 +289,7 @@ public final class BanHangService {
                 ketNoi -> {
                     // Id.
                     long id =
-                            JdbcBanHangDAO.themTreo(
+                            banHangDAO.themTreo(
                                     taoMa("GIO"),
                                     layIdTaiKhoan(),
                                     banHang.layMaKhachHang().isBlank()
@@ -329,42 +299,32 @@ public final class BanHangService {
                                                     "ma_khach_hang",
                                                     banHang.layMaKhachHang()));
                     for (GioHang.DongHang dong : banHang.layCacDong())
-                        JdbcBanHangDAO.capNhatTreo(
+                        banHangDAO.capNhatTreo(
                                 id, dong.ma(), dong.ten(), dong.donGia(), dong.soLuong());
                     return id;
                 });
     }
 
-    /**
-     * Mở lại trong BanHangService.
-     *
-     * @param id id
-     * @param banHang bán hàng
-     */
     public static void moLai(long id, GioHang banHang) {
         yeuCau(Quyen.POS_SELL);
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (JdbcBanHangDAO.demMoLai2(id, layIdTaiKhoan()) == 0)
+                    if (banHangDAO.demGioTreoCuaTaiKhoan(id, layIdTaiKhoan()) == 0)
                         throw new IllegalArgumentException("Không tìm thấy đơn treo của bạn.");
-                    // Các dòng.
                     List<GioHang.DongHang> cacDong = new ArrayList<>();
-                    for (Object[] dongDuLieu : JdbcBanHangDAO.timMoLai(id))
+                    for (Object[] dongDuLieu : banHangDAO.timMoLai(id))
                         cacDong.add(
                                 new GioHang.DongHang(
                                         chuyenThanhChuoi(dongDuLieu[0]),
                                         chuyenThanhChuoi(dongDuLieu[1]),
                                         ((Number) dongDuLieu[2]).longValue(),
                                         ((Number) dongDuLieu[3]).intValue()));
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (cacDong.size() != JdbcBanHangDAO.demMoLai(id))
+                    if (cacDong.size() != banHangDAO.demMoLai(id))
                         throw new IllegalArgumentException("Đơn treo có sản phẩm đã ngừng bán.");
                     banHang.xoa();
                     banHang.datCacDong(cacDong);
                     // Các khách hàng.
-                    List<Object[]> cacKhachHang = JdbcBanHangDAO.timMoLai2(id);
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+                    List<Object[]> cacKhachHang = banHangDAO.layKhachCuaGioTreo(id);
                     if (!cacKhachHang.isEmpty()) {
                         // Khóa đang xét.
                         Object[] khoaDangXet = cacKhachHang.get(0);
@@ -378,50 +338,34 @@ public final class BanHangService {
                 });
     }
 
-    /**
-     * Xóa treo trong BanHangService.
-     *
-     * @param id id
-     */
     public static void xoaTreo(long id) {
         yeuCau(Quyen.POS_SELL);
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-                    if (JdbcBanHangDAO.demXoaTreo(id, layIdTaiKhoan()) == 0)
+                    if (banHangDAO.demXoaTreo(id, layIdTaiKhoan()) == 0)
                         throw new IllegalArgumentException("Đơn treo không thuộc tài khoản này.");
-                    JdbcBanHangDAO.capNhatXoaTreo(id);
-                    JdbcBanHangDAO.capNhatXoaTreo2(id, layIdTaiKhoan());
+                    banHangDAO.capNhatXoaTreo(id);
+                    banHangDAO.xoaGioHangTreo(id, layIdTaiKhoan());
                     return null;
                 });
     }
 
-    /**
-     * Quyết toán trong BanHangService.
-     *
-     * @param loai loại
-     * @param id id
-     * @param banHang bán hàng
-     */
     public static void quyetToan(String loai, long id, GioHang banHang) {
-        // Các dòng.
         List<GioHang.DongHang> cacDong = new ArrayList<>();
         // Khách hàng.
         Object khachHang;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (loai.equals("SPA")) {
             yeuCau(Quyen.SPA_MANAGE);
-            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-            if (JdbcBanHangDAO.demQuyetToan(id) == 0)
+            if (banHangDAO.demQuyetToan(id) == 0)
                 throw new IllegalArgumentException("Phiếu Spa chưa hoàn thành hoặc đã thanh toán.");
-            for (Object[] dongDuLieu : JdbcBanHangDAO.timQuyetToan2(id))
+            for (Object[] dongDuLieu : banHangDAO.layDichVuSpaQuyetToan(id))
                 cacDong.add(
                         new GioHang.DongHang(
                                 chuyenThanhChuoi(dongDuLieu[0]),
                                 chuyenThanhChuoi(dongDuLieu[1]),
                                 layGiaTri(dongDuLieu[2]),
                                 ((Number) dongDuLieu[3]).intValue()));
-            khachHang = JdbcBanHangDAO.layQuyetToan2(id);
+            khachHang = banHangDAO.layKhachCuaPhieuSpa(id);
         } else // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (loai.equals("HOTEL")) {
             yeuCau(Quyen.HOTEL_MANAGE);
@@ -430,14 +374,13 @@ public final class BanHangService {
             cacDong.add(
                     new GioHang.DongHang(
                             "HOTEL-ROOM", "Quyết toán Hotel (đã trừ cọc)", conPhaiThu, 1));
-            khachHang = JdbcBanHangDAO.layQuyetToan(id);
+            khachHang = banHangDAO.layQuyetToan(id);
         } else throw new IllegalArgumentException("Nguồn thanh toán không hợp lệ.");
         banHang.xoa();
         banHang.datCacDong(cacDong);
         banHang.datNguon(loai, id);
         // Các khách hàng.
-        List<Object[]> cacKhachHang = JdbcBanHangDAO.timQuyetToan(khachHang);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+        List<Object[]> cacKhachHang = banHangDAO.timQuyetToan(khachHang);
         if (!cacKhachHang.isEmpty()) {
             // Dòng dữ liệu.
             Object[] dongDuLieu = cacKhachHang.get(0);
@@ -448,63 +391,47 @@ public final class BanHangService {
         }
     }
 
-    /**
-     * Hủy hóa đơn trong BanHangService.
-     *
-     * @param hoaDon hóa đơn
-     */
     static void huyHoaDon(long hoaDon) {
         // Các hóa đơn.
-        List<Object[]> cacHoaDon = JdbcBanHangDAO.timHuyHoaDon(hoaDon);
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
+        List<Object[]> cacHoaDon = banHangDAO.timHuyHoaDon(hoaDon);
         if (cacHoaDon.isEmpty()) throw new IllegalArgumentException("Hóa đơn đã hủy.");
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-        if (com.petstation.dao.impl.JdbcDoiHangDAO.laHoaDonThayThe(hoaDon))
+        if (doiHangDAO.laHoaDonThayThe(hoaDon))
             throw new IllegalArgumentException(
                     "Không thể hủy hóa đơn gắn với phiếu đổi hàng đã hoàn thành.");
-        if (JdbcBanHangDAO.demHuyHoaDon3(hoaDon) > 0)
+        if (banHangDAO.demPhieuDoiTraGanHoaDon(hoaDon) > 0)
             throw new IllegalArgumentException(
                     "Hóa đơn có phiếu trả hàng, cần xử lý đổi trả thay vì hủy.");
-        // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-        if (JdbcBanHangDAO.demHuyHoaDon(hoaDon) > 0 || JdbcBanHangDAO.demHuyHoaDon2(hoaDon) > 0)
+        if (banHangDAO.demHuyHoaDon(hoaDon) > 0 || banHangDAO.demHopDongGanHoaDon(hoaDon) > 0)
             throw new IllegalArgumentException(
                     "Hóa đơn dịch vụ đã hoàn thành không thể hủy trực tiếp.");
         // Chiều cao.
         Object[] chieuCao = cacHoaDon.get(0);
-        for (Object[] loHang : JdbcBanHangDAO.timHuyHoaDon2(chieuCao[0]))
-            JdbcBanHangDAO.capNhatHuyHoaDon(loHang[1], loHang[0]);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+        for (Object[] loHang : banHangDAO.layPhanBoCanHoanTon(chieuCao[0]))
+            banHangDAO.capNhatHuyHoaDon(loHang[1], loHang[0]);
         if (chieuCao[4] != null) {
             // Cũ.
-            long cu = JdbcBanHangDAO.demHuyHoaDon4(chieuCao[4]),
+            long cu = banHangDAO.khoaDiemKhachHang(chieuCao[4]),
                     tiepTheo = Math.max(0, cu - layGiaTri(chieuCao[1]) + layGiaTri(chieuCao[2]));
-            JdbcBanHangDAO.capNhatHuyHoaDon2(tiepTheo, chieuCao[4]);
-            JdbcBanHangDAO.capNhatHuyHoaDon5(chieuCao[4], hoaDon, tiepTheo - cu, tiepTheo);
+            banHangDAO.hoanDiemKhachHang(tiepTheo, chieuCao[4]);
+            banHangDAO.ghiDiemHuyHoaDon(chieuCao[4], hoaDon, tiepTheo - cu, tiepTheo);
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (!chuyenThanhChuoi(chieuCao[3]).isBlank()) JdbcBanHangDAO.capNhatHuyHoaDon6(chieuCao[3]);
-        JdbcBanHangDAO.capNhatHuyHoaDon3(hoaDon);
-        JdbcBanHangDAO.capNhatHuyHoaDon4(chieuCao[0]);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
+        if (!chuyenThanhChuoi(chieuCao[3]).isBlank()) banHangDAO.hoanLuotVoucher(chieuCao[3]);
+        banHangDAO.danhDauHuyHoaDon(hoaDon);
+        banHangDAO.danhDauHuyDonHang(chieuCao[0]);
         if (chieuCao[4] != null) BanHangService.capNhatHang(layGiaTri(chieuCao[4]));
         NhatKyHeThongService.ghiNhatKy("Hủy hóa đơn", chuyenThanhChuoi(hoaDon));
     }
 
-    /**
-     * Lấy có thể bán các sản phẩm trong BanHangService.
-     *
-     * @return kết quả lấy có thể bán các sản phẩm
-     */
     public static List<Object[]> layCoTheBanCacSanPham() {
         PhienDangNhapService.yeuCau(com.petstation.model.Quyen.POS_SELL);
-        return JdbcBanHangDAO.layCoTheBanCacSanPham();
+        return banHangDAO.layCoTheBanCacSanPham();
     }
 
     public static com.petstation.model.ChiTietBienLai layChiTietBienLai(String soHoaDon) {
         layPhien();
         var bienLai = layBienLai(soHoaDon);
         var nguon = layNguonBienLai(soHoaDon);
-        var dong = JdbcBanHangDAO.layThongTinIn(soHoaDon).get(0);
+        var dong = banHangDAO.layThongTinIn(soHoaDon).get(0);
         return new com.petstation.model.ChiTietBienLai(
                 bienLai,
                 CaiDatService.lay("STORE_NAME"),

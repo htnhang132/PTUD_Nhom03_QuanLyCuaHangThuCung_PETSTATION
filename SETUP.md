@@ -1,132 +1,146 @@
-# Chạy Pet Station với SQL Server
+# Cài đặt và chạy Pet Station
 
-Dự án dùng JDK 17+, Maven và SQL Server 2019+. VS Code dùng Extension Pack for Java, mở thư mục chứa `pom.xml`.
+## 1. Phiên bản cần dùng
 
-Cấu trúc package và nơi sửa từng chức năng được mô tả trong [ARCHITECTURE.md](docs/ARCHITECTURE.md). Nghiệp vụ và kịch bản trình diễn hiện tại được mô tả trong [KICH_BAN_DEMO.md](docs/KICH_BAN_DEMO.md). Bản hoàn thiện demo có bổ sung schema; cần nâng cấp có sao lưu trước khi dùng mã mới với database cũ.
+| Thành phần | Yêu cầu |
+| --- | --- |
+| Java | JDK 17 trở lên; nên thống nhất JDK 17 trong nhóm |
+| Maven | Wrapper có sẵn trong repo, cố định 3.9.11 |
+| Database | SQL Server 2019 trở lên, Express hoặc Developer đều được |
+| Công cụ SQL | SSMS để chạy thủ công, hoặc `sqlcmd` để dùng script |
+| IDE | VS Code có Extension Pack for Java; IntelliJ hỗ trợ Maven; Eclipse có m2e |
 
-## 1. Tạo hoặc nâng cấp database
+Mã được biên dịch với `release=17`, không bật preview. Maven kiểm tra phiên bản Java trước khi build. Driver SQL Server được Maven tải theo `pom.xml`; không thêm driver thủ công vào IDE. Microsoft ghi nhận driver 12.8 hỗ trợ JDK 17/21 trong [release notes](https://learn.microsoft.com/en-us/sql/connect/jdbc/release-notes-for-the-jdbc-driver?view=sql-server-ver17).
 
-Trong PowerShell tại thư mục dự án:
+Đợt kiểm tra hiện tại chạy trên Windows, JDK 17 và SQL Server 2022. CI được cấu hình kiểm tra Windows/Linux với JDK 17/21; cần xem kết quả trên GitHub sau khi push, không coi cấu hình CI là bằng chứng mọi môi trường đã chạy thành công.
+
+## 2. Kiểm tra Java và Maven
+
+Clone toàn bộ repository và mở thư mục chứa `pom.xml`. Trong PowerShell:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1
+java -version
+./mvnw.cmd -v
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-environment.ps1
 ```
 
-Script dùng quyền Windows hiện tại để kết nối `localhost,1433` và chuẩn bị `PetStationDemo2`. Có thể chỉ định `-Server` và `-Database`.
+`JAVA_HOME` phải trỏ đến thư mục **JDK**, không phải thư mục `bin`. Nếu sửa biến môi trường, mở terminal/IDE mới. JDK của Maven trong IDE phải cùng phiên bản với project SDK. Lần đầu Wrapper cần mạng để tải Maven và dependency. Với proxy của trường, cấu hình Maven trong `~/.m2/settings.xml`, không ghi mật khẩu proxy vào repository.
 
-Thư mục `database` chỉ có hai file, chạy theo thứ tự:
+Linux/macOS dùng `bash ./mvnw` thay cho `./mvnw.cmd`; các script `.ps1` hỗ trợ Windows. Trên máy khác, có thể chạy hai SQL thủ công trong công cụ quản trị tương ứng và dùng Maven Wrapper trực tiếp.
 
-1. `001_schema.sql`: bảng, khóa chính, khóa ngoại, ràng buộc, chỉ mục và các bổ sung cho database cũ.
-2. `002_sample_data.sql`: quyền, ca làm việc, cài đặt và dữ liệu mẫu cho danh mục, lịch hẹn, Hotel, nhập kho, hóa đơn, điểm khách hàng.
+## 3. Chuẩn bị SQL Server
 
-Nếu dùng SSMS, chọn database đích rồi chạy hai file trên. Các script có thể chạy lại, không xóa bảng và không ghi đè bản ghi đã có. Phiên bản `005_schema_v2.sql` cũ đã được hợp nhất; ứng dụng thống nhất sử dụng khóa `id`.
+Chạy dịch vụ SQL Server. Trong SQL Server Configuration Manager, bật TCP/IP, đặt hoặc kiểm tra cổng TCP, rồi khởi động lại dịch vụ nếu đổi cấu hình. Ví dụ này dùng `localhost,1433` cho sqlcmd và `localhost:1433` trong JDBC. Không mặc định mọi SQL Express đều dùng cổng 1433; named instance có thể dùng cổng động.
 
-## 2. Cấu hình kết nối ứng dụng
+Phiên bản SSMS không phải phiên bản máy chủ. Kiểm tra bằng:
 
-Sao chép `src/main/resources/db.properties.example` thành `db.properties` rồi đặt URL, tài khoản và mật khẩu SQL Server phù hợp. Cấu hình hiện có của máy này được giữ nguyên. Có thể dùng các biến môi trường để ghi đè:
-
-```powershell
-$env:PETSTATION_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=PetStationDemo2;encrypt=true;trustServerCertificate=true'
-$env:PETSTATION_DB_USER = 'your_sql_login'
-$env:PETSTATION_DB_PASSWORD = 'your_sql_password'
+```sql
+SELECT SERVERPROPERTY('ProductVersion'), SERVERPROPERTY('Edition');
 ```
 
-Tài khoản ứng dụng hiện có vẫn dùng được. Trên máy đang triển khai, bốn tài khoản demo đã được chuẩn bị bằng mật khẩu riêng tại `target/demo-access.properties` (tệp cục bộ bị Git bỏ qua). Với database mới, các tài khoản `demo.admin`, `demo.sales`, `demo.stock`, `demo.spa` được tạo ở trạng thái **khóa, chưa có mật khẩu đăng nhập**. Quản lý vào **Hệ thống → Tài khoản**, đặt mật khẩu riêng rồi mở khóa nếu cần sử dụng.
+### Cách A — Script Windows
 
-Với database hoàn toàn mới chưa có quản lý đang hoạt động, tạo quản lý đầu tiên bằng tiện ích tương tác:
+Với Windows Authentication có quyền tạo database:
 
 ```powershell
-mvn -B -ntp package
-java -cp target/petstation.jar com.petstation.util.KhoiTaoQuanTri
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -Server 'localhost,1433'
 ```
 
-Tiện ích hỏi tên đăng nhập, họ tên, số điện thoại và mật khẩu trong terminal. Không có mật khẩu chung được kích hoạt tự động.
-
-## 3. Chạy ứng dụng
+Với SQL Authentication, dùng login do người quản trị máy cung cấp. Mật khẩu truyền qua biến môi trường, không đưa vào tham số lệnh:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-java.ps1
+$env:SQLCMDPASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host 'SQL password' -AsSecureString)).Password
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -Server 'localhost,1433' -SqlUser 'your_sql_login'
+Remove-Item Env:SQLCMDPASSWORD
 ```
 
-Hoặc nhấn **F5 → Pet Station**, hoặc **Run Code** khi mở `App.java` trong VS Code. Chạy bản đóng gói bằng `java -jar target/petstation.jar`.
+Script tạo `PetStationDemo2` nếu chưa có, rồi chạy hai file SQL. Nếu database đã đúng bản hiện tại, lệnh không nạp lại mẫu. Nếu database cũ, script dừng và yêu cầu xem hướng dẫn reset. Script không tạo SQL login hoặc tự đổi mật khẩu SQL Server.
 
-### Mở dự án sau khi checkout trên máy khác
+### Cách B — SSMS
 
-Đặt `JAVA_HOME` trỏ tới JDK 17 trở lên của máy đang dùng, thêm thư mục `bin` vào `PATH`; kiểm tra `java -version`, `javac -version` và `mvn -version`. Cấu hình chia sẻ không cố định đường dẫn JDK của người khác. Script PowerShell yêu cầu Windows; các IDE đều có thể chạy lớp `com.petstation.App` trực tiếp sau khi import Maven.
+Tạo một database trống, nên dùng collation `Vietnamese_CI_AS`. Chọn đúng database trong SSMS, chạy lần lượt:
 
-- **IntelliJ IDEA:** mở `pom.xml` dưới dạng project, chọn Project SDK phù hợp và nạp Maven; chạy `App.main`.
-- **VS Code:** mở thư mục gốc chứa `pom.xml`, cài Extension Pack for Java, chọn JDK trong **Java: Configure Java Runtime** nếu cần; đợi Java/Maven import xong rồi F5.
-- **Eclipse:** chọn **File → Import → Maven → Existing Maven Projects**, trỏ tới thư mục gốc, chọn JRE/JDK phù hợp; chạy `App` bằng **Run As → Java Application**. Eclipse tự tạo `.project`, `.classpath`, `.settings`; không cần lấy cấu hình IDE cá nhân của máy khác.
+1. `database/001_schema.sql`: 48 bảng, khóa chính/ngoại, CHECK và chỉ mục.
+2. `database/002_sample_data.sql`: dữ liệu mẫu, mỗi bảng có dữ liệu dùng một `INSERT ... VALUES` nhiều dòng.
 
-Trước lần chạy đầu, tạo database và cấu hình kết nối theo mục 1–2; database mới cần khởi tạo tài khoản quản lý. `db.properties` và mật khẩu cục bộ không được đưa lên Git. Ảnh trong `src/main/resources/images/` phải có trong bản checkout để Maven đóng gói vào JAR.
+File schema yêu cầu database trống. File mẫu **xóa dữ liệu ứng dụng hiện có** rồi chèn lại trong transaction; chỉ chạy trên database demo/test đã sao lưu. Script xóa bảng con trước, chèn bảng cha trước và giữ kiểm tra khóa ngoại/CHECK bật suốt quá trình. Ngày nghiệp vụ mẫu tính tương đối theo ngày nạp; ngày sinh và ngày thu thập nguồn được giữ cố định. `PN-DAU-KY` và lịch sử điểm đầu kỳ giải thích số dư có sẵn của bộ mẫu.
 
-Mở ca trước khi bán hàng, nhận cọc Hotel hoặc thu tiền dịch vụ. Các màn danh mục, lịch, phê duyệt, báo cáo và lịch sử truy vấn SQL Server; tuần hoặc kỳ chưa có dữ liệu sẽ hiển thị trống/0. Giỏ đang soạn được giữ trong phiên; **Treo đơn** lưu giỏ vào SQL Server để có thể mở lại sau khi khởi động lại.
-
-Spa: hồ sơ thú cưng đủ ngày sinh (ít nhất 2 tháng), hai mũi tiêm và mũi gần nhất cách ít nhất 14 ngày → đặt lịch → tiếp nhận → dịch vụ theo loài/cân nặng → bắt đầu → hoàn thành → thanh toán. Lịch sử tiêm phòng nằm trong Hồ sơ thú cưng. Phiếu đang xử lý được giữ qua các bước.
-
-Hotel: đặt phòng → nhận phòng → ghi nhật ký chăm sóc → quyết toán → thanh toán → dọn phòng xong. Giá phòng được chốt khi đặt. Cọc bắt buộc 50% tiền dự kiến, xác nhận nhận tiền mặt vào ca đang mở và trừ khi quyết toán. Phòng chỉ về Trống sau Dọn phòng xong tại màn Đặt phòng.
-
-Điểm cộng 1 điểm/10.000đ, làm tròn xuống; không dùng điểm như tiền mặt. Đổi 200 điểm nhận một voucher Spa 150.000đ, hạn 60 ngày, gắn khách hàng và dùng một lần. Đổi hàng chỉ dành cho phụ kiện trong 3 ngày, bắt buộc chọn hàng thay thế có giá trị không thấp hơn phần thực trả được đổi; thu chênh lệch và không hoàn tiền.
-
-Nhập/xuất/kiểm kê thao tác theo lô. Xuất hủy vượt ngưỡng, kiểm kê có chênh lệch, đề xuất giá, nghỉ phép và sửa/hủy hóa đơn được lưu vào phê duyệt. Nhân viên kho đề xuất giá; chỉ quản lý áp dụng giá bán. Phê duyệt vẫn xử lý được sau khi khởi động lại. Yêu cầu sửa hóa đơn chỉ chỉnh ghi chú; thay đổi tài chính dùng hủy hoặc đổi trả để giữ lịch sử.
-
-QR được tạo cục bộ từ cấu hình ngân hàng trong Cài đặt. Khi đổi voucher, QR cập nhật số tiền và yêu cầu xác nhận nhận tiền lại. Chuyển khoản/thẻ cần nhân viên xác nhận đã nhận tiền; không có kết nối xác nhận số dư ngân hàng. Xuất Excel là `.xlsx` thật theo dữ liệu đang lọc, có thể mở bằng WPS.
-
-## 4. Kiểm thử
+## 4. Cấu hình ứng dụng
 
 ```powershell
-mvn -B -ntp test
+New-Item -ItemType Directory -Force config | Out-Null
+Copy-Item src/main/resources/db.properties.example config/db.properties
+```
+
+Sửa `config/db.properties`:
+
+```properties
+db.url=jdbc:sqlserver://localhost:1433;databaseName=PetStationDemo2;encrypt=true;trustServerCertificate=true
+db.user=your_sql_login
+db.password=your_sql_password
+db.loginTimeoutSeconds=10
+```
+
+Ứng dụng dùng SQL Authentication. Login cần có user trong database và quyền đọc/ghi các bảng ứng dụng; script setup cần quyền cao hơn để tạo bảng/backup/reset. Nếu dùng login đã có trên máy khác, tạo ánh xạ user và cấp quyền trong SSMS. Không cần tên login/mật khẩu giống máy người viết code.
+
+`trustServerCertificate=true` dùng cho môi trường học/demo có chứng chỉ tự ký. Khi vận hành cần chứng chỉ tin cậy và xác minh máy chủ. Không đưa file cấu hình thật lên Git hoặc gửi kèm source/JAR.
+
+Ưu tiên biến môi trường `PETSTATION_DB_URL`, `PETSTATION_DB_USER`, `PETSTATION_DB_PASSWORD` hơn tệp. `PETSTATION_DB_CONFIG` chỉ định tệp riêng; đường dẫn tuyệt đối giúp tránh nhầm working directory. Mã vẫn đọc `src/main/resources/db.properties` cục bộ nếu chưa có `config/db.properties`, để tương thích máy phát triển cũ. Tệp được chỉ định mà không tồn tại sẽ báo lỗi.
+
+## 5. Build và chạy
+
+```powershell
+./mvnw.cmd -B -ntp verify
+java -jar target/petstation.jar
+```
+
+Hoặc `./mvnw.cmd compile exec:java '-Dexec.mainClass=com.petstation.App'`. Không dùng lệnh mặc định `javac App.java && java App`: lệnh đó thiếu classpath/resource Maven và có thể dùng mã hóa Windows thay cho UTF-8. Trong VS Code, cấu hình Code Runner của project đã chuyển nút **Run Code** cho Java sang `scripts/run-java.ps1`; script luôn chạy Maven Wrapper từ thư mục gốc. Có thể dùng **F5 → Pet Station** qua Java extension. Nếu vẫn thấy lệnh `javac App.java`, hãy mở đúng thư mục chứa `pom.xml` rồi chạy **Developer: Reload Window** để nạp lại settings.
+
+Đặt working directory là thư mục gốc dự án. Nếu chỉ mang JAR sang máy khác, mang theo cấu hình ngoài, ảnh người dùng thêm và dữ liệu chăm sóc; ảnh 60 sản phẩm mẫu đã nằm trong JAR.
+
+## 6. Mở bằng IDE
+
+| IDE | Cách mở và cấu hình |
+| --- | --- |
+| VS Code | Open Folder tại thư mục có pom; cài Extension Pack for Java; chọn JDK 17; đợi Java/Maven tải xong; chạy cấu hình `Pet Station` hoặc lệnh Wrapper |
+| IntelliJ IDEA | Open `pom.xml` như Maven Project; chọn Project SDK 17, Maven Importer/Runner JDK 17 và Maven Wrapper; Reload Maven; chạy `com.petstation.App`, working directory là project root |
+| Eclipse | File → Import → Maven → Existing Maven Projects; chọn project root; Preferences → Java → Installed JREs chọn JDK 17; Maven → Update Project; Run As → Java Application cho `App` |
+
+Không chép `.idea`, `.classpath`, `.project` hoặc `.settings` từ máy khác; IDE tự tạo từ Maven. IntelliJ cũng khuyến nghị [import cấu hình build tool](https://www.jetbrains.com/help/idea/import-project-or-module-wizard.html). Khi đổi nhánh/đổi package, Reload Maven và build lại; kiểm tra tab cũ chưa lưu trước khi ghi đè source mới.
+
+## 7. Reset và khôi phục
+
+Lệnh sau **thay toàn bộ bảng/dữ liệu ứng dụng của database đích** bằng bản demo mới:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -Database PetStationDemo2 -Reset
+```
+
+Script kiểm tra tên database và bảng lạ, tạo backup `COPY_ONLY,CHECKSUM`, chạy `RESTORE VERIFYONLY`, rồi mới xóa bảng ứng dụng và chạy hai SQL. Backup nằm tại thư mục backup của SQL Server; đường dẫn được ghi trong `target/database-backups/`. Nếu sao lưu hoặc kiểm chứng lỗi, reset không bắt đầu. Nếu lỗi sau bước xóa, dùng backup đã xác minh để khôi phục qua SSMS trước khi thao tác tiếp. Dừng ứng dụng và ngắt các kết nối ghi trong lúc reset; không dùng script này trên database bán hàng thật.
+
+Khôi phục: SSMS → database → Tasks → Restore → Database → Device → chọn file `.bak` được ghi trong log, kiểm tra database đích rồi thực hiện. Người quản trị cần có quyền và xử lý các kết nối đang mở. Không xóa backup trước khi đã kiểm tra dữ liệu mới.
+
+## 8. Kiểm thử
+
+`./mvnw.cmd verify` chạy bộ không cần SQL, bỏ qua 60 test tích hợp. Để tạo/reset database kiểm thử **riêng** và chạy đủ bộ:
+
+```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-sqlserver.ps1
 ```
 
-Lệnh đầu chạy unit test; kiểm thử SQL được bỏ qua nếu chưa bật biến môi trường. Lệnh thứ hai tạo/nâng cấp database riêng `PetStationIntegrationTest`, bật kiểm thử tích hợp và chạy toàn bộ bộ test. Các tình huống nghiệp vụ dùng fixture rollback, không dùng database bán hàng. Test kiểm chứng lưu bền tạo một khách riêng rồi xóa đúng bản ghi đó trong database kiểm thử. Bộ hiện tại gồm 97 kiểm thử, trong đó 51 tình huống SQL.
+Script dùng `PetStationIntegrationTest`, không dùng database bán hàng. Hai suite SQL tự kiểm tra tên database. Xem [kịch bản kiểm thử](docs/KIEM_THU_VA_YEU_CAU.md) để ghi kết quả thủ công và các giới hạn còn lại.
 
-Các tình huống gồm CRUD danh mục, lịch sử giá, FEFO, thiếu tồn và rollback, chống thanh toán lặp, voucher/điểm, phê duyệt, lịch/nghỉ phép, Spa, Hotel, nhập kho, đổi trả, phân quyền báo cáo và khởi tạo toàn bộ màn hình bằng dữ liệu SQL thật.
+## 9. Lỗi thường gặp
 
-## 5. Sản phẩm thực tế và ảnh
-
-Danh sách, giá tại ngày thu thập, ảnh và nguồn nằm trong [docs/NGUON_SAN_PHAM.md](docs/NGUON_SAN_PHAM.md). 60 ảnh gốc nằm trong `src/main/resources/images/products/`; SQL lưu đường dẫn tương đối `images/products/<ma>.jpg` hoặc `.png`. Maven tự đóng gói ảnh vào JAR, không tải ảnh mạng khi bán hàng.
-
-Trên màn lập hóa đơn, bấm vào ảnh hoặc bất kỳ phần nào của thẻ để thêm một đơn vị. Giỏ bên phải không có ảnh. Trong danh mục, ảnh nằm đầu khung chi tiết và thay đổi theo dòng được chọn. Bấm Sửa → Chọn ảnh từ máy → Lưu để đổi ảnh; file JPG/PNG được kiểm tra và sao chép sang tên riêng. Trong workspace, ảnh chọn thêm nằm ở `images/products/` ngoài `target` để giữ qua lần build sạch; khi chạy JAR độc lập, đặt thư mục `images` cạnh JAR và mang theo thư mục này khi chuyển máy. Ảnh mẫu gốc vẫn nằm sẵn trong JAR.
-
-Nâng cấp database đang có bằng đúng phần bổ sung, không chạy lại toàn bộ dữ liệu mẫu cũ:
-
-```powershell
-java --class-path "src/main/resources;target/petstation.jar" scripts/data/BoSungDuLieuThucTe.java --test
-java --class-path "src/main/resources;target/petstation.jar" scripts/data/BoSungDuLieuThucTe.java --apply
-```
-
-`--test` chỉ dùng `PetStationIntegrationTest` đã được khởi tạo. `--apply` dùng database cấu hình hiện tại, tạo backup COPY_ONLY/CHECKSUM và chạy RESTORE VERIFYONLY trước khi sửa. Công cụ kiểm tra dấu vân tay các bản ghi cũ rồi chạy lần hai để xác nhận không nhập trùng. Đường dẫn backup nằm trong `target/product-import/database-backup.txt`.
-
-Hai file SQL được giữ nguyên vai trò: schema bổ sung cột bằng `COL_LENGTH`; sample data có bộ `REAL_DATA_V1` chạy một lần trong transaction và khóa nhập. Khi khởi tạo database mới, chạy schema trước sample data như hướng dẫn trên. Bộ mẫu cố định ngày tại lần nhập đầu; chạy lại không đổi ngày, không bù tồn và không nhân đôi hóa đơn.
-
-`node scripts/data/thu-thap-san-pham.cjs` xác minh hoặc khôi phục ảnh thiếu theo bảng nguồn đã chốt, không tự ghi đè ảnh/giá theo danh mục website mới. `node scripts/data/tao-du-lieu-thuc-te.cjs` tạo lại phần SQL từ bảng nguồn; `node scripts/data/tao-tai-lieu-san-pham.cjs` tạo bảng đối chiếu. Muốn có đợt dữ liệu mới phải tạo phiên bản mới và kiểm thử, không xóa dấu `REAL_DATA_V1_APPLIED_AT` trên database đang dùng.
-
-## 6. Công cụ dữ liệu và nâng cấp database cũ
-
-Ba script vận hành `run-java.ps1`, `setup-database.ps1`, `test-sqlserver.ps1` nằm ngay trong `scripts/`. Tám công cụ bảo trì nằm trong `scripts/data/`; chúng không chạy tự động khi mở app. Các lệnh Java sau chạy từ thư mục gốc dự án, sau khi đã package JAR và cấu hình kết nối:
-
-```powershell
-New-Item -ItemType Directory -Force target/data-tools | Out-Null
-javac -encoding UTF-8 -cp target/petstation.jar -d target/data-tools scripts/data/BoSungDuLieuThucTe.java scripts/data/ChuanHoaDuLieu.java scripts/data/KhacPhucUnicode.java
-java '-Dfile.encoding=UTF-8' -cp "src/main/resources;target/petstation.jar;target/data-tools" ChuanHoaDuLieu --test
-java '-Dfile.encoding=UTF-8' -cp "src/main/resources;target/petstation.jar;target/data-tools" KhacPhucUnicode --test
-```
-
-`KhacPhucUnicode` dùng helper của `ChuanHoaDuLieu`, vì vậy biên dịch cùng nhau. `--test` chỉ dùng `PetStationIntegrationTest`. Với database ứng dụng đã có dữ liệu, dùng `--apply` thay cho `--test` sau khi đối chiếu thử nghiệm thành công; công cụ tạo backup COPY_ONLY/CHECKSUM và chạy RESTORE VERIFYONLY trước thay đổi. `KhacPhucUnicode --scan` chỉ rà văn bản. Không dùng `ChuanHoaDuLieu --retest` trên database ứng dụng; chế độ này chỉ phục vụ kiểm tra lại phần hiển thị trên database riêng.
-
-Các phiên bản nâng cấp chính:
-
-| Phiên bản | Mục đích |
+| Lỗi | Cách kiểm tra |
 | --- | --- |
-| `REAL_DATA_V1` | Nhập danh mục và giao dịch mẫu liên thông một lần |
-| `UI_FINISH_V1` | Hình thức bàn giao ca, giữ người nhận lịch sử chưa biết là NULL |
-| `UI_DATA_CLEANUP_V1` | Chuẩn hóa mã/tên và tham chiếu chuỗi, giữ ID và các số dư |
-| `UI_UNICODE_SCHEMA_V1` | Đổi tên hạng/giới tính sang NVARCHAR và tạo bảng đối chiếu |
-| `UI_UNICODE_REPAIR_V1`, `UI_UNICODE_PET_V1` | Phục hồi đúng biến thể Unicode đã xác định, không tính lại hạng/điểm |
+| `UnsupportedClassVersionError`, không hiểu record/switch | Java chạy app hoặc Maven JDK còn dưới 17; kiểm tra `java -version`, `mvnw -v` và SDK của IDE |
+| Thiếu FlatLaf/POI/SQLServerDriver | Import bằng Maven, Reload Maven hoặc dùng JAR đã package; bỏ cấu hình JAR thủ công cũ |
+| Connection refused / TCP timeout | Dịch vụ SQL, TCP/IP, cổng thật, firewall; dùng đúng server của máy mới |
+| Login failed / cannot open database | Phân biệt tài khoản ứng dụng với SQL login; kiểm tra SQL Authentication, mật khẩu và user trong database |
+| Thiếu bảng/cột | Chưa chạy bộ SQL hiện tại hoặc cấu hình nhầm database; không trộn SQL cũ với schema mới |
+| Không thấy config/ảnh | Working directory sai; đặt `PETSTATION_DB_CONFIG` tuyệt đối và mang theo ảnh ngoài JAR |
+| IDE đỏ code nhưng Wrapper chạy | Project chưa import đúng Maven/JDK; reload/update Maven, bỏ file cấu hình IDE chép từ máy khác |
+| Chữ tiếng Việt lỗi | Lưu source/SQL UTF-8; dùng sqlcmd `-f 65001`; không chuyển file qua ANSI |
 
-Giữ nguyên tài khoản `demo.*`, mật khẩu, quyền, cấu hình cửa hàng/ngân hàng và lịch sử. Không reset hoặc nạp đè toàn bộ dữ liệu để xử lý lỗi hiển thị. Mã cũ–mới tra tại [DOI_CHIEU_MA_DU_LIEU.md](docs/DOI_CHIEU_MA_DU_LIEU.md); cấu trúc bảo toàn và các bảng dấu phiên bản xem [ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-Backup và báo cáo cục bộ của các đợt trước nằm trong `target/product-import/`, `target/ui-finish/`, `target/ui-repair/`. Đây là đường dẫn lưu báo cáo trên máy triển khai, không phải thành phần phải có trên Git. Backup `.bak` thật nằm tại đường dẫn SQL Server ghi trong `database-backup.txt`. Trước `mvn clean`, chuyển mật khẩu và báo cáo cần giữ ra khỏi `target`; không đưa chúng lên Git.
-
-Node.js chỉ cần cho năm script `.cjs` bảo trì. Các script xác định thư mục dự án từ vị trí của mình; bộ sinh SQL giữ các dấu phiên bản và khối sửa Unicode. Việc chạy bộ sinh thay đổi file SQL/JSON/tài liệu trên đĩa, vì vậy xem diff và kiểm thử trước khi áp dụng database. Ứng dụng Swing chỉ cần JDK/Maven, SQL Server và cấu hình kết nối.
+Maven Wrapper được cung cấp theo [hướng dẫn Apache Maven](https://maven.apache.org/tools/wrapper/index.html); dependency và phiên bản build khai báo tập trung trong `pom.xml`.

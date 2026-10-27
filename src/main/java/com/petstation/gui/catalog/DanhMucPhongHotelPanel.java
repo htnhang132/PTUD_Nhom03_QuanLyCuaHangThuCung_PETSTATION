@@ -12,16 +12,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho phòng danh mục vùng hiển thị. */
 public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhMucPhongHotelPanel với các giá trị được cung cấp. */
     public DanhMucPhongHotelPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layPhong());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.ROOMS,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucPhongHotelPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -45,11 +45,6 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucPhongHotelPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã phòng", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),

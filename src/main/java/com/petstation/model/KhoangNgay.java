@@ -2,13 +2,12 @@ package com.petstation.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 /** Khoảng báo cáo bao gồm cả ngày bắt đầu và ngày kết thúc. */
 public record KhoangNgay(LocalDate tuNgay, LocalDate denNgay) {
     public KhoangNgay {
-        if(tuNgay==null)throw new IllegalArgumentException("Chưa chọn ngày bắt đầu.");
-        if(denNgay==null)throw new IllegalArgumentException("Chưa chọn ngày kết thúc.");
+        if (tuNgay == null) throw new IllegalArgumentException("Chưa chọn ngày bắt đầu.");
+        if (denNgay == null) throw new IllegalArgumentException("Chưa chọn ngày kết thúc.");
         if (tuNgay.isAfter(denNgay)) {
             throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc.");
         }

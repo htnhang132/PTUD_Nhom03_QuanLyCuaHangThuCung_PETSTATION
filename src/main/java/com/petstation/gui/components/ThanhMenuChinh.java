@@ -3,7 +3,7 @@ package com.petstation.gui.components;
 import com.petstation.gui.navigation.CauTrucMenu;
 import com.petstation.gui.navigation.DangKyManHinh;
 import com.petstation.gui.navigation.DinhNghiaManHinh;
-import com.petstation.gui.navigation.MaManHinh;
+import com.petstation.model.MaManHinh;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -43,14 +43,6 @@ public final class ThanhMenuChinh extends JPanel {
     /** Các menu bật lên. */
     private final Map<Character, JPopupMenu> cacMenuBatLen = new LinkedHashMap<>();
 
-    /**
-     * Khởi tạo ThanhMenuChinh với các giá trị được cung cấp.
-     *
-     * @param boDangKy bộ đăng ký
-     * @param boDieuHuong bộ điều hướng
-     * @param dangXuat đăng xuất
-     * @param thoat thoát
-     */
     public ThanhMenuChinh(
             DangKyManHinh boDangKy,
             Consumer<MaManHinh> boDieuHuong,
@@ -70,29 +62,16 @@ public final class ThanhMenuChinh extends JPanel {
         }
     }
 
-    /**
-     * Mở menu trong ThanhMenuChinh.
-     *
-     * @param phimTruyCap phím truy cập
-     */
     public void moMenu(char phimTruyCap) {
         // Nút.
         JButton btnNut = menuCacNut.get(Character.toUpperCase(phimTruyCap));
         // Menu bật lên.
         JPopupMenu pmnMenuBatLen = cacMenuBatLen.get(Character.toUpperCase(phimTruyCap));
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (btnNut != null && pmnMenuBatLen != null && btnNut.isEnabled()) {
             pmnMenuBatLen.show(btnNut, 0, btnNut.getHeight());
         }
     }
 
-    /**
-     * Thêm menu trong ThanhMenuChinh.
-     *
-     * @param phimTruyCap phím truy cập
-     * @param nhan nhãn
-     * @param cacMuc các mục
-     */
     private void themMenu(char phimTruyCap, String nhan, List<CauTrucMenu.Muc> cacMuc) {
         // Gạch dưới.
         int gachDuoi = Math.max(0, nhan.toLowerCase().indexOf(Character.toLowerCase(phimTruyCap)));
@@ -113,7 +92,6 @@ public final class ThanhMenuChinh extends JPanel {
                      */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (getModel().isRollover()) {
                             doHoa.setColor(MauUngDung.DO_NHAT);
                             doHoa.fillRect(0, 0, getWidth(), getHeight());
@@ -132,9 +110,7 @@ public final class ThanhMenuChinh extends JPanel {
         // Menu bật lên.
         JPopupMenu pmnMenuBatLen = new JPopupMenu();
         for (CauTrucMenu.Muc muc : cacMuc) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (muc.kiemTraPhanCach()) {
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (pmnMenuBatLen.getComponentCount() > 0
                         && !(pmnMenuBatLen.getComponent(pmnMenuBatLen.getComponentCount() - 1)
                                 instanceof JPopupMenu.Separator)) {
@@ -144,7 +120,6 @@ public final class ThanhMenuChinh extends JPanel {
             }
             // Định nghĩa.
             DinhNghiaManHinh dinhNghia = boDangKy.layDinhNghia(muc.manHinh());
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!boDangKy.coTheTruyCap(muc.manHinh())) continue;
             // Mục.
             JMenuItem btnMuc = new JMenuItem(muc.nhan());
@@ -154,7 +129,6 @@ public final class ThanhMenuChinh extends JPanel {
                     dinhNghia.daTrienKhai()
                             ? dinhNghia.goiY()
                             : "Chức năng sẽ được triển khai ở giai đoạn tiếp theo");
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (muc.phimTat() != null) {
                 btnMuc.setAccelerator(docPhimTat(muc.phimTat()));
             }
@@ -162,9 +136,7 @@ public final class ThanhMenuChinh extends JPanel {
             pmnMenuBatLen.add(btnMuc);
         }
         catCuoiPhanCach(pmnMenuBatLen);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (phimTruyCap == 'H') {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (pmnMenuBatLen.getComponentCount() > 0) pmnMenuBatLen.addSeparator();
             // Đăng xuất mục.
             JMenuItem btnDangXuatMuc = new JMenuItem("Đăng xuất");
@@ -184,26 +156,14 @@ public final class ThanhMenuChinh extends JPanel {
         add(btnNut);
     }
 
-    /**
-     * Cắt cuối phân cách trong ThanhMenuChinh.
-     *
-     * @param pmnMenuBatLen menu bật lên
-     */
     private void catCuoiPhanCach(JPopupMenu pmnMenuBatLen) {
         // Số phần tử.
         int soPhanTu = pmnMenuBatLen.getComponentCount();
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (soPhanTu > 0
                 && pmnMenuBatLen.getComponent(soPhanTu - 1) instanceof JPopupMenu.Separator)
             pmnMenuBatLen.remove(soPhanTu - 1);
     }
 
-    /**
-     * Đọc phím tắt trong ThanhMenuChinh.
-     *
-     * @param phimTat phím tắt
-     * @return kết quả đọc phím tắt
-     */
     private KeyStroke docPhimTat(String phimTat) {
         return KeyStroke.getKeyStroke(phimTat);
     }

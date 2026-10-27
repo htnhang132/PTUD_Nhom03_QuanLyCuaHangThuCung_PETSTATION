@@ -48,7 +48,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     /** Nhãn các chỉ số. */
     private JLabel lblNhanCacChiSo;
 
-    /** Khởi tạo NhatKyHeThongPanel với các giá trị được cung cấp. */
     public NhatKyHeThongPanel() {
         setLayout(new BorderLayout());
 
@@ -95,11 +94,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     /** Đang khởi tạo. */
     private boolean dangKhoiTao;
 
-    /**
-     * Tạo tiêu đề trong NhatKyHeThongPanel.
-     *
-     * @return kết quả tạo tiêu đề
-     */
     private JPanel taoTieuDe() {
         // Tiêu đề.
         JPanel pnlTieuDe = new JPanel(new BorderLayout(12, 8));
@@ -147,11 +141,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         return pnlTieuDe;
     }
 
-    /**
-     * Tạo bộ lọc vùng hiển thị trong NhatKyHeThongPanel.
-     *
-     * @return kết quả tạo bộ lọc vùng hiển thị
-     */
     private JPanel taoBoLocVungHienThi() {
         // Vùng hiển thị.
         JPanel pnlVungHienThi = layThe(new BorderLayout(0, 10));
@@ -263,11 +252,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         return pnlVungHienThi;
     }
 
-    /**
-     * Tạo bảng vùng hiển thị trong NhatKyHeThongPanel.
-     *
-     * @return kết quả tạo bảng vùng hiển thị
-     */
     private JPanel taoBangVungHienThi() {
         // Vùng hiển thị.
         JPanel pnlVungHienThi = layThe(new BorderLayout(0, 10));
@@ -327,7 +311,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                             lblNhan.setHorizontalAlignment(SwingConstants.CENTER);
                             lblNhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
 
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (giaTri.equals("Thành công")) {
                                 lblNhan.setBackground(new Color(212, 237, 218));
                                 lblNhan.setForeground(new Color(21, 87, 36));
@@ -341,7 +324,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                                 lblNhan.setForeground(new Color(133, 100, 4));
                             }
 
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (laDaChon) {
                                 lblNhan.setBackground(tblBang.getSelectionBackground());
                                 lblNhan.setForeground(tblBang.getSelectionForeground());
@@ -362,7 +344,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
                             // Chuỗi.
                             String chuoi = giaTri.toString();
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (chuoi.contains("WARNING")
                                     || chuoi.contains("ERROR")
                                     || chuoi.contains("DELETE")) {
@@ -374,7 +355,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                                 lblNhan.setForeground(MauUngDung.VAN_BAN_TOI);
                             }
 
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (laDaChon) {
                                 lblNhan.setBackground(tblBang.getSelectionBackground());
                                 lblNhan.setForeground(tblBang.getSelectionForeground());
@@ -395,11 +375,9 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                      */
                     @Override
                     public void mouseClicked(java.awt.event.MouseEvent suKien) {
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (suKien.getClickCount() == 2) {
                             // Dòng.
                             int dong = tblBang.getSelectedRow();
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (dong >= 0) {
                                 xuLyHienThiChiTiet(dong);
                             }
@@ -415,11 +393,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         return pnlVungHienThi;
     }
 
-    /**
-     * Tạo chân trang trong NhatKyHeThongPanel.
-     *
-     * @return kết quả tạo chân trang
-     */
     private JPanel taoChanTrang() {
         // Chân trang.
         JPanel pnlChanTrang = new JPanel(new BorderLayout());
@@ -440,7 +413,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     // === EVENT HANDLERS ===
 
-    /** Áp dụng các bộ lọc trong NhatKyHeThongPanel. */
     private void apDungCacBoLoc() {
         taiLai();
     }
@@ -459,7 +431,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         String kieu = String.valueOf(cboSuKienKieuHopChon.getSelectedItem());
         // Kiểu khóa.
         String kieuKhoa = kieu.startsWith("Tất cả") ? "" : kieu.split(" ")[0];
-        // Kết quả.
         String ketQua = String.valueOf(cboKetQuaHopChon.getSelectedItem());
         // Người dùng.
         String nguoiDung = txtTruongNguoiDungTimKiem.getText().trim().toLowerCase();
@@ -474,18 +445,12 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         for (NhatKyHeThongService.Muc suKien : cacMuc) {
             // Ngày đang xét.
             LocalDate ngayDangXet = suKien.thoiGian().toLocalDate();
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (tu != null && ngayDangXet.isBefore(tu)) continue;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (den != null && ngayDangXet.isAfter(den)) continue;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (!kieuKhoa.isEmpty() && !kieuKhoa.equals(suKien.kieu())) continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!ketQua.equals("Tất cả") && !ketQua.equals(suKien.ketQua())) continue;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (!nguoiDung.isEmpty() && !suKien.nguoiDung().toLowerCase().contains(nguoiDung))
                 continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if ("Cảnh báo".equals(suKien.ketQua()) || "Thất bại".equals(suKien.ketQua()))
                 cacCanhBao++;
             moHinhBang.addRow(
@@ -507,7 +472,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                         + " cảnh báo/thất bại");
     }
 
-    /** Xóa các bộ lọc trong NhatKyHeThongPanel. */
     private void xoaCacBoLoc() {
         pnlKhoangNgayBoChon.datLai();
         cboSuKienKieuHopChon.setSelectedIndex(0);
@@ -516,11 +480,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         taiLai();
     }
 
-    /**
-     * Xử lý hiển thị chi tiết trong NhatKyHeThongPanel.
-     *
-     * @param dong dòng
-     */
     private void xuLyHienThiChiTiet(int dong) {
         // Mô hình dòng.
         int moHinhDong = tblBang.convertRowIndexToModel(dong);
@@ -533,7 +492,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         String thaoTac = moHinhBang.getValueAt(moHinhDong, 2).toString();
         // Kiểu sự kiện.
         String kieuSuKien = moHinhBang.getValueAt(moHinhDong, 3).toString();
-        // Kết quả.
         String ketQua = moHinhBang.getValueAt(moHinhDong, 4).toString();
         // Đệm trong.
         String demTrong = moHinhBang.getValueAt(moHinhDong, 5).toString();
@@ -557,12 +515,10 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                 this, chiTiet, "Chi tiết Audit Log", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /** Xử lý xuất trong NhatKyHeThongPanel. */
     private void xuLyXuat() {
         XuatExcel.xuatBang(this, tblBang, "Audit_Log");
     }
 
-    /** Điều hướng quay lại trong NhatKyHeThongPanel. */
     private void dieuHuongQuayLai() {
         HopThoai.hienThiThongBaoHopThoai(
                 this,
@@ -571,7 +527,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /** Điều hướng đến trang chính trong NhatKyHeThongPanel. */
     private void dieuHuongDenTrangChinh() {
         HopThoai.hienThiThongBaoHopThoai(
                 this,
@@ -580,21 +535,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong NhatKyHeThongPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Nhật ký hệ thống";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong NhatKyHeThongPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Hướng dẫn tra cứu Audit Log:\n\n"

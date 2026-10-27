@@ -1,7 +1,6 @@
 package com.petstation.gui.components.common;
 
 import com.petstation.model.ChiTietBienLai;
-import com.petstation.service.CaThuNganService;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
@@ -98,9 +97,23 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
                     case CASH -> "Tiền mặt";
                     case TRANSFER -> "Chuyển khoản / QR";
                     case CARD -> "Thẻ";
+                    case MIXED -> "Kết hợp";
                 };
-        themCap(khoi, phuongThuc, TienTe.dinhDang(bienLai.daNhan()), false);
-        if (bienLai.phuongThuc() == CaThuNganService.PhuongThuc.CASH)
+        if (bienLai.cacKhoanThu().isEmpty())
+            themCap(khoi, phuongThuc, TienTe.dinhDang(bienLai.daNhan()), false);
+        else
+            for (var d : bienLai.cacKhoanThu())
+                themCap(
+                        khoi,
+                        switch (d.phuongThuc()) {
+                            case CASH -> "Tiền mặt";
+                            case TRANSFER -> "Chuyển khoản / QR";
+                            case CARD -> "Thẻ";
+                            case MIXED -> "Kết hợp";
+                        },
+                        TienTe.dinhDang(d.soTien()),
+                        false);
+        if (bienLai.thayDoi() > 0)
             themCap(khoi, "Trả lại khách", TienTe.dinhDang(bienLai.thayDoi()), false);
         gach(khoi);
         themCap(khoi, "Điểm tích thêm", String.valueOf(thongTin.diemCong()), false);

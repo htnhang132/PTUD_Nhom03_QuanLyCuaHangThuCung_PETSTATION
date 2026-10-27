@@ -1,5 +1,5 @@
-# Sao chép thành db.properties hoặc cấu hình bằng biến môi trường.
+# Copy to config/db.properties and use the SQL login on your machine.
 db.url=jdbc:sqlserver://localhost:1433;databaseName=PetStationDemo2;encrypt=true;trustServerCertificate=true
-db.user=sa
+db.user=your_sql_login
 db.password=CHANGE_ME
 db.loginTimeoutSeconds=10

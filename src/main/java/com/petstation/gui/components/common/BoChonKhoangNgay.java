@@ -26,9 +26,8 @@ public class BoChonKhoangNgay extends JPanel {
     /** Tùy chỉnh ngày vùng hiển thị. */
     private JPanel pnlTuyChinhNgayVungHienThi;
 
-    /** Khởi tạo BoChonKhoangNgay với các giá trị được cung cấp. */
     public BoChonKhoangNgay() {
-        setLayout(new BorderLayout(10, 5));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
         setOpaque(false);
 
         // Các khoảng ngày có sẵn
@@ -80,7 +79,6 @@ public class BoChonKhoangNgay extends JPanel {
         xuLyGiaTriCoSanThayDoi();
     }
 
-    /** Xử lý giá trị có sẵn thay đổi trong BoChonKhoangNgay. */
     private void xuLyGiaTriCoSanThayDoi() {
         // Đã chọn.
         String daChon = (String) cboGiaTriCoSanHopChon.getSelectedItem();
@@ -146,7 +144,6 @@ public class BoChonKhoangNgay extends JPanel {
         }
 
         // Gán ngày tương ứng với lựa chọn có sẵn
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (tu != null && den != null) {
             dangDatKy = true;
             pnlNgayBatDauBoChon.datNgayDuocChon(tu);
@@ -166,63 +163,32 @@ public class BoChonKhoangNgay extends JPanel {
     }
 
     // Truy xuất thuộc tính
-    /**
-     * Lấy ngày bắt đầu trong BoChonKhoangNgay.
-     *
-     * @return kết quả lấy ngày bắt đầu
-     */
     public LocalDate layNgayBatDau() {
         return pnlNgayBatDauBoChon.layNgayDuocChon();
     }
 
-    /**
-     * Lấy ngày kết thúc trong BoChonKhoangNgay.
-     *
-     * @return kết quả lấy ngày kết thúc
-     */
     public LocalDate layNgayKetThuc() {
         return pnlNgayKetThucBoChon.layNgayDuocChon();
     }
 
-    /**
-     * Lấy ngày bắt đầu SQL trong BoChonKhoangNgay.
-     *
-     * @return kết quả lấy ngày bắt đầu SQL
-     */
     public java.sql.Date layNgayBatDauSQL() {
         return pnlNgayBatDauBoChon.layNgaySQL();
     }
 
-    /**
-     * Lấy ngày kết thúc SQL trong BoChonKhoangNgay.
-     *
-     * @return kết quả lấy ngày kết thúc SQL
-     */
     public java.sql.Date layNgayKetThucSQL() {
         return pnlNgayKetThucBoChon.layNgaySQL();
     }
 
-    /**
-     * Đặt ngày bắt đầu trong BoChonKhoangNgay.
-     *
-     * @param ngay ngày
-     */
     public void datNgayBatDau(LocalDate ngay) {
         cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
         pnlNgayBatDauBoChon.datNgayDuocChon(ngay);
     }
 
-    /**
-     * Đặt ngày kết thúc trong BoChonKhoangNgay.
-     *
-     * @param ngay ngày
-     */
     public void datNgayKetThuc(LocalDate ngay) {
         cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
         pnlNgayKetThucBoChon.datNgayDuocChon(ngay);
     }
 
-    /** Đặt lại trong BoChonKhoangNgay. */
     public void datLai() {
         cboGiaTriCoSanHopChon.setSelectedIndex(0);
         xuLyGiaTriCoSanThayDoi();

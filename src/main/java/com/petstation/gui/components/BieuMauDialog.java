@@ -18,7 +18,6 @@ import javax.swing.JTextField;
  * <p>Hộp thoại nhập nhanh vài trường, cùng kiểu nút Đồng ý/Hủy với {@link HopThoai}.
  */
 public final class BieuMauDialog {
-    /** Khởi tạo BieuMauDialog với các giá trị được cung cấp. */
     private BieuMauDialog() {}
 
     /**
@@ -34,7 +33,6 @@ public final class BieuMauDialog {
      */
     public static List<String> layYeuCauNhap(
             Component cha, String tieuDe, String[] cacNhan, String[] banDau) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new GridBagLayout());
         // Giá trị đang xét.
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
@@ -67,7 +65,6 @@ public final class BieuMauDialog {
                         null,
                         cacLuaChon,
                         cacLuaChon[0]);
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (dongDuLieu != 0) return null;
         // Ra.
         List<String> ra = new ArrayList<>();

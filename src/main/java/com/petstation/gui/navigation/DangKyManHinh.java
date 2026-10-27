@@ -50,6 +50,7 @@ import com.petstation.gui.system.DoiMatKhauPanel;
 import com.petstation.gui.system.NhatKyHeThongPanel;
 import com.petstation.gui.system.TaiKhoanPhanQuyenPanel;
 import com.petstation.model.GioHang;
+import com.petstation.model.MaManHinh;
 import com.petstation.model.PhienDangNhap;
 import com.petstation.model.Quyen;
 import com.petstation.service.CaThuNganService;
@@ -68,7 +69,7 @@ public final class DangKyManHinh {
     /** Các màn bán hàng chỉ dùng được khi đã mở ca. */
     /** Cần mở ca làm việc. */
     private static final Set<MaManHinh> CAN_MO_CA_LAM_VIEC =
-            EnumSet.of(MaManHinh.POS, MaManHinh.PAYMENT, MaManHinh.HOTEL_BOOKING);
+            EnumSet.of(MaManHinh.POS, MaManHinh.PAYMENT);
 
     /** Phiên đăng nhập. */
     private final PhienDangNhap phienDangNhap;
@@ -83,49 +84,26 @@ public final class DangKyManHinh {
     private final CaThuNganService caLamViec = new CaThuNganService();
 
     /** Bán hàng. */
-    private final GioHang banHang = new GioHang();
+    private final GioHang banHang = com.petstation.service.GioHangService.tao();
 
-    /**
-     * Khởi tạo DangKyManHinh với các giá trị được cung cấp.
-     *
-     * @param phienDangNhap phiên đăng nhập
-     * @param boDieuHuong bộ điều hướng
-     */
     public DangKyManHinh(PhienDangNhap phienDangNhap, Consumer<MaManHinh> boDieuHuong) {
         this.phienDangNhap = phienDangNhap;
         this.boDieuHuong = boDieuHuong;
         dangKyTatCa();
     }
 
-    /**
-     * Lấy ca làm việc trong DangKyManHinh.
-     *
-     * @return kết quả lấy ca làm việc
-     */
     public CaThuNganService layCaLamViec() {
         return caLamViec;
     }
 
-    /**
-     * Lấy giỏ hàng trong DangKyManHinh.
-     *
-     * @return kết quả lấy giỏ hàng
-     */
     public GioHang layGioHang() {
         return banHang;
     }
 
-    /**
-     * Yêu cầu mở ca làm việc trong DangKyManHinh.
-     *
-     * @param id id
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public boolean yeuCauMoCaLamViec(MaManHinh id) {
         return CAN_MO_CA_LAM_VIEC.contains(id);
     }
 
-    /** Đăng ký tất cả trong DangKyManHinh. */
     private void dangKyTatCa() {
         dangKy(MaManHinh.DASHBOARD, "Màn hình chính", "Chọn một công việc để bắt đầu.", null);
 
@@ -383,34 +361,14 @@ public final class DangKyManHinh {
                 Quyen.REPORT_VIEW_ALL);
     }
 
-    /**
-     * Đăng ký trong DangKyManHinh.
-     *
-     * @param id id
-     * @param tieuDe tiêu đề
-     * @param goiY gợi ý
-     * @param quyen quyền
-     */
     private void dangKy(MaManHinh id, String tieuDe, String goiY, Quyen quyen) {
         cacDinhNghia.put(id, new DinhNghiaManHinh(id, tieuDe, goiY, quyen, true));
     }
 
-    /**
-     * Lấy định nghĩa trong DangKyManHinh.
-     *
-     * @param id id
-     * @return kết quả lấy định nghĩa
-     */
     public DinhNghiaManHinh layDinhNghia(MaManHinh id) {
         return cacDinhNghia.get(id);
     }
 
-    /**
-     * Có thể truy cập trong DangKyManHinh.
-     *
-     * @param id id
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public boolean coTheTruyCap(MaManHinh id) {
         // Ngày đang xét.
         DinhNghiaManHinh ngayDangXet = layDinhNghia(id);
@@ -418,23 +376,12 @@ public final class DangKyManHinh {
                 && (ngayDangXet.quyen() == null || phienDangNhap.kiemTraCo(ngayDangXet.quyen()));
     }
 
-    /**
-     * Lấy các định nghĩa hiển thị trong DangKyManHinh.
-     *
-     * @return kết quả lấy các định nghĩa hiển thị
-     */
     public List<DinhNghiaManHinh> layCacDinhNghiaHienThi() {
         return cacDinhNghia.values().stream()
                 .filter(ngayDangXet -> coTheTruyCap(ngayDangXet.id()))
                 .toList();
     }
 
-    /**
-     * Tạo trong DangKyManHinh.
-     *
-     * @param id id
-     * @return kết quả tạo
-     */
     public JPanel tao(MaManHinh id) {
         if (!coTheTruyCap(id))
             throw new com.petstation.service.PhanQuyenException(

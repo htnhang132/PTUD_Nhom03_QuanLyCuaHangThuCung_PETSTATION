@@ -12,16 +12,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho thú cưng danh mục vùng hiển thị. */
 public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhMucThuCungPanel với các giá trị được cung cấp. */
     public DanhMucThuCungPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layThuCung());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.PETS,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucThuCungPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -50,11 +50,6 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucThuCungPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã thú", Kieu.VAN_BAN).chiDoc(),

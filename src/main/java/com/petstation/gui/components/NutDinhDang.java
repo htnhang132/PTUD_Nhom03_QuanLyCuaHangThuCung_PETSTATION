@@ -37,12 +37,6 @@ public class NutDinhDang extends JButton {
     /** Bán kính. */
     private final int banKinh = 10;
 
-    /**
-     * Khởi tạo NutDinhDang với các giá trị được cung cấp.
-     *
-     * @param vanBan văn bản
-     * @param kieu kiểu
-     */
     public NutDinhDang(String vanBan, KieuNut kieu) {
         super(vanBan);
         apDungKieu(kieu);
@@ -77,11 +71,6 @@ public class NutDinhDang extends JButton {
                 });
     }
 
-    /**
-     * Áp dụng kiểu trong NutDinhDang.
-     *
-     * @param giaTri giá trị
-     */
     private void apDungKieu(KieuNut giaTri) {
         mauVien = null;
         switch (giaTri) {
@@ -91,8 +80,9 @@ public class NutDinhDang extends JButton {
                 mauVanBan = Color.WHITE;
             }
             case PHU -> {
-                mauNen = MauUngDung.VANG;
-                mauReChuot = new Color(0xE5, 0xBF, 0x2A);
+                mauNen = new Color(0xF3, 0xF4, 0xF6);
+                mauReChuot = new Color(0xE5, 0xE7, 0xEB);
+                mauVien = MauUngDung.VIEN;
                 mauVanBan = MauUngDung.NAU;
             }
             case NGUY_HIEM -> {
@@ -115,11 +105,6 @@ public class NutDinhDang extends JButton {
         }
     }
 
-    /**
-     * Vẽ thành phần trong NutDinhDang.
-     *
-     * @param doHoa đồ họa
-     */
     @Override
     protected void paintComponent(Graphics doHoa) {
         // Đồ họa 2.
@@ -131,12 +116,10 @@ public class NutDinhDang extends JButton {
         boolean reChuot = duocBat && getModel().isRollover();
         doHoa2.setColor(!duocBat ? new Color(0xE5, 0xE7, 0xEB) : reChuot ? mauReChuot : mauNen);
         doHoa2.fillRoundRect(0, 0, getWidth(), getHeight(), banKinh, banKinh);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (mauVien != null && duocBat) {
             doHoa2.setColor(mauVien);
             doHoa2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, banKinh, banKinh);
         }
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (isFocusOwner() && duocBat) {
             doHoa2.setColor(MauUngDung.VANG);
             doHoa2.setStroke(new BasicStroke(2));
@@ -147,11 +130,6 @@ public class NutDinhDang extends JButton {
         super.paintComponent(doHoa);
     }
 
-    /**
-     * Lấy kích thước ưu tiên trong NutDinhDang.
-     *
-     * @return kết quả lấy kích thước ưu tiên
-     */
     @Override
     public Dimension getPreferredSize() {
         // Ngày đang xét.

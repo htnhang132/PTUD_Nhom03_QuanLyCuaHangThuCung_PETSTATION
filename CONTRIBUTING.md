@@ -1,41 +1,32 @@
-# HƯỚNG DẪN ĐÓNG GÓP VÀ QUY TẮC LÀM VIỆC (CONTRIBUTING)
-**Đồ án Môn Phát triển Ứng dụng - Nhóm 03**
+# Quy ước làm việc của nhóm
 
----
+## Git
 
-## 1. Quy tắc phân nhánh (Git Branching Strategy)
-* **Tuyệt đối KHÔNG commit trực tiếp lên nhánh `main`.**
-* Nhánh **`main`**: Nhánh chứa mã nguồn hoàn chỉnh, chạy ổn định, dùng để nộp bài hoặc báo cáo.
-* Nhánh **`develop`**: Nhánh tích hợp chung của nhóm.
-* Nhánh **`feature/<tên-chức-năng>`**: Mỗi thành viên phải tự tạo nhánh riêng để làm việc (Ví dụ: `feature/pet-management`, `feature/pos-checkout`).
-* Sau khi hoàn thành tính năng và test kỹ, tạo **Pull Request (PR)** để merge vào nhánh `develop`.
+Mỗi thành viên làm trên `feature/<ten-chuc-nang>`, tạo PR vào `develop` sau khi đã chạy thử. Kết thúc giai đoạn thì tạo PR `develop` → `main`. Không commit trực tiếp lên hai nhánh tích hợp. Mỗi PR có ít nhất một thành viên khác review.
 
-## 2. Quy định về Commit Message
-Viết commit rõ nghĩa, bắt đầu bằng các tiền tố chuẩn (Conventional Commits):
-* `feat:` Thêm tính năng mới (Ví dụ: `feat: add pet category management screen`)
-* `fix:` Sửa lỗi (Ví dụ: `fix: resolve null pointer exception in checkout`)
-* `docs:` Cập nhật tài liệu (Ví dụ: `docs: update SRS requirement document`)
-* `refactor:` Tái cấu trúc code không đổi chức năng
-* ❌ **Cấm các commit chung chung** như: `update`, `fix bug`, `123`, `asdf`.
+Commit nêu rõ phần thay đổi, ví dụ `refactor(dao): move deposit queries to LuuTruImpl`, `test(sales): check rollback when allocation is invalid`. Không dùng `update`, `fix bug`, `123`.
 
-## 3. Quy chuẩn lập trình (Coding Convention)
-* **Ngôn ngữ:** Java 17, Swing, Maven; tệp mã nguồn lưu UTF-8.
-* **Mô hình kiến trúc:** Áp dụng mô hình phân tầng rõ ràng (n-Tier Architecture).
-* **Lập trình hướng đối tượng (OOP):** Tuân thủ các nguyên tắc đóng gói, kế thừa, đa hình và SOLID.
-* **Quy tắc đặt tên:** dùng tiếng Việt không dấu, thống nhất thuật ngữ với SQL hiện tại.
-  * Kiểu Java và tệp: PascalCase; tệp trùng tên kiểu chính, ví dụ `KhachHang.java`, `KhachHangDAO.java`, `JdbcKhachHangDAO.java`.
-  * Hàm, trường, biến, tham số và thành phần record: camelCase; hàm bắt đầu bằng động từ, ví dụ `timTheoSoDienThoai`, `capNhat`, `kiemTraRong`.
-  * Hằng nội bộ: UPPER_SNAKE_CASE. Biến Swing có tiền tố `btn`, `txt`, `tbl`, `lbl`, `pnl`, `cbo`, `spn` theo loại thành phần.
-  * Giữ cấu trúc package, hậu tố DAO/Service/Panel/Frame/Dialog/Exception/Test và tiền tố Jdbc. Giữ Spa, Hotel, Voucher, SQL, JDBC, Excel.
-  * Giữ `com.petstation.App`, `main` và tên override do Java/Swing/thư viện quy định. Accessor tự sinh của record phải trùng tên thành phần record.
-  * Giữ tên bảng/cột, câu SQL, giá trị trạng thái/mã quyền/mã màn hình, biến môi trường, khóa cấu hình và tên tài nguyên. Không dịch các mã enum dùng cho lưu trữ hoặc điều hướng.
-  * Comment và Javadoc viết tiếng Việt có dấu; ghi mục đích lớp/hàm, tham số, kết quả, ngoại lệ và các bước xử lý cần giải thích.
-  * Khi đổi tên phải cập nhật nơi gọi, import, constructor, method reference, test, cấu hình chạy và tài liệu; không giữ lớp chuyển tiếp tên cũ.
-* Bảng đối chiếu đầy đủ: [Tên mã nguồn](docs/TEN_MA_NGUON.md). Ví dụ: `Customer` → `KhachHang`, `SalesService` → `BanHangService`, `Money` → `TienTe`.
+Hook `.githooks/pre-commit` hỗ trợ chặn commit sai nhánh. Nếu chưa có hook cá nhân cần giữ, bật bằng `git config core.hooksPath .githooks`; Linux/macOS thêm quyền chạy cho hook. Quản trị repo cần bật bảo vệ nhánh/PR/check trên GitHub; hook cục bộ không thay bảo vệ máy chủ. Cấu hình này chưa được tự thay đổi trên GitHub.
 
-## 4. Quy trình một Pull Request
-1. `git checkout develop && git pull`
-2. `git checkout -b feature/<tên-chức-năng>`
-3. Commit nhỏ, đúng tiền tố; trước khi đẩy: `git fetch && git rebase origin/develop`
-4. `git push -u origin feature/<tên-chức-năng>` rồi mở Pull Request vào `develop`
-5. Cần ít nhất 1 thành viên duyệt; gộp bằng Squash and merge; xóa nhánh sau khi gộp.
+## Code Java
+
+Java 17, UTF-8, 4 dấu cách. Package chữ thường; lớp PascalCase; hàm/biến camelCase; hằng UPPER_SNAKE_CASE. Dùng tiếng Việt không dấu nhất quán với mã hiện tại, giữ các mã trạng thái/quyền đã lưu trong database.
+
+Interface DAO nằm ở `dao/TenDAO.java`; triển khai SQL ở `dao/impl/TenImpl.java` và `implements TenDAO`. Kết nối/transaction ở `database`. GUI gọi service; service kiểm tra quyền và quy tắc trước khi gọi DAO. Không đưa SQL vào GUI hoặc thêm một DAO khác làm lại cùng luồng.
+
+Tên hàm nêu hành động, như `layLoTheoFEFO`, `truTonLo`, `ganHoaDonSpa`; không dùng tên có số thứ tự như `timThanhToan2`. Biến cần nói rõ đối tượng. Comment giải thích quy tắc hoặc lý do, không lặp câu lệnh. Tránh thêm interface/lớp trung gian nếu không có trách nhiệm riêng.
+
+Dùng `try-with-resources` cho JDBC/I/O. Không nuốt lỗi, không ghi tiền/tồn/điểm rời transaction. Dữ liệu người nhập truyền bằng tham số SQL. Không log mật khẩu hay cấu hình thật. Không thay mã/hành vi nghiệp vụ chỉ để làm code ngắn hơn.
+
+Truy vấn dài chạy nền và cập nhật Swing trên EDT. Giữ ID bản ghi khi lọc/sắp xếp; kiểm tra phiên/token trước khi nhận kết quả nền. Không tách một phần transaction đang giữ khóa sang luồng khác.
+
+## Trước PR
+
+```powershell
+./scripts/format-java.ps1 -Mode check
+./mvnw.cmd -B -ntp verify
+```
+
+Khi thay luồng dữ liệu, chạy thêm `scripts/test-sqlserver.ps1`. Đính kèm kết quả thật và nói rõ test nào bị bỏ qua. Formatter cố định Google Java Format 1.24.0, chế độ AOSP; dùng `-Mode apply` để sửa format. Nếu thiếu formatter, tải bằng `./mvnw.cmd dependency:get '-Dartifact=com.google.googlejavaformat:google-java-format:1.24.0:jar:all-deps'`.
+
+Cập nhật [nhật ký AI](AI_USAGE_LOG.md) nếu có dùng AI: prompt, kết quả, giữ/sửa gì và lý do. Người phụ trách phải tự đọc, giải thích và sửa thử phần của mình; không ghi xác nhận hiểu mã hoặc tên reviewer thay cho người khác. PR template đã có các mục này.

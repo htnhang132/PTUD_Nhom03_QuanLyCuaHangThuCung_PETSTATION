@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -106,117 +107,54 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         /** Hiển thị. */
         Function<String, String> hienThi;
 
-        /**
-         * Khởi tạo TruongDuLieu với các giá trị được cung cấp.
-         *
-         * @param nhan nhãn
-         * @param kieu kiểu
-         */
         private TruongDuLieu(String nhan, Kieu kieu) {
             this.nhan = nhan;
             this.kieu = kieu;
         }
 
-        /**
-         * Tạo trong TruongDuLieu.
-         *
-         * @param nhan nhãn
-         * @param kieu kiểu
-         * @return kết quả tạo
-         */
         public static TruongDuLieu tao(String nhan, Kieu kieu) {
             return new TruongDuLieu(nhan, kieu);
         }
 
-        /**
-         * Chuyển thành chuỗi trong TruongDuLieu.
-         *
-         * @param nhan nhãn
-         * @return kết quả chuyển thành chuỗi
-         */
         public static TruongDuLieu chuyenThanhChuoi(String nhan) {
             return new TruongDuLieu(nhan, Kieu.VAN_BAN);
         }
 
-        /**
-         * Bắt buộc trong TruongDuLieu.
-         *
-         * @return kết quả bắt buộc
-         */
         public TruongDuLieu batBuoc() {
             this.batBuoc = true;
             return this;
         }
 
-        /**
-         * Kiểm tra duy nhất trong TruongDuLieu.
-         *
-         * @return kết quả kiểm tra duy nhất
-         */
         public TruongDuLieu kiemTraDuyNhat() {
             this.duyNhat = true;
             return this;
         }
 
-        /**
-         * Chỉ đọc trong TruongDuLieu.
-         *
-         * @return kết quả chỉ đọc
-         */
         public TruongDuLieu chiDoc() {
             this.docChi = true;
             return this;
         }
 
-        /**
-         * Ẩn trong TruongDuLieu.
-         *
-         * @return kết quả ẩn
-         */
         public TruongDuLieu an() {
             this.vaoDanhSach = false;
             return this;
         }
 
-        /**
-         * Đặt lựa chọn trong TruongDuLieu.
-         *
-         * @param doiTuong đối tượng
-         * @return kết quả đặt lựa chọn
-         */
         public TruongDuLieu datLuaChon(String... doiTuong) {
             this.cacLuaChon = doiTuong;
             return this;
         }
 
-        /**
-         * Lấy động trong TruongDuLieu.
-         *
-         * @param chuoi chuỗi
-         * @return kết quả lấy động
-         */
         public TruongDuLieu layDong(Supplier<List<String>> chuoi) {
             this.dongCacLuaChon = chuoi;
             return this;
         }
 
-        /**
-         * Đặt mặc định trong TruongDuLieu.
-         *
-         * @param giaTri giá trị
-         * @return kết quả đặt mặc định
-         */
         public TruongDuLieu datMacDinh(String giaTri) {
             this.giaTriMacDinh = giaTri;
             return this;
         }
 
-        /**
-         * Đặt bộ soạn thảo trong TruongDuLieu.
-         *
-         * @param truongDangXet trường đang xét
-         * @return kết quả đặt bộ soạn thảo
-         */
         public TruongDuLieu datBoSoanThao(Supplier<BoSoanThaoTruong> truongDangXet) {
             this.boSoanThaoBoTao = truongDangXet;
             return this;
@@ -236,12 +174,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             return this;
         }
 
-        /**
-         * Hiển thị trong TruongDuLieu.
-         *
-         * @param truongDangXet trường đang xét
-         * @return kết quả hiển thị
-         */
         public TruongDuLieu hienThi(Function<String, String> truongDangXet) {
             this.hienThi = truongDangXet;
             return this;
@@ -303,13 +235,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         /** Tên xuất. */
         String tenXuat = "Danh_muc";
 
-        /**
-         * Tạo trong CauHinh.
-         *
-         * @param tieuDe tiêu đề
-         * @param tenThucThe tên thực thể
-         * @return kết quả tạo
-         */
         public static CauHinh tao(String tieuDe, String tenThucThe) {
             // Giá trị đang xét.
             CauHinh giaTriDangXet = new CauHinh();
@@ -319,36 +244,16 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             return giaTriDangXet;
         }
 
-        /**
-         * Tìm kiếm trong CauHinh.
-         *
-         * @param goiY gợi ý
-         * @return kết quả tìm kiếm
-         */
         public CauHinh timKiem(String goiY) {
             this.timKiemGoiY = goiY;
             return this;
         }
 
-        /**
-         * Đặt tiền tố trong CauHinh.
-         *
-         * @param vungDangXet vùng đang xét
-         * @return kết quả đặt tiền tố
-         */
         public CauHinh datTienTo(String vungDangXet) {
             this.maTienTo = vungDangXet;
             return this;
         }
 
-        /**
-         * Đặt trạng thái trong CauHinh.
-         *
-         * @param chiSo chỉ số
-         * @param hoatDong hoạt động
-         * @param ngungHoatDong ngừng hoạt động
-         * @return kết quả đặt trạng thái
-         */
         public CauHinh datTrangThai(int chiSo, String hoatDong, String ngungHoatDong) {
             this.chiSoTrangThai = chiSo;
             this.nhanHoatDong = hoatDong;
@@ -356,57 +261,26 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             return this;
         }
 
-        /**
-         * Đặt bộ chuẩn hóa trong CauHinh.
-         *
-         * @param soPhanTu số phần tử
-         * @return kết quả đặt bộ chuẩn hóa
-         */
         public CauHinh datBoChuanHoa(Consumer<Object[]> soPhanTu) {
             this.boChuanHoa = soPhanTu;
             return this;
         }
 
-        /**
-         * Xử lý sau lưu trong CauHinh.
-         *
-         * @param truongDangXet trường đang xét
-         * @return kết quả xử lý sau lưu
-         */
         public CauHinh xuLySauLuu(BiConsumer<Object[], Object[]> truongDangXet) {
             this.khiDaLuu = truongDangXet;
             return this;
         }
 
-        /**
-         * Đặt điều kiện xóa trong CauHinh.
-         *
-         * @param doHoa đồ họa
-         * @return kết quả đặt điều kiện xóa
-         */
         public CauHinh datDieuKienXoa(Function<Object[], String> doHoa) {
             this.xoaDieuKienBaoVe = doHoa;
             return this;
         }
 
-        /**
-         * Đặt bộ kiểm tra trong CauHinh.
-         *
-         * @param giaTri giá trị
-         * @return kết quả đặt bộ kiểm tra
-         */
         public CauHinh datBoKiemTra(Function<Object[], String> giaTri) {
             this.boSungBoKiemTra = giaTri;
             return this;
         }
 
-        /**
-         * Thêm thao tác bổ sung trong CauHinh.
-         *
-         * @param nhan nhãn
-         * @param boXuLy bộ xử lý
-         * @return kết quả thêm thao tác bổ sung
-         */
         public CauHinh themThaoTacBoSung(String nhan, Function<Object[], String> boXuLy) {
             cacThaoTacBoSung.add(new ThaoTacBoSung(nhan, boXuLy));
             return this;
@@ -489,13 +363,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Đang chọn. */
     private boolean dangChon;
 
-    /**
-     * Khởi tạo QuanLyDanhMucPanel với các giá trị được cung cấp.
-     *
-     * @param cauHinh cấu hình
-     * @param cacTruong các trường
-     * @param cacDong các dòng
-     */
     public QuanLyDanhMucPanel(
             CauHinh cauHinh, List<TruongDuLieu> cacTruong, List<Object[]> cacDong) {
         this.cauHinh = cauHinh;
@@ -538,8 +405,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         lienKetBoLoc(txtTimKiem, tblBang);
         txtTimKiemChung = txtTimKiem;
         txtTimKiem.setName("timKiemDanhMuc");
-        tblBang.getRowSorter()
-                .addRowSorterListener(e -> lblSoKetQua.setText(tblBang.getRowCount() + " kết quả"));
+        tblBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
         // Thêm.
         NutDinhDang btnThem = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.CHINH);
         btnThem.setEnabled(coTheChinhSua());
@@ -551,9 +417,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         btnXuat.addActionListener(suKien -> XuatExcel.xuatBang(this, tblBang, cauHinh.tenXuat));
 
         // Các thao tác.
-        JPanel pnlCacThaoTac = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        ThanhDanhSach pnlCacThaoTac = new ThanhDanhSach();
+        thanhDuLieu = pnlCacThaoTac;
         pnlCacThaoTac.setOpaque(false);
         pnlCacThaoTac.add(txtTimKiem);
+        taoThanhBoLoc(pnlCacThaoTac);
         pnlCacThaoTac.add(btnThem);
         pnlCacThaoTac.add(btnNutSua);
         pnlCacThaoTac.add(btnNutXoa);
@@ -570,11 +438,12 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Tiêu đề.
         JPanel pnlTieuDe = new JPanel(new BorderLayout(12, 0));
         pnlTieuDe.setOpaque(false);
-        pnlTieuDe.add(taoTieuDeMuc(cauHinh.tieuDe), BorderLayout.NORTH);
+        pnlTieuDe.add(
+                ThanhDanhSach.tieuDe(taoTieuDeMuc(cauHinh.tieuDe), lblSoKetQua),
+                BorderLayout.NORTH);
         pnlTieuDe.add(pnlCacThaoTac, BorderLayout.CENTER);
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout(0, 8));
         pnlTren.add(pnlTieuDe, BorderLayout.NORTH);
-        pnlTren.add(taoThanhBoLoc(), BorderLayout.SOUTH);
         add(pnlTren, BorderLayout.NORTH);
 
         // ── Danh sách trái, form phải
@@ -591,7 +460,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         suKien -> {
-                            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                             if (suKien.getValueIsAdjusting() || dangChon) return;
                             layKhiLuaChonDaThayDoi();
                         });
@@ -604,7 +472,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                      */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (suKien.getClickCount() == 2
                                 && hienTai != null
                                 && cheDo == CheDo.HIEN_THI) batDauSua();
@@ -612,14 +479,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 });
         taiLai(null);
         datCheDo(CheDo.HIEN_THI);
+        if (cacDong.isEmpty()
+                && cacDong instanceof com.petstation.service.DanhMucService.CacDong d
+                && javax.swing.SwingUtilities.isEventDispatchThread()
+                && com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()) napDuLieuNen(d);
     }
 
     // ───────────────────────── Form
-    /**
-     * Tạo biểu mẫu trong QuanLyDanhMucPanel.
-     *
-     * @return kết quả tạo biểu mẫu
-     */
     private JPanel taoBieuMau() {
         // Biểu mẫu.
         JPanel pnlBieuMau = new JPanel(new GridBagLayout());
@@ -697,13 +563,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlVungChua;
     }
 
-    /**
-     * Tạo đầu vào trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @param truongDangXet trường đang xét
-     * @return kết quả tạo đầu vào
-     */
     private JComponent taoDauVao(int chiSo, TruongDuLieu truongDangXet) {
         switch (truongDangXet.kieu) {
             case MAT_KHAU -> {
@@ -733,10 +592,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 return boSoanThao.layThanhPhan();
             }
             case TEP -> {
-                // Vùng đang xét.
                 JPanel pnlVungDangXet = new JPanel(new BorderLayout(6, 0));
                 pnlVungDangXet.setOpaque(false);
-                // Giá trị tạm.
                 JTextField txtGiaTriTam = layVanBanDauVao(truongDangXet);
                 // Chọn.
                 NutDinhDang btnChon =
@@ -748,7 +605,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                             kyTu.setFileFilter(
                                     new javax.swing.filechooser.FileNameExtensionFilter(
                                             "Ảnh (jpg, png)", "jpg", "jpeg", "png"));
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (kyTu.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
                                 txtGiaTriTam.setText(kyTu.getSelectedFile().getAbsolutePath());
                         });
@@ -763,46 +619,24 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /**
-     * Lấy văn bản đầu vào trong QuanLyDanhMucPanel.
-     *
-     * @param truongDangXet trường đang xét
-     * @return kết quả lấy văn bản đầu vào
-     */
     private JTextField layVanBanDauVao(TruongDuLieu truongDangXet) {
-        // Giá trị tạm.
         JTextField txtGiaTriTam = new JTextField();
         txtGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtGiaTriTam.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.VIEN),
                         new EmptyBorder(5, 8, 5, 8)));
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (truongDangXet.kieu == Kieu.NGAY) txtGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy");
         return txtGiaTriTam;
     }
 
-    /**
-     * Lấy các lựa chọn của trong QuanLyDanhMucPanel.
-     *
-     * @param truongDangXet trường đang xét
-     * @return kết quả lấy các lựa chọn của
-     */
     private String[] layCacLuaChonCua(TruongDuLieu truongDangXet) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (truongDangXet.dongCacLuaChon != null)
             return truongDangXet.dongCacLuaChon.get().toArray(String[]::new);
         return truongDangXet.cacLuaChon;
     }
 
-    /**
-     * Lấy đầu vào trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @return kết quả lấy đầu vào
-     */
     private String layDauVao(int chiSo) {
-        // Trường đang xét.
         TruongDuLieu truongDangXet = cacTruong.get(chiSo);
         // Vào.
         JComponent vao = cacDauVao[chiSo];
@@ -826,19 +660,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         };
     }
 
-    /**
-     * Đặt đầu vào trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @param giaTri giá trị
-     */
     @SuppressWarnings("unchecked")
     private void datDauVao(int chiSo, String giaTri) {
-        // Trường đang xét.
         TruongDuLieu truongDangXet = cacTruong.get(chiSo);
         // Vào.
         JComponent vao = cacDauVao[chiSo];
-        // Giá trị.
         String giaTri2 = giaTri == null ? "" : giaTri;
         switch (truongDangXet.kieu) {
             case HOP_CHON -> {
@@ -847,9 +673,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 cboHop.setModel(
                         new javax.swing.DefaultComboBoxModel<>(layCacLuaChonCua(truongDangXet)));
                 cboHop.setSelectedItem(giaTri2);
-                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                 if (cboHop.getSelectedItem() == null || !cboHop.getSelectedItem().equals(giaTri2)) {
-                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                     if (!giaTri2.isEmpty()) {
                         cboHop.addItem(giaTri2);
                         cboHop.setSelectedItem(giaTri2);
@@ -867,18 +691,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /**
-     * Đặt đầu vào được bật trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @param duocBat được bật
-     */
     private void datDauVaoDuocBat(int chiSo, boolean duocBat) {
-        // Trường đang xét.
         TruongDuLieu truongDangXet = cacTruong.get(chiSo);
         // Vào.
         JComponent vao = cacDauVao[chiSo];
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (truongDangXet.kieu == Kieu.TUY_CHINH) cacBoSoanThao[chiSo].datDuocBat(duocBat);
         else // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (truongDangXet.kieu == Kieu.VUNG)
@@ -891,11 +707,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────────────────── Chế độ & chọn dòng
-    /**
-     * Đặt chế độ trong QuanLyDanhMucPanel.
-     *
-     * @param moHinhDangXet mô hình đang xét
-     */
     protected boolean coTheChinhSua() {
         return true;
     }
@@ -909,11 +720,9 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Đang sửa.
         boolean dangSua = moHinhDangXet != CheDo.HIEN_THI && coTheChinhSua();
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
-            // Trường đang xét.
             TruongDuLieu truongDangXet = cacTruong.get(chiSo);
             // Được phép.
             boolean duocPhep = dangSua && !truongDangXet.docChi;
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (duocPhep && truongDangXet.coTheSuaKhi != null && moHinhDangXet == CheDo.SUA)
                 duocPhep = truongDangXet.coTheSuaKhi.test(String.valueOf(hienTai[chiSo]));
             datDauVaoDuocBat(chiSo, duocPhep);
@@ -940,16 +749,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 });
     }
 
-    /** Lấy khi lựa chọn đã thay đổi trong QuanLyDanhMucPanel. */
     private void layKhiLuaChonDaThayDoi() {
         // Hiển thị dòng.
         int hienThiDong = tblBang.getSelectedRow();
         // Đích.
         Object[] dich =
                 hienThiDong < 0 ? null : daHienThi.get(tblBang.convertRowIndexToModel(hienThiDong));
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo != CheDo.HIEN_THI && dich != hienTai && kiemTraChuaLuu()) {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (!HopThoai.xacNhan(this, "Bỏ các thay đổi chưa lưu?")) {
                 dangChon = true;
                 chonDong(hienTai);
@@ -960,11 +766,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         hienThiBanGhi(dich);
     }
 
-    /**
-     * Hiển thị bản ghi trong QuanLyDanhMucPanel.
-     *
-     * @param bienLai biên lai
-     */
     private void hienThiBanGhi(Object[] bienLai) {
         hienTai = bienLai;
         xoaThongBao();
@@ -973,11 +774,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         datCheDo(CheDo.HIEN_THI);
     }
 
-    /**
-     * Kiểm tra chưa lưu trong QuanLyDanhMucPanel.
-     *
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private boolean kiemTraChuaLuu() {
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
             // Hiện tại.
@@ -985,22 +781,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             // Trước.
             String truoc =
                     cheDo == CheDo.MOI ? layMacDinhCua(chiSo) : String.valueOf(hienTai[chiSo]);
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (!hienTai2.equals(truoc)) return true;
         }
         return false;
     }
 
-    /**
-     * Lấy mặc định của trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @return kết quả lấy mặc định của
-     */
     private String layMacDinhCua(int chiSo) {
-        // Trường đang xét.
         TruongDuLieu truongDangXet = cacTruong.get(chiSo);
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (truongDangXet.kieu == Kieu.HOP_CHON) {
             // Đối tượng.
             String[] doiTuong = layCacLuaChonCua(truongDangXet);
@@ -1011,10 +798,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         return truongDangXet.giaTriMacDinh;
     }
 
-    /** Bắt đầu tạo bản ghi mới trong QuanLyDanhMucPanel. */
     private void batDauTaoMoi() {
         if (!coTheChinhSua()) return;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo != CheDo.HIEN_THI
                 && kiemTraChuaLuu()
                 && !HopThoai.xacNhan(this, "Bỏ các thay đổi chưa lưu?")) return;
@@ -1034,15 +819,12 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         layTieuDiemDauTienCoTheSua();
     }
 
-    /** Bắt đầu chỉnh sửa bản ghi trong QuanLyDanhMucPanel. */
     private void batDauSua() {
         if (!coTheChinhSua() || hienTai != null && !coTheSuaBanGhi(hienTai)) return;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (hienTai == null) {
             HopThoai.hienThiThongTin(this, "Chọn một dòng để sửa.");
             return;
         }
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (kiemTraNgungHoatDong(hienTai)) {
             // Cho phép khôi phục bản ghi đã ngừng hoạt động
             hienThiBanGhi(hienTai);
@@ -1052,23 +834,19 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         layTieuDiemDauTienCoTheSua();
     }
 
-    /** Hủy sửa trong QuanLyDanhMucPanel. */
     private void huySua() {
         hienThiBanGhi(hienTai);
         chonDong(hienTai);
     }
 
-    /** Lấy tiêu điểm đầu tiên có thể sửa trong QuanLyDanhMucPanel. */
     private void layTieuDiemDauTienCoTheSua() {
         SwingUtilities.invokeLater(
                 () -> {
                     for (int chiSo = 0; chiSo < cacDauVao.length; chiSo++) {
-                        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
                         if (cacDauVao[chiSo].isEnabled()
                                 && cacTruong.get(chiSo).kieu != Kieu.TUY_CHINH
                                 && cacTruong.get(chiSo).kieu != Kieu.TEP) {
                             cacDauVao[chiSo].requestFocusInWindow();
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (cacDauVao[chiSo] instanceof JTextField txtGiaTriTam)
                                 txtGiaTriTam.selectAll();
                             return;
@@ -1078,7 +856,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     // ───────────────────────── Lưu / Xóa mềm
-    /** Lưu trong QuanLyDanhMucPanel. */
     private void luu() {
         // Các giá trị.
         Object[] cacGiaTri = new Object[cacTruong.size()];
@@ -1087,44 +864,33 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Đầu tiên không hợp lệ.
         int dauTienKhongHopLe = -1;
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
-            // Trường đang xét.
             TruongDuLieu truongDangXet = cacTruong.get(chiSo);
-            // Giá trị.
             String giaTri = layDauVao(chiSo);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (chiSo == 0 && truongDangXet.docChi)
                 giaTri =
                         cheDo == CheDo.MOI
                                 ? String.valueOf(layDauVao(0))
                                 : String.valueOf(hienTai[0]);
             cacGiaTri[chiSo] = giaTri;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truongDangXet.docChi && !(chiSo == 0))
                 cacGiaTri[chiSo] = cheDo == CheDo.MOI ? layMacDinhCua(chiSo) : hienTai[chiSo];
             // Lỗi.
             String loi = kiemTraTruong(chiSo, truongDangXet, String.valueOf(cacGiaTri[chiSo]));
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (loi != null) {
                 cacLoi.add(loi);
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (dauTienKhongHopLe < 0) dauTienKhongHopLe = chiSo;
             }
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cacLoi.isEmpty() && cauHinh.boSungBoKiemTra != null) {
             // Lỗi.
             String loi = cauHinh.boSungBoKiemTra.apply(cacGiaTri);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (loi != null) cacLoi.add(loi);
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (!cacLoi.isEmpty()) {
             HopThoai.hienThiCanhBao(this, "Chưa thể lưu:\n• " + String.join("\n• ", cacLoi));
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (dauTienKhongHopLe >= 0) cacDauVao[dauTienKhongHopLe].requestFocusInWindow();
             return;
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cauHinh.boChuanHoa != null) cauHinh.boChuanHoa.accept(cacGiaTri);
         // Trước.
         Object[] truoc = cheDo == CheDo.SUA ? hienTai.clone() : null;
@@ -1136,7 +902,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             HopThoai.hienThiCanhBao(this, "Không thể lưu: " + ngoaiLe.getMessage());
             return;
         }
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cheDo == CheDo.MOI) {
             cacDong.add(cacGiaTri);
             daLuu = cacGiaTri;
@@ -1144,40 +909,26 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             System.arraycopy(cacGiaTri, 0, hienTai, 0, cacGiaTri.length);
             daLuu = hienTai;
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(truoc, daLuu);
         taiLai(daLuu);
         nhay("Đã lưu " + cauHinh.tenThucThe + " " + daLuu[0] + ".");
     }
 
-    /**
-     * Kiểm tra trường trong QuanLyDanhMucPanel.
-     *
-     * @param chiSo chỉ số
-     * @param truongDangXet trường đang xét
-     * @param giaTri giá trị
-     * @return kết quả kiểm tra trường
-     */
     private String kiemTraTruong(int chiSo, TruongDuLieu truongDangXet, String giaTri) {
         // Tên.
         String ten = truongDangXet.nhan;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (truongDangXet.batBuoc && giaTri.isBlank()) return ten + " không được để trống.";
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri.isBlank()) return null;
         switch (truongDangXet.kieu) {
             case SO_DIEN_THOAI -> {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (!giaTri.replaceAll("[\\s.]", "").matches("0\\d{9}"))
                     return ten + " phải gồm 10 chữ số, bắt đầu bằng 0.";
             }
             case EMAIL -> {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (!giaTri.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+"))
                     return ten + " không đúng định dạng (vd: ten@email.com).";
             }
             case CCCD -> {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (!giaTri.matches("\\d{12}")) return ten + " phải gồm đúng 12 chữ số.";
             }
             case NGAY -> {
@@ -1188,23 +939,18 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 }
             }
             case TIEN_TE -> {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (giaTri.equals("?")) return ten + " không phải số tiền hợp lệ.";
             }
             case SO_NGUYEN -> {
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (!giaTri.matches("\\d{1,9}")) return ten + " phải là số nguyên không âm.";
             }
             default -> {}
         }
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (truongDangXet.duyNhat) {
             // Khóa.
             String khoa = giaTri.replaceAll("[\\s.]", "").toLowerCase();
             for (Object[] dongDuLieu : cacDong) {
-                // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
                 if (dongDuLieu == hienTai && cheDo == CheDo.SUA) continue;
-                // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                 if (String.valueOf(dongDuLieu[chiSo])
                         .replaceAll("[\\s.]", "")
                         .toLowerCase()
@@ -1216,26 +962,20 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         return null;
     }
 
-    /** Lấy nhạt xóa trong QuanLyDanhMucPanel. */
     private void layNhatXoa() {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (hienTai == null) return;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (cauHinh.chiSoTrangThai < 0) {
             HopThoai.hienThiThongTin(this, "Danh mục này không hỗ trợ ngừng hoạt động.");
             return;
         }
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cauHinh.xoaDieuKienBaoVe != null) {
             // Khối.
             String khoi = cauHinh.xoaDieuKienBaoVe.apply(hienTai);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (khoi != null) {
                 HopThoai.hienThiCanhBao(this, khoi);
                 return;
             }
         }
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!HopThoai.xacNhanNguyHiem(
                 this,
                 "Chuyển "
@@ -1270,7 +1010,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         + " ("
                         + cauHinh.nhanNgungHoatDong
                         + ")");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(truoc, hienTai);
         taiLai(hienTai);
         nhay(
@@ -1282,17 +1021,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         + ".");
     }
 
-    /**
-     * Chạy bổ sung trong QuanLyDanhMucPanel.
-     *
-     * @param ngoaiLe ngoại lệ
-     */
     private void chayBoSung(ThaoTacBoSung ngoaiLe) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (hienTai == null) return;
         // Trước.
         Object[] truoc = hienTai.clone();
-        // Kết quả.
         String ketQua;
         try {
             ketQua = ngoaiLe.boXuLy().apply(hienTai);
@@ -1304,62 +1036,37 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             return;
         }
         taiLai(hienTai);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (ketQua != null) nhay(ketQua);
     }
 
-    /**
-     * Kiểm tra ngừng hoạt động trong QuanLyDanhMucPanel.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private boolean kiemTraNgungHoatDong(Object[] dongDuLieu) {
         return cauHinh.chiSoTrangThai >= 0
                 && cauHinh.nhanNgungHoatDong.equals(
                         String.valueOf(dongDuLieu[cauHinh.chiSoTrangThai]));
     }
 
-    /**
-     * Chuẩn hóa trong QuanLyDanhMucPanel.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     */
     private void chuanHoa(Object[] dongDuLieu) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (cauHinh.boChuanHoa != null) cauHinh.boChuanHoa.accept(dongDuLieu);
     }
 
-    /**
-     * Lấy mã tiếp theo trong QuanLyDanhMucPanel.
-     *
-     * @return kết quả lấy mã tiếp theo
-     */
     private String layMaTiepTheo() {
         // Lớn nhất.
         int lonNhat = 0;
         for (Object[] dongDuLieu : cacDong) {
             // Các chữ số.
             String cacChuSo = String.valueOf(dongDuLieu[0]).replaceAll("\\D", "");
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (!cacChuSo.isEmpty()) lonNhat = Math.max(lonNhat, Integer.parseInt(cacChuSo));
         }
         return cauHinh.maTienTo + String.format("%03d", lonNhat + 1);
     }
 
     // ───────────────────────── Bảng
-    /**
-     * Tải lại trong QuanLyDanhMucPanel.
-     *
-     * @param giu giữ
-     */
     private void taiLai(Object[] giu) {
         for (Object[] dongDuLieu : cacDong) chuanHoa(dongDuLieu);
         dangChon = true;
         daHienThi.clear();
         moHinh.setRowCount(0);
         for (Object[] dongDuLieu : cacDong) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (!khopBoLoc(dongDuLieu)) continue;
             daHienThi.add(dongDuLieu);
             // Dòng.
@@ -1367,9 +1074,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             for (int khoaDangXet = 0; khoaDangXet < dong.length; khoaDangXet++) {
                 // Chỉ số.
                 int chiSo = danhSachCacTruong.get(khoaDangXet);
-                // Trường đang xét.
                 TruongDuLieu truongDangXet = cacTruong.get(chiSo);
-                // Giá trị.
                 String giaTri = String.valueOf(dongDuLieu[chiSo]);
                 dong[khoaDangXet] =
                         truongDangXet.hienThi != null
@@ -1381,9 +1086,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             moHinh.addRow(dong);
         }
         dangChon = false;
-        lblSoKetQua.setText(tblBang.getRowCount() + " kết quả");
+        capNhatSoKetQua();
         chonDong(giu);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giu != null
                 && (!daHienThi.contains(giu)
                         || tblBang.convertRowIndexToView(daHienThi.indexOf(giu)) < 0))
@@ -1392,22 +1096,15 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         if (giu != null) hienThiBanGhi(giu);
     }
 
-    /**
-     * Chọn dòng trong QuanLyDanhMucPanel.
-     *
-     * @param bienLai biên lai
-     */
     private void chonDong(Object[] bienLai) {
         dangChon = true;
         try {
             // Chỉ số.
             int chiSo = bienLai == null ? -1 : daHienThi.indexOf(bienLai);
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (chiSo < 0) tblBang.clearSelection();
             else {
                 // Hiển thị.
                 int hienThi = tblBang.convertRowIndexToView(chiSo);
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (hienThi >= 0) tblBang.setRowSelectionInterval(hienThi, hienThi);
                 else tblBang.clearSelection();
             }
@@ -1416,61 +1113,92 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /**
-     * Nháy trong QuanLyDanhMucPanel.
-     *
-     * @param vanBan văn bản
-     */
     private void nhay(String vanBan) {
         lblThongBao.setForeground(MauUngDung.XANH_LA);
         lblThongBao.setText(vanBan);
-        // Giá trị tạm.
         Timer giaTriTam =
                 new Timer(
                         3500,
                         suKien -> {
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                             if (lblThongBao.getText().equals(vanBan)) xoaThongBao();
                         });
         giaTriTam.setRepeats(false);
         giaTriTam.start();
     }
 
-    /** Xóa thông báo trong QuanLyDanhMucPanel. */
     private void xoaThongBao() {
         lblThongBao.setText(" ");
     }
 
-    /** Xử lý hiển thị trong QuanLyDanhMucPanel. */
-    @Override
-    public void xuLyHienThi() {
-        // Danh sách chọn (ví dụ chủ nuôi) và trạng thái tự tính theo ngày có thể đã đổi
-        // Giữ.
-        Object[] giu = hienTai;
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
-        if (cheDo == CheDo.HIEN_THI) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-            if (cacDong instanceof com.petstation.service.DanhMucService.CacDong danhMuc)
-                danhMuc.lamMoi();
-            taiLai(null);
-        }
+    private ThanhDanhSach thanhDuLieu;
+
+    private int phienNap;
+    private final java.util.Map<javax.swing.AbstractButton, Boolean> nutDangTai =
+            new java.util.IdentityHashMap<>();
+
+    public boolean dangTaiDuLieu() {
+        return !nutDangTai.isEmpty();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong QuanLyDanhMucPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
+    private void napDuLieuNen(com.petstation.service.DanhMucService.CacDong danhMuc) {
+        int token = ++phienNap;
+        var session = com.petstation.service.PhienDangNhapService.layPhienHienTai();
+        for (java.awt.Component c : thanhDuLieu.getComponents())
+            if (c instanceof javax.swing.AbstractButton button) {
+                nutDangTai.putIfAbsent(button, button.isEnabled());
+                button.setEnabled(false);
+            }
+        lblSoKetQua.setText("· Đang tải…");
+        new javax.swing.SwingWorker<java.util.List<Object[]>, Void>() {
+            protected java.util.List<Object[]> doInBackground() throws Exception {
+                return com.petstation.service.PhienDangNhapService.trongPhien(
+                        session, danhMuc::taiBanSao);
+            }
+
+            protected void done() {
+                if (token != phienNap
+                        || com.petstation.service.PhienDangNhapService.layPhienHienTai() != session)
+                    return;
+                nutDangTai.forEach(javax.swing.AbstractButton::setEnabled);
+                nutDangTai.clear();
+                try {
+                    var rows = get();
+                    if (cheDo != CheDo.HIEN_THI) return;
+                    danhMuc.clear();
+                    danhMuc.addAll(rows);
+                    lamMoiLuaChonLoc();
+                    taiLai(null);
+                    com.petstation.gui.navigation.NguCanhMoBanGhi.apDung(QuanLyDanhMucPanel.this);
+                } catch (Exception ex) {
+                    lblSoKetQua.setText("· Không tải được dữ liệu");
+                    HopThoai.hienThiCanhBao(
+                            QuanLyDanhMucPanel.this,
+                            ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage());
+                }
+            }
+        }.execute();
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        if (cheDo != CheDo.HIEN_THI) return;
+        if (cacDong instanceof com.petstation.service.DanhMucService.CacDong danhMuc) {
+            if (javax.swing.SwingUtilities.isEventDispatchThread()
+                    && com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()) {
+                napDuLieuNen(danhMuc);
+                return;
+            }
+            danhMuc.lamMoi();
+            lamMoiLuaChonLoc();
+        }
+        taiLai(null);
+    }
+
     @Override
     protected String layTieuDeTroGiup() {
         return cauHinh.tieuDe;
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong QuanLyDanhMucPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Danh mục chỉ thêm, sửa, xóa (xóa mềm), lưu và tìm kiếm.\n"
@@ -1481,21 +1209,15 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     /** Bộ lọc dùng chung, giá trị chọn lấy từ dữ liệu thật của từng danh mục. */
-    private JPanel taoThanhBoLoc() {
-        JPanel goc = new JPanel();
-        goc.setOpaque(false);
-        goc.setLayout(new javax.swing.BoxLayout(goc, javax.swing.BoxLayout.Y_AXIS));
-        JPanel dong = null;
-        int stt = 0;
+    private void capNhatSoKetQua() {
+        lblSoKetQua.setText(ThanhDanhSach.soKetQua(tblBang.getRowCount(), cacDong.size()));
+    }
+
+    private void taoThanhBoLoc(ThanhDanhSach thanh) {
         for (BoLocDanhMuc bo : cauHinh.cacBoLoc) {
-            if (stt++ % 3 == 0) {
-                dong = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 3));
-                dong.setOpaque(false);
-                goc.add(dong);
-            }
             JComboBox<String> chon = new JComboBox<>();
             chon.setName("loc:" + bo.nhan());
-            chon.setPreferredSize(new Dimension(155, 32));
+            chon.setPreferredSize(new Dimension(125, 36));
             chon.addItem("Tất cả");
             cacDong.stream()
                     .map(bo.giaTri())
@@ -1504,17 +1226,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     .sorted()
                     .forEach(chon::addItem);
             cboCacBoLoc.add(chon);
-            dong.add(new JLabel(bo.nhan() + ":"));
-            dong.add(chon);
+            thanh.themBoLoc(bo.nhan() + ":", chon);
             chon.addActionListener(
                     e -> {
                         if (!dangNapBoLoc) taiLai(hienTai);
                     });
-        }
-        if (stt % 3 == 0 || dong == null) {
-            dong = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 3));
-            dong.setOpaque(false);
-            goc.add(dong);
         }
         if (cauHinh.chiSoTrangThai >= 0) {
             cboTrangThai.setName("loc:Trạng thái");
@@ -1525,21 +1241,26 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     .distinct()
                     .sorted()
                     .forEach(cboTrangThai::addItem);
-            dong.add(new JLabel(layNhanBoLocTrangThai() + ":"));
-            dong.add(cboTrangThai);
-            cboTrangThai.addActionListener(e -> taiLai(hienTai));
+            thanh.themBoLoc(layNhanBoLocTrangThai() + ":", cboTrangThai);
+            cboTrangThai.addActionListener(
+                    e -> {
+                        if (!dangNapBoLoc) taiLai(hienTai);
+                    });
         }
-        javax.swing.JButton xoa = new javax.swing.JButton("Xóa bộ lọc");
+        JButton xoa = new JButton("Xóa lọc");
         xoa.addActionListener(
                 e -> {
-                    for (var c : cboCacBoLoc) c.setSelectedIndex(0);
-                    if (cboTrangThai.getItemCount() > 0) cboTrangThai.setSelectedIndex(0);
-                    txtTimKiemChung.setText("");
+                    dangNapBoLoc = true;
+                    try {
+                        for (var c : cboCacBoLoc) c.setSelectedIndex(0);
+                        if (cboTrangThai.getItemCount() > 0) cboTrangThai.setSelectedIndex(0);
+                        txtTimKiemChung.setText("");
+                    } finally {
+                        dangNapBoLoc = false;
+                    }
                     taiLai(hienTai);
                 });
-        dong.add(xoa);
-        dong.add(lblSoKetQua);
-        return goc;
+        thanh.themBoLoc(xoa);
     }
 
     private boolean khopBoLoc(Object[] d) {

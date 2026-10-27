@@ -41,12 +41,6 @@ public class KiemTraBieuMau {
         /** Bắt buộc. */
         boolean batBuoc;
 
-        /**
-         * Khởi tạo QuyTacKiemTra với các giá trị được cung cấp.
-         *
-         * @param boKiemTra bộ kiểm tra
-         * @param batBuoc bắt buộc
-         */
         public QuyTacKiemTra(Function<String, String> boKiemTra, boolean batBuoc) {
             this.boKiemTra = boKiemTra;
             this.batBuoc = batBuoc;
@@ -126,18 +120,10 @@ public class KiemTraBieuMau {
                         });
     }
 
-    /**
-     * Lấy thành phần dòng trong KiemTraBieuMau.
-     *
-     * @param cha cha
-     * @param thanhPhan thành phần
-     * @return kết quả lấy thành phần dòng
-     */
     private int layThanhPhanDong(Container cha, Component thanhPhan) {
         // Các thành phần.
         Component[] cacThanhPhan = cha.getComponents();
         for (int chiSo = 0; chiSo < cacThanhPhan.length; chiSo++) {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (cacThanhPhan[chiSo] == thanhPhan) {
                 return chiSo / 2; // Ước lượng gần đúng
             }
@@ -156,25 +142,20 @@ public class KiemTraBieuMau {
     public boolean kiemTraTruong(JTextField txtTruong) {
         // Quy tắc.
         QuyTacKiemTra quyTac = cacQuyTac.get(txtTruong);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (quyTac == null) return true;
 
-        // Giá trị.
         String giaTri = txtTruong.getText().trim();
 
         // Kiểm tra trường bắt buộc
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (quyTac.batBuoc && giaTri.isEmpty()) {
             hienThiLoi(txtTruong, "Trường này là bắt buộc");
             return false;
         }
 
         // Chạy quy tắc kiểm tra riêng
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (!giaTri.isEmpty() && quyTac.boKiemTra != null) {
             // Lỗi.
             String loi = quyTac.boKiemTra.apply(giaTri);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (loi != null) {
                 hienThiLoi(txtTruong, loi);
                 return false;
@@ -197,7 +178,6 @@ public class KiemTraBieuMau {
         boolean tatCaHopLe = true;
 
         for (JComponent truong : cacQuyTac.keySet()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truong instanceof JTextField) {
                 // Hợp lệ.
                 boolean hopLe = kiemTraTruong((JTextField) truong);
@@ -208,40 +188,26 @@ public class KiemTraBieuMau {
         return tatCaHopLe;
     }
 
-    /**
-     * Hiển thị lỗi trong KiemTraBieuMau.
-     *
-     * @param txtTruong trường
-     * @param thongBao thông báo
-     */
     private void hienThiLoi(JTextField txtTruong, String thongBao) {
         txtTruong.setBorder(LOI_VIEN);
 
         // Nhãn lỗi.
         JLabel lblNhanLoi = loiCacNhan.get(txtTruong);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (lblNhanLoi != null) {
             lblNhanLoi.setText("" + thongBao);
             lblNhanLoi.setVisible(true);
         }
     }
 
-    /**
-     * Xóa lỗi trong KiemTraBieuMau.
-     *
-     * @param txtTruong trường
-     */
     private void xoaLoi(JTextField txtTruong) {
         // Ban đầu viền.
         Border banDauVien = banDauCacVien.get(txtTruong);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (banDauVien != null) {
             txtTruong.setBorder(banDauVien);
         }
 
         // Nhãn lỗi.
         JLabel lblNhanLoi = loiCacNhan.get(txtTruong);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (lblNhanLoi != null) {
             lblNhanLoi.setVisible(false);
         }
@@ -254,7 +220,6 @@ public class KiemTraBieuMau {
      */
     public void xoaTatCaCacLoi() {
         for (JComponent truong : cacQuyTac.keySet()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
             if (truong instanceof JTextField) {
                 xoaLoi((JTextField) truong);
             }
@@ -263,26 +228,15 @@ public class KiemTraBieuMau {
 
     // === COMMON VALIDATORS ===
 
-    /**
-     * Lấy bắt buộc trong KiemTraBieuMau.
-     *
-     * @return kết quả lấy bắt buộc
-     */
     public static QuyTacKiemTra layBatBuoc() {
         return new QuyTacKiemTra(null, true);
     }
 
-    /**
-     * Lấy email trong KiemTraBieuMau.
-     *
-     * @return kết quả lấy email
-     */
     public static QuyTacKiemTra layEmail() {
         // Mẫu.
         Pattern mau = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
         return new QuyTacKiemTra(
                 giaTri -> {
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (!mau.matcher(giaTri).matches()) {
                         return "Email không đúng định dạng";
                     }
@@ -303,7 +257,6 @@ public class KiemTraBieuMau {
         Pattern mau = Pattern.compile("^0\\d{9,10}$");
         return new QuyTacKiemTra(
                 giaTri -> {
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (!mau.matcher(giaTri).matches()) {
                         return "Số điện thoại phải có 10-11 số và bắt đầu bằng 0";
                     }
@@ -352,16 +305,9 @@ public class KiemTraBieuMau {
                 false);
     }
 
-    /**
-     * Lấy nhỏ nhất độ dài trong KiemTraBieuMau.
-     *
-     * @param nhoNhat nhỏ nhất
-     * @return kết quả lấy nhỏ nhất độ dài
-     */
     public static QuyTacKiemTra layNhoNhatDoDai(int nhoNhat) {
         return new QuyTacKiemTra(
                 giaTri -> {
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (giaTri.length() < nhoNhat) {
                         return "Phải có ít nhất " + nhoNhat + "ký tự";
                     }
@@ -370,16 +316,9 @@ public class KiemTraBieuMau {
                 false);
     }
 
-    /**
-     * Lấy lớn nhất độ dài trong KiemTraBieuMau.
-     *
-     * @param lonNhat lớn nhất
-     * @return kết quả lấy lớn nhất độ dài
-     */
     public static QuyTacKiemTra layLonNhatDoDai(int lonNhat) {
         return new QuyTacKiemTra(
                 giaTri -> {
-                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                     if (giaTri.length() > lonNhat) {
                         return "Không được quá " + lonNhat + "ký tự";
                     }
@@ -388,20 +327,12 @@ public class KiemTraBieuMau {
                 false);
     }
 
-    /**
-     * Lấy khoảng trong KiemTraBieuMau.
-     *
-     * @param nhoNhat nhỏ nhất
-     * @param lonNhat lớn nhất
-     * @return kết quả lấy khoảng
-     */
     public static QuyTacKiemTra layKhoang(double nhoNhat, double lonNhat) {
         return new QuyTacKiemTra(
                 giaTri -> {
                     try {
                         // Số.
                         double so = Double.parseDouble(giaTri);
-                        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                         if (so < nhoNhat || so > lonNhat) {
                             return String.format("Phải trong khoảng %.0f - %.0f", nhoNhat, lonNhat);
                         }
@@ -413,31 +344,17 @@ public class KiemTraBieuMau {
                 false);
     }
 
-    /**
-     * Lấy tùy chỉnh trong KiemTraBieuMau.
-     *
-     * @param boKiemTra bộ kiểm tra
-     * @return kết quả lấy tùy chỉnh
-     */
     public static QuyTacKiemTra layTuyChinh(Function<String, String> boKiemTra) {
         return new QuyTacKiemTra(boKiemTra, false);
     }
 
-    /**
-     * Kết hợp trong KiemTraBieuMau.
-     *
-     * @param cacQuyTac các quy tắc
-     * @return kết quả kết hợp
-     */
     public static QuyTacKiemTra ketHop(QuyTacKiemTra... cacQuyTac) {
         return new QuyTacKiemTra(
                 giaTri -> {
                     for (QuyTacKiemTra quyTac : cacQuyTac) {
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (quyTac.boKiemTra != null) {
                             // Lỗi.
                             String loi = quyTac.boKiemTra.apply(giaTri);
-                            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                             if (loi != null) return loi;
                         }
                     }

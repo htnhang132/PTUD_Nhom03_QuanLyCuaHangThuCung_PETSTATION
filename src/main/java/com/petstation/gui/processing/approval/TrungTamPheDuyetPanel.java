@@ -74,7 +74,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
     /** Đã chọn. */
     private YeuCau daChon;
 
-    /** Khởi tạo TrungTamPheDuyetPanel với các giá trị được cung cấp. */
     public TrungTamPheDuyetPanel() {
         setLayout(new BorderLayout(0, 10));
         // Trên.
@@ -98,7 +97,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         suKien -> {
-                            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                             if (suKien.getValueIsAdjusting()) return;
                             // Dòng dữ liệu.
                             int dongDuLieu = tblBang.getSelectedRow();
@@ -137,7 +135,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         taiLai();
     }
 
-    /** Tải lại trong TrungTamPheDuyetPanel. */
     private void taiLai() {
         // Giữ.
         YeuCau giu = daChon;
@@ -147,7 +144,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         List<YeuCau> tatCa = new ArrayList<>(PheDuyetService.layTatCa());
 
         for (YeuCau dongDuLieu : tatCa) {
-            // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
             if (btnDangChoChi.isSelected() && !dongDuLieu.trangThai.equals("Chờ duyệt")) continue;
             daHienThi.add(dongDuLieu);
             moHinh.addRow(
@@ -165,7 +161,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
                 dangCho == 0 ? "Không có yêu cầu chờ duyệt" : dangCho + " yêu cầu chờ duyệt");
         // Chỉ số.
         int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (chiSo >= 0) tblBang.setRowSelectionInterval(chiSo, chiSo);
         else {
             daChon = null;
@@ -173,10 +168,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         }
     }
 
-    /** Hiển thị chi tiết trong TrungTamPheDuyetPanel. */
     private void hienThiChiTiet() {
         pnlChiTiet.removeAll();
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (daChon == null) {
             // Gợi ý.
             JLabel lblGoiY = new JLabel("Chọn một yêu cầu để xem chi tiết.", JLabel.CENTER);
@@ -188,7 +181,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             // Đầu.
             JPanel pnlDau = new JPanel(new GridLayout(0, 1, 0, 3));
             pnlDau.setOpaque(false);
-            // Giá trị tạm.
             JLabel lblGiaTriTam = new JLabel(dongDuLieu.id + " · " + dongDuLieu.loai.nhan);
             lblGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.BOLD, 16));
             pnlDau.add(lblGiaTriTam);
@@ -237,13 +229,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         pnlChiTiet.repaint();
     }
 
-    /**
-     * Lấy dòng trong TrungTamPheDuyetPanel.
-     *
-     * @param khoaDangXet khóa đang xét
-     * @param giaTri giá trị
-     * @return kết quả lấy dòng
-     */
     private static JLabel layDong(String khoaDangXet, String giaTri) {
         // Dòng đang xét.
         JLabel lblDongDangXet =
@@ -257,16 +242,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         return lblDongDangXet;
     }
 
-    /**
-     * Lấy hộp trong TrungTamPheDuyetPanel.
-     *
-     * @param tieuDe tiêu đề
-     * @param vanBan văn bản
-     * @param nen nền
-     * @return kết quả lấy hộp
-     */
     private static JPanel layHop(String tieuDe, String vanBan, Color nen) {
-        // Vùng đang xét.
         JPanel pnlVungDangXet = new JPanel(new BorderLayout(0, 4));
         pnlVungDangXet.setOpaque(false);
         // Dòng đang xét.
@@ -286,13 +262,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         return pnlVungDangXet;
     }
 
-    /**
-     * Duyệt trong TrungTamPheDuyetPanel.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     */
     private void duyet(YeuCau dongDuLieu) {
-        // Chọn cách xử lý tương ứng với trạng thái hoặc loại đang xét.
         if (!HopThoai.xacNhan(
                 this,
                 "Duyệt yêu cầu "
@@ -308,22 +278,14 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         }
     }
 
-    /**
-     * Từ chối trong TrungTamPheDuyetPanel.
-     *
-     * @param dongDuLieu dòng dữ liệu
-     */
     private void tuChoi(YeuCau dongDuLieu) {
-        // Giá trị.
         List<String> giaTri =
                 BieuMauDialog.layYeuCauNhap(
                         this,
                         "Từ chối yêu cầu " + dongDuLieu.id,
                         new String[] {"Lý do từ chối *"},
                         new String[] {""});
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri == null) return;
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (giaTri.get(0).isBlank()) {
             HopThoai.hienThiCanhBao(this, "Cần nhập lý do từ chối.");
             return;
@@ -336,27 +298,16 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         }
     }
 
-    /** Xử lý hiển thị trong TrungTamPheDuyetPanel. */
     @Override
     public void xuLyHienThi() {
         taiLai();
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong TrungTamPheDuyetPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Phê duyệt yêu cầu";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong TrungTamPheDuyetPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Chọn yêu cầu, xem nội dung trước và sau khi sửa, rồi Duyệt hoặc Từ chối (bắt buộc"

@@ -18,7 +18,6 @@ import javax.swing.table.DefaultTableModel;
  * <p>Ma trận quyền theo chức năng cho 4 vai trò (chỉ xem; quyền gán theo vai trò).
  */
 public final class MaTranQuyenPanel extends CoSoPanel {
-    /** Khởi tạo MaTranQuyenPanel với các giá trị được cung cấp. */
     public MaTranQuyenPanel() {
         setLayout(new BorderLayout(0, 10));
         // Các vai trò.
@@ -90,21 +89,11 @@ public final class MaTranQuyenPanel extends CoSoPanel {
         add(scrCuon, BorderLayout.CENTER);
     }
 
-    /**
-     * Lấy tiêu đề trợ giúp trong MaTranQuyenPanel.
-     *
-     * @return kết quả lấy tiêu đề trợ giúp
-     */
     @Override
     protected String layTieuDeTroGiup() {
         return "Ma trận quyền";
     }
 
-    /**
-     * Lấy nội dung trợ giúp trong MaTranQuyenPanel.
-     *
-     * @return kết quả lấy nội dung trợ giúp
-     */
     @Override
     protected String layNoiDungTroGiup() {
         return "Mỗi tài khoản có đúng 1 vai trò; quyền theo vai trò như bảng.";

@@ -9,7 +9,6 @@ import java.util.*;
 
 /** Cung cấp giao diện và xử lý tương tác cho Spa báo cáo vùng hiển thị. */
 public final class ThongKeSpaPanel extends BaoCaoPanel {
-    /** Khởi tạo ThongKeSpaPanel với các giá trị được cung cấp. */
     public ThongKeSpaPanel() {
         super(
                 "Thống kê dịch vụ Spa",

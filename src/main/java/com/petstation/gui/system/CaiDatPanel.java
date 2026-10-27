@@ -1,13 +1,12 @@
 package com.petstation.gui.system;
 
-import static com.petstation.dao.ThaoTacSQL.*;
+import static com.petstation.util.DuLieu.*;
 
 import com.petstation.gui.components.CoSoPanel;
 import com.petstation.gui.components.HoTroThanhCongCu;
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.NutDinhDang;
 import com.petstation.service.CaiDatService;
-import com.petstation.service.NhatKyHeThongService;
 
 import java.awt.*;
 import java.util.*;
@@ -29,11 +28,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     private final Map<String, String> giaTriDaNap = new LinkedHashMap<>();
     private Object mayInDaNap;
 
-    /**
-     * Khởi tạo CaiDatPanel với các giá trị được cung cấp.
-     *
-     * @param coTheSua có thể sửa
-     */
     public CaiDatPanel(boolean coTheSua) {
         this.coTheSua = coTheSua;
         setLayout(new BorderLayout(0, 12));
@@ -49,10 +43,13 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         taoTruong(pnlCuaHang, "STORE_PHONE", "Số điện thoại");
         taoTruong(pnlCuaHang, "STORE_EMAIL", "Email");
         taoTruong(pnlCuaHang, "STORE_WEBSITE", "Website");
+        taoTruong(
+                pnlCuaHang,
+                "CARE_DATA_DIR",
+                "Thư mục lưu ảnh chăm sóc (trống: PetStation trong thư mục người dùng)");
         taoTruong(pnlCuaHang, "STORE_TAX_CODE", "Mã số thuế");
         for (PrintService dichVu : PrintServiceLookup.lookupPrintServices(null, null))
             cboMayIn.addItem(dichVu.getName());
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (cboMayIn.getItemCount() == 0) cboMayIn.addItem("Không có máy in");
         cboMayIn.setEnabled(coTheSua);
         pnlCuaHang.add(new JLabel("Máy in hóa đơn"));
@@ -116,12 +113,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         nap();
     }
 
-    /**
-     * Lấy nhóm trong CaiDatPanel.
-     *
-     * @param tieuDe tiêu đề
-     * @return kết quả lấy nhóm
-     */
     private JPanel layNhom(String tieuDe) {
         // Vùng hiển thị.
         JPanel pnlVungHienThi = layThe(new BorderLayout());
@@ -131,13 +122,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlVungHienThi;
     }
 
-    /**
-     * Tạo trường trong CaiDatPanel.
-     *
-     * @param pnlVungHienThi vùng hiển thị
-     * @param khoa khóa
-     * @param nhan nhãn
-     */
     private void taoTruong(JPanel pnlVungHienThi, String khoa, String nhan) {
         pnlVungHienThi.add(new JLabel(nhan));
         // Đầu vào.
@@ -151,19 +135,18 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlVungHienThi.add(Box.createVerticalStrut(10));
     }
 
-    /** Nạp trong CaiDatPanel. */
     private void nap() {
         for (var muc : cacDauVao.entrySet())
             muc.getValue()
                     .setText(
-                            muc.getKey().startsWith("BANK_")
+                            (muc.getKey().startsWith("BANK_")
+                                            || muc.getKey().equals("CARE_DATA_DIR"))
                                     ? CaiDatService.layTuyChon(muc.getKey())
                                     : CaiDatService.lay(muc.getKey()));
         // Đã chọn.
         cacDauVao.get("RETURN_WINDOW_DAYS").setText("3");
         cacDauVao.get("RETURN_WINDOW_DAYS").setEditable(false);
         String daChon = CaiDatService.lay("PRINTER");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (!daChon.isBlank()) cboMayIn.setSelectedItem(daChon);
         ghiNhanDaNap();
     }
@@ -185,46 +168,17 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         mayInDaNap = cboMayIn.getSelectedItem();
     }
 
-    /** Xử lý lưu trong CaiDatPanel. */
     @Override
     public void xuLyLuu() {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!coTheSua) return;
         try {
-            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
-            if (cacDauVao.get("STORE_NAME").getText().isBlank())
-                throw new IllegalArgumentException("Cần tên cửa hàng.");
-            // VAT.
-            int vat = Integer.parseInt(cacDauVao.get("VAT_PERCENT").getText()),
-                    thap = Integer.parseInt(cacDauVao.get("LOW_STOCK_THRESHOLD").getText()),
-                    hanSuDung = Integer.parseInt(cacDauVao.get("EXPIRY_WARN_DAYS").getText()),
-                    doiTra = Integer.parseInt(cacDauVao.get("RETURN_WINDOW_DAYS").getText());
-            // Trễ.
-            long tre = Long.parseLong(cacDauVao.get("LATE_CHECKOUT_FEE").getText()),
-                    gioiHan = Long.parseLong(cacDauVao.get("WRITEOFF_APPROVAL_LIMIT").getText());
-            thucHienGiaoDich(
-                    ketNoi -> {
-                        CaiDatService.capNhat(vat, thap, hanSuDung, tre, doiTra, gioiHan);
-                        CaiDatService.capNhatNganHang(
-                                cacDauVao.get("BANK_BIN").getText().trim(),
-                                cacDauVao.get("BANK_ACCOUNT").getText().trim(),
-                                cacDauVao
-                                        .get("BANK_ACCOUNT_NAME")
-                                        .getText()
-                                        .trim()
-                                        .toUpperCase(java.util.Locale.ROOT));
-                        for (var muc : cacDauVao.entrySet())
-                            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-                            if (muc.getKey().startsWith("STORE_"))
-                                CaiDatService.ghi(muc.getKey(), muc.getValue().getText().trim());
-                        CaiDatService.ghi(
-                                "PRINTER",
-                                "Không có máy in".equals(cboMayIn.getSelectedItem())
-                                        ? ""
-                                        : String.valueOf(cboMayIn.getSelectedItem()));
-                        NhatKyHeThongService.ghiNhatKy("Sửa", "Cài đặt hệ thống");
-                        return null;
-                    });
+            Map<String, String> giaTri = new LinkedHashMap<>();
+            cacDauVao.forEach((khoa, truong) -> giaTri.put(khoa, truong.getText()));
+            String mayIn =
+                    "Không có máy in".equals(cboMayIn.getSelectedItem())
+                            ? ""
+                            : String.valueOf(cboMayIn.getSelectedItem());
+            CaiDatService.luuTatCa(giaTri, mayIn);
             nap();
             HopThoai.hienThiThanhCong(this, "Đã lưu cài đặt.");
         } catch (RuntimeException ngoaiLe) {
@@ -232,7 +186,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
     }
 
-    /** Xử lý hiển thị trong CaiDatPanel. */
     @Override
     public void xuLyHienThi() {
         if (!coThayDoiChuaLuu()) nap();

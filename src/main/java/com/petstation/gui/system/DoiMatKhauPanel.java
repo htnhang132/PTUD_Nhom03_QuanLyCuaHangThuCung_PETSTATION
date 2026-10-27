@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 /** Cung cấp giao diện và xử lý tương tác cho thay đổi mật khẩu vùng hiển thị. */
 public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu {
     /** Điều hướng. */
-    private final java.util.function.Consumer<com.petstation.gui.navigation.MaManHinh> dieuHuong;
+    private final java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong;
 
     /** Trường hiện tại mật khẩu. */
     private TruongMatKhauAnHien pnlTruongHienTaiMatKhau;
@@ -40,13 +40,7 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     /** Bộ kiểm tra. */
     private KiemTraBieuMau boKiemTra;
 
-    /**
-     * Khởi tạo DoiMatKhauPanel với các giá trị được cung cấp.
-     *
-     * @param dieuHuong điều hướng
-     */
-    public DoiMatKhauPanel(
-            java.util.function.Consumer<com.petstation.gui.navigation.MaManHinh> dieuHuong) {
+    public DoiMatKhauPanel(java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong) {
         this.dieuHuong = dieuHuong;
         setLayout(new BorderLayout());
 
@@ -129,7 +123,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
                             private void capNhatDoManh() {
                                 // Mật khẩu.
                                 String matKhau = pnlTruongMoiMatKhau.layVanBanMatKhau();
-                                // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                 if (matKhau.isEmpty()) {
                                     lblNhanDoManh.setText("");
                                     return;
@@ -137,7 +130,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
 
                                 // Độ mạnh.
                                 int doManh = tinhMatKhauDoManh(matKhau);
-                                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                                 if (doManh < 3) {
                                     lblNhanDoManh.setText("Mật khẩu yếu");
                                     lblNhanDoManh.setForeground(MauUngDung.NGUY_HIEM);
@@ -207,11 +199,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         add(scrNoiDung, BorderLayout.CENTER);
     }
 
-    /**
-     * Tạo trường mật khẩu trong DoiMatKhauPanel.
-     *
-     * @return kết quả tạo trường mật khẩu
-     */
     private TruongMatKhauAnHien taoTruongMatKhau() {
         // Trường.
         TruongMatKhauAnHien pnlTruong = new TruongMatKhauAnHien(20);
@@ -229,7 +216,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         String xacNhan = pnlTruongXacNhanMatKhau.layVanBanMatKhau();
 
         // Kiểm tra dữ liệu trống
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (hienTai.isEmpty()) {
             hienThiThongBao(
                     "Vui lòng nhập mật khẩu hiện tại.",
@@ -239,7 +225,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
             return;
         }
 
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (moiMatKhau.isEmpty()) {
             hienThiThongBao(
                     "Vui lòng nhập mật khẩu mới.",
@@ -250,7 +235,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         }
 
         // Kiểm tra độ dài
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (moiMatKhau.length() < 8) {
             hienThiThongBao(
                     "Mật khẩu mới phải có ít nhất 8 ký tự.",
@@ -261,7 +245,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         }
 
         // Kiểm tra mật khẩu xác nhận
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!moiMatKhau.equals(xacNhan)) {
             hienThiThongBao(
                     "Xác nhận mật khẩu không khớp.",
@@ -273,7 +256,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         }
 
         // Kiểm tra mật khẩu mới khác mật khẩu hiện tại
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (moiMatKhau.equals(hienTai)) {
             hienThiThongBao(
                     "Mật khẩu mới phải khác mật khẩu hiện tại.",
@@ -297,49 +279,29 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         pnlTruongXacNhanMatKhau.xoa();
     }
 
-    /**
-     * Tính mật khẩu độ mạnh trong DoiMatKhauPanel.
-     *
-     * @param matKhau mật khẩu
-     * @return kết quả tính mật khẩu độ mạnh
-     */
     private int tinhMatKhauDoManh(String matKhau) {
         // Độ mạnh.
         int doManh = 0;
 
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.length() >= 8) doManh++;
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.length() >= 12) doManh++;
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.matches(".*[a-z].*")) doManh++; // Có chữ thường
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.matches(".*[A-Z].*")) doManh++; // Có chữ hoa
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.matches(".*\\d.*")) doManh++; // Có chữ số
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (matKhau.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*"))
             doManh++; // Có ký tự đặc biệt
 
         return Math.min(doManh, 5);
     }
 
-    /** Điều hướng quay lại trong DoiMatKhauPanel. */
     private void dieuHuongQuayLai() {
-        dieuHuong.accept(com.petstation.gui.navigation.MaManHinh.DASHBOARD);
+        dieuHuong.accept(com.petstation.model.MaManHinh.DASHBOARD);
     }
 
-    /** Điều hướng đến trang chính trong DoiMatKhauPanel. */
     private void dieuHuongDenTrangChinh() {
-        dieuHuong.accept(com.petstation.gui.navigation.MaManHinh.DASHBOARD);
+        dieuHuong.accept(com.petstation.model.MaManHinh.DASHBOARD);
     }
 
-    /**
-     * Đăng ký bàn phím phím tắt trong DoiMatKhauPanel.
-     *
-     * @param khoa khóa
-     * @param thaoTac thao tác
-     */
     private void dangKyBanPhimPhimTat(String khoa, java.awt.event.ActionListener thaoTac) {
         // Khóa nét vẽ.
         javax.swing.KeyStroke khoaNetVe = javax.swing.KeyStroke.getKeyStroke(khoa);
@@ -360,15 +322,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
                         });
     }
 
-    /**
-     * Thêm dòng trong DoiMatKhauPanel.
-     *
-     * @param pnlVungDangXet vùng đang xét
-     * @param giaTriDangXet giá trị đang xét
-     * @param toaDoDoc tọa độ dọc
-     * @param nhan nhãn
-     * @param truong trường
-     */
     private void themDong(
             JPanel pnlVungDangXet,
             GridBagConstraints giaTriDangXet,
@@ -386,28 +339,15 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         pnlVungDangXet.add(truong, giaTriDangXet);
     }
 
-    /**
-     * Hiển thị thông báo trong DoiMatKhauPanel.
-     *
-     * @param vanBan văn bản
-     * @param tieuDe tiêu đề
-     * @param kieu kiểu
-     */
     private void hienThiThongBao(String vanBan, String tieuDe, int kieu) {
         HopThoai.hienThiThongBaoHopThoai(this, vanBan, tieuDe, kieu);
     }
 
-    /**
-     * Lấy khả năng thanh công cụ trong DoiMatKhauPanel.
-     *
-     * @return kết quả lấy khả năng thanh công cụ
-     */
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(false, true, false, false, false, true);
     }
 
-    /** Xử lý trợ giúp trong DoiMatKhauPanel. */
     @Override
     public void xuLyTroGiup() {
         hienThiThongBao(

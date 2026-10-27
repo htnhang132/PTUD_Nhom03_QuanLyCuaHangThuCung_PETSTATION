@@ -45,6 +45,8 @@ nbdist/
 
 # Local database credentials (copy db.properties.example for each machine)
 src/main/resources/db.properties
+config/db.properties
+config/*.local.properties
 
 # ==================================
 # System & OS Files

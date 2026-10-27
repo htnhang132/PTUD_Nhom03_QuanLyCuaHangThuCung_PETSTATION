@@ -13,8 +13,8 @@ import com.petstation.gui.components.ThanhTrangThai;
 import com.petstation.gui.components.ThayDoiKichThuocCuaSo;
 import com.petstation.gui.navigation.DangKyManHinh;
 import com.petstation.gui.navigation.DinhNghiaManHinh;
-import com.petstation.gui.navigation.MaManHinh;
 import com.petstation.gui.system.DangNhapFrame;
+import com.petstation.model.MaManHinh;
 import com.petstation.model.PhienDangNhap;
 import com.petstation.service.NhatKyHeThongService;
 import com.petstation.service.PhanQuyenException;
@@ -91,11 +91,6 @@ public final class ChinhFrame extends JFrame {
     /** Hiện tại. */
     private MaManHinh hienTai;
 
-    /**
-     * Khởi tạo ChinhFrame với các giá trị được cung cấp.
-     *
-     * @param nguCanh ngữ cảnh
-     */
     public ChinhFrame(KhoiTaoUngDung nguCanh) {
         this.nguCanh = nguCanh;
         this.phienDangNhap = nguCanh.layNguCanhPhien().yeuCauHienTai();
@@ -113,6 +108,7 @@ public final class ChinhFrame extends JFrame {
 
         pnlThanhCongCu =
                 new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.DASHBOARD), this::diQuayLai);
+        pnlThanhCongCu.add(new com.petstation.gui.components.NhacViecButton(this::dieuHuong));
         pnlThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
         pnlThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         pnlThanhMenu =
@@ -169,7 +165,6 @@ public final class ChinhFrame extends JFrame {
                 .layCaLamViec()
                 .themBoLangNghe(
                         () -> {
-                            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                             if (manHinhBoDangKy.layCaLamViec().kiemTraMo()
                                     && dangChoSauCaLamViec != null) {
                                 // Đích.
@@ -185,11 +180,6 @@ public final class ChinhFrame extends JFrame {
         dieuHuong(MaManHinh.DASHBOARD);
     }
 
-    /**
-     * Điều hướng trong ChinhFrame.
-     *
-     * @param id id
-     */
     private void chuyenBuoc(MaManHinh dich) {
         try {
             com.petstation.service.QuyTrinhService.chuyenBuoc(
@@ -201,9 +191,13 @@ public final class ChinhFrame extends JFrame {
     }
 
     public void dieuHuong(MaManHinh id) {
+        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+            HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
+            return;
+        }
+
         // Định nghĩa.
         DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(id);
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (dinhNghia == null) return;
         try {
             // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
@@ -216,13 +210,11 @@ public final class ChinhFrame extends JFrame {
             return;
         }
 
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (manHinhBoDangKy.yeuCauMoCaLamViec(id) && !manHinhBoDangKy.layCaLamViec().kiemTraMo()) {
             nhacNhapMoCaLamViec(id, dinhNghia);
             return;
         }
 
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (id != MaManHinh.CASH_SHIFT) {
             dangChoSauCaLamViec = null;
             manHinhBoDangKy.layCaLamViec().datTieuDeDangCho("");
@@ -237,14 +229,7 @@ public final class ChinhFrame extends JFrame {
     /** Đang chờ sau ca làm việc. */
     private MaManHinh dangChoSauCaLamViec;
 
-    /**
-     * Nhắc nhập mở ca làm việc trong ChinhFrame.
-     *
-     * @param idDich id đích
-     * @param dich đích
-     */
     private void nhacNhapMoCaLamViec(MaManHinh idDich, DinhNghiaManHinh dich) {
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (!manHinhBoDangKy.coTheTruyCap(MaManHinh.CASH_SHIFT)) {
             HopThoai.hienThiCanhBao(
                     this,
@@ -260,18 +245,21 @@ public final class ChinhFrame extends JFrame {
         hienThi(MaManHinh.CASH_SHIFT, manHinhBoDangKy.layDinhNghia(MaManHinh.CASH_SHIFT), true);
     }
 
-    /**
-     * Hiển thị trong ChinhFrame.
-     *
-     * @param id id
-     * @param dinhNghia định nghĩa
-     * @param lichSuBanGhi lịch sử bản ghi
-     */
     private void hienThi(MaManHinh id, DinhNghiaManHinh dinhNghia, boolean lichSuBanGhi) {
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (lichSuBanGhi && hienTai != null && hienTai != id) {
             lichSu.push(hienTai);
             while (lichSu.size() > LICH_SU_LON_NHAT) lichSu.removeLast();
+        }
+        var yeuCau = com.petstation.gui.navigation.NguCanhMoBanGhi.lay();
+        if (yeuCau != null && yeuCau.manHinh() == id) {
+            var q = manHinhBoDangKy.layGioHang().layQuyTrinh();
+            switch (id) {
+                case SPA_SCHEDULE -> q.chonLichHen(yeuCau.id());
+                case SPA_INTAKE -> q.chonSpa(yeuCau.id());
+                case CHECKOUT, HOTEL_JOURNAL -> q.chonHotel(yeuCau.id());
+                case HOTEL_BOOKING -> q.chonPhongHotel(yeuCau.id(), yeuCau.ma());
+                default -> {}
+            }
         }
         hienTai = id;
         // Màn hình.
@@ -284,24 +272,39 @@ public final class ChinhFrame extends JFrame {
                             pnlLamViecVung.add(pnlDaTao, khoa.name());
                             return pnlDaTao;
                         });
+        pnlManHinh.putClientProperty("maManHinh", id);
         manHinhBoCuc.show(pnlLamViecVung, id.name());
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (pnlManHinh instanceof HoTroThanhCongCu hoTro) hoTro.xuLyHienThi();
+        if (yeuCau != null && yeuCau.manHinh() == id)
+            com.petstation.gui.navigation.NguCanhMoBanGhi.apDung(pnlManHinh);
         pnlThanhCongCu.datHoatDongVungHienThi(pnlManHinh);
         pnlThanhCongCu.datCoTheDiQuayLai(!lichSu.isEmpty());
+        if (yeuCau != null
+                && yeuCau.manHinh() == id
+                && id == MaManHinh.HOTEL_BOOKING
+                && pnlManHinh
+                        instanceof com.petstation.gui.processing.hotel.DatPhongHotelPanel dat) {
+            com.petstation.gui.navigation.NguCanhMoBanGhi.xoa();
+            SwingUtilities.invokeLater(
+                    () -> {
+                        try {
+                            dat.moDonPhong(yeuCau.id());
+                        } catch (RuntimeException ex) {
+                            HopThoai.hienThiCanhBao(this, ex.getMessage());
+                        }
+                    });
+        }
         pnlThanhQuyTrinh.hienThi(id);
         pnlThanhTrangThai.datGoiY(dinhNghia.goiY());
         setTitle("Pet Station – " + dinhNghia.tieuDe());
     }
 
-    /** Đi quay lại trong ChinhFrame. */
     private void diQuayLai() {
         while (!lichSu.isEmpty()) {
             // Trước đó.
             MaManHinh truocDo = lichSu.pop();
             // Định nghĩa.
             DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(truocDo);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (dinhNghia != null && manHinhBoDangKy.coTheTruyCap(truocDo)) {
                 hienThi(truocDo, dinhNghia, false);
                 return;
@@ -310,7 +313,6 @@ public final class ChinhFrame extends JFrame {
         pnlThanhCongCu.datCoTheDiQuayLai(false);
     }
 
-    /** Đăng ký cửa sổ các phím tắt trong ChinhFrame. */
     private void dangKyCuaSoCacPhimTat() {
         // Gốc.
         JRootPane goc = getRootPane();
@@ -377,13 +379,6 @@ public final class ChinhFrame extends JFrame {
         lienKetMenu(goc, KeyEvent.VK_K, 'K');
     }
 
-    /**
-     * Liên kết menu trong ChinhFrame.
-     *
-     * @param goc gốc
-     * @param maKhoa mã khóa
-     * @param phimTruyCap phím truy cập
-     */
     private void lienKetMenu(JRootPane goc, int maKhoa, char phimTruyCap) {
         lienKet(
                 goc,
@@ -392,14 +387,6 @@ public final class ChinhFrame extends JFrame {
                 () -> pnlThanhMenu.moMenu(phimTruyCap));
     }
 
-    /**
-     * Liên kết trong ChinhFrame.
-     *
-     * @param goc gốc
-     * @param khoaNetVe khóa nét vẽ
-     * @param ten tên
-     * @param lenh lệnh
-     */
     private void lienKet(JRootPane goc, KeyStroke khoaNetVe, String ten, Runnable lenh) {
         goc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(khoaNetVe, ten);
         goc.getActionMap()
@@ -418,9 +405,12 @@ public final class ChinhFrame extends JFrame {
                         });
     }
 
-    /** Kết thúc phiên đăng nhập trong ChinhFrame. */
     private void dangXuat() {
-        // Kết quả.
+        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+            HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
+            return;
+        }
+
         int ketQua =
                 HopThoai.hienThiXacNhanHopThoai(
                         this,
@@ -428,7 +418,6 @@ public final class ChinhFrame extends JFrame {
                         "Xác nhận đăng xuất",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (ketQua == JOptionPane.YES_OPTION) {
             NhatKyHeThongService.ghiNhatKy("Đăng xuất", "Hệ thống");
             manHinhBoDangKy.layGioHang().xoa();
@@ -440,9 +429,12 @@ public final class ChinhFrame extends JFrame {
         }
     }
 
-    /** Yêu cầu thoát trong ChinhFrame. */
     private void yeuCauThoat() {
-        // Kết quả.
+        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+            HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
+            return;
+        }
+
         int ketQua =
                 HopThoai.hienThiXacNhanHopThoai(
                         this,
@@ -450,7 +442,6 @@ public final class ChinhFrame extends JFrame {
                         "Xác nhận thoát",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (ketQua == JOptionPane.YES_OPTION) {
             dispose();
             System.exit(0);

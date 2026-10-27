@@ -44,7 +44,6 @@ public final class HopThoai {
     /** Hủy. */
     private static final String HUY = "Hủy";
 
-    /** Khởi tạo HopThoai với các giá trị được cung cấp. */
     private HopThoai() {}
 
     /**
@@ -61,42 +60,18 @@ public final class HopThoai {
         UIManager.put("OptionPane.titleText", TIEU_DE_THONG_TIN);
     }
 
-    /**
-     * Hiển thị thông báo thông tin trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     */
     public static void hienThiThongTin(Component cha, String thongBao) {
         hienThi(cha, thongBao, TIEU_DE_THONG_TIN, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Hiển thị kết quả thành công trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     */
     public static void hienThiThanhCong(Component cha, String thongBao) {
         hienThi(cha, thongBao, TIEU_DE_THANH_CONG, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Hiển thị thông báo cảnh báo trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     */
     public static void hienThiCanhBao(Component cha, String thongBao) {
         hienThi(cha, thongBao, TIEU_DE_CANH_BAO, JOptionPane.WARNING_MESSAGE);
     }
 
-    /**
-     * Hiển thị thông báo lỗi trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     */
     public static void hienThiLoi(Component cha, String thongBao) {
         hienThi(cha, thongBao, TIEU_DE_LOI, JOptionPane.ERROR_MESSAGE);
     }
@@ -128,15 +103,6 @@ public final class HopThoai {
         return xacNhan(cha, thongBao, nhanXacNhan, true);
     }
 
-    /**
-     * Xác nhận trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param nhanXacNhan nhãn xác nhận
-     * @param nguyHiem nguy hiểm
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public static boolean xacNhan(
             Component cha, String thongBao, String nhanXacNhan, boolean nguyHiem) {
         // Các lựa chọn.
@@ -157,24 +123,10 @@ public final class HopThoai {
 
     // ── Tương thích với chữ ký JOptionPane cũ để các màn chuyển sang mà không đổi logic ──
 
-    /**
-     * Hiển thị thông báo hộp thoại trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     */
     public static void hienThiThongBaoHopThoai(Component cha, Object thongBao) {
         hienThi(cha, String.valueOf(thongBao), TIEU_DE_THONG_TIN, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Hiển thị thông báo hộp thoại trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param tieuDe tiêu đề
-     * @param kieu kiểu
-     */
     public static void hienThiThongBaoHopThoai(
             Component cha, Object thongBao, String tieuDe, int kieu) {
         // Đã chuẩn hóa.
@@ -190,15 +142,6 @@ public final class HopThoai {
         hienThi(cha, thongBao, daChuanHoa, kieu);
     }
 
-    /**
-     * Hiển thị xác nhận hộp thoại trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param tieuDe tiêu đề
-     * @param kieuLuaChon kiểu lựa chọn
-     * @return kết quả hiển thị xác nhận hộp thoại
-     */
     public static int hienThiXacNhanHopThoai(
             Component cha, Object thongBao, String tieuDe, int kieuLuaChon) {
         return hienThiXacNhanHopThoai(
@@ -240,19 +183,10 @@ public final class HopThoai {
                         null,
                         cacLuaChon,
                         nguyHiem ? cacLuaChon[1] : cacLuaChon[0]);
-        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
         if (luaChon == 0) return dongYKhong ? JOptionPane.YES_OPTION : JOptionPane.OK_OPTION;
         return dongYKhong ? JOptionPane.NO_OPTION : JOptionPane.CANCEL_OPTION;
     }
 
-    /**
-     * Hiển thị trong HopThoai.
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param tieuDe tiêu đề
-     * @param kieu kiểu
-     */
     private static void hienThi(Component cha, Object thongBao, String tieuDe, int kieu) {
         JOptionPane.showOptionDialog(
                 cha,

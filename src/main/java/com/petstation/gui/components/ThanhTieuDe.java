@@ -1,6 +1,6 @@
 package com.petstation.gui.components;
 
-import com.petstation.gui.navigation.MaManHinh;
+import com.petstation.model.MaManHinh;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,13 +37,6 @@ public final class ThanhTieuDe extends JPanel {
     /** Bình thường giới hạn. */
     private Rectangle binhThuongGioiHan;
 
-    /**
-     * Khởi tạo ThanhTieuDe với các giá trị được cung cấp.
-     *
-     * @param cuaSo cửa sổ
-     * @param boDieuHuong bộ điều hướng
-     * @param dongThaoTac đóng thao tác
-     */
     public ThanhTieuDe(JFrame cuaSo, Consumer<MaManHinh> boDieuHuong, Runnable dongThaoTac) {
         this.cuaSo = cuaSo;
         setLayout(new BorderLayout());
@@ -93,7 +86,6 @@ public final class ThanhTieuDe extends JPanel {
                      */
                     @Override
                     public void mouseDragged(MouseEvent suKien) {
-                        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                         if (keoGoc == null || kiemTraPhongTo()) return;
                         // Màn hình.
                         Point manHinh = suKien.getLocationOnScreen();
@@ -107,7 +99,6 @@ public final class ThanhTieuDe extends JPanel {
                      */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (suKien.getClickCount() == 2) batTatPhongTo();
                     }
                 };
@@ -117,14 +108,6 @@ public final class ThanhTieuDe extends JPanel {
         btnThuongHieu.addMouseMotionListener(keoBoXuLy);
     }
 
-    /**
-     * Lấy nút cửa sổ trong ThanhTieuDe.
-     *
-     * @param vanBan văn bản
-     * @param boLangNghe bộ lắng nghe
-     * @param dong đóng
-     * @return kết quả lấy nút cửa sổ
-     */
     private JButton layNutCuaSo(
             String vanBan, java.awt.event.ActionListener boLangNghe, boolean dong) {
         // Nút.
@@ -137,7 +120,6 @@ public final class ThanhTieuDe extends JPanel {
                      */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
-                        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                         if (getModel().isRollover()) {
                             doHoa.setColor(
                                     dong
@@ -159,12 +141,9 @@ public final class ThanhTieuDe extends JPanel {
         return btnNut;
     }
 
-    /** Bật tắt phóng to trong ThanhTieuDe. */
     private void batTatPhongTo() {
-        // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
         if (kiemTraPhongTo()) {
             cuaSo.setExtendedState(Frame.NORMAL);
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (binhThuongGioiHan != null) cuaSo.setBounds(binhThuongGioiHan);
         } else {
             binhThuongGioiHan = cuaSo.getBounds();
@@ -172,24 +151,13 @@ public final class ThanhTieuDe extends JPanel {
         }
     }
 
-    /**
-     * Kiểm tra phóng to trong ThanhTieuDe.
-     *
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     private boolean kiemTraPhongTo() {
         return (cuaSo.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
     }
 
-    /**
-     * Nạp logo trong ThanhTieuDe.
-     *
-     * @return kết quả nạp logo
-     */
     private Icon napLogo() {
         // Tài nguyên.
         URL taiNguyen = ThanhTieuDe.class.getResource("/images/pet-station-logo.png");
-        // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
         if (taiNguyen == null) return null;
         // Ảnh.
         Image anh =

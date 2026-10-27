@@ -1,8 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.service.CaThuNganService;
-import com.petstation.service.DanhMucService;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +11,23 @@ import java.util.Locale;
  * <p>Giỏ hàng/hóa đơn đang lập, dùng chung giữa Lập đơn → Thanh toán → In hóa đơn.
  */
 public final class GioHang {
+    /** Cổng nghiệp vụ: model không biết JDBC hay lớp triển khai service. */
+    public interface ChinhSach {
+        List<Object[]> layKhuyenMai();
+
+        long kiemTraVoucher(String ma, String khachHang, String nguon, long tamTinh);
+
+        BienLai thanhToan(GioHang gio, PhuongThuc phuongThuc, long daNhan, String thuNgan);
+
+        BienLai thanhToan(GioHang gio, List<DongThuTien> dong, String thuNgan);
+    }
+
+    private final ChinhSach chinhSach;
+
+    public GioHang(ChinhSach chinhSach) {
+        this.chinhSach = java.util.Objects.requireNonNull(chinhSach);
+    }
+
     /**
      * Biểu diễn dữ liệu dòng dùng trong nghiệp vụ cửa hàng.
      *
@@ -23,25 +37,11 @@ public final class GioHang {
      * @param soLuong số lượng
      */
     public record DongHang(String ma, String ten, long donGia, int soLuong) {
-        /**
-         * Khởi tạo DongHang với các giá trị được cung cấp.
-         *
-         * @param ma mã
-         * @param ten tên
-         * @param donGia đơn giá
-         * @param soLuong số lượng
-         */
         public DongHang {
-            // Dừng thao tác khi dữ liệu vi phạm điều kiện nghiệp vụ.
             if (ma == null || ma.isBlank() || ten == null || donGia < 0 || soLuong <= 0)
                 throw new IllegalArgumentException("Dòng hàng không hợp lệ.");
         }
 
-        /**
-         * Đọc số tiền trong DongHang.
-         *
-         * @return kết quả đọc số tiền
-         */
         public long docSoTien() {
             return donGia * soLuong;
         }
@@ -70,12 +70,42 @@ public final class GioHang {
             long tamTinh,
             long giamGia,
             long tong,
-            CaThuNganService.PhuongThuc phuongThuc,
+            PhuongThuc phuongThuc,
             long daNhan,
             long thayDoi,
             String khachHang,
             String voucher,
-            String thuNgan) {}
+            String thuNgan,
+            List<DongThuTien> cacKhoanThu) {
+        public BienLai(
+                String soHoaDon,
+                LocalDateTime thoiGian,
+                List<DongHang> cacDong,
+                long tamTinh,
+                long giamGia,
+                long tong,
+                PhuongThuc phuongThuc,
+                long daNhan,
+                long thayDoi,
+                String khachHang,
+                String voucher,
+                String thuNgan) {
+            this(
+                    soHoaDon,
+                    thoiGian,
+                    cacDong,
+                    tamTinh,
+                    giamGia,
+                    tong,
+                    phuongThuc,
+                    daNhan,
+                    thayDoi,
+                    khachHang,
+                    voucher,
+                    thuNgan,
+                    List.of());
+        }
+    }
 
     /** Các dòng. */
     private final NguCanhQuyTrinh quyTrinh = new NguCanhQuyTrinh();
@@ -85,6 +115,15 @@ public final class GioHang {
     }
 
     private final List<DongHang> cacDong = new ArrayList<>();
+    private volatile boolean dangGhiThanhToan;
+
+    public boolean dangGhiThanhToan() {
+        return dangGhiThanhToan;
+    }
+
+    public void datDangGhiThanhToan(boolean value) {
+        dangGhiThanhToan = value;
+    }
 
     /** Khách hàng số điện thoại. */
     private String khachHangSoDienThoai = "";
@@ -129,17 +168,16 @@ public final class GioHang {
     private YeuCauDoiHang doiHang;
     private String xacNhanNhanTien = "";
 
-    private String taoKhoaNhanTien(CaThuNganService.PhuongThuc pt) {
+    private String taoKhoaNhanTien(PhuongThuc pt) {
         return pt + "|" + khoaThanhToan + "|" + tinhTong() + "|" + maVoucher;
     }
 
-    public void xacNhanDaNhanTien(CaThuNganService.PhuongThuc pt, boolean daNhan) {
+    public void xacNhanDaNhanTien(PhuongThuc pt, boolean daNhan) {
         xacNhanNhanTien = daNhan ? taoKhoaNhanTien(pt) : "";
     }
 
-    public boolean kiemTraDaNhanTien(CaThuNganService.PhuongThuc pt) {
-        return pt == CaThuNganService.PhuongThuc.CASH
-                || xacNhanNhanTien.equals(taoKhoaNhanTien(pt));
+    public boolean kiemTraDaNhanTien(PhuongThuc pt) {
+        return pt == PhuongThuc.CASH || xacNhanNhanTien.equals(taoKhoaNhanTien(pt));
     }
 
     public YeuCauDoiHang layDoiHang() {
@@ -150,149 +188,68 @@ public final class GioHang {
         doiHang = giaTri;
     }
 
-    /**
-     * Lấy các dòng trong GioHang.
-     *
-     * @return kết quả lấy các dòng
-     */
     public List<DongHang> layCacDong() {
         return List.copyOf(cacDong);
     }
 
-    /**
-     * Kiểm tra trống trong GioHang.
-     *
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public boolean kiemTraTrong() {
         return cacDong.isEmpty();
     }
 
-    /**
-     * Lấy khách hàng số điện thoại trong GioHang.
-     *
-     * @return kết quả lấy khách hàng số điện thoại
-     */
     public String layKhachHangSoDienThoai() {
         return khachHangSoDienThoai;
     }
 
-    /**
-     * Lấy giảm giá phần trăm trong GioHang.
-     *
-     * @return kết quả lấy giảm giá phần trăm
-     */
     public int layGiamGiaPhanTram() {
         return giamGiaPhanTram;
     }
 
-    /**
-     * Lấy mã voucher trong GioHang.
-     *
-     * @return kết quả lấy mã voucher
-     */
     public String layMaVoucher() {
         return maVoucher;
     }
 
-    /**
-     * Lấy biên lai cuối trong GioHang.
-     *
-     * @return kết quả lấy biên lai cuối
-     */
     public BienLai layBienLaiCuoi() {
         return bienLaiCuoi;
     }
 
-    /**
-     * Đặt biên lai cuối trong GioHang.
-     *
-     * @param bienLai biên lai
-     */
     public void datBienLaiCuoi(BienLai bienLai) {
         bienLaiCuoi = bienLai;
     }
 
-    /**
-     * Lấy khóa thanh toán trong GioHang.
-     *
-     * @return kết quả lấy khóa thanh toán
-     */
     public String layKhoaThanhToan() {
         return khoaThanhToan;
     }
 
-    /**
-     * Lấy kiểu nguồn trong GioHang.
-     *
-     * @return kết quả lấy kiểu nguồn
-     */
     public String layKieuNguon() {
         return kieuNguon;
     }
 
-    /**
-     * Lấy id nguồn trong GioHang.
-     *
-     * @return kết quả lấy id nguồn
-     */
     public long layIdNguon() {
         return idNguon;
     }
 
-    /**
-     * Đặt nguồn trong GioHang.
-     *
-     * @param kieu kiểu
-     * @param id id
-     */
     public void datNguon(String kieu, long id) {
         kieuNguon = kieu;
         idNguon = id;
     }
 
-    /**
-     * Đặt các dòng trong GioHang.
-     *
-     * @param moiCacDong mới các dòng
-     */
     public void datCacDong(List<DongHang> moiCacDong) {
         cacDong.clear();
         cacDong.addAll(moiCacDong);
     }
 
-    /**
-     * Lấy mã khách hàng trong GioHang.
-     *
-     * @return kết quả lấy mã khách hàng
-     */
     public String layMaKhachHang() {
         return maKhachHang;
     }
 
-    /**
-     * Lấy tên khách hàng trong GioHang.
-     *
-     * @return kết quả lấy tên khách hàng
-     */
     public String layTenKhachHang() {
         return tenKhachHang;
     }
 
-    /**
-     * Lấy khách hàng điểm trong GioHang.
-     *
-     * @return kết quả lấy khách hàng điểm
-     */
     public long layKhachHangDiem() {
         return khachHangDiem;
     }
 
-    /**
-     * Lấy điểm đã dùng trong GioHang.
-     *
-     * @return kết quả lấy điểm đã dùng
-     */
     public long layDiemDaDung() {
         return diemDaDung;
     }
@@ -329,11 +286,6 @@ public final class GioHang {
         diemDaDung = 0;
     }
 
-    /**
-     * Lấy giá trị điểm trong GioHang.
-     *
-     * @return kết quả lấy giá trị điểm
-     */
     public long layGiaTriDiem() {
         return 0;
     }
@@ -348,27 +300,21 @@ public final class GioHang {
     public KhuyenMai layKhuyenMaiTotNhat() {
         // Tốt nhất.
         KhuyenMai totNhat = null;
-        // Phần phụ.
-        long phanPhu = tinhTamTinh();
-        for (Object[] dongDuLieu : DanhMucService.layKhuyenMai()) {
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+        long tamTinh = tinhTamTinh();
+        for (Object[] dongDuLieu : chinhSach.layKhuyenMai()) {
             if ("Ngừng áp dụng".equals(dongDuLieu[8])
                     || !kiemTraTrongKhoangNgay(dongDuLieu[6], dongDuLieu[7])) continue;
-            // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-            if (phanPhu < com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[5]))) continue;
-            // Cơ sở.
+            if (tamTinh < com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[5]))) continue;
             long coSo = 0;
             // Phạm vi.
             String phamVi = String.valueOf(dongDuLieu[3]);
             for (DongHang dongDangXet : cacDong) {
                 // Là dịch vụ.
                 boolean laDichVu = "SPA".equals(kieuNguon) || "HOTEL".equals(kieuNguon);
-                // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
                 if (phamVi.equals("Cả đơn")
                         || (phamVi.equals("Sản phẩm") && !laDichVu)
                         || (phamVi.equals("Dịch vụ") && laDichVu)) coSo += dongDangXet.docSoTien();
             }
-            // Giá trị.
             long giaTri = com.petstation.util.TienTe.doc(String.valueOf(dongDuLieu[4]));
             // Số tiền.
             long soTien =
@@ -377,7 +323,6 @@ public final class GioHang {
                         case "Giảm tiền" -> coSo > 0 ? Math.min(giaTri, coSo) : 0;
                         default -> 0;
                     };
-            // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
             if (soTien > 0 && (totNhat == null || soTien > totNhat.soTien()))
                 totNhat =
                         new KhuyenMai(
@@ -399,14 +344,12 @@ public final class GioHang {
      * @return kết quả kiểm tra điều kiện xử lý
      */
     private static boolean kiemTraTrongKhoangNgay(Object tu, Object den) {
-        // Trường đang xét.
         java.time.format.DateTimeFormatter truongDangXet =
                 java.time.format.DateTimeFormatter.ofPattern("dd/MM/uuuu")
                         .withResolverStyle(java.time.format.ResolverStyle.STRICT);
         // Hôm nay.
         java.time.LocalDate homNay = java.time.LocalDate.now();
         try {
-            // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
             if (java.time.LocalDate.parse(String.valueOf(tu), truongDangXet).isAfter(homNay))
                 return false;
             return !java.time.LocalDate.parse(String.valueOf(den), truongDangXet).isBefore(homNay);
@@ -424,40 +367,19 @@ public final class GioHang {
      */
     public record KhuyenMai(String ma, String ten, long soTien) {}
 
-    /**
-     * Lấy khuyến mãi giảm giá trong GioHang.
-     *
-     * @return kết quả lấy khuyến mãi giảm giá
-     */
     public long layKhuyenMaiGiamGia() {
-        // Vùng đang xét.
         KhuyenMai vungDangXet = layKhuyenMaiTotNhat();
         return vungDangXet == null ? 0 : vungDangXet.soTien();
     }
 
-    /**
-     * Đặt khách hàng số điện thoại trong GioHang.
-     *
-     * @param soDienThoai số điện thoại
-     */
     public void datKhachHangSoDienThoai(String soDienThoai) {
         this.khachHangSoDienThoai = soDienThoai == null ? "" : soDienThoai.trim();
     }
 
-    /**
-     * Đặt giảm giá phần trăm trong GioHang.
-     *
-     * @param phanTram phần trăm
-     */
     public void datGiamGiaPhanTram(int phanTram) {
         this.giamGiaPhanTram = Math.max(0, Math.min(phanTram, 100));
     }
 
-    /**
-     * Tính tạm tính trong GioHang.
-     *
-     * @return kết quả tính tạm tính
-     */
     public long tinhTamTinh() {
         // Tổng.
         long tong = 0;
@@ -465,11 +387,6 @@ public final class GioHang {
         return tong;
     }
 
-    /**
-     * Tính giảm giá trong GioHang.
-     *
-     * @return kết quả tính giảm giá
-     */
     public long tinhGiamGia() {
         if ("EXCHANGE".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.giaTriDuocDoi();
         // Theo phần trăm.
@@ -479,11 +396,6 @@ public final class GioHang {
                 theoPhanTram + layKhuyenMaiGiamGia() + laySoTienVoucher() + layGiaTriDiem());
     }
 
-    /**
-     * Tính tổng trong GioHang.
-     *
-     * @return kết quả tính tổng
-     */
     public long tinhTong() {
         return tinhTamTinh() - tinhGiamGia();
     }
@@ -507,9 +419,7 @@ public final class GioHang {
             return null;
         }
         try {
-            long soTien =
-                    com.petstation.service.TichDiemService.kiemTraVoucher(
-                            giaTri, maKhachHang, kieuNguon, tinhTamTinh());
+            long soTien = chinhSach.kiemTraVoucher(giaTri, maKhachHang, kieuNguon, tinhTamTinh());
             maVoucher = giaTri;
             giaTriVoucher = soTien;
             return null;
@@ -518,33 +428,24 @@ public final class GioHang {
         }
     }
 
-    /**
-     * Lấy số tiền voucher trong GioHang.
-     *
-     * @return kết quả lấy số tiền voucher
-     */
     public long laySoTienVoucher() {
         return maVoucher.isEmpty()
                 ? 0
                 : Math.min(giaTriVoucher, Math.max(0, tinhTamTinh() - layKhuyenMaiGiamGia()));
     }
 
-    /**
-     * Hoàn tất trong GioHang.
-     *
-     * @param phuongThuc phương thức
-     * @param daNhan đã nhận
-     * @param thuNgan thu ngân
-     * @return kết quả hoàn tất
-     */
-    public BienLai hoanTat(CaThuNganService.PhuongThuc phuongThuc, long daNhan, String thuNgan) {
-        bienLaiCuoi =
-                com.petstation.service.BanHangService.thanhToan(this, phuongThuc, daNhan, thuNgan);
+    public BienLai hoanTat(PhuongThuc phuongThuc, long daNhan, String thuNgan) {
+        bienLaiCuoi = chinhSach.thanhToan(this, phuongThuc, daNhan, thuNgan);
         quyTrinh.ketThuc(kieuNguon);
         return bienLaiCuoi;
     }
 
-    /** Xóa trong GioHang. */
+    public BienLai hoanTat(List<DongThuTien> cacKhoanThu, String thuNgan) {
+        bienLaiCuoi = chinhSach.thanhToan(this, cacKhoanThu, thuNgan);
+        quyTrinh.ketThuc(kieuNguon);
+        return bienLaiCuoi;
+    }
+
     public void xoa() {
         khoaThanhToan =
                 "PAY-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);

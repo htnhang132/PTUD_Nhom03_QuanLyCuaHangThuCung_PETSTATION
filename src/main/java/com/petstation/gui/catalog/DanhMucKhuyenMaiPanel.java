@@ -14,16 +14,16 @@ import java.util.List;
 
 /** Cung cấp giao diện và xử lý tương tác cho khuyến mãi danh mục vùng hiển thị. */
 public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
-    /** Khởi tạo DanhMucKhuyenMaiPanel với các giá trị được cung cấp. */
     public DanhMucKhuyenMaiPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.layKhuyenMai());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.chuanBi(
+                        com.petstation.model.LoaiDanhMuc.PROMOTIONS,
+                        !javax.swing.SwingUtilities.isEventDispatchThread()
+                                || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Tạo cấu hình trong DanhMucKhuyenMaiPanel.
-     *
-     * @return kết quả tạo cấu hình
-     */
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
@@ -50,14 +50,10 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                                     LocalDate tu = docNgay(dongDuLieu[6]);
                                     // Đến.
                                     LocalDate den = docNgay(dongDuLieu[7]);
-                                    // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
                                     if (tu != null && den != null && den.isBefore(tu))
                                         return "Đến ngày phải sau hoặc bằng Từ ngày.";
-                                    // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                                     if ("Giảm %".equals(dongDuLieu[2])) {
-                                        // Giá trị.
                                         long giaTri = TienTe.doc(String.valueOf(dongDuLieu[4]));
-                                        // Kết thúc nhánh xử lý khi điều kiện đã được xác định.
                                         if (giaTri < 1 || giaTri > 100)
                                             return "Giá trị giảm % phải từ 1 đến 100.";
                                     }
@@ -66,11 +62,6 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
         return cauHinh;
     }
 
-    /**
-     * Tạo các trường trong DanhMucKhuyenMaiPanel.
-     *
-     * @return kết quả tạo các trường
-     */
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã KM", Kieu.VAN_BAN).chiDoc(),
