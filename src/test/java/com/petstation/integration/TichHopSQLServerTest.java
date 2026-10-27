@@ -2425,36 +2425,6 @@ class TichHopSQLServerTest {
     }
 
     @Test
-    void nhacViecLuuDaXemVaHoanTheoTaiKhoan() {
-        layTinhHuong(
-                () -> {
-                    long id =
-                            SpaService.datLichHen(
-                                    maThuCung,
-                                    maGoiDichVu,
-                                    maNhanVien,
-                                    LocalDateTime.now().plusHours(1));
-                    var item =
-                            com.petstation.service.ViecCanLamService.lay().stream()
-                                    .filter(v -> v.id() == id && v.dich() == MaManHinh.SPA_SCHEDULE)
-                                    .findFirst()
-                                    .orElseThrow();
-                    assertThat(item.nhac()).isTrue();
-                    com.petstation.service.ViecCanLamService.danhDau(
-                            item.khoa(), false, LocalDateTime.now().plusMinutes(30));
-                    assertThat(com.petstation.service.ViecCanLamService.lay())
-                            .noneMatch(v -> v.khoa().equals(item.khoa()));
-                    com.petstation.service.ViecCanLamService.danhDau(
-                            item.khoa(), false, LocalDateTime.now().minusMinutes(1));
-                    assertThat(com.petstation.service.ViecCanLamService.lay())
-                            .anyMatch(v -> v.khoa().equals(item.khoa()));
-                    com.petstation.service.ViecCanLamService.danhDau(item.khoa(), true, null);
-                    assertThat(com.petstation.service.ViecCanLamService.lay())
-                            .noneMatch(v -> v.khoa().equals(item.khoa()));
-                });
-    }
-
-    @Test
     void phieuChamSocGiuNoiDungVaChanGhiSauDongPhieu() {
         layTinhHuong(
                 () -> {

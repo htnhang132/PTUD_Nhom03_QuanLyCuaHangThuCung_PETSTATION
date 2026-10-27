@@ -31,7 +31,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -60,8 +59,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
 
     /** Biểu đồ. */
     private final BieuDoCot bieuDo = new BieuDoCot();
-
-    private com.petstation.gui.components.ViecCanLamPanel viec;
 
     /** Trên mô hình. */
     private final DefaultTableModel trenMoHinh =
@@ -153,11 +150,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlGiua.setOpaque(false);
         pnlGiua.add(pnlBieuDoThe);
         pnlGiua.add(pnlTrenThe);
-        viec = new com.petstation.gui.components.ViecCanLamPanel(boDieuHuong);
-        JSplitPane tach = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlGiua, viec);
-        tach.setResizeWeight(.5);
-        tach.setBorder(null);
-        add(tach, BorderLayout.CENTER);
+        add(pnlGiua, BorderLayout.CENTER);
         caLamViec.themBoLangNghe(this::lamMoi);
         lamMoi();
     }
@@ -172,7 +165,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     private void lamMoi() {
-        if (viec != null) viec.taiLai();
         pnlCacPhimTat.removeAll();
         themPhimTat("Lập hóa đơn (F2)", MaManHinh.POS, NutDinhDang.KieuNut.CHINH);
         themPhimTat("Tạo lịch hẹn Spa", MaManHinh.SPA_SCHEDULE, NutDinhDang.KieuNut.PHU);

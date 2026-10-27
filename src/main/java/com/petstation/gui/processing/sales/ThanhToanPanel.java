@@ -184,51 +184,6 @@ public final class ThanhToanPanel extends CoSoPanel {
             nhom.add(btnDongDuLieu);
             pnlCacPhuongThuc.add(btnDongDuLieu);
         }
-        JButton ketHop = new JButton("Thanh toán kết hợp…");
-        ketHop.setAlignmentX(Component.LEFT_ALIGNMENT);
-        ketHop.addActionListener(
-                e -> {
-                    if (dangXuLy || banHang.kiemTraTrong()) return;
-                    var dong =
-                            com.petstation.gui.components.common.ThuTienDialog.nhap(
-                                    this, banHang.tinhTong(), banHang.layKhoaThanhToan());
-                    if (dong == null) return;
-                    dangXuLy = true;
-                    btnXacNhan.setEnabled(false);
-                    ketHop.setEnabled(false);
-                    banHang.datDangGhiThanhToan(true);
-                    khoaNhap(pnlGoc);
-                    var phien = com.petstation.service.PhienDangNhapService.layPhien();
-                    new SwingWorker<GioHang.BienLai, Void>() {
-                        protected GioHang.BienLai doInBackground() throws Exception {
-                            return com.petstation.service.PhienDangNhapService.trongPhien(
-                                    phien, () -> banHang.hoanTat(dong, thuNgan));
-                        }
-
-                        protected void done() {
-                            try {
-                                var b = get();
-                                banHang.datDangGhiThanhToan(false);
-                                caLamViec.ghiNhanBanHang(b.phuongThuc(), b.tong());
-                                banHang.xoa();
-                                boDieuHuong.accept(MaManHinh.PRINT_INVOICE);
-                            } catch (Exception ex) {
-                                HopThoai.hienThiCanhBao(
-                                        ThanhToanPanel.this,
-                                        ex.getCause() == null
-                                                ? ex.getMessage()
-                                                : ex.getCause().getMessage());
-                            } finally {
-                                banHang.datDangGhiThanhToan(false);
-                                moNhap();
-                                dangXuLy = false;
-                                ketHop.setEnabled(true);
-                                kiemTraDauVao();
-                            }
-                        }
-                    }.execute();
-                });
-        pnlNoiDung.add(ketHop);
         pnlCacPhuongThuc.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlCacPhuongThuc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         pnlNoiDung.add(pnlCacPhuongThuc);

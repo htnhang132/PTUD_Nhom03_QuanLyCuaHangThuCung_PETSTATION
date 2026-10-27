@@ -45,6 +45,7 @@ public class NutDinhDang extends JButton {
         setFocusPainted(false);
         setContentAreaFilled(false);
         setRolloverEnabled(true);
+        setBorder(BorderFactory.createEmptyBorder(4, 14, 4, 14));
         setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(
@@ -114,16 +115,23 @@ public class NutDinhDang extends JButton {
         boolean duocBat = isEnabled();
         // Rê chuột.
         boolean reChuot = duocBat && getModel().isRollover();
+
+        // Thụt lề 1px để đường viền bo góc không bị đè hoặc cắt ở mép trên/dưới
+        int x = 1;
+        int y = 1;
+        int w = getWidth() - 2;
+        int h = getHeight() - 2;
+
         doHoa2.setColor(!duocBat ? new Color(0xE5, 0xE7, 0xEB) : reChuot ? mauReChuot : mauNen);
-        doHoa2.fillRoundRect(0, 0, getWidth(), getHeight(), banKinh, banKinh);
+        doHoa2.fillRoundRect(x, y, w, h, banKinh, banKinh);
         if (mauVien != null && duocBat) {
             doHoa2.setColor(mauVien);
-            doHoa2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, banKinh, banKinh);
+            doHoa2.drawRoundRect(x, y, w - 1, h - 1, banKinh, banKinh);
         }
         if (isFocusOwner() && duocBat) {
             doHoa2.setColor(MauUngDung.VANG);
             doHoa2.setStroke(new BasicStroke(2));
-            doHoa2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, banKinh, banKinh);
+            doHoa2.drawRoundRect(x, y, w - 1, h - 1, banKinh, banKinh);
         }
         doHoa2.dispose();
         setForeground(duocBat ? mauVanBan : MauUngDung.VO_HIEU_HOA);

@@ -108,7 +108,6 @@ public final class ChinhFrame extends JFrame {
 
         pnlThanhCongCu =
                 new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.DASHBOARD), this::diQuayLai);
-        pnlThanhCongCu.add(new com.petstation.gui.components.NhacViecButton(this::dieuHuong));
         pnlThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
         pnlThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         pnlThanhMenu =
