@@ -170,4 +170,23 @@ public final class KhoImpl implements KhoDAO {
                         + " c.phieu_nhap_id=? ORDER BY c.id",
                 cacThamSo);
     }
+
+    public List<Object[]> layDanhSachLoHangKiemKe(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT l.id, p.ma_san_pham, p.ten, COALESCE(p.barcode, ''), l.so_lo,"
+                    + " l.han_su_dung, l.so_luong_ton, p.loai_san_pham FROM lo_hang l JOIN san_pham"
+                    + " p ON p.id = l.san_pham_id WHERE l.trang_thai = 'ACTIVE' AND p.trang_thai ="
+                    + " 'ACTIVE' ORDER BY p.ma_san_pham, l.han_su_dung",
+                cacThamSo);
+    }
+
+    public List<Object[]> layChiTietKiemKe(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT c.id, p.ma_san_pham, p.ten, l.so_lo, l.han_su_dung, c.ton_he_thong,"
+                    + " c.ton_thuc_te, (c.ton_thuc_te - c.ton_he_thong) AS chenh_lech,"
+                    + " COALESCE(c.nguyen_nhan, N'') FROM chi_tiet_kiem_ke c JOIN lo_hang l ON l.id"
+                    + " = c.lo_hang_id JOIN san_pham p ON p.id = l.san_pham_id WHERE c.bien_ban_id"
+                    + " = ? ORDER BY c.id",
+                cacThamSo);
+    }
 }

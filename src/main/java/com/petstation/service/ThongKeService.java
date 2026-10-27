@@ -248,4 +248,24 @@ public final class ThongKeService {
         Long nhanVien = layPhien().kiemTraCo(Quyen.REPORT_VIEW_ALL) ? null : layIdNhanVien();
         return thongKeDAO.layDuNoHienTai();
     }
+
+    public static List<Object[]> layDoanhThuTheoGio(KhoangNgay k) {
+        kiemTraQuyenBaoCao();
+        return thongKeDAO.layDoanhThuTheoGio(k.tuNgay(), k.layCanTren());
+    }
+
+    public static List<Object[]> layDoanhThuTheoThu(KhoangNgay k) {
+        kiemTraQuyenBaoCao();
+        return thongKeDAO.layDoanhThuTheoThu(k.tuNgay(), k.layCanTren());
+    }
+
+    public static List<Object[]> layHangTonDong() {
+        kiemTraQuyenBaoCao();
+        return thongKeDAO.layHangTonDong();
+    }
+
+    public static List<Object[]> layHaoHutKiemKe(KhoangNgay k) {
+        kiemTraQuyenBaoCao();
+        return thongKeDAO.layHaoHutKiemKe(k.tuNgay(), k.layCanTren());
+    }
 }

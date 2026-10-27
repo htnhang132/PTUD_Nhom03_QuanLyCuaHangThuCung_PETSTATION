@@ -23,4 +23,6 @@ public interface LichLamViecDAO {
     int themLichNghiPhep(Object... cacThamSo);
 
     long demThangSoGio(Object... cacThamSo);
+
+    int khoaLichKhoang(Object... cacThamSo);
 }

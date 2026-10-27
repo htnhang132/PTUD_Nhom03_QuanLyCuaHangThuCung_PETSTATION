@@ -63,9 +63,10 @@ public final class DanhMucImpl implements DanhMucDAO {
                                 + " N'Đang kinh doanh' ELSE N'Ngừng kinh doanh'"
                                 + " END,COALESCE(p.anh,''),"
                                 + " COALESCE(p.thuong_hieu,''),COALESCE(p.quy_cach,''),COALESCE(p.doi_tuong_su_dung,''),"
-                                + " COALESCE(p.mo_ta,''),COALESCE(p.nguon_url,''),COALESCE(CONVERT(varchar(10),p.ngay_thu_thap,23),'')"
-                                + " FROM san_pham p ORDER BY CASE WHEN NULLIF(p.anh,'') IS NULL"
-                                + " THEN 1 ELSE 0 END,p.ma_san_pham";
+                                + " COALESCE(p.mo_ta,''),COALESCE(p.nguon_url,''),COALESCE(CONVERT(varchar(10),p.ngay_thu_thap,23),''),"
+                                + " COALESCE(p.barcode,'') FROM san_pham p ORDER BY CASE WHEN"
+                                + " NULLIF(p.anh,'') IS NULL THEN 1 ELSE 0 END,p.ma_san_pham";
+
                     case SUPPLIERS ->
                             "SELECT"
                                 + " ma_ncc,ten,nguoi_dai_dien,so_dien_thoai,dia_chi,ma_so_thue,dieu_khoan,CASE"
@@ -418,15 +419,17 @@ public final class DanhMucImpl implements DanhMucDAO {
                 if (giaTri2.length >= 17) {
                     capNhat(
                             "UPDATE san_pham SET"
-                                    + " anh=?,thuong_hieu=?,quy_cach=?,doi_tuong_su_dung=?,mo_ta=?"
-                                    + " WHERE ma_san_pham=?",
+                                + " anh=?,thuong_hieu=?,quy_cach=?,doi_tuong_su_dung=?,mo_ta=?,barcode=?"
+                                + " WHERE ma_san_pham=?",
                             giaTri2[10],
                             giaTri2[11],
                             giaTri2[12],
                             giaTri2[13],
                             giaTri2[14],
+                            giaTri2.length > 17 ? giaTri2[17] : "",
                             khoa);
                 }
+
                 if (cu == null || ((BigDecimal) cu).compareTo(docSoThapPhan(giaTri2[4])) != 0)
                     capNhat(
                             "INSERT INTO"
@@ -596,5 +599,39 @@ public final class DanhMucImpl implements DanhMucDAO {
                         trangThai);
             }
         }
+    }
+
+    public int capNhatBarcode(long sanPhamId, String barcode) {
+        return capNhat("UPDATE san_pham SET barcode=? WHERE id=?", barcode, sanPhamId);
+    }
+
+    public boolean kiemTraSanPhamCoGiaoDich(long sanPhamId) {
+        return laySo(
+                        "SELECT COUNT(*) FROM chi_tiet_don_hang c JOIN lo_hang l ON l.id ="
+                                + " c.lo_hang_id WHERE l.san_pham_id = ?",
+                        sanPhamId)
+                > 0;
+    }
+
+    public int ngungKinhDoanhSanPham(long sanPhamId) {
+        return capNhat("UPDATE san_pham SET trang_thai='STOPPED' WHERE id=?", sanPhamId);
+    }
+
+    public String layTenDangNhapTheoNhanVien(long nhanVienId) {
+        Object val =
+                layGiaTriDon(
+                        "SELECT ten_dang_nhap FROM tai_khoan WHERE nhan_vien_id=?", nhanVienId);
+        return val == null ? null : val.toString();
+    }
+
+    public void taoTaiKhoanNhanVien(
+            long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro) {
+        capNhat(
+                "INSERT INTO tai_khoan(ten_dang_nhap, mat_khau_hash, vai_tro, nhan_vien_id,"
+                        + " trang_thai) VALUES(?, ?, ?, ?, 'ACTIVE')",
+                tenDangNhap,
+                matKhauHash,
+                vaiTro,
+                nhanVienId);
     }
 }

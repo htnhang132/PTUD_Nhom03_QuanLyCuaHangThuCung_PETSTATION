@@ -58,6 +58,20 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                ngayDangXet -> ThongKeService.layDoanhThu(ngayDangXet, "shift"))));
+                                ngayDangXet -> ThongKeService.layDoanhThu(ngayDangXet, "shift")),
+                        taoKieuHienThi(
+                                "Theo khung giờ",
+                                new String[] {"Khung giờ", "Doanh thu", "Số hóa đơn"},
+                                0,
+                                1,
+                                true,
+                                ThongKeService::layDoanhThuTheoGio),
+                        taoKieuHienThi(
+                                "Theo thứ trong tuần",
+                                new String[] {"Thứ", "Doanh thu", "Số hóa đơn"},
+                                0,
+                                1,
+                                true,
+                                ThongKeService::layDoanhThuTheoThu)));
     }
 }

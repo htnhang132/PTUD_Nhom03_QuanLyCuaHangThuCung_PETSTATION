@@ -108,6 +108,133 @@ public final class KhoService {
         NhatKyHeThongService.ghiNhatKy("Xuất kho", chuyenThanhChuoi(xuatKho));
     }
 
+    public record DongKiemKe(
+            long loHangId,
+            String maSP,
+            String tenSP,
+            String barcode,
+            String soLo,
+            LocalDate hanDung,
+            int tonHeThong,
+            int tonThucTe,
+            String lyDo) {}
+
+    public static List<Object[]> layDanhSachLoHangKiemKe(String loaiSanPham, boolean chiSapHetHan) {
+        yeuCau(Quyen.INVENTORY_COUNT);
+        List<Object[]> tatCa = khoDAO.layDanhSachLoHangKiemKe();
+        LocalDate mocHetHan = LocalDate.now().plusDays(30);
+        return tatCa.stream()
+                .filter(
+                        r -> {
+                            if (loaiSanPham != null
+                                    && !loaiSanPham.isBlank()
+                                    && !loaiSanPham.equalsIgnoreCase("TẤT CẢ")) {
+                                String loai = r[7] == null ? "" : r[7].toString();
+                                if (!loai.equalsIgnoreCase(loaiSanPham)) return false;
+                            }
+                            if (chiSapHetHan) {
+                                Object hsdObj = r[5];
+                                if (hsdObj == null) return false;
+                                LocalDate hsd = ((java.sql.Date) hsdObj).toLocalDate();
+                                if (hsd.isAfter(mocHetHan)) return false;
+                            }
+                            return true;
+                        })
+                .toList();
+    }
+
+    public static List<Object[]> layChiTietKiemKe(long bienBanId) {
+        yeuCau(Quyen.INVENTORY_COUNT);
+        return khoDAO.layChiTietKiemKe(bienBanId);
+    }
+
+    public static long lapBienBanKiemKe(String kyKiemKe, List<DongKiemKe> danhSachDong) {
+        yeuCau(Quyen.INVENTORY_COUNT);
+        if (danhSachDong == null || danhSachDong.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách mặt hàng kiểm kê không được rỗng.");
+        }
+        if (kyKiemKe == null || kyKiemKe.isBlank()) {
+            kyKiemKe = "Kỳ kiểm kê " + LocalDate.now();
+        }
+        final String kyKiemKeFinal = kyKiemKe;
+
+        boolean coChenhLech = false;
+        int demChenhLech = 0;
+        for (DongKiemKe d : danhSachDong) {
+            if (d.tonThucTe() < 0) {
+                throw new IllegalArgumentException(
+                        "Tồn thực tế của SP " + d.maSP() + " không được âm.");
+            }
+            if (d.tonThucTe() != d.tonHeThong()) {
+                coChenhLech = true;
+                demChenhLech++;
+                if (d.lyDo() == null || d.lyDo().isBlank()) {
+                    throw new IllegalArgumentException(
+                            "Vui lòng ghi lý do chênh lệch cho sản phẩm: "
+                                    + d.maSP()
+                                    + " ("
+                                    + d.tenSP()
+                                    + ")");
+                }
+            }
+        }
+
+        final boolean coChenhLechFinal = coChenhLech;
+        final int demChenhLechFinal = demChenhLech;
+
+        return thucHienGiaoDich(
+                ketNoi -> {
+                    String soBienBan = taoMa("KK");
+                    String trangThai = coChenhLechFinal ? "PENDING" : "APPROVED";
+                    long bienBanId =
+                            khoDAO.themKiemKe(soBienBan, layIdTaiKhoan(), kyKiemKeFinal, trangThai);
+
+                    for (DongKiemKe d : danhSachDong) {
+                        khoDAO.capNhatKiemKe(
+                                bienBanId,
+                                d.loHangId(),
+                                d.tonHeThong(),
+                                d.tonThucTe(),
+                                d.lyDo() == null ? "" : d.lyDo());
+                    }
+
+                    if (coChenhLechFinal) {
+                        PheDuyetService.guiThaoTac(
+                                PheDuyetService.Loai.STOCKTAKE,
+                                "Kiểm kê định kỳ: có " + demChenhLechFinal + " mặt hàng chênh lệch",
+                                "Kỳ: " + kyKiemKeFinal,
+                                "Số BB: " + soBienBan,
+                                "STOCKTAKE",
+                                bienBanId,
+                                "");
+                    } else {
+                        // Nếu tất cả khớp số lượng, tự động áp dụng để đánh dấu hoàn tất
+                        apDungKiemKe(bienBanId);
+                    }
+
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Kiểm kê đợt",
+                            soBienBan
+                                    + " ("
+                                    + danhSachDong.size()
+                                    + " dòng, "
+                                    + demChenhLechFinal
+                                    + " lệch)");
+                    return bienBanId;
+                });
+    }
+
+    public static void duyetVaCanBangKho(long bienBanId) {
+        yeuCau(Quyen.INVENTORY_COUNT);
+        thucHienGiaoDich(
+                ketNoi -> {
+                    apDungKiemKe(bienBanId);
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Cân bằng kho kiểm kê", "Biên bản ID " + bienBanId);
+                    return null;
+                });
+    }
+
     public static long kiemKe(long loHang, int thucTe, String lyDo) {
         yeuCau(Quyen.INVENTORY_COUNT);
         if (thucTe < 0) throw new IllegalArgumentException("Tồn thực tế không được âm.");

@@ -65,7 +65,54 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                             + yc.id
                                             + "; giá hiện tại được giữ đến khi quản lý duyệt.";
                                 })
-                        .timKiem("Tìm theo mã, tên sản phẩm...")
+                        .themThaoTacBoSung(
+                                "Tạo Barcode",
+                                dong -> {
+                                    String ma = String.valueOf(dong[0]);
+                                    String barcodeHienTai =
+                                            dong.length > 17 ? String.valueOf(dong[17]).trim() : "";
+                                    if (!barcodeHienTai.isBlank()) {
+                                        return "Sản phẩm đã có mã vạch: " + barcodeHienTai;
+                                    }
+                                    String maMoi =
+                                            "893"
+                                                    + String.format(
+                                                            java.util.Locale.ROOT,
+                                                            "%09d",
+                                                            Math.abs(ma.hashCode() % 1000000000L));
+                                    long spId = DanhMucService.layId("san_pham", "ma_san_pham", ma);
+                                    DanhMucService.capNhatBarcode(spId, maMoi);
+                                    if (dong.length > 17) dong[17] = maMoi;
+                                    return "Đã cấp mã vạch mới: " + maMoi;
+                                })
+                        .datBoKiemTra(
+                                dong -> {
+                                    long giaBan =
+                                            com.petstation.util.TienTe.doc(String.valueOf(dong[4]));
+                                    long giaNhap =
+                                            com.petstation.util.TienTe.doc(String.valueOf(dong[5]));
+                                    if (giaNhap > 0 && giaBan < giaNhap) {
+                                        return "Giá bán ("
+                                                + com.petstation.util.TienTe.dinhDang(giaBan)
+                                                + ") không được thấp hơn giá nhập gần nhất ("
+                                                + com.petstation.util.TienTe.dinhDang(giaNhap)
+                                                + ").";
+                                    }
+                                    return null;
+                                })
+                        .datDieuKienXoa(
+                                dong -> {
+                                    String ma = String.valueOf(dong[0]);
+                                    long spId = DanhMucService.layId("san_pham", "ma_san_pham", ma);
+                                    if (DanhMucService.kiemTraSanPhamCoGiaoDich(spId)) {
+                                        DanhMucService.ngungKinhDoanhSanPham(spId);
+                                        return "Sản phẩm đã có lịch sử giao dịch. Hệ thống"
+                                                + " đã tự động chuyển sang 'Ngừng kinh doanh' để"
+                                                + " bảo toàn dữ liệu sổ sách.";
+                                    }
+                                    return null;
+                                })
+                        .timKiem("Tìm theo mã, tên, mã vạch sản phẩm...")
                         .datTrangThai(9, "Đang kinh doanh", "Ngừng kinh doanh");
         return cauHinh;
     }
@@ -100,6 +147,7 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Đối tượng sử dụng", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Mô tả", Kieu.VUNG).an(),
                 TruongDuLieu.tao("Trang nguồn", Kieu.VAN_BAN).an().chiDoc().anBieuMau(),
-                TruongDuLieu.tao("Ngày thu thập", Kieu.VAN_BAN).an().chiDoc().anBieuMau());
+                TruongDuLieu.tao("Ngày thu thập", Kieu.VAN_BAN).an().chiDoc().anBieuMau(),
+                TruongDuLieu.tao("Mã vạch (Barcode)", Kieu.VAN_BAN).an().datMacDinh(""));
     }
 }

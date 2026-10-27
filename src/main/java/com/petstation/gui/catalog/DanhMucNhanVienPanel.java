@@ -28,8 +28,38 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                 CauHinh.tao("Danh mục nhân viên", "nhân viên")
                         .themBoLoc("Chức vụ", d -> String.valueOf(d[4]))
                         .datTienTo("NV")
-                        .timKiem("Tìm theo tên, SĐT, mã NV...")
+                        .timKiem("Tìm theo tên, SĐT, CCCD, mã NV...")
+                        .themThaoTacBoSung(
+                                "Tài khoản / Reset Pass",
+                                dong -> {
+                                    String maNv = String.valueOf(dong[0]);
+                                    long idNv =
+                                            DanhMucService.layId("nhan_vien", "ma_nhan_vien", maNv);
+                                    String tenDangNhap =
+                                            DanhMucService.layTenDangNhapTheoNhanVien(idNv);
+                                    String passMoi = "PetStation@" + maNv;
+                                    String cv = String.valueOf(dong[4]);
+                                    String vaiTro =
+                                            cv.contains("trưởng")
+                                                    ? "STORE_MANAGER"
+                                                    : cv.contains("kho")
+                                                            ? "WAREHOUSE_STAFF"
+                                                            : cv.contains("Spa")
+                                                                    ? "SPA_HOTEL_STAFF"
+                                                                    : "SALES_STAFF";
+                                    String tenMoi =
+                                            tenDangNhap == null || tenDangNhap.isBlank()
+                                                    ? maNv.toLowerCase()
+                                                    : tenDangNhap;
+                                    DanhMucService.capNhatHoacTaoTaiKhoan(
+                                            idNv, tenMoi, passMoi, vaiTro);
+                                    return "Đã cấp/đặt lại mật khẩu tài khoản "
+                                            + tenMoi
+                                            + " thành: "
+                                            + passMoi;
+                                })
                         .datTrangThai(6, "Đang làm", "Nghỉ việc");
+
         return cauHinh;
     }
 

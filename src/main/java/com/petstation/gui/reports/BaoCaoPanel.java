@@ -54,7 +54,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
     private final JComboBox<String> cboTongHop =
             new JComboBox<>(new String[] {"Tự động", "Ngày", "Tuần", "Tháng"});
     private final JPanel pnlCacThe = new JPanel(new GridLayout(1, 4, 8, 0));
-    private final JPanel charts = new KhungBieuDo();
     private final BieuDoCot bieuDo = new BieuDoCot();
     private final BieuDoTron tron = new BieuDoTron();
     private final DefaultTableModel moHinh =
@@ -128,25 +127,46 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlCacThe.setOpaque(false);
         top.add(pnlCacThe);
         add(top, BorderLayout.NORTH);
-        JScrollPane bar = new JScrollPane(bieuDo);
+        DinhDangBang.apDung(tblBang);
+
+        // Biểu đồ cột có thanh cuộn ngang khi nhiều mốc thời gian, không cuộn dọc
+        JScrollPane bar =
+                new JScrollPane(
+                        bieuDo,
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+                        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         bar.setBorder(BorderFactory.createEmptyBorder());
         bar.getViewport().setBackground(Color.WHITE);
-        charts.add(bar);
-        charts.add(tron);
-        charts.setPreferredSize(new Dimension(600, 300));
-        charts.setMinimumSize(new Dimension(100, 220));
-        JScrollPane table = new JScrollPane(tblBang);
-        table.setMinimumSize(new Dimension(100, 130));
-        DinhDangBang.apDung(tblBang);
-        JScrollPane chartScroll = new JScrollPane(charts);
-        chartScroll.setBorder(null);
-        chartScroll.setMinimumSize(new Dimension(100, 140));
-        chartScroll.getVerticalScrollBar().setUnitIncrement(18);
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, chartScroll, table);
-        split.setResizeWeight(.55);
-        split.setContinuousLayout(true);
-        split.setBorder(null);
-        add(split);
+        bar.getHorizontalScrollBar().setUnitIncrement(24);
+
+        // Card bao bọc biểu đồ cột
+        JPanel pnlCot = layThe(new BorderLayout(0, 8));
+        pnlCot.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(226, 232, 240)),
+                        BorderFactory.createEmptyBorder(10, 12, 10, 12)));
+        JLabel lblTieuDeCot =
+                new JLabel("BIỂU ĐỒ DIỄN BIẾN (Nhấp vào cột để xem chứng từ chi tiết)");
+        lblTieuDeCot.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        lblTieuDeCot.setForeground(new Color(51, 65, 85));
+        pnlCot.add(lblTieuDeCot, BorderLayout.NORTH);
+        pnlCot.add(bar, BorderLayout.CENTER);
+
+        // Card bao bọc biểu đồ tròn
+        JPanel pnlTron = layThe(new BorderLayout(0, 8));
+        pnlTron.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(226, 232, 240)),
+                        BorderFactory.createEmptyBorder(10, 12, 10, 12)));
+        pnlTron.add(tron, BorderLayout.CENTER);
+
+        // Hai biểu đồ phóng to chiếm trọn phần thân màn hình mà không cần cuộn dọc
+        JSplitPane splitBieuDo = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCot, pnlTron);
+        splitBieuDo.setResizeWeight(0.58);
+        splitBieuDo.setContinuousLayout(true);
+        splitBieuDo.setBorder(null);
+        splitBieuDo.setDividerSize(6);
+        add(splitBieuDo, BorderLayout.CENTER);
         bieuDo.khiChon(
                 i -> {
                     if (tongHop != null && i < tongHop.dongGoc().size())
@@ -363,46 +383,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
                 });
         if (c instanceof Container p)
             for (Component child : p.getComponents()) ganBam(child, action);
-    }
-
-    private static final class KhungBieuDo extends JPanel implements Scrollable {
-        KhungBieuDo() {
-            super(new GridLayout(1, 2, 12, 12));
-        }
-
-        @Override
-        public void doLayout() {
-            GridLayout layout = (GridLayout) getLayout();
-            boolean stack = getWidth() < 1200;
-            layout.setRows(stack ? 2 : 1);
-            layout.setColumns(stack ? 1 : 2);
-            super.doLayout();
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(600, getWidth() < 1200 ? 620 : 320);
-        }
-
-        public Dimension getPreferredScrollableViewportSize() {
-            return new Dimension(600, 300);
-        }
-
-        public int getScrollableUnitIncrement(Rectangle r, int orientation, int direction) {
-            return 24;
-        }
-
-        public int getScrollableBlockIncrement(Rectangle r, int orientation, int direction) {
-            return Math.max(24, r.height - 24);
-        }
-
-        public boolean getScrollableTracksViewportWidth() {
-            return true;
-        }
-
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
-        }
     }
 
     @Override

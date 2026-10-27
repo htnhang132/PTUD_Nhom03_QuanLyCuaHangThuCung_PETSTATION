@@ -57,4 +57,12 @@ public interface ThongKeDAO {
     List<Object[]> layTongHopCa(Object... thamSo);
 
     List<Object[]> layDuNoHienTai(Object... thamSo);
+
+    List<Object[]> layDoanhThuTheoGio(java.time.LocalDate tu, java.time.LocalDate denNgay);
+
+    List<Object[]> layDoanhThuTheoThu(java.time.LocalDate tu, java.time.LocalDate denNgay);
+
+    List<Object[]> layHangTonDong();
+
+    List<Object[]> layHaoHutKiemKe(java.time.LocalDate tu, java.time.LocalDate denNgay);
 }

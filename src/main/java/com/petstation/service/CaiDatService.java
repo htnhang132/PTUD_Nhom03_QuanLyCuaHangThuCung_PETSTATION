@@ -37,17 +37,54 @@ public final class CaiDatService {
                                     .trim()
                                     .toUpperCase(java.util.Locale.ROOT));
                     for (var muc : giaTri.entrySet()) {
-                        if (muc.getKey().startsWith("STORE_")
-                                || muc.getKey().equals("CARE_DATA_DIR"))
-                            ghi(muc.getKey(), muc.getValue().trim());
+                        String k = muc.getKey();
+                        if (k.startsWith("STORE_")
+                                || k.equals("CARE_DATA_DIR")
+                                || k.equals("DEAD_STOCK_DAYS")
+                                || k.equals("BLIND_COUNT_DEFAULT")
+                                || k.equals("MAX_WEEKLY_HOURS")
+                                || k.equals("SHIFT_SWAP_HOURS_AHEAD")) {
+                            ghi(k, muc.getValue().trim());
+                        }
                     }
                     ghi("PRINTER", mayIn);
                     NhatKyHeThongService.ghiNhatKy("Sửa", "Cài đặt hệ thống");
+                    thongBaoThayDoi("ALL");
                     return null;
                 });
     }
 
     private CaiDatService() {}
+
+    private static final java.util.List<java.util.function.Consumer<String>> boLangNgheCaiDat =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void dangKyLangNghe(java.util.function.Consumer<String> langNghe) {
+        if (langNghe != null && !boLangNgheCaiDat.contains(langNghe)) {
+            boLangNgheCaiDat.add(langNghe);
+        }
+    }
+
+    public static void xoaBoLangNghe() {
+        boLangNgheCaiDat.clear();
+    }
+
+    public static void thongBaoThayDoi(String khoa) {
+        for (var ln : boLangNgheCaiDat) {
+            try {
+                ln.accept(khoa);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    public static String layTuyChonHoacMacDinh(String khoa, String macDinh) {
+        Object giaTri = caiDatDAO.timGiaTri(khoa);
+        if (giaTri == null || giaTri.toString().isBlank()) {
+            return macDinh;
+        }
+        return chuyenThanhChuoi(giaTri);
+    }
 
     public static String layTuyChon(String khoa) {
         Object giaTri = caiDatDAO.timGiaTri(khoa);

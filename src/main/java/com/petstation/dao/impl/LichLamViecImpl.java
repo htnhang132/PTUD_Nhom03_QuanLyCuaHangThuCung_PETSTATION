@@ -86,4 +86,11 @@ public final class LichLamViecImpl implements LichLamViecDAO {
                         + " l.trang_thai<>'CANCELLED'",
                 cacThamSo);
     }
+
+    public int khoaLichKhoang(Object... cacThamSo) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE lich_lam_viec SET trang_thai='LOCKED' WHERE ngay_lam>=? AND ngay_lam<? AND"
+                        + " trang_thai='OPEN'",
+                cacThamSo);
+    }
 }

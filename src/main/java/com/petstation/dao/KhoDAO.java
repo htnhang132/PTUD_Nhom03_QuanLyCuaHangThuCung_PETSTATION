@@ -51,4 +51,8 @@ public interface KhoDAO {
     int themThanhToanNhaCungCap(Object... cacThamSo);
 
     List<Object[]> layNhapKhoChiTiet(Object... cacThamSo);
+
+    List<Object[]> layDanhSachLoHangKiemKe(Object... cacThamSo);
+
+    List<Object[]> layChiTietKiemKe(Object... cacThamSo);
 }

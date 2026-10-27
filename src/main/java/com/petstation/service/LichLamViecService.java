@@ -65,7 +65,7 @@ public final class LichLamViecService {
         return ngay.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
-    private static List<Muc> layKhoang(LocalDate tu, LocalDate den) {
+    public static List<Muc> layKhoang(LocalDate tu, LocalDate den) {
         List<Muc> ketQua = new ArrayList<>();
         for (Object[] dongDuLieu : lichLamViecDAO.timKhoang(tu, den)) {
             // Ca làm việc.
@@ -140,6 +140,57 @@ public final class LichLamViecService {
         // Đầu tiên.
         LocalDate dauTien = ngay.withDayOfMonth(1);
         return (int) lichLamViecDAO.demThangSoGio(ma, dauTien, dauTien.plusMonths(1));
+    }
+
+    public static int tinhGioTrongTuan(String ma, LocalDate thuHai) {
+        return (int) lichLamViecDAO.demThangSoGio(ma, thuHai, thuHai.plusDays(7));
+    }
+
+    public static String saoChepLichTuan(LocalDate tuTuan, LocalDate denTuan) {
+        yeuCau(Quyen.SCHEDULE_MANAGE);
+        if (tuTuan.equals(denTuan)) return "Tuần nguồn và tuần đích không được trùng nhau.";
+        return thucHienGiaoDich(
+                ketNoi -> {
+                    List<Muc> danhSachCu = layLichTrongTuan(tuTuan);
+                    if (danhSachCu.isEmpty())
+                        return "Tuần trước chưa có lịch làm việc để sao chép.";
+                    int daChep = 0;
+                    for (Muc m : danhSachCu) {
+                        if (m.kiemTraNghiPhep()) continue;
+                        long offsetDays =
+                                java.time.temporal.ChronoUnit.DAYS.between(tuTuan, m.ngay);
+                        LocalDate ngayMoi = denTuan.plusDays(offsetDays);
+                        String loi = phanCong(ngayMoi, m.caLamViec, m.maNhanVien);
+                        if (loi == null) daChep++;
+                    }
+                    thongBao();
+                    return "Đã sao chép thành công " + daChep + " lượt phân ca sang tuần mới.";
+                });
+    }
+
+    public static String hoanDoiCa(
+            LocalDate ngay1, int ca1, String ma1, LocalDate ngay2, int ca2, String ma2) {
+        yeuCau(Quyen.SCHEDULE_MANAGE);
+        if (ma1.equals(ma2)) return "Không thể hoán đổi ca với chính mình.";
+        return thucHienGiaoDich(
+                ketNoi -> {
+                    lichLamViecDAO.capNhatXoa(ma1, ngay1, CAC_MA[ca1]);
+                    lichLamViecDAO.capNhatXoa(ma2, ngay2, CAC_MA[ca2]);
+                    String err1 = phanCong(ngay1, ca1, ma2);
+                    if (err1 != null)
+                        throw new IllegalArgumentException("Không thể gán " + ma2 + ": " + err1);
+                    String err2 = phanCong(ngay2, ca2, ma1);
+                    if (err2 != null)
+                        throw new IllegalArgumentException("Không thể gán " + ma1 + ": " + err2);
+                    thongBao();
+                    return null;
+                });
+    }
+
+    public static void khoaLichTuan(LocalDate thuHai) {
+        yeuCau(Quyen.SCHEDULE_MANAGE);
+        lichLamViecDAO.khoaLichKhoang(thuHai, thuHai.plusDays(7));
+        thongBao();
     }
 
     public static void themBoLangNghe(Runnable boLangNghe) {

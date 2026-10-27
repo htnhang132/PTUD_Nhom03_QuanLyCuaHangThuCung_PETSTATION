@@ -327,4 +327,54 @@ public final class ThongKeImpl implements ThongKeDAO {
                     + " AND p.trang_thai='POSTED' GROUP BY n.ma_ncc,n.ten ORDER BY n.ma_ncc",
                 thamSo);
     }
+
+    public List<Object[]> layDoanhThuTheoGio(java.time.LocalDate tu, java.time.LocalDate denNgay) {
+        return ThaoTacSQL.truyVan(
+                "SELECT CAST(DATEPART(hour, thanh_toan_luc) AS varchar)+'h:00 -"
+                        + " '+CAST(DATEPART(hour, thanh_toan_luc)+1 AS varchar)+'h:00' gio,"
+                        + " SUM(tong_tien) doanh_thu, COUNT(id) so_hoa_don FROM hoa_don WHERE"
+                        + " trang_thai='PAID' AND thanh_toan_luc>=? AND thanh_toan_luc<? GROUP BY"
+                        + " DATEPART(hour, thanh_toan_luc) ORDER BY DATEPART(hour, thanh_toan_luc)",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> layDoanhThuTheoThu(java.time.LocalDate tu, java.time.LocalDate denNgay) {
+        return ThaoTacSQL.truyVan(
+                "SELECT CASE DATEPART(weekday, thanh_toan_luc) WHEN 1 THEN N'Chủ nhật' WHEN 2 THEN"
+                        + " N'Thứ 2' WHEN 3 THEN N'Thứ 3' WHEN 4 THEN N'Thứ 4' WHEN 5 THEN N'Thứ 5'"
+                        + " WHEN 6 THEN N'Thứ 6' ELSE N'Thứ 7' END thu, SUM(tong_tien) doanh_thu,"
+                        + " COUNT(id) so_hoa_don FROM hoa_don WHERE trang_thai='PAID' AND"
+                        + " thanh_toan_luc>=? AND thanh_toan_luc<? GROUP BY DATEPART(weekday,"
+                        + " thanh_toan_luc) ORDER BY DATEPART(weekday, thanh_toan_luc)",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> layHangTonDong() {
+        return ThaoTacSQL.truyVan(
+                "SELECT p.ma_san_pham, p.ten, COALESCE(SUM(l.so_luong_ton), 0) ton,"
+                    + " COALESCE(p.gia_nhap_gan_nhat, 0) gia_nhap, COALESCE(SUM(l.so_luong_ton), 0)"
+                    + " * COALESCE(p.gia_nhap_gan_nhat, 0) von_chon FROM san_pham p JOIN lo_hang l"
+                    + " ON l.san_pham_id = p.id WHERE l.so_luong_ton > 0 AND NOT EXISTS (SELECT 1"
+                    + " FROM chi_tiet_don_hang ct JOIN don_hang dh ON dh.id = ct.don_hang_id JOIN"
+                    + " hoa_don hd ON hd.don_hang_id = dh.id WHERE ct.san_pham_id = p.id AND"
+                    + " hd.trang_thai = 'PAID' AND hd.thanh_toan_luc >= DATEADD(day, -45,"
+                    + " GETDATE())) GROUP BY p.ma_san_pham, p.ten, p.gia_nhap_gan_nhat ORDER BY"
+                    + " von_chon DESC");
+    }
+
+    public List<Object[]> layHaoHutKiemKe(java.time.LocalDate tu, java.time.LocalDate denNgay) {
+        return ThaoTacSQL.truyVan(
+                "SELECT p.ma_san_pham, p.ten, l.so_lo, (ct.ton_thuc_te - ct.ton_he_thong)"
+                    + " chenh_lech, (ct.ton_thuc_te - ct.ton_he_thong) *"
+                    + " COALESCE(p.gia_nhap_gan_nhat, 0) gia_tri_lech, COALESCE(ct.nguyen_nhan,"
+                    + " N'Chưa rõ') ly_do, CONVERT(varchar(10), bb.tao_luc, 103) ngay_tao FROM"
+                    + " chi_tiet_kiem_ke ct JOIN bien_ban_kiem_ke bb ON bb.id = ct.bien_ban_id JOIN"
+                    + " lo_hang l ON l.id = ct.lo_hang_id JOIN san_pham p ON p.id = l.san_pham_id"
+                    + " WHERE ct.ton_thuc_te <> ct.ton_he_thong AND bb.tao_luc>=? AND bb.tao_luc<?"
+                    + " ORDER BY bb.tao_luc DESC",
+                tu,
+                denNgay);
+    }
 }

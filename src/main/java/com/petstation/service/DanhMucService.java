@@ -217,6 +217,36 @@ public final class DanhMucService {
         danhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
     }
 
+    public static void capNhatBarcode(long sanPhamId, String barcode) {
+        yeuCau(Quyen.PRODUCT_MANAGE);
+        danhMucDAO.capNhatBarcode(sanPhamId, barcode);
+    }
+
+    public static boolean kiemTraSanPhamCoGiaoDich(long sanPhamId) {
+        return danhMucDAO.kiemTraSanPhamCoGiaoDich(sanPhamId);
+    }
+
+    public static void ngungKinhDoanhSanPham(long sanPhamId) {
+        yeuCau(Quyen.PRODUCT_MANAGE);
+        danhMucDAO.ngungKinhDoanhSanPham(sanPhamId);
+    }
+
+    public static String layTenDangNhapTheoNhanVien(long nhanVienId) {
+        yeuCau(Quyen.ACCOUNT_MANAGE);
+        return danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
+    }
+
+    public static void capNhatHoacTaoTaiKhoan(
+            long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro) {
+        yeuCau(Quyen.ACCOUNT_MANAGE);
+        String daCo = danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
+        if (daCo == null) {
+            danhMucDAO.taoTaiKhoanNhanVien(nhanVienId, tenDangNhap, matKhauHash, vaiTro);
+        } else {
+            danhMucDAO.datLaiMatKhau(daCo, matKhauHash);
+        }
+    }
+
     public static void xoaBoLangNghe() {
         GIA_CAC_BO_LANG_NGHE.clear();
     }

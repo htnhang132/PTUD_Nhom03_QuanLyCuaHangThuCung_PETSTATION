@@ -10,8 +10,11 @@ import java.util.function.IntConsumer;
 
 import javax.swing.*;
 
-/** Biểu đồ cột có cuộn, trục âm và vùng tương tác riêng cho mỗi cột. */
-public final class BieuDoCot extends JComponent {
+/**
+ * Biểu đồ cột có cuộn, trục âm, tự động co giãn theo chiều cao khung chứa và vùng tương tác riêng
+ * cho mỗi cột.
+ */
+public final class BieuDoCot extends JComponent implements Scrollable {
     private String[] nhan = new String[0];
     private double[] giaTri = new double[0];
     private boolean tienTe;
@@ -21,7 +24,7 @@ public final class BieuDoCot extends JComponent {
     private IntConsumer chon = i -> {};
 
     public BieuDoCot() {
-        setPreferredSize(new Dimension(400, 260));
+        setPreferredSize(new Dimension(400, 380));
         setToolTipText("");
         addMouseListener(
                 new MouseAdapter() {
@@ -46,9 +49,36 @@ public final class BieuDoCot extends JComponent {
         giaTri = values.clone();
         tienTe = money;
         donVi = unit == null ? "" : unit;
-        setPreferredSize(new Dimension(Math.max(400, values.length * 92 + 50), 260));
+        int targetH =
+                getParent() != null && getParent().getHeight() > 0 ? getParent().getHeight() : 380;
+        setPreferredSize(new Dimension(Math.max(400, values.length * 96 + 60), targetH));
         revalidate();
         repaint();
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle r, int orientation, int direction) {
+        return 24;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle r, int orientation, int direction) {
+        return r.width;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return false;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return true;
     }
 
     private String format(double v) {

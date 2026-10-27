@@ -48,7 +48,19 @@ Bổ sung ngày 26/10/2026: người dùng báo lỗi `unmappable character (0x9
 
 Kiểm tra: `mvnw.cmd -B -ntp compile` thành công; cấu hình executor theo ngôn ngữ và đuôi `.java` đều trỏ đúng script hiện có. Không mở ứng dụng trong lượt kiểm tra này.
 
-## 4. Phần thành viên bổ sung khi review
+## 4. Tinh chỉnh nghiệp vụ & UX/UI 9 chức năng chính — 27/10/2026
+
+Yêu cầu: Refactor toàn diện 9 chức năng (Thống kê Doanh thu & Hàng hóa, Kiểm kê tồn kho, Phân lịch & Tra cứu lịch nhân viên, Tìm kiếm hóa đơn, Danh mục Sản phẩm & Nhân viên, Cài đặt hệ thống). Loại bỏ bảng trùng lặp ở các màn hình thống kê, mở rộng biểu đồ chiếm trọn màn hình không cần cuộn chuột.
+
+| Nội dung | Ghi nhận |
+| --- | --- |
+| Kết quả nhận được | 1. Thống kê: Thêm báo cáo Khung giờ cao điểm, Thứ trong tuần, Hàng tồn đọng/chôn vốn, Hao hụt kiểm kê; Bỏ bảng dữ liệu thừa, làm to biểu đồ cột & tròn chiếm trọn màn hình không cần cuộn dọc.<br>2. Phân lịch: Checkbox đa chọn, ràng buộc >40h, nghỉ phép, sao chép tuần trước, đổi ca có phê duyệt, khóa lịch tuần.<br>3. Kiểm kê: Master-Detail SplitPane, Modal Workspace kiểm kê đa sản phẩm, quét Barcode tự động +1, chế độ Blind Count, cân bằng kho an toàn.<br>4. Tìm kiếm Hóa đơn: Master-Detail SplitPane, bộ lọc đa tiêu chí (ngày, giá, PTTT, trạng thái), xem trước bill nhiệt K80 và in/xuất HTML.<br>5. Danh mục: Barcode tự sinh EAN-13, ràng buộc giá bán lẻ >= giá vốn, soft-delete bảo vệ dữ liệu đơn hàng; Reset password BCrypt 1-1 theo vai trò.<br>6. Cài đặt: JTabbedPane 4 tab trực quan, chọn thư mục lưu ảnh, khôi phục mặc định, cơ chế hot-reload cấu hình. |
+| Phần giữ | Kiến trúc phân tầng (DAO, Service, GUI), kết nối MS SQL Server, transaction `thucHienGiaoDich`, logic phân quyền `Quyen`. |
+| Phần điều chỉnh | Layout Master-Detail, Modal Workspace, Scrollable tự động co giãn chiều cao của `BieuDoCot`, xuất Excel vẫn giữ nguyên trên dữ liệu nền. |
+| Lý do | Nâng cao trải nghiệm người dùng, đúng quy chuẩn vận hành chuỗi bán lẻ thực tế, loại bỏ cuộn chuột rườm rà. |
+| Kiểm tra | `.\mvnw test-compile` hoàn tất với BUILD SUCCESS (238 source files, 27 test files). |
+
+## 5. Phần thành viên bổ sung khi review
 
 | Ngày, thành viên | File/hàm đã đọc | Phần giữ sau khi hiểu | Phần tự sửa và lý do | Test tự viết/chạy | Người review, commit/bằng chứng |
 | --- | --- | --- | --- | --- | --- |

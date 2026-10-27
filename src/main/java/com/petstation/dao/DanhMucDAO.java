@@ -24,4 +24,15 @@ public interface DanhMucDAO {
             Object[] giaTri,
             long idNguoiThucHien,
             String nguoiThucHienVaiTro);
+
+    int capNhatBarcode(long sanPhamId, String barcode);
+
+    boolean kiemTraSanPhamCoGiaoDich(long sanPhamId);
+
+    int ngungKinhDoanhSanPham(long sanPhamId);
+
+    String layTenDangNhapTheoNhanVien(long nhanVienId);
+
+    void taoTaiKhoanNhanVien(
+            long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro);
 }
