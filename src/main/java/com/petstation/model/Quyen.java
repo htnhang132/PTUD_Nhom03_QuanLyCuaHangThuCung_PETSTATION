@@ -1,0 +1,28 @@
+package com.petstation.model;
+
+/** Biểu diễn dữ liệu quyền dùng trong nghiệp vụ cửa hàng. */
+public enum Quyen {
+    DASHBOARD_VIEW,
+    ACCOUNT_MANAGE,
+    SCHEDULE_MANAGE,
+    SCHEDULE_VIEW,
+    CUSTOMER_MANAGE,
+    PET_MANAGE,
+    PRODUCT_MANAGE,
+    SUPPLIER_MANAGE,
+    INVENTORY_RECEIVE,
+    INVENTORY_ISSUE,
+    INVENTORY_COUNT,
+    PRICE_PROPOSE,
+    PRICE_APPROVE,
+    POS_SELL,
+    PAYMENT_PROCESS,
+    CASH_SHIFT_MANAGE,
+    PROMOTION_MANAGE,
+    SPA_MANAGE,
+    HOTEL_MANAGE,
+    APPROVAL_PROCESS,
+    AUDIT_VIEW,
+    REPORT_VIEW_ALL,
+    REPORT_VIEW_OWN_SHIFT
+}
