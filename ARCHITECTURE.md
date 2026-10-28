@@ -55,36 +55,45 @@ Cây dưới đây tóm tắt các thành phần được xác nhận trong nhá
 ```text
 PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
 ├── README.md
-├── ARCHITECTURE.md             # Tổng quan kiến trúc ở thư mục gốc
-├── CONTRIBUTING.md             # Quy trình nhánh, commit và quy ước code
-├── AI_USAGE_LOG.md              # Nhật ký sử dụng AI
-├── pom.xml                      # Java version và dependencies
+├── ARCHITECTURE.md                 # Tổng quan kiến trúc nhánh develop
+├── CONTRIBUTING.md                 # Quy tắc làm việc nhóm
+├── AI_USAGE_LOG.md                 # Nhật ký sử dụng AI
+├── pom.xml                         # Cấu hình Maven / dependency
 ├── .gitignore
+├── .classpath / .project / .settings/  # Cấu hình Eclipse có trong nhánh
 ├── docs/
-│   ├── ARCHITECTURE.md          # Mô tả kiến trúc chi tiết
 │   └── diagrams/
 │       ├── so-do-phan-cap-chuc-nang-ver2.png
 │       └── so-do-phan-cap-chuc-nang.drawio
 └── src/
     ├── main/
-    │   └── java/com/petstation/
-    │       ├── dao/             # Hợp đồng truy cập dữ liệu
-    │       │   └── impl/        # Lớp triển khai DAO
-    │       ├── model/           # Model và kiểu dữ liệu miền
-    │       ├── service/         # Nghiệp vụ ứng dụng
-    │       ├── gui/             # Giao diện Swing
-    │       │   ├── catalog/
-    │       │   ├── components/
-    │       │   ├── processing/
-    │       │   ├── reports/
-    │       │   ├── search/
-    │       │   └── system/
-    │       └── util/            # Khởi tạo và tiện ích
+    │   └── java/
+    │       ├── com/petstation/     # Source nghiệp vụ Pet Station
+    │       │   ├── dao/
+    │       │   │   └── impl/       # Một số implementation có hậu tố DAOImpl
+    │       │   ├── model/
+    │       │   ├── service/
+    │       │   ├── gui/
+    │       │   │   ├── catalog/
+    │       │   │   ├── components/
+    │       │   │   │   └── common/
+    │       │   │   ├── processing/
+    │       │   │   │   └── inventory/
+    │       │   │   ├── reports/
+    │       │   │   ├── search/
+    │       │   │   └── system/
+    │       │   └── util/
+    │       └── com/petstore/       # Package riêng còn tồn tại song song
+    │           ├── MainApplication.java
+    │           └── config/
+    │               └── DatabaseConnection.java
     └── test/
         └── java/com/petstation/
-            ├── architecture/    # Kiểm tra quy tắc phụ thuộc package
-            └── integration/     # Kiểm thử tích hợp SQL Server
-```
+            ├── architecture/
+            │   └── KienTrucPhanTangTest.java
+            └── integration/
+                └── TichHopSQLServerTest.java
+``````
 
 Các màn hình/module đã thấy trong source bao gồm danh mục sản phẩm và nhân viên, kiểm kê kho, thống kê doanh thu/hàng hóa, tìm kiếm hóa đơn và cài đặt. Chi tiết màn hình có thể thay đổi theo commit; khi thêm package, hãy cập nhật lại sơ đồ này nếu thay đổi làm ảnh hưởng cấu trúc cấp cao.
 
