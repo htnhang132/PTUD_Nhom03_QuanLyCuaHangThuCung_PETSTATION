@@ -48,3 +48,9 @@ nbdist/
 # ==================================
 .DS_Store
 Thumbs.db
+
+# Local database credentials and per-machine config (never commit)
+src/main/resources/db.properties
+src/main/resources/demo-access.properties
+config/db.properties
+config/*.local.properties
