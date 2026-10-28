@@ -4,6 +4,11 @@
 
 GitHub: [PTUD Nhóm 03 — Pet Station](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION).
 
+# PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION
+Hệ thống Quản lý Cửa hàng Thú cưng - Đồ án môn Phát triển Ứng dụng (10/08/2026 - 27/10/2026).
+### 📊 Sơ đồ Phân cấp Chức năng Hệ thống
+![Sơ đồ phân cấp](./docs/diagrams/so-do-phan-cap-chuc-nang-ver2.png)
+
 ## Chạy dự án
 
 Cần **JDK 17 trở lên** và **SQL Server 2019 trở lên**. Dự án có Maven Wrapper 3.9.11; không cần chép thư viện JAR hoặc cấu hình riêng theo IDE.
