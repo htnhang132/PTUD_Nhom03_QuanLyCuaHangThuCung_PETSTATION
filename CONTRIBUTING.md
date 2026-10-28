@@ -12,7 +12,7 @@ Hook `.githooks/pre-commit` hỗ trợ chặn commit sai nhánh. Nếu chưa có
 
 Java 17, UTF-8, 4 dấu cách. Package chữ thường; lớp PascalCase; hàm/biến camelCase; hằng UPPER_SNAKE_CASE. Dùng tiếng Việt không dấu nhất quán với mã hiện tại, giữ các mã trạng thái/quyền đã lưu trong database.
 
-Interface DAO nằm ở `dao/TenDAO.java`; triển khai SQL ở `dao/impl/TenImpl.java` và `implements TenDAO`. Kết nối/transaction ở `database`. GUI gọi service; service kiểm tra quyền và quy tắc trước khi gọi DAO. Không đưa SQL vào GUI hoặc thêm một DAO khác làm lại cùng luồng.
+Interface DAO nằm ở `dao/TenDAO.java`; triển khai SQL ở `dao/impl/TenDAOImpl.java` và `implements TenDAO`. Kết nối/transaction ở `database`. GUI gọi service; service kiểm tra quyền và quy tắc trước khi gọi DAO. Không đưa SQL vào GUI hoặc thêm một DAO khác làm lại cùng luồng.
 
 Tên hàm nêu hành động, như `layLoTheoFEFO`, `truTonLo`, `ganHoaDonSpa`; không dùng tên có số thứ tự như `timThanhToan2`. Biến cần nói rõ đối tượng. Comment giải thích quy tắc hoặc lý do, không lặp câu lệnh. Tránh thêm interface/lớp trung gian nếu không có trách nhiệm riêng.
 

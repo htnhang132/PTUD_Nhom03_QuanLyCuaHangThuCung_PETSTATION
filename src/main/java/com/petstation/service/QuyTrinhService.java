@@ -1,7 +1,7 @@
 package com.petstation.service;
 
 import com.petstation.dao.QuyTrinhDAO;
-import com.petstation.dao.impl.QuyTrinhImpl;
+import com.petstation.dao.impl.QuyTrinhDAOImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
@@ -9,7 +9,7 @@ import java.util.List;
 
 /** Kiểm tra chuyển bước bằng trạng thái lưu trong SQL Server. */
 public final class QuyTrinhService {
-    private static final QuyTrinhDAO quyTrinhDAO = new QuyTrinhImpl();
+    private static final QuyTrinhDAO quyTrinhDAO = new QuyTrinhDAOImpl();
 
     private QuyTrinhService() {}
 

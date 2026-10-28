@@ -1,13 +1,13 @@
 package com.petstation.service;
 
 import com.petstation.dao.LuaChonNghiepVuDAO;
-import com.petstation.dao.impl.LuaChonNghiepVuImpl;
+import com.petstation.dao.impl.LuaChonNghiepVuDAOImpl;
 
 import java.util.List;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho nghiệp vụ lựa chọn dịch vụ. */
 public final class LuaChonNghiepVuService {
-    private static final LuaChonNghiepVuDAO luaChonNghiepVuDAO = new LuaChonNghiepVuImpl();
+    private static final LuaChonNghiepVuDAO luaChonNghiepVuDAO = new LuaChonNghiepVuDAOImpl();
 
     private LuaChonNghiepVuService() {}
 

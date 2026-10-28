@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /** Thực hiện truy vấn JDBC cho JDBC danh mục DAO. */
-public final class DanhMucImpl implements DanhMucDAO {
+public final class DanhMucDAOImpl implements DanhMucDAO {
     public List<Object[]> layLichSuGia() {
         return chuyenCacDongThanhChuoi(
                 truyVan(

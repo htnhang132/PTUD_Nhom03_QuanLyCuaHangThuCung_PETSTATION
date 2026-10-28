@@ -7,14 +7,14 @@ import static com.petstation.service.PhienDangNhapService.yeuCau;
 import static com.petstation.util.DuLieu.chuyenThanhChuoi;
 
 import com.petstation.dao.CaiDatDAO;
-import com.petstation.dao.impl.CaiDatImpl;
+import com.petstation.dao.impl.CaiDatDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.util.Arrays;
 
 /** Đọc và cập nhật các tham số vận hành đang lưu trong bảng cai_dat. */
 public final class CaiDatService {
-    private static final CaiDatDAO caiDatDAO = new CaiDatImpl();
+    private static final CaiDatDAO caiDatDAO = new CaiDatDAOImpl();
 
     /** Lưu toàn bộ biểu mẫu trong một transaction, tránh lưu dở tham số/ngân hàng/máy in. */
     public static void luuTatCa(java.util.Map<String, String> giaTri, String mayIn) {

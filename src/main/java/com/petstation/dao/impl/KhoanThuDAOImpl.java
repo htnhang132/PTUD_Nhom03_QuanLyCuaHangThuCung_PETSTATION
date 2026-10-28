@@ -8,8 +8,8 @@ import com.petstation.model.PhuongThuc;
 
 import java.util.*;
 
-public final class KhoanThuImpl implements KhoanThuDAO {
-    public KhoanThuImpl() {}
+public final class KhoanThuDAOImpl implements KhoanThuDAO {
+    public KhoanThuDAOImpl() {}
 
     public void ghi(
             Long hoaDon, Long hotel, long ca, long nguoi, String khoa, List<DongThuTien> dong) {

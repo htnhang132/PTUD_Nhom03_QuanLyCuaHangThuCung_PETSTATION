@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC Spa DAO. */
-public final class XuLySpaImpl implements XuLySpaDAO {
-    public XuLySpaImpl() {}
+public final class XuLySpaDAOImpl implements XuLySpaDAO {
+    public XuLySpaDAOImpl() {}
 
     public int capNhatTiepNhan(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(

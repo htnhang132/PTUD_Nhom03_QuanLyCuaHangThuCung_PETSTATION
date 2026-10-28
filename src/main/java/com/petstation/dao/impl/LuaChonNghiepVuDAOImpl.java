@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ lựa chọn DAO. */
-public final class LuaChonNghiepVuImpl implements LuaChonNghiepVuDAO {
-    public LuaChonNghiepVuImpl() {}
+public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
+    public LuaChonNghiepVuDAOImpl() {}
 
     public List<Object[]> layLuaChonThuCung(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(

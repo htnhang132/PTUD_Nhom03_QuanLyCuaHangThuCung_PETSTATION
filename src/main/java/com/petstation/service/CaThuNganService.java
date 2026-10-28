@@ -5,7 +5,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.CaThuNganDAO;
-import com.petstation.dao.impl.CaThuNganImpl;
+import com.petstation.dao.impl.CaThuNganDAOImpl;
 import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
 
@@ -14,7 +14,7 @@ import java.util.*;
 
 /** Quản lý mở ca, doanh thu, tiền bàn giao và đóng ca của tài khoản hiện tại. */
 public final class CaThuNganService {
-    private static final CaThuNganDAO caThuNganDAO = new CaThuNganImpl();
+    private static final CaThuNganDAO caThuNganDAO = new CaThuNganDAOImpl();
 
     /** Các bộ lắng nghe. */
     private final List<Runnable> cacBoLangNghe = new ArrayList<>();

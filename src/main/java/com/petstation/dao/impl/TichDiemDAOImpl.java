@@ -8,8 +8,8 @@ import com.petstation.dao.TichDiemDAO;
 import java.util.List;
 
 /** Truy cập sổ điểm và voucher, dùng chung transaction của nghiệp vụ. */
-public final class TichDiemImpl implements TichDiemDAO {
-    public TichDiemImpl() {}
+public final class TichDiemDAOImpl implements TichDiemDAO {
+    public TichDiemDAOImpl() {}
 
     public List<Object[]> layRangBuocVoucher(String ma) {
         return truyVan(

@@ -4,13 +4,13 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.DeXuatGiaDAO;
-import com.petstation.dao.impl.DeXuatGiaImpl;
+import com.petstation.dao.impl.DeXuatGiaDAOImpl;
 import com.petstation.model.Quyen;
 import com.petstation.model.VaiTro;
 
 /** Gửi và áp dụng đề xuất giá trong cùng transaction với phê duyệt. */
 public final class DeXuatGiaService {
-    private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaImpl();
+    private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaDAOImpl();
 
     private DeXuatGiaService() {}
 

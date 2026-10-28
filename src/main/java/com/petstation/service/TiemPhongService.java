@@ -3,7 +3,7 @@ package com.petstation.service;
 import static com.petstation.database.ThaoTacSQL.*;
 
 import com.petstation.dao.TiemPhongDAO;
-import com.petstation.dao.impl.TiemPhongImpl;
+import com.petstation.dao.impl.TiemPhongDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDate;
@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Quản lý mũi tiêm và sàng lọc điều kiện tiếp nhận Spa. */
 public final class TiemPhongService {
-    private static final TiemPhongDAO tiemPhongDAO = new TiemPhongImpl();
+    private static final TiemPhongDAO tiemPhongDAO = new TiemPhongDAOImpl();
 
     private TiemPhongService() {}
 

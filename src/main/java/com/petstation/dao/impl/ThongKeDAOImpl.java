@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC thống kê DAO. */
-public final class ThongKeImpl implements ThongKeDAO {
-    public ThongKeImpl() {}
+public final class ThongKeDAOImpl implements ThongKeDAO {
+    public ThongKeDAOImpl() {}
 
     public List<Object[]> timKho(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(

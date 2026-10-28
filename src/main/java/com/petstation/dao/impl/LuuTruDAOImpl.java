@@ -8,8 +8,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC Hotel DAO. */
-public final class LuuTruImpl implements LuuTruDAO {
-    public LuuTruImpl() {}
+public final class LuuTruDAOImpl implements LuuTruDAO {
+    public LuuTruDAOImpl() {}
 
     public List<Object[]> layPhongDangDon() {
         return ThaoTacSQL.truyVan(

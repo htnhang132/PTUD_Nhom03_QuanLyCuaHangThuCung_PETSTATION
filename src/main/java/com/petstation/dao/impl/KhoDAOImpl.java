@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC kho DAO. */
-public final class KhoImpl implements KhoDAO {
-    public KhoImpl() {}
+public final class KhoDAOImpl implements KhoDAO {
+    public KhoDAOImpl() {}
 
     public int capNhatNhapKho(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(

@@ -5,8 +5,8 @@ import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.DoiHangDAO;
 import com.petstation.dao.DoiTraDAO;
-import com.petstation.dao.impl.DoiHangImpl;
-import com.petstation.dao.impl.DoiTraImpl;
+import com.petstation.dao.impl.DoiHangDAOImpl;
+import com.petstation.dao.impl.DoiTraDAOImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
@@ -17,8 +17,8 @@ import java.util.List;
 
 /** Đổi phụ kiện trong ba ngày, thu phần chênh lệch; không phát sinh hoàn tiền. */
 public final class DoiTraService {
-    private static final DoiHangDAO doiHangDAO = new DoiHangImpl();
-    private static final DoiTraDAO doiTraDAO = new DoiTraImpl();
+    private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
+    private static final DoiTraDAO doiTraDAO = new DoiTraDAOImpl();
 
     private DoiTraService() {}
 

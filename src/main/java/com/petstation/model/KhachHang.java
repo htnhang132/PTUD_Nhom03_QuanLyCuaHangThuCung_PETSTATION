@@ -49,85 +49,166 @@ public class KhachHang {
         this.soDienThoai = soDienThoai;
     }
 
-    // Truy xuất và cập nhật thuộc tính
-    public Long layId() {
+    // Chuẩn JavaBeans (get/set)
+    public Long getId() {
         return id;
     }
 
-    public void datId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String layMaKhachHang() {
+    public String getMaKhachHang() {
         return maKhachHang;
     }
 
-    public void datMaKhachHang(String maKhachHang) {
+    public void setMaKhachHang(String maKhachHang) {
         this.maKhachHang = maKhachHang;
     }
 
-    public String layHoTen() {
+    public String getHoTen() {
         return hoTen;
     }
 
-    public void datHoTen(String hoTen) {
+    public void setHoTen(String hoTen) {
         this.hoTen = hoTen;
     }
 
-    public String laySoDienThoai() {
+    public String getSoDienThoai() {
         return soDienThoai;
     }
 
-    public void datSoDienThoai(String soDienThoai) {
+    public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
     }
 
-    public String layDiaChi() {
+    public String getDiaChi() {
         return diaChi;
     }
 
-    public void datDiaChi(String diaChi) {
+    public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
     }
 
-    public LocalDate layNgaySinh() {
+    public LocalDate getNgaySinh() {
         return ngaySinh;
     }
 
-    public void datNgaySinh(LocalDate ngaySinh) {
+    public void setNgaySinh(LocalDate ngaySinh) {
         this.ngaySinh = ngaySinh;
     }
 
-    public Integer layDiemTichLuy() {
+    public Integer getDiemTichLuy() {
         return diemTichLuy;
     }
 
-    public void datDiemTichLuy(Integer diemTichLuy) {
+    public void setDiemTichLuy(Integer diemTichLuy) {
         this.diemTichLuy = diemTichLuy;
     }
 
-    public String layHangThanhVien() {
+    public String getHangThanhVien() {
         return hangThanhVien;
     }
 
-    public void datHangThanhVien(String hangThanhVien) {
+    public void setHangThanhVien(String hangThanhVien) {
         this.hangThanhVien = hangThanhVien;
     }
 
-    public LocalDateTime layThoiDiemTao() {
+    public LocalDateTime getThoiDiemTao() {
         return thoiDiemTao;
     }
 
-    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
+    public void setThoiDiemTao(LocalDateTime thoiDiemTao) {
         this.thoiDiemTao = thoiDiemTao;
     }
 
-    public byte[] layPhienBanBanGhi() {
+    public byte[] getPhienBanBanGhi() {
         return phienBanBanGhi;
     }
 
-    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
+    public void setPhienBanBanGhi(byte[] phienBanBanGhi) {
         this.phienBanBanGhi = phienBanBanGhi;
+    }
+
+    // Truy xuất và cập nhật thuộc tính kiểu tiếng Việt (Tương thích mã nguồn hiện có)
+    public Long layId() {
+        return getId();
+    }
+
+    public void datId(Long id) {
+        setId(id);
+    }
+
+    public String layMaKhachHang() {
+        return getMaKhachHang();
+    }
+
+    public void datMaKhachHang(String maKhachHang) {
+        setMaKhachHang(maKhachHang);
+    }
+
+    public String layHoTen() {
+        return getHoTen();
+    }
+
+    public void datHoTen(String hoTen) {
+        setHoTen(hoTen);
+    }
+
+    public String laySoDienThoai() {
+        return getSoDienThoai();
+    }
+
+    public void datSoDienThoai(String soDienThoai) {
+        setSoDienThoai(soDienThoai);
+    }
+
+    public String layDiaChi() {
+        return getDiaChi();
+    }
+
+    public void datDiaChi(String diaChi) {
+        setDiaChi(diaChi);
+    }
+
+    public LocalDate layNgaySinh() {
+        return getNgaySinh();
+    }
+
+    public void datNgaySinh(LocalDate ngaySinh) {
+        setNgaySinh(ngaySinh);
+    }
+
+    public Integer layDiemTichLuy() {
+        return getDiemTichLuy();
+    }
+
+    public void datDiemTichLuy(Integer diemTichLuy) {
+        setDiemTichLuy(diemTichLuy);
+    }
+
+    public String layHangThanhVien() {
+        return getHangThanhVien();
+    }
+
+    public void datHangThanhVien(String hangThanhVien) {
+        setHangThanhVien(hangThanhVien);
+    }
+
+    public LocalDateTime layThoiDiemTao() {
+        return getThoiDiemTao();
+    }
+
+    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
+        setThoiDiemTao(thoiDiemTao);
+    }
+
+    public byte[] layPhienBanBanGhi() {
+        return getPhienBanBanGhi();
+    }
+
+    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
+        setPhienBanBanGhi(phienBanBanGhi);
     }
 
     /**
@@ -137,22 +218,22 @@ public class KhachHang {
      */
     @Override
     public String toString() {
-        return "Customer{"
+        return "KhachHang{"
                 + "id="
                 + id
-                + ", customerCode='"
+                + ", maKhachHang='"
                 + maKhachHang
                 + '\''
-                + ", fullName='"
+                + ", hoTen='"
                 + hoTen
                 + '\''
-                + ", phoneNumber='"
+                + ", soDienThoai='"
                 + soDienThoai
                 + '\''
-                + ", membershipTier='"
+                + ", hangThanhVien='"
                 + hangThanhVien
                 + '\''
-                + ", loyaltyPoints="
+                + ", diemTichLuy="
                 + diemTichLuy
                 + '}';
     }

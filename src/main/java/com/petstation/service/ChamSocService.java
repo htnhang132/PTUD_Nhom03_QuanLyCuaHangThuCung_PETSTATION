@@ -4,7 +4,7 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.ChamSocDAO;
-import com.petstation.dao.impl.ChamSocImpl;
+import com.petstation.dao.impl.ChamSocDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.io.*;
@@ -14,7 +14,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 public final class ChamSocService {
-    private static final ChamSocDAO chamSocDAO = new ChamSocImpl();
+    private static final ChamSocDAO chamSocDAO = new ChamSocDAOImpl();
 
     private ChamSocService() {}
 

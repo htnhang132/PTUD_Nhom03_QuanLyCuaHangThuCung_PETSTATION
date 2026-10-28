@@ -8,9 +8,9 @@ import static com.petstation.util.DuLieu.*;
 import com.petstation.dao.BanHangDAO;
 import com.petstation.dao.DoiHangDAO;
 import com.petstation.dao.KhoanThuDAO;
-import com.petstation.dao.impl.BanHangImpl;
-import com.petstation.dao.impl.DoiHangImpl;
-import com.petstation.dao.impl.KhoanThuImpl;
+import com.petstation.dao.impl.BanHangDAOImpl;
+import com.petstation.dao.impl.DoiHangDAOImpl;
+import com.petstation.dao.impl.KhoanThuDAOImpl;
 import com.petstation.model.DongThuTien;
 import com.petstation.model.GioHang;
 import com.petstation.model.PhuongThuc;
@@ -23,9 +23,9 @@ import java.util.*;
  * Kiểm tra và lưu thanh toán, phân bổ tồn kho, điểm thưởng và hóa đơn dịch vụ trong cùng giao dịch.
  */
 public final class BanHangService {
-    private static final BanHangDAO banHangDAO = new BanHangImpl();
-    private static final DoiHangDAO doiHangDAO = new DoiHangImpl();
-    private static final KhoanThuDAO khoanThuDAO = new KhoanThuImpl();
+    private static final BanHangDAO banHangDAO = new BanHangDAOImpl();
+    private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
+    private static final KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
 
     private BanHangService() {}
 

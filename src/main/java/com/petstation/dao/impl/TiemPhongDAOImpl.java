@@ -8,8 +8,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /** Hồ sơ tiêm phòng được lưu theo thú cưng, thay cho ghi chú tự do. */
-public final class TiemPhongImpl implements TiemPhongDAO {
-    public TiemPhongImpl() {}
+public final class TiemPhongDAOImpl implements TiemPhongDAO {
+    public TiemPhongDAOImpl() {}
 
     public List<Object[]> layThuCung(String ma) {
         return truyVan(

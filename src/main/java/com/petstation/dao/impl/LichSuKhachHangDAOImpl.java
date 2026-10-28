@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC lịch sử khách hàng DAO. */
-public final class LichSuKhachHangImpl implements LichSuKhachHangDAO {
-    public LichSuKhachHangImpl() {}
+public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
+    public LichSuKhachHangDAOImpl() {}
 
     public List<Object[]> layThuCung(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(

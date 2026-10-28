@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /** Thực hiện truy vấn JDBC cho JDBC người dùng tài khoản DAO. */
-public final class TaiKhoanImpl implements TaiKhoanDAO {
+public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     @Override
     public Optional<TaiKhoan> timTheoTenDangNhap(Connection ketNoi, String tenDangNhap)
             throws Exception {

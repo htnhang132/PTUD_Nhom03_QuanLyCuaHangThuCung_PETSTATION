@@ -1,7 +1,7 @@
 package com.petstation.service;
 
 import com.petstation.dao.QuyenVaiTroDAO;
-import com.petstation.dao.impl.QuyenVaiTroImpl;
+import com.petstation.dao.impl.QuyenVaiTroDAOImpl;
 import com.petstation.model.Quyen;
 import com.petstation.model.VaiTro;
 
@@ -14,7 +14,7 @@ import java.util.Set;
  * <p>Quyền theo vai trò (khớp database/002_sample_data.sql) để hiển thị ma trận phân quyền.
  */
 public final class QuyenVaiTroService {
-    private static final QuyenVaiTroDAO quyenVaiTroDAO = new QuyenVaiTroImpl();
+    private static final QuyenVaiTroDAO quyenVaiTroDAO = new QuyenVaiTroDAOImpl();
 
     private QuyenVaiTroService() {}
 

@@ -3,7 +3,7 @@ package com.petstation.service;
 import static com.petstation.database.ThaoTacSQL.*;
 
 import com.petstation.dao.TichDiemDAO;
-import com.petstation.dao.impl.TichDiemImpl;
+import com.petstation.dao.impl.TichDiemDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDateTime;
@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Quy tắc tích điểm và đổi voucher Spa của khách hàng. */
 public final class TichDiemService {
-    private static final TichDiemDAO tichDiemDAO = new TichDiemImpl();
+    private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
 
     public static final long SO_TIEN_MOI_DIEM = 10_000;
     public static final int DIEM_DOI_VOUCHER = 200;

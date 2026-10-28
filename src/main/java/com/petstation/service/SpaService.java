@@ -6,7 +6,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.XuLySpaDAO;
-import com.petstation.dao.impl.XuLySpaImpl;
+import com.petstation.dao.impl.XuLySpaDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.*;
@@ -14,7 +14,7 @@ import java.util.*;
 
 /** Quản lý tiếp nhận, lựa chọn dịch vụ, tiến độ và hoàn thành phiếu Spa. */
 public final class SpaService {
-    private static final XuLySpaDAO xuLySpaDAO = new XuLySpaImpl();
+    private static final XuLySpaDAO xuLySpaDAO = new XuLySpaDAOImpl();
 
     public static long datLichHen(
             String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {

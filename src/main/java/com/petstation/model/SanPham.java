@@ -55,101 +55,198 @@ public class SanPham {
         this.giaBan = giaBan;
     }
 
-    // Truy xuất và cập nhật thuộc tính
-    public Long layId() {
+    // Chuẩn JavaBeans (get/set)
+    public Long getId() {
         return id;
     }
 
-    public void datId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String layMaSanPham() {
+    public String getMaSanPham() {
         return maSanPham;
     }
 
-    public void datMaSanPham(String maSanPham) {
+    public void setMaSanPham(String maSanPham) {
         this.maSanPham = maSanPham;
     }
 
-    public String layTenSanPham() {
+    public String getTenSanPham() {
         return tenSanPham;
     }
 
-    public void datTenSanPham(String tenSanPham) {
+    public void setTenSanPham(String tenSanPham) {
         this.tenSanPham = tenSanPham;
     }
 
-    public Long layIdNhomHang() {
+    public Long getIdNhomHang() {
         return idNhomHang;
     }
 
-    public void datIdNhomHang(Long idNhomHang) {
+    public void setIdNhomHang(Long idNhomHang) {
         this.idNhomHang = idNhomHang;
     }
 
-    public String layDonVi() {
+    public String getDonVi() {
         return donVi;
     }
 
-    public void datDonVi(String donVi) {
+    public void setDonVi(String donVi) {
         this.donVi = donVi;
     }
 
-    public BigDecimal layGiaBan() {
+    public BigDecimal getGiaBan() {
         return giaBan;
     }
 
-    public void datGiaBan(BigDecimal giaBan) {
+    public void setGiaBan(BigDecimal giaBan) {
         this.giaBan = giaBan;
     }
 
-    public String layURLAnh() {
+    public String getUrlAnh() {
         return urlAnh;
     }
 
-    public void datURLAnh(String urlAnh) {
+    public void setUrlAnh(String urlAnh) {
         this.urlAnh = urlAnh;
     }
 
-    public String layMoTa() {
+    public String getMoTa() {
         return moTa;
     }
 
-    public void datMoTa(String moTa) {
+    public void setMoTa(String moTa) {
         this.moTa = moTa;
     }
 
-    public Boolean layCanDonThuoc() {
+    public Boolean isCanDonThuoc() {
         return canDonThuoc;
     }
 
-    public void datCanDonThuoc(Boolean canDonThuoc) {
+    public void setCanDonThuoc(Boolean canDonThuoc) {
         this.canDonThuoc = canDonThuoc;
     }
 
-    public Boolean layDangHoatDong() {
+    public Boolean isDangHoatDong() {
         return dangHoatDong;
     }
 
-    public void datDangHoatDong(Boolean dangHoatDong) {
+    public void setDangHoatDong(Boolean dangHoatDong) {
         this.dangHoatDong = dangHoatDong;
     }
 
-    public LocalDateTime layThoiDiemTao() {
+    public LocalDateTime getThoiDiemTao() {
         return thoiDiemTao;
     }
 
-    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
+    public void setThoiDiemTao(LocalDateTime thoiDiemTao) {
         this.thoiDiemTao = thoiDiemTao;
     }
 
-    public byte[] layPhienBanBanGhi() {
+    public byte[] getPhienBanBanGhi() {
         return phienBanBanGhi;
     }
 
-    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
+    public void setPhienBanBanGhi(byte[] phienBanBanGhi) {
         this.phienBanBanGhi = phienBanBanGhi;
+    }
+
+    // Truy xuất và cập nhật thuộc tính kiểu tiếng Việt (Tương thích mã nguồn hiện có)
+    public Long layId() {
+        return getId();
+    }
+
+    public void datId(Long id) {
+        setId(id);
+    }
+
+    public String layMaSanPham() {
+        return getMaSanPham();
+    }
+
+    public void datMaSanPham(String maSanPham) {
+        setMaSanPham(maSanPham);
+    }
+
+    public String layTenSanPham() {
+        return getTenSanPham();
+    }
+
+    public void datTenSanPham(String tenSanPham) {
+        setTenSanPham(tenSanPham);
+    }
+
+    public Long layIdNhomHang() {
+        return getIdNhomHang();
+    }
+
+    public void datIdNhomHang(Long idNhomHang) {
+        setIdNhomHang(idNhomHang);
+    }
+
+    public String layDonVi() {
+        return getDonVi();
+    }
+
+    public void datDonVi(String donVi) {
+        setDonVi(donVi);
+    }
+
+    public BigDecimal layGiaBan() {
+        return getGiaBan();
+    }
+
+    public void datGiaBan(BigDecimal giaBan) {
+        setGiaBan(giaBan);
+    }
+
+    public String layURLAnh() {
+        return getUrlAnh();
+    }
+
+    public void datURLAnh(String urlAnh) {
+        setUrlAnh(urlAnh);
+    }
+
+    public String layMoTa() {
+        return getMoTa();
+    }
+
+    public void datMoTa(String moTa) {
+        setMoTa(moTa);
+    }
+
+    public Boolean layCanDonThuoc() {
+        return isCanDonThuoc();
+    }
+
+    public void datCanDonThuoc(Boolean canDonThuoc) {
+        setCanDonThuoc(canDonThuoc);
+    }
+
+    public Boolean layDangHoatDong() {
+        return isDangHoatDong();
+    }
+
+    public void datDangHoatDong(Boolean dangHoatDong) {
+        setDangHoatDong(dangHoatDong);
+    }
+
+    public LocalDateTime layThoiDiemTao() {
+        return getThoiDiemTao();
+    }
+
+    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
+        setThoiDiemTao(thoiDiemTao);
+    }
+
+    public byte[] layPhienBanBanGhi() {
+        return getPhienBanBanGhi();
+    }
+
+    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
+        setPhienBanBanGhi(phienBanBanGhi);
     }
 
     /**
@@ -159,18 +256,18 @@ public class SanPham {
      */
     @Override
     public String toString() {
-        return "Product{"
+        return "SanPham{"
                 + "id="
                 + id
-                + ", productCode='"
+                + ", maSanPham='"
                 + maSanPham
                 + '\''
-                + ", productName='"
+                + ", tenSanPham='"
                 + tenSanPham
                 + '\''
-                + ", sellingPrice="
+                + ", giaBan="
                 + giaBan
-                + ", isActive="
+                + ", dangHoatDong="
                 + dangHoatDong
                 + '}';
     }

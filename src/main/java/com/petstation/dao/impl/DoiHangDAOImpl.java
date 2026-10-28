@@ -8,8 +8,8 @@ import com.petstation.dao.DoiHangDAO;
 import java.util.List;
 
 /** Đổi hàng mới được phân biệt với các phiếu hoàn tiền lịch sử. */
-public final class DoiHangImpl implements DoiHangDAO {
-    public DoiHangImpl() {}
+public final class DoiHangDAOImpl implements DoiHangDAO {
+    public DoiHangDAOImpl() {}
 
     public List<Object[]> timDongGoc(long id) {
         return truyVan(

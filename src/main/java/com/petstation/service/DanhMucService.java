@@ -7,9 +7,9 @@ import static com.petstation.util.DuLieu.*;
 import com.petstation.dao.DanhMucDAO;
 import com.petstation.dao.DeXuatGiaDAO;
 import com.petstation.dao.TichDiemDAO;
-import com.petstation.dao.impl.DanhMucImpl;
-import com.petstation.dao.impl.DeXuatGiaImpl;
-import com.petstation.dao.impl.TichDiemImpl;
+import com.petstation.dao.impl.DanhMucDAOImpl;
+import com.petstation.dao.impl.DeXuatGiaDAOImpl;
+import com.petstation.dao.impl.TichDiemDAOImpl;
 import com.petstation.model.LoaiDanhMuc;
 import com.petstation.model.Quyen;
 
@@ -17,9 +17,9 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho danh mục dịch vụ. */
 public final class DanhMucService {
-    private static final DanhMucDAO danhMucDAO = new DanhMucImpl();
-    private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaImpl();
-    private static final TichDiemDAO tichDiemDAO = new TichDiemImpl();
+    private static final DanhMucDAO danhMucDAO = new DanhMucDAOImpl();
+    private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaDAOImpl();
+    private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
 
     /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho các dòng. */
     public static final class CacDong extends ArrayList<Object[]> {

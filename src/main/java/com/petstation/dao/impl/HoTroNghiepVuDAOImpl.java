@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ hỗ trợ DAO. */
-public final class HoTroNghiepVuImpl implements HoTroNghiepVuDAO {
-    public HoTroNghiepVuImpl() {}
+public final class HoTroNghiepVuDAOImpl implements HoTroNghiepVuDAO {
+    public HoTroNghiepVuDAOImpl() {}
 
     public List<Object[]> timThuCung(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(

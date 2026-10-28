@@ -8,8 +8,8 @@ import com.petstation.dao.QuyTrinhDAO;
 import java.util.List;
 
 /** Dữ liệu mới nhất để kiểm tra chuyển bước và sơ đồ phòng. */
-public final class QuyTrinhImpl implements QuyTrinhDAO {
-    public QuyTrinhImpl() {}
+public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
+    public QuyTrinhDAOImpl() {}
 
     public List<Object[]> laySpa(long id) {
         return truyVan(

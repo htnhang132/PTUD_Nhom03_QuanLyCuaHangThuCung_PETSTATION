@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC phê duyệt DAO. */
-public final class PheDuyetImpl implements PheDuyetDAO {
-    public PheDuyetImpl() {}
+public final class PheDuyetDAOImpl implements PheDuyetDAO {
+    public PheDuyetDAOImpl() {}
 
     public long demSoLuongDangCho(Object... cacThamSo) {
         return ThaoTacSQL.laySo(

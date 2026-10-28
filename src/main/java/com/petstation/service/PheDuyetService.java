@@ -6,7 +6,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.PheDuyetDAO;
-import com.petstation.dao.impl.PheDuyetImpl;
+import com.petstation.dao.impl.PheDuyetDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDate;
@@ -16,7 +16,7 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho phê duyệt dịch vụ. */
 public final class PheDuyetService {
-    private static final PheDuyetDAO pheDuyetDAO = new PheDuyetImpl();
+    private static final PheDuyetDAO pheDuyetDAO = new PheDuyetDAOImpl();
 
     /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho loại. */
     public enum Loai {

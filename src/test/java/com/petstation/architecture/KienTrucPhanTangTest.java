@@ -59,8 +59,8 @@ class KienTrucPhanTangTest {
         try (var files = Files.list(nguon.resolve("dao/impl"))) {
             for (Path file : files.filter(p -> p.toString().endsWith(".java")).toList()) {
                 String ten = file.getFileName().toString().replace(".java", "");
-                assertThat(ten).endsWith("Impl").doesNotStartWith("Jdbc");
-                String dao = ten.replaceFirst("Impl$", "DAO");
+                assertThat(ten).endsWith("DAOImpl").doesNotStartWith("Jdbc");
+                String dao = ten.replaceFirst("DAOImpl$", "DAO");
                 assertThat(Files.isRegularFile(nguon.resolve("dao/" + dao + ".java"))).isTrue();
                 assertThat(Files.readString(file)).contains("implements " + dao);
             }

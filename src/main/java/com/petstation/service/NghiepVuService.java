@@ -1,14 +1,14 @@
 package com.petstation.service;
 
 import com.petstation.dao.NghiepVuDAO;
-import com.petstation.dao.impl.NghiepVuImpl;
+import com.petstation.dao.impl.NghiepVuDAOImpl;
 import com.petstation.model.LoaiNghiepVu;
 
 import java.util.List;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho nghiệp vụ dịch vụ. */
 public final class NghiepVuService {
-    private static final NghiepVuDAO nghiepVuDAO = new NghiepVuImpl();
+    private static final NghiepVuDAO nghiepVuDAO = new NghiepVuDAOImpl();
 
     private NghiepVuService() {}
 

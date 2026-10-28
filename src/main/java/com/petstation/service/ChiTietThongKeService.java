@@ -3,7 +3,7 @@ package com.petstation.service;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.ChiTietThongKeDAO;
-import com.petstation.dao.impl.ChiTietThongKeImpl;
+import com.petstation.dao.impl.ChiTietThongKeDAOImpl;
 import com.petstation.model.ChiTietBaoCao;
 import com.petstation.model.KhoangNgay;
 import com.petstation.model.Quyen;
@@ -12,7 +12,7 @@ import java.util.Set;
 
 /** Kiểm tra quyền trước khi mở chứng từ; DAO không đọc phiên đăng nhập. */
 public final class ChiTietThongKeService {
-    private static final ChiTietThongKeDAO chiTietThongKeDAO = new ChiTietThongKeImpl();
+    private static final ChiTietThongKeDAO chiTietThongKeDAO = new ChiTietThongKeDAOImpl();
 
     private ChiTietThongKeService() {}
 

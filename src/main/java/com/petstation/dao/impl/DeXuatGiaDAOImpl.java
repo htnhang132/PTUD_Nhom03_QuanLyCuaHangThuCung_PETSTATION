@@ -7,8 +7,8 @@ import com.petstation.dao.DeXuatGiaDAO;
 import java.util.List;
 
 /** Giá đề xuất được tách khỏi giá bán đang áp dụng. */
-public final class DeXuatGiaImpl implements DeXuatGiaDAO {
-    public DeXuatGiaImpl() {}
+public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
+    public DeXuatGiaDAOImpl() {}
 
     public List<Object[]> timSanPham(String ma) {
         return truyVan(

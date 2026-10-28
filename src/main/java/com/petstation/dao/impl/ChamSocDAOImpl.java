@@ -7,8 +7,8 @@ import com.petstation.dao.ChamSocDAO;
 import java.util.List;
 
 /** Truy vấn ChamSocService; quyền và transaction do tầng service quyết định. */
-public final class ChamSocImpl implements ChamSocDAO {
-    public ChamSocImpl() {}
+public final class ChamSocDAOImpl implements ChamSocDAO {
+    public ChamSocDAOImpl() {}
 
     public List<Object[]> layLichSu(boolean spa, long id) {
         String fk = spa ? "spa_id" : "hotel_id";

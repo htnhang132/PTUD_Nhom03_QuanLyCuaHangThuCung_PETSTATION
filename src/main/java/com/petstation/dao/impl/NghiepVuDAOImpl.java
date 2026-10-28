@@ -8,10 +8,10 @@ import com.petstation.model.LoaiNghiepVu;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ DAO. */
-public final class NghiepVuImpl implements NghiepVuDAO {
+public final class NghiepVuDAOImpl implements NghiepVuDAO {
     private record KieuHienThi(String tieuDe, String[] cacCot, String sql) {}
 
-    public NghiepVuImpl() {}
+    public NghiepVuDAOImpl() {}
 
     public ThongTinBang layThongTin(LoaiNghiepVu cheDo) {
         KieuHienThi kieu = taoKieuHienThi(cheDo);

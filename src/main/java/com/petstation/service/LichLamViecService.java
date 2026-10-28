@@ -5,7 +5,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.LichLamViecDAO;
-import com.petstation.dao.impl.LichLamViecImpl;
+import com.petstation.dao.impl.LichLamViecDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.*;
@@ -14,7 +14,7 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho lịch làm việc dịch vụ. */
 public final class LichLamViecService {
-    private static final LichLamViecDAO lichLamViecDAO = new LichLamViecImpl();
+    private static final LichLamViecDAO lichLamViecDAO = new LichLamViecDAOImpl();
 
     /** Các ca làm việc. */
     public static final String[] CAC_CA_LAM_VIEC = {"Sáng", "Chiều", "Tối"};

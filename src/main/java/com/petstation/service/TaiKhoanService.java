@@ -3,11 +3,11 @@ package com.petstation.service;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.TaiKhoanDAO;
-import com.petstation.dao.impl.TaiKhoanImpl;
+import com.petstation.dao.impl.TaiKhoanDAOImpl;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho tài khoản dịch vụ. */
 public final class TaiKhoanService {
-    private static final TaiKhoanDAO taiKhoanDAO = new TaiKhoanImpl();
+    private static final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAOImpl();
 
     private TaiKhoanService() {}
 

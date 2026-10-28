@@ -6,7 +6,7 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC ca thu ngân DAO. */
-public final class CaThuNganImpl implements CaThuNganDAO {
+public final class CaThuNganDAOImpl implements CaThuNganDAO {
     public long layCocHotel(long ca, String phuongThuc) {
         return ThaoTacSQL.laySo(
                 "SELECT COALESCE(SUM(so_tien),0) FROM khoan_thu WHERE phien_id=? AND hop_dong_id IS"
@@ -15,7 +15,7 @@ public final class CaThuNganImpl implements CaThuNganDAO {
                 phuongThuc);
     }
 
-    public CaThuNganImpl() {}
+    public CaThuNganDAOImpl() {}
 
     /** Chỉ trả về tài khoản đang làm việc, có quyền nhận ca. */
     public List<Object[]> layNguoiNhan(long taiKhoanHienTai) {

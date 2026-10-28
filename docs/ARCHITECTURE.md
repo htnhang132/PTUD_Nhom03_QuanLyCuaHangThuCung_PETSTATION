@@ -8,7 +8,7 @@ src/main/java/com/petstation/
   database/                 Cấu hình, kết nối, câu lệnh JDBC dùng chung, transaction
   model/                    Dữ liệu, enum, giỏ hàng và quy tắc tính toán
   dao/                      Các interface ...DAO
-    impl/                   Các lớp ...Impl implements ...DAO, chứa SQL
+    impl/                   Các lớp ...DAOImpl implements ...DAO, chứa SQL
   service/                  Kiểm tra quyền, nghiệp vụ, phối hợp transaction
   gui/
     main/                   Cửa sổ chính
@@ -36,7 +36,7 @@ Chọn cấu trúc này vì nghiệp vụ bán hàng cần lưu hóa đơn, tồ
 | GUI | Nhập, chọn bản ghi, hiển thị và điều hướng | `ThanhToanPanel`, `DanhMucKhachHangPanel` |
 | Service | Quyền, validation, trạng thái nghiệp vụ và transaction | `BanHangService`, `LuuTruService` |
 | DAO interface | Hợp đồng thao tác dữ liệu | `BanHangDAO`, `LuuTruDAO` |
-| Impl | SQL có tham số, đọc/ghi/ánh xạ | `BanHangImpl`, `LuuTruImpl` |
+| Impl | SQL có tham số, đọc/ghi/ánh xạ | `BanHangDAOImpl`, `LuuTruDAOImpl` |
 | Database | Mở kết nối, chia sẻ transaction, rollback/savepoint | `KetNoiCSDL`, `ThaoTacSQL` |
 | Model | Dữ liệu và tính toán không gọi GUI/JDBC | `DongThuTien`, `KhoangNgay`, `GioHang` |
 

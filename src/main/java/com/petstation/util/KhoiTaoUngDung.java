@@ -1,8 +1,8 @@
 package com.petstation.util;
 
-import com.petstation.dao.impl.NhanVienImpl;
-import com.petstation.dao.impl.NhatKyHeThongImpl;
-import com.petstation.dao.impl.TaiKhoanImpl;
+import com.petstation.dao.impl.NhanVienDAOImpl;
+import com.petstation.dao.impl.NhatKyHeThongDAOImpl;
+import com.petstation.dao.impl.TaiKhoanDAOImpl;
 import com.petstation.database.CauHinhCSDL;
 import com.petstation.database.KetNoiCSDL;
 import com.petstation.database.QuanLyGiaoDich;
@@ -48,9 +48,9 @@ public final class KhoiTaoUngDung {
         XacThucService xacThuc =
                 new XacThucService(
                         cacGiaoDich,
-                        new TaiKhoanImpl(),
-                        new NhanVienImpl(),
-                        new NhatKyHeThongImpl());
+                        new TaiKhoanDAOImpl(),
+                        new NhanVienDAOImpl(),
+                        new NhatKyHeThongDAOImpl());
         return new KhoiTaoUngDung(csdl, cacPhien, xacThuc, new PhanQuyenService(cacPhien));
     }
 

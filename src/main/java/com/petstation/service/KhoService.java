@@ -6,7 +6,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.KhoDAO;
-import com.petstation.dao.impl.KhoImpl;
+import com.petstation.dao.impl.KhoDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.*;
@@ -14,7 +14,7 @@ import java.util.*;
 
 /** Kiểm tra nghiệp vụ nhập kho, xuất hủy và kiểm kê trước khi lưu dữ liệu. */
 public final class KhoService {
-    private static final KhoDAO khoDAO = new KhoImpl();
+    private static final KhoDAO khoDAO = new KhoDAOImpl();
 
     public static long nhapKho(
             String nhaCungCap,

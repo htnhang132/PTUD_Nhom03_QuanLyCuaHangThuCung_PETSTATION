@@ -4,7 +4,7 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.ThongKeDAO;
-import com.petstation.dao.impl.ThongKeImpl;
+import com.petstation.dao.impl.ThongKeDAOImpl;
 import com.petstation.model.KhoangNgay;
 import com.petstation.model.Quyen;
 
@@ -13,7 +13,7 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho thống kê dịch vụ. */
 public final class ThongKeService {
-    private static final ThongKeDAO thongKeDAO = new ThongKeImpl();
+    private static final ThongKeDAO thongKeDAO = new ThongKeDAOImpl();
 
     private ThongKeService() {}
 

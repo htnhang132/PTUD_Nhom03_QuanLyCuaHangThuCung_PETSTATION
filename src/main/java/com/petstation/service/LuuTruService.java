@@ -8,9 +8,9 @@ import static com.petstation.util.DuLieu.*;
 import com.petstation.dao.BanHangDAO;
 import com.petstation.dao.KhoanThuDAO;
 import com.petstation.dao.LuuTruDAO;
-import com.petstation.dao.impl.BanHangImpl;
-import com.petstation.dao.impl.KhoanThuImpl;
-import com.petstation.dao.impl.LuuTruImpl;
+import com.petstation.dao.impl.BanHangDAOImpl;
+import com.petstation.dao.impl.KhoanThuDAOImpl;
+import com.petstation.dao.impl.LuuTruDAOImpl;
 import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
 
@@ -19,9 +19,9 @@ import java.util.*;
 
 /** Quản lý đặt phòng, hợp đồng lưu trú, chăm sóc và quyết toán tiền Hotel. */
 public final class LuuTruService {
-    private static final BanHangDAO banHangDAO = new BanHangImpl();
-    private static final KhoanThuDAO khoanThuDAO = new KhoanThuImpl();
-    private static final LuuTruDAO luuTruDAO = new LuuTruImpl();
+    private static final BanHangDAO banHangDAO = new BanHangDAOImpl();
+    private static final KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
+    private static final LuuTruDAO luuTruDAO = new LuuTruDAOImpl();
 
     public static long datPhong(
             String maThuCung,

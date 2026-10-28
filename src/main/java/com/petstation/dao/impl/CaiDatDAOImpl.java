@@ -4,8 +4,8 @@ import com.petstation.dao.CaiDatDAO;
 import com.petstation.database.ThaoTacSQL;
 
 /** Thực hiện truy vấn JDBC cho JDBC cài đặt DAO. */
-public final class CaiDatImpl implements CaiDatDAO {
-    public CaiDatImpl() {}
+public final class CaiDatDAOImpl implements CaiDatDAO {
+    public CaiDatDAOImpl() {}
 
     public Object timGiaTri(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon("SELECT gia_tri FROM cai_dat WHERE khoa=?", cacThamSo);

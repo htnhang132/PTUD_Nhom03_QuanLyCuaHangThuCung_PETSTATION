@@ -5,7 +5,7 @@ import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.NhatKyHeThongDAO;
-import com.petstation.dao.impl.NhatKyHeThongImpl;
+import com.petstation.dao.impl.NhatKyHeThongDAOImpl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +13,7 @@ import java.util.*;
 
 /** Ghi và tra cứu nhật ký hệ thống theo người dùng, sự kiện và kết quả. */
 public final class NhatKyHeThongService {
-    private static final NhatKyHeThongDAO nhatKyHeThongDAO = new NhatKyHeThongImpl();
+    private static final NhatKyHeThongDAO nhatKyHeThongDAO = new NhatKyHeThongDAOImpl();
 
     /**
      * Điều phối nghiệp vụ và kiểm tra dữ liệu cho mục.

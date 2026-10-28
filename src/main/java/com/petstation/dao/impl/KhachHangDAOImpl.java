@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 /** Thực hiện truy vấn JDBC cho JDBC khách hàng DAO. */
-public class KhachHangImpl implements KhachHangDAO {
+public class KhachHangDAOImpl implements KhachHangDAO {
 
     /** Kết nối. */
     private final Connection ketNoi;
 
-    public KhachHangImpl(Connection ketNoi) {
+    public KhachHangDAOImpl(Connection ketNoi) {
         this.ketNoi = ketNoi;
     }
 

@@ -60,7 +60,19 @@ Yêu cầu: Refactor toàn diện 9 chức năng (Thống kê Doanh thu & Hàng 
 | Lý do | Nâng cao trải nghiệm người dùng, đúng quy chuẩn vận hành chuỗi bán lẻ thực tế, loại bỏ cuộn chuột rườm rà. |
 | Kiểm tra | `.\mvnw test-compile` hoàn tất với BUILD SUCCESS (238 source files, 27 test files). |
 
-## 5. Phần thành viên bổ sung khi review
+## 5. Chuẩn hóa JavaBeans cho Model và quy ước DAOImpl — 28/10/2026
+
+Yêu cầu: Đánh giá dự án theo tiêu chí hội đồng chấm đồ án PTUD; chuẩn hóa JavaBeans (get/set) và format `toString()` cho các Model Entity; đổi tên toàn bộ 28 lớp triển khai DAO từ `*Impl` thành `*DAOImpl` và cập nhật kiểm thử kiến trúc phân tầng.
+
+| Nội dung | Ghi nhận |
+| --- | --- |
+| Kết quả nhận được | 1. Model: Bổ sung bộ getter/setter chuẩn JavaBeans (`getId()`, `setId()`, `getMaSanPham()`, `isDangHoatDong()`, ...) cho `SanPham` và `KhachHang`; giữ lại các alias `lay.../dat...` tương thích ngược; đồng nhất `toString()` tiếng Việt.<br>2. DAO: Đổi tên toàn bộ 28 file `*Impl.java` thành `*DAOImpl.java` bằng `git mv` và cập nhật tham chiếu trên toàn bộ tầng Service, Util, Test.<br>3. Entity Mapping: Thêm phương thức định kiểu mạnh `Optional<NhanVien> timTheoMa(...)` trong `NhanVienDAO` và `NhanVienDAOImpl` để chứng minh Type-Safety.<br>4. Kiểm thử kiến trúc: Cập nhật `KienTrucPhanTangTest` để assert quy ước kết thúc bằng `DAOImpl`. |
+| Phần giữ | Toàn bộ logic giao dịch ACID, phân quyền, cấu trúc thư mục 3 tầng và các ràng buộc dữ liệu. |
+| Phần điều chỉnh | Quy ước đặt tên file và lớp triển khai DAO, quy ước JavaBean của Entity. |
+| Lý do | Tuân thủ chuẩn công nghiệp của hệ sinh thái Java, nâng cao điểm số đồ án khi bảo vệ trước Hội đồng. |
+| Kiểm tra | `.\mvnw test` hoàn tất với BUILD SUCCESS: 135/135 tests đạt (0 Failures, 0 Errors). |
+
+## 6. Phần thành viên bổ sung khi review
 
 | Ngày, thành viên | File/hàm đã đọc | Phần giữ sau khi hiểu | Phần tự sửa và lý do | Test tự viết/chạy | Người review, commit/bằng chứng |
 | --- | --- | --- | --- | --- | --- |

@@ -8,8 +8,8 @@ import com.petstation.model.*;
 import java.util.*;
 
 /** Dữ liệu chứng từ sau cùng phạm vi quyền với báo cáo, không dùng truy vấn GUI không giới hạn. */
-public final class ChiTietThongKeImpl implements ChiTietThongKeDAO {
-    public ChiTietThongKeImpl() {}
+public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
+    public ChiTietThongKeDAOImpl() {}
 
     public ChiTietBaoCao lay(
             String baoCao, String goc, KhoangNgay ky, Long taiKhoan, Long nhanVien) {

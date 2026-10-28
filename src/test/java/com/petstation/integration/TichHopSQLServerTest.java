@@ -6,7 +6,7 @@ import static com.petstation.util.DuLieu.*;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.petstation.dao.impl.KhachHangImpl;
+import com.petstation.dao.impl.KhachHangDAOImpl;
 import com.petstation.database.CauHinhCSDL;
 import com.petstation.database.KetNoiCSDL;
 import com.petstation.database.ThaoTacSQL;
@@ -230,7 +230,7 @@ class TichHopSQLServerTest {
                     thucHienGiaoDich(
                             ketNoi -> {
                                 assertThat(
-                                                new KhachHangImpl(ketNoi)
+                                                new KhachHangDAOImpl(ketNoi)
                                                         .timTheoMaKhachHang(maKhachHang)
                                                         .orElseThrow()
                                                         .layHoTen())

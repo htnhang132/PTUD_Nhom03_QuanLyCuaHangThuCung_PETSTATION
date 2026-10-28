@@ -6,8 +6,8 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC đổi trả DAO. */
-public final class DoiTraImpl implements DoiTraDAO {
-    public DoiTraImpl() {}
+public final class DoiTraDAOImpl implements DoiTraDAO {
+    public DoiTraDAOImpl() {}
 
     public int capNhatApDungDoiTra(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(

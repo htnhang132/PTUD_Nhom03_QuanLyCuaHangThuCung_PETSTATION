@@ -6,7 +6,7 @@ import com.petstation.database.ThaoTacSQL;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC bán hàng DAO. */
-public final class BanHangImpl implements BanHangDAO {
+public final class BanHangDAOImpl implements BanHangDAO {
     public List<Object[]> layNguonBienLai(String soHoaDon) {
         return ThaoTacSQL.truyVan(
                 "SELECT CASE WHEN x.id IS NOT NULL THEN 'EXCHANGE' WHEN ht.id IS NOT NULL THEN"
@@ -21,7 +21,7 @@ public final class BanHangImpl implements BanHangDAO {
                 soHoaDon);
     }
 
-    public BanHangImpl() {}
+    public BanHangDAOImpl() {}
 
     public Object timHoaDonTheoKhoaThu(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon(
