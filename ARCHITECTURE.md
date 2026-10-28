@@ -73,7 +73,7 @@ PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
     │   └── java/
     │       ├── com/petstation/
     │       │   ├── dao/                  # Interface DAO còn có trong develop
-    │       │   ├── dao/impl/             # Các lớp triển khai DAO
+    │       │   │   └── impl/              # Các lớp triển khai DAO
     │       │   ├── model/                # Model, enum, kiểu dữ liệu miền
     │       │   ├── service/              # Nghiệp vụ ứng dụng
     │       │   ├── gui/
