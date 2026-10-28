@@ -93,7 +93,7 @@ PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
             │   └── KienTrucPhanTangTest.java
             └── integration/
                 └── TichHopSQLServerTest.java
-``````
+```
 
 Các màn hình/module đã thấy trong source bao gồm danh mục sản phẩm và nhân viên, kiểm kê kho, thống kê doanh thu/hàng hóa, tìm kiếm hóa đơn và cài đặt. Chi tiết màn hình có thể thay đổi theo commit; khi thêm package, hãy cập nhật lại sơ đồ này nếu thay đổi làm ảnh hưởng cấu trúc cấp cao.
 
