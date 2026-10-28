@@ -18,9 +18,6 @@ Viết commit rõ nghĩa, bắt đầu bằng các tiền tố chuẩn (Conventi
 * `refactor:` Tái cấu trúc code không đổi chức năng
 * ❌ **Cấm các commit chung chung** như: `update`, `fix bug`, `123`, `asdf`[cite: 3].
 
-<<<<<<< HEAD
-Hook `.githooks/pre-commit` hỗ trợ chặn commit sai nhánh. Nếu chưa có hook cá nhân cần giữ, bật bằng `git config core.hooksPath .githooks`; Linux/macOS thêm quyền chạy cho hook. Quản trị repo cần bật bảo vệ nhánh/PR/check trên GitHub; hook cục bộ không thay bảo vệ máy chủ. Cấu hình này chưa được tự thay đổi trên GitHub.
-
 ## Code Java
 
 Java 17, UTF-8, 4 dấu cách. Package chữ thường; lớp PascalCase; hàm/biến camelCase; hằng UPPER_SNAKE_CASE. Dùng tiếng Việt không dấu nhất quán với mã hiện tại, giữ các mã trạng thái/quyền đã lưu trong database.
@@ -52,4 +49,3 @@ Cập nhật [nhật ký AI](AI_USAGE_LOG.md) nếu có dùng AI: prompt, kết 
   * Tên Class: PascalCase (Ví dụ: `PetController`, `InvoiceService`)
   * Tên biến / hàm: camelCase (Ví dụ: `calculateTotalPrice`, `petName`)
   * Tên bảng CSDL: Snake_case hoặc PascalCase đồng nhất.
->>>>>>> parent of 69c61ca (Merge pull request #38 from htnhang132/vi)
