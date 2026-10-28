@@ -1,9 +1,12 @@
-# Nhật ký sử dụng AI
+# NHẬT KÝ SỬ DỤNG AI (AI USAGE LOG)
+**Đề tài:** Xây dựng Hệ thống Quản lý Cửa hàng Thú cưng  
+**Môn học:** Phát triển Ứng dụng - Nhóm 03  
 
-Đề tài: Pet Station — Quản lý cửa hàng thú cưng, PTUD Nhóm 03.
+---
 
-Mục đích sử dụng AI: hỗ trợ rà soát mã, đề xuất cách tổ chức, viết/sửa một số phần và gợi ý kiểm thử. Nhật ký ghi nội dung hỗ trợ và thay đổi đã áp dụng. Người phụ trách, phần sinh viên tự sửa và người review chỉ ghi sau khi thành viên thực hiện thật; không xác nhận thay.
+## BẢNG GHI NHẬN SỬ DỤNG AI HÀNG TUẦN
 
+<<<<<<< HEAD
 ## 1. Hoàn thiện giao diện và nghiệp vụ
 
 Yêu cầu: thanh tìm kiếm/lọc/thao tác gọn một hàng; thống kê có cơ cấu và đọc được nhiều ngày; lịch Spa, chăm sóc, nhắc việc; thanh toán kết hợp và cọc Hotel nhiều đợt.
@@ -79,3 +82,8 @@ Yêu cầu: Đánh giá dự án theo tiêu chí hội đồng chấm đồ án 
 | Chờ nhóm ghi thực tế | | | | | |
 
 Mỗi người tự giải thích một luồng GUI → service → DAO, chỉ ra validation/quyền/transaction và xử lý lỗi, sau đó sửa một yêu cầu nhỏ tại chỗ. Các ca gợi ý nằm trong [tài liệu kiểm thử](docs/KIEM_THU_VA_YEU_CAU.md). Không ghi “đã hiểu”, tên reviewer hay commit khi chưa thực hiện.
+=======
+| STT | Tuần / Ngày | Prompt đã sử dụng (Nội dung yêu cầu AI) | Kết quả AI trả về | Phần giữ nguyên | Phần chỉnh sửa & Lý do chỉnh sửa |
+| :---: | :---: | :--- | :--- | :--- | :--- |
+| **01** | Tuần 01<br>(...) | ... | ... | ... | ... | 
+>>>>>>> parent of 69c61ca (Merge pull request #38 from htnhang132/vi)
