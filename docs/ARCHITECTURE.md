@@ -1,68 +1,89 @@
-# Kiến trúc và đối chiếu nhánh PETSTATION
+# Rà soát khôi phục nhánh develop
 
-> Phạm vi: đối chiếu tĩnh giữa nhánh vi và develop ngày 28/10/2026. Đây không phải xác nhận build hoặc kiểm thử runtime.
+> **Trạng thái:** Đã hợp nhất vào `develop` ngày 28/10/2026.  
+> **PR:** [#43 — Restore missing sources and build setup](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/pull/43)  
+> **CI:** [Verify Java — success](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/actions/runs/40689136445)
 
-## 1. Kiến trúc hiện có trong develop
+Tài liệu này ghi lại nội dung khôi phục và phạm vi kiểm tra. Cây thư mục/ranh giới tầng đầy đủ nằm ở [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
 
-Dự án hiện có cấu trúc Java desktop với Maven, Swing, FlatLaf và JDBC SQL Server. Source nghiệp vụ chính thuộc package com.petstation; trong khi đó, package com.petstore còn tồn tại với MainApplication.java dạng khung và config/DatabaseConnection.java. Không nên coi hai package này là một kiến trúc thống nhất nếu chưa đối chiếu điểm khởi chạy và cách kết nối dữ liệu.
+## 1. Nguyên nhân chính
 
-~~~text
-src/main/java/
-├── com/petstation/
-│   ├── dao/
-│   │   └── impl/
-│   ├── model/
-│   ├── service/
-│   ├── gui/
-│   │   ├── catalog/
-│   │   ├── components/
-│   │   │   └── common/
-│   │   ├── processing/
-│   │   │   └── inventory/
-│   │   ├── reports/
-│   │   ├── search/
-│   │   └── system/
-│   └── util/
-└── com/petstore/
-    ├── MainApplication.java
-    └── config/
-        └── DatabaseConnection.java
-~~~
+Khi đối chiếu `develop` với `vi`, `develop` đã thiếu nhiều thành phần mà các lớp nghiệp vụ còn lại cần để build và chạy ứng dụng: entry point `com.petstation.App`, các DAO interface, package kết nối/giao dịch `com.petstation.database`, model và màn hình giao diện, cùng cấu hình Maven và tài nguyên.
 
-## 2. Thành phần có ở vi nhưng không có ở develop
+Nhánh `develop` cũng có hai lớp trong package `com.petstore` thuộc một skeleton cũ. `MainApplication` chỉ có TODO, còn `DatabaseConnection` chứa thông tin SQL mặc định trong code và thay đổi cấu hình TLS ở phạm vi toàn JVM. Hai lớp này không phải điểm khởi chạy của Pet Station và đã được loại khỏi bản khôi phục.
 
-So sánh branch cho thấy các thành phần sau bị loại khỏi develop. Danh sách dưới đây dùng để ưu tiên rà soát; nó **không có nghĩa** các file đã được khôi phục.
+## 2. Các phần đã khôi phục
 
-| Thành phần | Mức độ cần thiết | Khuyến nghị |
+- Source Java còn thiếu trong các nhóm DAO, database, GUI, model, service và util, sử dụng các bản có trong nhánh `vi` khi đường dẫn chưa tồn tại ở `develop`.
+- Các DAO interface cần cho các implementation hiện dùng hậu tố `*DAOImpl`; không thêm lại các file `*Impl` cũ song song.
+- `pom.xml` và Maven Wrapper; dependencies cho giao diện, SQL Server, thao tác Excel/mã QR, logging và test.
+- `database/001_schema.sql`, `database/002_sample_data.sql`, script thiết lập/kiểm tra SQL Server và `SETUP.md`.
+- Tài nguyên GUI: logo, ảnh sản phẩm, cấu hình mẫu `db.properties.example` và logging.
+- Tài liệu và cấu hình nhóm phù hợp với quy trình build/kiểm tra hiện có.
+- `.gitignore` được bổ sung quy tắc loại trừ cấu hình database local; các file `target/classes` đã commit trước đó được loại bỏ khỏi source tree.
+
+Các thay đổi được gom trong PR #43 và squash-merge vào `develop` tại commit `9e4d330c7bb8250222d3eb9564e85a6f614b78e8`.
+
+## 3. Điểm khởi chạy và luồng giao diện
+
+Điểm khởi chạy hiện là `com.petstation.App`.
+
+```text
+com.petstation.App
+  -> thiết lập FlatLaf
+  -> khởi tạo ngữ cảnh ứng dụng
+  -> nạp cấu hình và xác minh SQL Server
+  -> mở DangNhapFrame
+  -> xác thực tài khoản
+  -> mở ChinhFrame
+  -> điều hướng các màn hình theo quyền
+```
+
+Vì ứng dụng xác minh kết nối SQL trước khi mở cửa sổ đăng nhập, máy chạy cần có SQL Server hoạt động và file cấu hình hợp lệ. Nếu database chưa sẵn sàng, ứng dụng sẽ báo lỗi khởi động chứ không chuyển sang một chế độ giả lập không có dữ liệu.
+
+## 4. Kết quả CI
+
+Workflow [Verify Java](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/actions/runs/40689136445) đã hoàn tất **success** với bốn job:
+
+| Hệ điều hành | JDK | Kết quả |
 | --- | --- | --- |
-| src/main/java/com/petstation/database/ — cấu hình, kết nối, transaction và tiện ích SQL | **Rất cao** | Cần đối chiếu và khôi phục/viết lại cùng các Service/DAO đang gọi lớp trong package này. |
-| Các DAO interface còn thiếu trong com.petstation.dao | **Rất cao** | Đối chiếu từng `*DAOImpl implements *DAO` và các import của Service; không chỉ tạo interface rỗng. |
-| Các model được Service đang dùng nhưng không còn trong source | **Rất cao** | Kiểm tra compile errors trước khi chọn bản từ vi, vì kiểu dữ liệu có thể đã đổi. |
-| Điểm vào ứng dụng com.petstation.App và cửa sổ chính | **Rất cao** | Xác định một entry point thống nhất. com.petstore.MainApplication hiện chỉ là khung TODO, không phải điểm chạy thay thế đã hoàn chỉnh. |
-| database/001_schema.sql, database/002_sample_data.sql | **Cao** | Có ích để thiết lập database tái lập được, nhưng phải xác nhận schema khớp toàn bộ truy vấn đang giữ lại. Chỉ dùng seed cho môi trường demo/test. |
-| Maven Wrapper: .mvn/, mvnw, mvnw.cmd | **Cao** | Nên khôi phục khi chốt phiên bản Maven/JDK và kiểm tra chạy sạch trên Windows/Linux. |
-| SETUP.md, các script cài/kiểm tra SQL Server | **Cao** | Phục hồi sau khi thống nhất đường dẫn cấu hình và các lệnh build thực sự hoạt động trong develop. |
-| docs/KIEM_THU_VA_YEU_CAU.md, docs/NGUON_SAN_PHAM.md, docs/AI_PROMPTS.md | Trung bình | Có thể khôi phục có chọn lọc sau khi gỡ các tham chiếu tới tính năng/tệp đã bỏ. |
-| Ảnh sản phẩm, logo và file cấu hình mẫu | Trung bình | Chỉ phục hồi tài nguyên còn được source dùng; thông tin kết nối thật phải được giữ ngoài Git. |
-| GitHub Actions, PR template và pre-commit hook | Trung bình | Khôi phục sau khi build/test pass. CI không nên báo xanh khi source không biên dịch hoặc test đang bị bỏ qua. |
-| Các màn hình nghiệp vụ lớn bị loại khỏi source | Cần quyết định nghiệp vụ | Không khôi phục hàng loạt chỉ để giống cây thư mục vi; xác định chức năng nào vẫn thuộc phạm vi sản phẩm rồi mới đưa code và test tương ứng trở lại. |
+| Ubuntu | 17 | Thành công |
+| Ubuntu | 21 | Thành công |
+| Windows | 17 | Thành công |
+| Windows | 21 | Thành công |
 
-## 3. Các điểm cần xử lý trước khi gọi develop là build được
+Mỗi job vượt qua kiểm tra định dạng, build và các test không cần SQL Server. Đây là bằng chứng source biên dịch và test CI đã thành công trong bốn cấu hình trên.
 
-1. **Ranh giới kết nối dữ liệu chưa đầy đủ:** các Service trong com.petstation vẫn import com.petstation.database, trong khi package này không xuất hiện trong cây file hiện tại của develop.
-2. **DAO interface chưa đồng bộ:** một số Service tham chiếu DAO interface không còn trong cây file; cần xác minh đủ hợp đồng và implementation.
-3. **Entry point chưa rõ:** pom.xml hiện là cấu hình Maven giản lược, còn com.petstore.MainApplication chỉ chứa TODO. Cần xác định lớp chạy chính và cách đóng gói JAR.
-4. **Dependency kiểm thử:** test hiện dùng JUnit 5 và AssertJ; phải khai báo đúng dependency test trong pom.xml trước khi chạy test/verify.
-5. **Cấu hình nhạy cảm:** com.petstore.config.DatabaseConnection chứa cấu hình kết nối trực tiếp trong mã và điều chỉnh các thuộc tính TLS tĩnh. Không sử dụng lớp này làm cấu hình sản xuất; chuyển thông tin kết nối ra ngoài source, bỏ tài khoản/mật khẩu mặc định và không nới lỏng TLS toàn JVM.
+**Giới hạn:** CI không chạy bộ tích hợp SQL Server vì cần database kiểm thử riêng, cũng không tự mở cửa sổ Swing để kiểm tra bằng mắt. Vì vậy, chưa thể khẳng định đăng nhập và mọi luồng nghiệp vụ đã hoạt động với cấu hình SQL Server trên máy cá nhân của người dùng.
 
-Các nhận xét trên dựa trên file và import đã kiểm tra qua GitHub; chưa thực hiện checkout, compile hoặc chạy integration test. Do đó, đây là các vấn đề cần xác minh ưu tiên chứ không phải kết luận từ log build.
+## 5. Cách kiểm tra tại máy Windows
 
-## 4. Thứ tự khôi phục đề xuất
+1. Cài JDK 17 trở lên và SQL Server 2019 trở lên.
+2. Theo mục cài đặt trong [`SETUP.md`](../SETUP.md), chạy script database với database demo/test phù hợp.
+3. Tạo cấu hình local từ mẫu:
 
-1. Chọn một package ứng dụng chính (com.petstation) và một entry point.
-2. Khôi phục/đồng bộ database, DAO interface và model cần cho source hiện tại; cập nhật pom.xml theo dependency thực tế.
-3. Xác minh schema SQL và seed trên một database thử nghiệm riêng.
-4. Thêm Maven Wrapper, hướng dẫn cài đặt và script test; chạy compile/test từ checkout sạch.
-5. Sau khi build xanh, lựa chọn tài nguyên, tài liệu nghiệp vụ và CI phù hợp. Chỉ khôi phục màn hình từ vi khi chức năng đó còn thuộc phạm vi của develop.
+```powershell
+New-Item -ItemType Directory -Force config | Out-Null
+Copy-Item src/main/resources/db.properties.example config/db.properties
+```
 
-**Nguyên tắc:** không sao chép toàn bộ vi vào develop một cách máy móc. Khôi phục từng nhóm phụ thuộc theo thứ tự, kiểm tra diff và chạy test sau mỗi nhóm để tránh đưa cả mã cũ lẫn cấu trúc mới vào cùng project mà không tương thích.
+4. Sửa `config/db.properties` bằng server, database, SQL login và mật khẩu của chính máy. Không commit tệp này.
+5. Chạy build/test và khởi động:
+
+```powershell
+./mvnw.cmd -B -ntp verify
+./mvnw.cmd -B -ntp package
+java -jar target/petstation.jar
+```
+
+Hoặc chạy lớp `com.petstation.App` từ IDE với working directory là thư mục gốc dự án.
+
+Để kiểm tra các ca SQL tích hợp, dùng `scripts/test-sqlserver.ps1` với database riêng `PetStationIntegrationTest`. Không dùng seed/reset trên database thật: `002_sample_data.sql` thay dữ liệu ứng dụng trong database đích.
+
+## 6. Việc còn cần làm thủ công
+
+- Xác nhận ứng dụng mở được cửa sổ đăng nhập trên máy có SQL Server cấu hình đúng.
+- Thử đăng nhập bằng tài khoản demo trên database mẫu rồi kiểm tra phân quyền và điều hướng màn hình.
+- Chạy script kiểm thử SQL tích hợp trên database test riêng.
+- Ghi lại lỗi thực tế nếu có; không đưa mật khẩu hoặc file cấu hình thật lên GitHub.
+
