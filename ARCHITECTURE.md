@@ -50,29 +50,32 @@ Các dependency được khai báo tại [`pom.xml`](pom.xml). Không đóng gó
 
 ## 3. Cấu trúc repository
 
-Cây dưới đây tóm tắt các thành phần được xác nhận trong nhánh khi lập tài liệu; không liệt kê mọi file Java để tránh biến tài liệu kiến trúc thành danh sách file dễ lỗi thời.
+Cây sau mô tả **những thành phần đang có trong nhánh `develop`** tại thời điểm rà soát. Những mục được đề xuất khôi phục được liệt kê riêng ở cuối phần này, không trộn vào cây hiện trạng.
 
 ```text
 PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
 ├── README.md
-├── ARCHITECTURE.md                 # Tổng quan kiến trúc nhánh develop
-├── CONTRIBUTING.md                 # Quy tắc làm việc nhóm
-├── AI_USAGE_LOG.md                 # Nhật ký sử dụng AI
-├── pom.xml                         # Cấu hình Maven / dependency
+├── ARCHITECTURE.md                       # Tổng quan kiến trúc và cây thư mục
+├── CONTRIBUTING.md                       # Quy tắc đóng góp
+├── AI_USAGE_LOG.md                       # Nhật ký sử dụng AI
+├── pom.xml                               # Cấu hình Maven hiện tại
 ├── .gitignore
-├── .classpath / .project / .settings/  # Cấu hình Eclipse có trong nhánh
+├── .classpath
+├── .project
+├── .settings/                            # Cấu hình Eclipse
 ├── docs/
+│   ├── ARCHITECTURE.md                   # Đối chiếu nhánh và hạng mục cần kiểm tra
 │   └── diagrams/
 │       ├── so-do-phan-cap-chuc-nang-ver2.png
 │       └── so-do-phan-cap-chuc-nang.drawio
 └── src/
     ├── main/
     │   └── java/
-    │       ├── com/petstation/     # Source nghiệp vụ Pet Station
-    │       │   ├── dao/
-    │       │   │   └── impl/       # Một số implementation có hậu tố DAOImpl
-    │       │   ├── model/
-    │       │   ├── service/
+    │       ├── com/petstation/
+    │       │   ├── dao/                  # Interface DAO còn có trong develop
+    │       │   ├── dao/impl/             # Các lớp triển khai DAO
+    │       │   ├── model/                # Model, enum, kiểu dữ liệu miền
+    │       │   ├── service/              # Nghiệp vụ ứng dụng
     │       │   ├── gui/
     │       │   │   ├── catalog/
     │       │   │   ├── components/
@@ -83,8 +86,8 @@ PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
     │       │   │   ├── search/
     │       │   │   └── system/
     │       │   └── util/
-    │       └── com/petstore/       # Package riêng còn tồn tại song song
-    │           ├── MainApplication.java
+    │       └── com/petstore/              # Package khác còn tồn tại song song
+    │           ├── MainApplication.java   # Hiện là khung TODO
     │           └── config/
     │               └── DatabaseConnection.java
     └── test/
@@ -95,7 +98,23 @@ PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
                 └── TichHopSQLServerTest.java
 ```
 
-Các màn hình/module đã thấy trong source bao gồm danh mục sản phẩm và nhân viên, kiểm kê kho, thống kê doanh thu/hàng hóa, tìm kiếm hóa đơn và cài đặt. Chi tiết màn hình có thể thay đổi theo commit; khi thêm package, hãy cập nhật lại sơ đồ này nếu thay đổi làm ảnh hưởng cấu trúc cấp cao.
+### Những thành phần nên cân nhắc bổ sung lại
+
+Đây là **đề xuất**, không phải các file đang tồn tại trong `develop`.
+
+| Thành phần | Đánh giá | Điều kiện trước khi thêm |
+| --- | --- | --- |
+| `database/001_schema.sql` và `database/002_sample_data.sql` | Nên ưu tiên | Đối chiếu schema với SQL được gọi bởi các Service/DAO hiện tại; chỉ dùng seed cho demo/test. |
+| `src/main/java/com/petstation/database/` | Bắt buộc phải giải quyết | Source hiện tại vẫn tham chiếu package kết nối/transaction này nhưng package không có trong cây file. Khôi phục hoặc triển khai lại theo hợp đồng mà các lớp hiện dùng. |
+| Các interface `*DAO` bị thiếu và model được import | Bắt buộc phải giải quyết | So khớp implementation, Service, kiểu dữ liệu và import; không tạo file rỗng chỉ để qua compile. |
+| `mvnw`, `mvnw.cmd`, `.mvn/wrapper/` | Nên bổ sung | Chốt phiên bản Maven, sau đó kiểm tra build từ checkout sạch. |
+| `SETUP.md` và các script cài/kiểm tra SQL Server | Nên bổ sung | Cập nhật theo cấu hình và lệnh thực tế của develop; không sao chép hướng dẫn cũ mà chưa thử. |
+| Tài liệu kiểm thử, nguồn sản phẩm, prompt AI | Có thể bổ sung | Xem lại liên kết và loại bỏ chỉ dẫn trỏ đến file hoặc chức năng không còn tồn tại. |
+| Ảnh/logo và file cấu hình mẫu | Có thể bổ sung | Chỉ phục hồi tài nguyên đang được source dùng; tuyệt đối không thêm mật khẩu hoặc cấu hình máy cá nhân. |
+| GitHub Actions, PR template, pre-commit | Có thể bổ sung sau | Điều kiện kiểm tra phải chạy đúng trên source hiện tại và không bỏ qua lỗi build/test. |
+| Các màn hình nghiệp vụ chỉ còn ở `vi` | Chưa phục hồi tự động | Xác nhận còn thuộc phạm vi sản phẩm rồi mới đưa mã, dependency và test tương thích vào develop. |
+
+**Lưu ý:** `com/petstore` và `com/petstation` hiện song song. Cần chốt một điểm chạy chính; `MainApplication.java` hiện chỉ là khung TODO. Đối chiếu chi tiết các khoảng thiếu và thứ tự phục hồi tại [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## 4. Trách nhiệm từng tầng
 
