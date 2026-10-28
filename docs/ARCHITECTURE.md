@@ -36,7 +36,7 @@ So sánh branch cho thấy các thành phần sau bị loại khỏi develop. Da
 | Thành phần | Mức độ cần thiết | Khuyến nghị |
 | --- | --- | --- |
 | src/main/java/com/petstation/database/ — cấu hình, kết nối, transaction và tiện ích SQL | **Rất cao** | Cần đối chiếu và khôi phục/viết lại cùng các Service/DAO đang gọi lớp trong package này. |
-| Các DAO interface còn thiếu trong com.petstation.dao | **Rất cao** | Đối chiếu từng *DAOImpl implements *DAO và các import của Service; không chỉ tạo interface rỗng. |
+| Các DAO interface còn thiếu trong com.petstation.dao | **Rất cao** | Đối chiếu từng `*DAOImpl implements *DAO` và các import của Service; không chỉ tạo interface rỗng. |
 | Các model được Service đang dùng nhưng không còn trong source | **Rất cao** | Kiểm tra compile errors trước khi chọn bản từ vi, vì kiểu dữ liệu có thể đã đổi. |
 | Điểm vào ứng dụng com.petstation.App và cửa sổ chính | **Rất cao** | Xác định một entry point thống nhất. com.petstore.MainApplication hiện chỉ là khung TODO, không phải điểm chạy thay thế đã hoàn chỉnh. |
 | database/001_schema.sql, database/002_sample_data.sql | **Cao** | Có ích để thiết lập database tái lập được, nhưng phải xác nhận schema khớp toàn bộ truy vấn đang giữ lại. Chỉ dùng seed cho môi trường demo/test. |
