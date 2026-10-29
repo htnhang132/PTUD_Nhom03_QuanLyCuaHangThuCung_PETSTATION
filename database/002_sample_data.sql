@@ -1,3 +1,18 @@
+/*
+  Pet Station - 002_sample_data.sql
+  Purpose: insert the repository's sample dataset into an empty Pet Station schema.
+
+  Important:
+    - This file preserves the existing sample INSERT values and IDs.
+    - It does not clear, truncate, or delete existing application rows.
+    - Preflight checks run before the transaction to prevent loading into populated tables.
+    - All seed INSERT statements execute inside the existing TRY/CATCH transaction.
+  Security-course mapping:
+    - C03: T-SQL script structure and error handling;
+    - C05: SET XACT_ABORT, BEGIN TRANSACTION, COMMIT, ROLLBACK, THROW;
+    - C06: sample audit records are data, while audit policy is documented separately.
+*/
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 SET ANSI_NULLS ON;
@@ -7,6 +22,37 @@ SET ARITHABORT ON;
 SET ANSI_PADDING ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
+
+-- Preflight: the seed contains fixed IDs and INSERT statements; it does not delete old rows.
+-- Refuse ambiguous targets and avoid partial duplicate-key failures.
+IF DB_NAME() IN (N'master', N'model', N'msdb', N'tempdb')
+BEGIN
+    ;THROW 51100, 'Run 002_sample_data.sql only inside a dedicated application database.', 1;
+END;
+
+IF OBJECT_ID(N'dbo.san_pham', N'U') IS NULL
+   OR OBJECT_ID(N'dbo.cai_dat', N'U') IS NULL
+BEGIN
+    ;THROW 51101, 'The Pet Station schema is missing. Run 001_schema.sql successfully first.', 1;
+END;
+
+IF EXISTS (
+    SELECT 1
+    FROM sys.dm_db_partition_stats AS ps
+    INNER JOIN sys.tables AS t
+        ON t.object_id = ps.object_id
+    INNER JOIN sys.schemas AS s
+        ON s.schema_id = t.schema_id
+    WHERE s.name = N'dbo'
+      AND t.is_ms_shipped = 0
+      AND t.name <> N'sysdiagrams'
+      AND ps.index_id IN (0, 1)
+      AND ps.row_count > 0
+)
+BEGIN
+    ;THROW 51102, '002_sample_data.sql requires empty dbo tables. Existing rows were not deleted or changed.', 1;
+END;
+
 DECLARE @homNay date=CAST(GETDATE() AS date);
 BEGIN TRY
 BEGIN TRANSACTION;
