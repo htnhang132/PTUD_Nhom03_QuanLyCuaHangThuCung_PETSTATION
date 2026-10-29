@@ -44,4 +44,4 @@ Mật khẩu mẫu: **`PetStation@123`**; phải đổi khi đăng nhập lần 
 - [Nhật ký sử dụng AI](AI_USAGE_LOG.md)
 - [Nguồn sản phẩm và ảnh](docs/NGUON_SAN_PHAM.md)
 
-Database chỉ có `001_schema.sql` tạo bảng/khóa/chỉ mục và `002_sample_data.sql` nạp mẫu. File dữ liệu mẫu xóa dữ liệu ứng dụng trước khi nạp lại; chỉ dùng cho demo/test. Không dùng tài khoản và mật khẩu mẫu để vận hành thật.
+Database chỉ có `001_schema.sql` tạo bảng/khóa/chỉ mục và `002_sample_data.sql` nạp mẫu. File dữ liệu mẫu yêu cầu các bảng ứng dụng dbo trống, chèn dữ liệu mẫu trong một transaction và không xóa dữ liệu hiện có; chỉ dùng cho database demo/test mới. Không dùng tài khoản và mật khẩu mẫu để vận hành thật.
