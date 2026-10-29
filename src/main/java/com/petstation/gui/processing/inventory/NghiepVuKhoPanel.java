@@ -54,7 +54,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     }
 
     protected void thanhToanNhaCungCap() {
-        yeuCau(com.petstation.model.Quyen.INVENTORY_RECEIVE);
+        yeuCau(com.petstation.model.Quyen.NHAP_KHO);
         // Id.
         long id = layDongChon();
         Map<String, String> giaTri =

@@ -75,7 +75,7 @@ public final class XacThucService {
                                 // Hiện tại.
                                 LocalDateTime hienTai = LocalDateTime.now();
 
-                                if (taiKhoan.trangThai() != TrangThaiTaiKhoan.ACTIVE) {
+                                if (taiKhoan.trangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
                                             taiKhoan.id(),

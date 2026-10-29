@@ -11,32 +11,86 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /** Thực hiện truy vấn JDBC cho JDBC danh mục DAO. */
 public final class DanhMucDAOImpl implements DanhMucDAO {
+    private static final DateTimeFormatter DINH_DANG_ISO =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DINH_DANG_HIEN_THI =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm");
+
     public List<Object[]> layLichSuGia() {
-        return chuyenCacDongThanhChuoi(
+        Map<String, String> mapNguoi = new HashMap<>();
+        for (Object[] tk :
                 truyVan(
-                        "SELECT CONVERT(varchar(16),h.thoi_diem_thay_doi,103)+'"
-                            + " '+CONVERT(varchar(5),h.thoi_diem_thay_doi,108),p.ma_san_pham,p.ten,h.gia_cu,h.gia_moi,COALESCE(n.ho_ten,N'Hệ"
-                            + " thống') FROM lich_su_gia h JOIN san_pham p ON p.id=h.san_pham_id"
-                            + " LEFT JOIN tai_khoan t ON t.id=h.nguoi_thay_doi_id LEFT JOIN"
-                            + " nhan_vien n ON n.id=t.nhan_vien_id ORDER BY h.id DESC"));
+                        "SELECT CAST(t.id AS varchar(20)), n.ho_ten FROM tai_khoan t JOIN"
+                                + " nhan_vien n ON n.id=t.nhan_vien_id")) {
+            mapNguoi.put(chuyenThanhChuoi(tk[0]), chuyenThanhChuoi(tk[1]));
+        }
+
+        List<Object[]> tam = new ArrayList<>();
+        for (Object[] sp :
+                truyVan(
+                        "SELECT ma_san_pham, ten, COALESCE(lich_su_gia, N'') FROM san_pham WHERE"
+                                + " lich_su_gia IS NOT NULL AND lich_su_gia<>N''")) {
+            String ma = chuyenThanhChuoi(sp[0]);
+            String ten = chuyenThanhChuoi(sp[1]);
+            String lsg = chuyenThanhChuoi(sp[2]);
+            for (String muc : lsg.split(";")) {
+                if (muc.isBlank()) continue;
+                String[] c = muc.split("\\|");
+                if (c.length >= 3) {
+                    String thoiDiemGoc = c[0].trim();
+                    String thoiDiemHienThi = thoiDiemGoc;
+                    try {
+                        LocalDateTime ldt =
+                                LocalDateTime.parse(
+                                        thoiDiemGoc.length() > 19
+                                                ? thoiDiemGoc.substring(0, 19)
+                                                : thoiDiemGoc,
+                                        DINH_DANG_ISO);
+                        thoiDiemHienThi = ldt.format(DINH_DANG_HIEN_THI);
+                    } catch (Exception ignored) {
+                    }
+                    String nguoi =
+                            c.length >= 4 && !c[3].isBlank()
+                                    ? mapNguoi.getOrDefault(c[3].trim(), "Hệ thống")
+                                    : "Hệ thống";
+                    tam.add(
+                            new Object[] {
+                                thoiDiemGoc,
+                                thoiDiemHienThi,
+                                ma,
+                                ten,
+                                c[1].trim(),
+                                c[2].trim(),
+                                nguoi
+                            });
+                }
+            }
+        }
+        tam.sort(Comparator.comparing((Object[] r) -> String.valueOf(r[0])).reversed());
+        List<Object[]> kq = new ArrayList<>(tam.size());
+        for (Object[] r : tam) {
+            kq.add(new Object[] {r[1], r[2], r[3], r[4], r[5], r[6]});
+        }
+        return kq;
     }
 
     public List<Object[]> nap(LoaiDanhMuc loai) {
         // SQL.
         String sql =
                 switch (loai) {
-                    case CUSTOMERS ->
+                    case KHACH_HANG ->
                             "SELECT ma_khach_hang,ho_ten,so_dien_thoai,email,dia_chi,ghi_chu,CASE"
                                 + " hang_thanh_vien WHEN 'REGULAR' THEN N'Đồng' ELSE"
                                 + " hang_thanh_vien END,diem_tich_luy,CASE dang_hoat_dong WHEN 1"
                                 + " THEN N'Đang hoạt động' ELSE N'Ngừng hoạt động' END FROM"
                                 + " khach_hang ORDER BY ma_khach_hang";
-                    case PETS ->
+                    case THU_CUNG ->
                             "SELECT p.ma_thu_cung,p.ten,CASE p.loai WHEN 'DOG' THEN N'Chó' ELSE"
                                 + " N'Mèo'"
                                 + " END,p.giong,p.gioi_tinh,CONVERT(varchar(10),p.ngay_sinh,103),p.can_nang,p.mau_long,k.ma_khach_hang+'"
@@ -44,17 +98,17 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " p.dang_theo_doi WHEN 1 THEN N'Đang hoạt động' ELSE N'Ngừng hoạt"
                                 + " động' END FROM thu_cung p JOIN khach_hang k ON"
                                 + " k.id=p.khach_hang_id ORDER BY p.ma_thu_cung";
-                    case STAFF ->
+                    case NHAN_VIEN ->
                             "SELECT"
                                 + " ma_nhan_vien,ho_ten,so_dien_thoai,cccd,chuc_vu,CONVERT(varchar(10),ngay_vao_lam,103),CASE"
                                 + " dang_lam_viec WHEN 1 THEN N'Đang làm' ELSE N'Nghỉ việc' END"
                                 + " FROM nhan_vien ORDER BY ma_nhan_vien";
-                    case ACCOUNTS ->
+                    case TAI_KHOAN ->
                             "SELECT t.ten_dang_nhap,n.ma_nhan_vien+' - '+n.ho_ten,t.vai_tro,CASE"
-                                + " t.trang_thai WHEN 'ACTIVE' THEN N'Hoạt động' ELSE N'Đã khóa'"
-                                + " END,'' FROM tai_khoan t JOIN nhan_vien n ON n.id=t.nhan_vien_id"
-                                + " ORDER BY t.ten_dang_nhap";
-                    case PRODUCTS ->
+                                + " WHEN t.trang_thai IN ('HOAT_DONG','ACTIVE') THEN N'Hoạt động'"
+                                + " ELSE N'Đã khóa' END,'' FROM tai_khoan t JOIN nhan_vien n ON"
+                                + " n.id=t.nhan_vien_id ORDER BY t.ten_dang_nhap";
+                    case SAN_PHAM ->
                             "SELECT"
                                 + " p.ma_san_pham,p.ten,p.nhom_hang,p.don_vi_tinh,p.gia_ban,p.gia_nhap_gan_nhat,p.ton_toi_thieu,CASE"
                                 + " p.theo_doi_hsd WHEN 1 THEN N'Có' ELSE N'Không'"
@@ -67,12 +121,12 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " COALESCE(p.barcode,'') FROM san_pham p ORDER BY CASE WHEN"
                                 + " NULLIF(p.anh,'') IS NULL THEN 1 ELSE 0 END,p.ma_san_pham";
 
-                    case SUPPLIERS ->
+                    case NHA_CUNG_CAP ->
                             "SELECT"
                                 + " ma_ncc,ten,nguoi_dai_dien,so_dien_thoai,dia_chi,ma_so_thue,dieu_khoan,CASE"
                                 + " trang_thai WHEN 'COOPERATING' THEN N'Đang hợp tác' ELSE N'Ngừng"
                                 + " hợp tác' END FROM nha_cung_cap ORDER BY ma_ncc";
-                    case PROMOTIONS ->
+                    case KHUYEN_MAI ->
                             "SELECT ma_chuong_trinh,ten,CASE loai_giam WHEN 'PERCENT' THEN N'Giảm"
                                 + " %' ELSE N'Giảm tiền' END,CASE nguon WHEN 'PRODUCT' THEN N'Sản"
                                 + " phẩm' WHEN 'SERVICE' THEN N'Dịch vụ' ELSE N'Cả đơn'"
@@ -80,7 +134,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " trang_thai WHEN 'INACTIVE' THEN N'Ngừng áp dụng' ELSE N'Đang áp"
                                 + " dụng' END FROM chuong_trinh_khuyen_mai ORDER BY"
                                 + " ma_chuong_trinh";
-                    case VOUCHERS ->
+                    case VOUCHER ->
                             "SELECT"
                                 + " v.ma_voucher,v.menh_gia,CONVERT(varchar(10),DATEADD(second,-1,v.hieu_luc_den),103),v.so_luong,v.da_dung,v.don_toi_thieu,CASE"
                                 + " v.trang_thai WHEN 'ACTIVE' THEN N'Còn hiệu lực' ELSE N'Ngừng'"
@@ -88,11 +142,11 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " v.chi_ap_dung_spa=1 THEN N'Chỉ Spa' ELSE N'Mọi hóa đơn' END"
                                 + " FROM voucher v LEFT JOIN khach_hang k ON k.id=v.khach_hang_id"
                                 + " ORDER BY v.ma_voucher";
-                    case SPA ->
-                            "SELECT ma_goi,ten_goi,mo_ta,thoi_gian_du_kien,'',CASE trang_thai WHEN"
-                                    + " 'ACTIVE' THEN N'Đang hoạt động' ELSE N'Ngừng hoạt động' END"
-                                    + " FROM goi_dich_vu_spa ORDER BY ma_goi";
-                    case ROOMS ->
+                    case DICH_VU_SPA ->
+                            "SELECT ma_goi,ten_goi,mo_ta,thoi_gian_du_kien,COALESCE(bang_gia,N''),CASE"
+                                + " trang_thai WHEN 'ACTIVE' THEN N'Đang hoạt động' ELSE N'Ngừng"
+                                + " hoạt động' END FROM goi_dich_vu_spa ORDER BY ma_goi";
+                    case PHONG_LUU_TRU ->
                             "SELECT ma_phong,loai_phong,suc_chua,gia_dem,ghi_chu,CASE trang_thai"
                                 + " WHEN 'AVAILABLE' THEN N'Trống' WHEN 'OCCUPIED' THEN N'Có thú'"
                                 + " WHEN 'CLEANING' THEN N'Đang dọn' WHEN 'MAINTENANCE' THEN N'Bảo"
@@ -100,30 +154,81 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " ma_phong";
                 };
         List<Object[]> cacDong = chuyenCacDongThanhChuoi(truyVan(sql));
-        if (loai == LoaiDanhMuc.ACCOUNTS)
+        if (loai == LoaiDanhMuc.TAI_KHOAN)
             for (Object[] dongDuLieu : cacDong)
-                dongDuLieu[2] = VaiTro.valueOf(chuyenThanhChuoi(dongDuLieu[2])).layTenHienThi();
-        if (loai == LoaiDanhMuc.SPA) {
+                dongDuLieu[2] = VaiTro.docTuCSDL(chuyenThanhChuoi(dongDuLieu[2])).layTenHienThi();
+        if (loai == LoaiDanhMuc.DICH_VU_SPA) {
             for (Object[] dongDuLieu : cacDong) {
-                // Các giá.
-                List<String> cacGia = new ArrayList<>();
-                for (Object[] vungDangXet :
-                        truyVan(
-                                "SELECT CASE b.loai_thu_cung WHEN 'DOG' THEN N'Chó' ELSE N'Mèo'"
-                                    + " END,b.khoang_can,b.don_gia FROM bang_gia_spa b JOIN"
-                                    + " goi_dich_vu_spa g ON g.id=b.goi_id WHERE g.ma_goi=? ORDER"
-                                    + " BY b.id",
-                                dongDuLieu[0]))
-                    cacGia.add(
-                            vungDangXet[0]
-                                    + "|"
-                                    + vungDangXet[1]
-                                    + "|"
-                                    + ((BigDecimal) vungDangXet[2]).toPlainString());
-                dongDuLieu[4] = String.join(";", cacGia);
+                dongDuLieu[4] = chuyenBangGiaSpaSangUI(chuyenThanhChuoi(dongDuLieu[4]));
             }
         }
         return cacDong;
+    }
+
+    private static String chuyenBangGiaSpaSangUI(String bangGiaCSDL) {
+        if (bangGiaCSDL == null || bangGiaCSDL.isBlank()) return "";
+        if (bangGiaCSDL.contains("|")) return bangGiaCSDL;
+        List<String> cacGia = new ArrayList<>();
+        for (String muc : bangGiaCSDL.split(";")) {
+            if (muc.isBlank()) continue;
+            String[] p = muc.split(":");
+            if (p.length < 3) continue;
+            String loai = "DOG".equalsIgnoreCase(p[0].trim()) ? "Chó" : "Mèo";
+            String[] khoang = p[1].trim().split("-");
+            String nhanKhoang = p[1].trim();
+            if (khoang.length == 2) {
+                double tu = Double.parseDouble(khoang[0].trim());
+                double den = Double.parseDouble(khoang[1].trim());
+                if (tu == 0) {
+                    nhanKhoang = "< " + khoang[1].trim() + "kg";
+                } else if (den >= 999) {
+                    nhanKhoang = "> " + khoang[0].trim() + "kg";
+                } else {
+                    nhanKhoang = khoang[0].trim() + " - " + khoang[1].trim() + "kg";
+                }
+            }
+            cacGia.add(loai + "|" + nhanKhoang + "|" + p[2].trim());
+        }
+        return String.join(";", cacGia);
+    }
+
+    private static String chuyenBangGiaSpaSangCSDL(String bangGiaUI) {
+        if (bangGiaUI == null || bangGiaUI.isBlank()) return "";
+        List<String> ketQua = new ArrayList<>();
+        for (String dong : bangGiaUI.split(";")) {
+            if (dong.isBlank()) continue;
+            String[] vungDangXet = dong.split("\\|");
+            if (vungDangXet.length != 3)
+                throw new IllegalArgumentException("Bảng giá không hợp lệ.");
+            List<BigDecimal> cacCanNang = new ArrayList<>();
+            java.util.regex.Matcher boSoKhop =
+                    java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)?").matcher(vungDangXet[1]);
+            while (boSoKhop.find())
+                cacCanNang.add(new BigDecimal(boSoKhop.group().replace(',', '.')));
+            BigDecimal thap =
+                    cacCanNang.size() > 1
+                            ? cacCanNang.get(0)
+                            : vungDangXet[1].contains(">") && !cacCanNang.isEmpty()
+                                    ? cacCanNang.get(0)
+                                    : BigDecimal.ZERO;
+            BigDecimal cao =
+                    cacCanNang.size() > 1
+                            ? cacCanNang.get(1)
+                            : vungDangXet[1].contains("<") && !cacCanNang.isEmpty()
+                                    ? cacCanNang.get(0)
+                                    : new BigDecimal(999);
+            String loai = "Chó".equals(vungDangXet[0].trim()) ? "DOG" : "CAT";
+            long donGia = new BigDecimal(vungDangXet[2].trim()).longValue();
+            ketQua.add(
+                    loai
+                            + ":"
+                            + thap.stripTrailingZeros().toPlainString()
+                            + "-"
+                            + cao.stripTrailingZeros().toPlainString()
+                            + ":"
+                            + donGia);
+        }
+        return String.join(";", ketQua);
     }
 
     private static List<Object[]> chuyenCacDongThanhChuoi(List<Object[]> cacDong) {
@@ -163,8 +268,6 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
 
     private static void layThemHoacCapNhat(
             String bang, String khoa, String banDau, String[] cacCot, Object... cacGiaTri) {
-        // Định danh chỉ lấy từ các hằng nội bộ đã chọn ở trên; giá trị luôn được truyền qua
-        // tham số của câu lệnh.
         if (layGiaTriDon(
                         "SELECT id FROM " + bang + " WITH(UPDLOCK,HOLDLOCK) WHERE " + khoa + "=?",
                         banDau)
@@ -179,7 +282,6 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             + ")",
                     cacGiaTri);
         } else {
-            // Các đối số.
             List<Object> cacDoiSo = new ArrayList<>(Arrays.asList(cacGiaTri));
             cacDoiSo.add(banDau);
             capNhat(
@@ -220,8 +322,9 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
 
     public int khoaCacTaiKhoanCua(String maNhanVien) {
         return capNhat(
-                "UPDATE tai_khoan SET trang_thai='INACTIVE' WHERE nhan_vien_id=(SELECT id FROM"
-                        + " nhan_vien WHERE ma_nhan_vien=?) AND trang_thai='ACTIVE'",
+                "UPDATE tai_khoan SET trang_thai='NGUNG_HOAT_DONG' WHERE nhan_vien_id=(SELECT id"
+                        + " FROM nhan_vien WHERE ma_nhan_vien=?) AND trang_thai IN"
+                        + " ('HOAT_DONG','ACTIVE')",
                 maNhanVien);
     }
 
@@ -242,11 +345,10 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
             Object[] giaTri,
             long idNguoiThucHien,
             String nguoiThucHienVaiTro) {
-        // Khóa.
         String khoa = truoc == null ? chuyenThanhChuoi(giaTri[0]) : chuyenThanhChuoi(truoc[0]);
         Object[] giaTri2 = giaTri;
         switch (loai) {
-            case CUSTOMERS -> {
+            case KHACH_HANG -> {
                 var diem =
                         truyVan(
                                 "SELECT diem_tich_luy,hang_thanh_vien FROM khach_hang"
@@ -276,7 +378,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                         giaTri2[5],
                         "Đang hoạt động".equals(giaTri2[8]));
             }
-            case PETS ->
+            case THU_CUNG ->
                     layThemHoacCapNhat(
                             "thu_cung",
                             "ma_thu_cung",
@@ -311,7 +413,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             giaTri2[11],
                             giaTri2[12],
                             "Đang hoạt động".equals(giaTri2[13]));
-            case STAFF -> {
+            case NHAN_VIEN -> {
                 layThemHoacCapNhat(
                         "nhan_vien",
                         "ma_nhan_vien",
@@ -334,8 +436,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                         !"Nghỉ việc".equals(giaTri2[6]));
                 if ("Nghỉ việc".equals(giaTri2[6])) khoaCacTaiKhoanCua(khoa);
             }
-            case ACCOUNTS -> {
-                // Nhân viên.
+            case TAI_KHOAN -> {
                 long nhanVien = layId("nhan_vien", "ma_nhan_vien", layMaTuLuaChon(giaTri2[1]));
                 if (truoc == null
                         && (giaTri2.length < 5 || chuyenThanhChuoi(giaTri2[4]).length() < 8))
@@ -347,19 +448,21 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                         && (!"Hoạt động".equals(giaTri2[3])
                                 || !nguoiThucHienVaiTro.equals(docVaiTro(giaTri2[2]))))
                     throw new IllegalArgumentException(
-                            "Không thể tự khóa hoặc đổi vai trò tài khoản đang đăng" + " nhập.");
+                            "Không thể tự khóa hoặc đổi vai trò tài khoản đang đăng nhập.");
+                String maVaiTro = docVaiTro(giaTri2[2]);
+                String dsQuyen = QuyenVaiTroDAOImpl.macDinhTheoVaiTro(VaiTro.docTuCSDL(maVaiTro));
                 if (truoc == null)
                     them(
                             "INSERT INTO"
-                                + " tai_khoan(ten_dang_nhap,nhan_vien_id,vai_tro,trang_thai,mat_khau_hash)"
-                                + " VALUES(?,?,?,?,?)",
+                                + " tai_khoan(ten_dang_nhap,nhan_vien_id,vai_tro,quyen,trang_thai,mat_khau_hash)"
+                                + " VALUES(?,?,?,?,?,?)",
                             giaTri2[0],
                             nhanVien,
-                            docVaiTro(giaTri2[2]),
-                            "Hoạt động".equals(giaTri2[3]) ? "ACTIVE" : "INACTIVE",
+                            maVaiTro,
+                            dsQuyen,
+                            "Hoạt động".equals(giaTri2[3]) ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                             BCrypt.hashpw(chuyenThanhChuoi(giaTri2[4]), BCrypt.gensalt()));
                 else {
-                    // Hiện có mã băm.
                     String hienCoMaBam =
                             chuyenThanhChuoi(
                                     layGiaTriDon(
@@ -370,23 +473,23 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             && !hienCoMaBam.startsWith("$2")
                             && (giaTri2.length < 5 || chuyenThanhChuoi(giaTri2[4]).isBlank()))
                         throw new IllegalArgumentException(
-                                "Hãy đặt mật khẩu riêng trước khi mở khóa tài khoản" + " mẫu.");
+                                "Hãy đặt mật khẩu riêng trước khi mở khóa tài khoản mẫu.");
                     capNhat(
                             "UPDATE tai_khoan SET"
-                                    + " ten_dang_nhap=?,nhan_vien_id=?,vai_tro=?,trang_thai=?"
+                                    + " ten_dang_nhap=?,nhan_vien_id=?,vai_tro=?,quyen=?,trang_thai=?"
                                     + " WHERE ten_dang_nhap=?",
                             giaTri2[0],
                             nhanVien,
-                            docVaiTro(giaTri2[2]),
-                            "Hoạt động".equals(giaTri2[3]) ? "ACTIVE" : "INACTIVE",
+                            maVaiTro,
+                            dsQuyen,
+                            "Hoạt động".equals(giaTri2[3]) ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                             khoa);
                     if (giaTri2.length > 4 && !chuyenThanhChuoi(giaTri2[4]).isBlank())
                         datLaiMatKhau(chuyenThanhChuoi(giaTri2[0]), chuyenThanhChuoi(giaTri2[4]));
                 }
                 if (giaTri2.length > 4) giaTri2[4] = "";
             }
-            case PRODUCTS -> {
-                // Cũ.
+            case SAN_PHAM -> {
                 Object cu =
                         layGiaTriDon(
                                 "SELECT gia_ban FROM san_pham WITH(UPDLOCK,HOLDLOCK)"
@@ -427,20 +530,26 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             giaTri2[13],
                             giaTri2[14],
                             giaTri2.length > 17 ? giaTri2[17] : "",
-                            khoa);
+                            chuyenThanhChuoi(giaTri2[0]));
                 }
 
-                if (cu == null || ((BigDecimal) cu).compareTo(docSoThapPhan(giaTri2[4])) != 0)
+                BigDecimal giaMoi = docSoThapPhan(giaTri2[4]);
+                if (cu == null || ((BigDecimal) cu).compareTo(giaMoi) != 0) {
+                    long giaCuLong = cu == null ? 0L : ((BigDecimal) cu).longValue();
+                    long giaMoiLong = giaMoi == null ? 0L : giaMoi.longValue();
                     capNhat(
-                            "INSERT INTO"
-                                    + " lich_su_gia(san_pham_id,gia_cu,gia_moi,nguoi_thay_doi_id)"
-                                    + " VALUES(?,?,?,?)",
-                            layId("san_pham", "ma_san_pham", chuyenThanhChuoi(giaTri2[0])),
-                            cu == null ? BigDecimal.ZERO : cu,
-                            docSoThapPhan(giaTri2[4]),
-                            idNguoiThucHien);
+                            "UPDATE san_pham SET lich_su_gia = CASE WHEN lich_su_gia IS NULL OR"
+                                + " lich_su_gia=N'' THEN N'' ELSE lich_su_gia + N';' END +"
+                                + " CONVERT(NVARCHAR(19), SYSDATETIME(), 120) + N'|' + CAST(? AS"
+                                + " NVARCHAR(20)) + N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(?"
+                                + " AS NVARCHAR(20)) WHERE ma_san_pham=?",
+                            giaCuLong,
+                            giaMoiLong,
+                            idNguoiThucHien,
+                            chuyenThanhChuoi(giaTri2[0]));
+                }
             }
-            case SUPPLIERS ->
+            case NHA_CUNG_CAP ->
                     layThemHoacCapNhat(
                             "nha_cung_cap",
                             "ma_ncc",
@@ -463,7 +572,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             giaTri2[5],
                             giaTri2[6],
                             "Đang hợp tác".equals(giaTri2[7]) ? "COOPERATING" : "INACTIVE");
-            case PROMOTIONS ->
+            case KHUYEN_MAI ->
                     layThemHoacCapNhat(
                             "chuong_trinh_khuyen_mai",
                             "ma_chuong_trinh",
@@ -492,7 +601,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             docNgay(giaTri2[6]).atStartOfDay(),
                             docNgay(giaTri2[7]).plusDays(1).atStartOfDay(),
                             "Ngừng áp dụng".equals(giaTri2[8]) ? "INACTIVE" : "ACTIVE");
-            case VOUCHERS ->
+            case VOUCHER ->
                     layThemHoacCapNhat(
                             "voucher",
                             "ma_voucher",
@@ -520,62 +629,28 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                             "khach_hang",
                                             "ma_khach_hang",
                                             chuyenThanhChuoi(giaTri2[7]).split(" - ", 2)[0]));
-            case SPA -> {
+            case DICH_VU_SPA -> {
+                String bangGiaCSDL = chuyenBangGiaSpaSangCSDL(chuyenThanhChuoi(giaTri2[4]));
                 layThemHoacCapNhat(
                         "goi_dich_vu_spa",
                         "ma_goi",
                         khoa,
                         new String[] {
-                            "ma_goi", "ten_goi", "mo_ta", "thoi_gian_du_kien", "trang_thai"
+                            "ma_goi",
+                            "ten_goi",
+                            "mo_ta",
+                            "thoi_gian_du_kien",
+                            "bang_gia",
+                            "trang_thai"
                         },
                         giaTri2[0],
                         giaTri2[1],
                         giaTri2[2],
                         Integer.parseInt(chuyenThanhChuoi(giaTri2[3])),
+                        bangGiaCSDL,
                         "Đang hoạt động".equals(giaTri2[5]) ? "ACTIVE" : "INACTIVE");
-                // Id gói dịch vụ.
-                long idGoiDichVu = layId("goi_dich_vu_spa", "ma_goi", chuyenThanhChuoi(giaTri2[0]));
-                capNhat("DELETE FROM bang_gia_spa WHERE goi_id=?", idGoiDichVu);
-                for (String dong : chuyenThanhChuoi(giaTri2[4]).split(";")) {
-                    String[] vungDangXet = dong.split("\\|");
-                    if (vungDangXet.length != 3)
-                        throw new IllegalArgumentException("Bảng giá không hợp lệ.");
-                    // Các cân nặng.
-                    List<BigDecimal> cacCanNang = new ArrayList<>();
-                    // Bộ so khớp.
-                    java.util.regex.Matcher boSoKhop =
-                            java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)?")
-                                    .matcher(vungDangXet[1]);
-                    while (boSoKhop.find())
-                        cacCanNang.add(new BigDecimal(boSoKhop.group().replace(',', '.')));
-                    // Thấp.
-                    BigDecimal thap =
-                            cacCanNang.size() > 1
-                                    ? cacCanNang.get(0)
-                                    : vungDangXet[1].contains(">") && !cacCanNang.isEmpty()
-                                            ? cacCanNang.get(0)
-                                            : BigDecimal.ZERO;
-                    // Cao.
-                    BigDecimal cao =
-                            cacCanNang.size() > 1
-                                    ? cacCanNang.get(1)
-                                    : vungDangXet[1].contains("<") && !cacCanNang.isEmpty()
-                                            ? cacCanNang.get(0)
-                                            : null;
-                    capNhat(
-                            "INSERT INTO"
-                                + " bang_gia_spa(goi_id,loai_thu_cung,khoang_can,can_nang_tu,can_nang_den,don_gia)"
-                                + " VALUES(?,?,?,?,?,?)",
-                            idGoiDichVu,
-                            "Chó".equals(vungDangXet[0]) ? "DOG" : "CAT",
-                            vungDangXet[1],
-                            thap,
-                            cao,
-                            new BigDecimal(vungDangXet[2]));
-                }
             }
-            case ROOMS -> {
-                // Trạng thái.
+            case PHONG_LUU_TRU -> {
                 String trangThai =
                         switch (chuyenThanhChuoi(giaTri2[5])) {
                             case "Trống" -> "AVAILABLE";
@@ -606,11 +681,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
     }
 
     public boolean kiemTraSanPhamCoGiaoDich(long sanPhamId) {
-        return laySo(
-                        "SELECT COUNT(*) FROM chi_tiet_don_hang c JOIN lo_hang l ON l.id ="
-                                + " c.lo_hang_id WHERE l.san_pham_id = ?",
-                        sanPhamId)
-                > 0;
+        return laySo("SELECT COUNT(*) FROM chi_tiet_hoa_don WHERE san_pham_id = ?", sanPhamId) > 0;
     }
 
     public int ngungKinhDoanhSanPham(long sanPhamId) {
@@ -626,12 +697,15 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
 
     public void taoTaiKhoanNhanVien(
             long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro) {
+        VaiTro vt = VaiTro.docTuCSDL(vaiTro);
+        String dsQuyen = QuyenVaiTroDAOImpl.macDinhTheoVaiTro(vt);
         capNhat(
-                "INSERT INTO tai_khoan(ten_dang_nhap, mat_khau_hash, vai_tro, nhan_vien_id,"
-                        + " trang_thai) VALUES(?, ?, ?, ?, 'ACTIVE')",
+                "INSERT INTO tai_khoan(ten_dang_nhap, mat_khau_hash, vai_tro, quyen,"
+                        + " nhan_vien_id, trang_thai) VALUES(?, ?, ?, ?, ?, 'HOAT_DONG')",
                 tenDangNhap,
                 matKhauHash,
-                vaiTro,
+                vt.name(),
+                dsQuyen,
                 nhanVienId);
     }
 }

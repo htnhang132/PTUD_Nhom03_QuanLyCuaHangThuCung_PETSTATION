@@ -19,7 +19,7 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.SPA,
+                        com.petstation.model.LoaiDanhMuc.DICH_VU_SPA,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

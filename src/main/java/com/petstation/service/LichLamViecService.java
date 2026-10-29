@@ -16,19 +16,19 @@ import java.util.*;
 public final class LichLamViecService {
     private static final LichLamViecDAO lichLamViecDAO = new LichLamViecDAOImpl();
 
-    /** Các ca làm việc. */
-    public static final String[] CAC_CA_LAM_VIEC = {"Sáng", "Chiều", "Tối"};
+    /** Các ca làm việc theo chuẩn OOAD (2 ca/ngày: Ca sáng CA01, Ca chiều CA02). */
+    public static final String[] CAC_CA_LAM_VIEC = {"Ca sáng", "Ca chiều"};
 
-    /** Ca làm việc các thời gian. */
+    /** Khung giờ các ca làm việc. */
     public static final String[] CA_LAM_VIEC_CAC_THOI_GIAN = {
-        "07:00 – 12:00", "12:00 – 17:00", "17:00 – 21:00"
+        "07:30 – 14:30", "14:30 – 21:30"
     };
 
-    /** Nhỏ nhất nhân viên. */
-    public static final int[] NHO_NHAT_NHAN_VIEN = {2, 2, 1};
+    /** Số nhân viên tối thiểu mỗi ca. */
+    public static final int[] NHO_NHAT_NHAN_VIEN = {2, 2};
 
-    /** Các mã. */
-    private static final String[] CAC_MA = {"CA_SANG", "CA_CHIEU", "CA_TOI"};
+    /** Các mã ca làm việc trong CSDL. */
+    private static final String[] CAC_MA = {"CA01", "CA02"};
 
     /** Các bộ lắng nghe. */
     private static final List<Runnable> CAC_BO_LANG_NGHE = new ArrayList<>();
@@ -65,11 +65,18 @@ public final class LichLamViecService {
         return ngay.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
+    private static int anhXaMaCa(String maCa) {
+        if ("CA01".equalsIgnoreCase(maCa) || "CA_SANG".equalsIgnoreCase(maCa)) return 0;
+        if ("CA02".equalsIgnoreCase(maCa)
+                || "CA_CHIEU".equalsIgnoreCase(maCa)
+                || "CA_TOI".equalsIgnoreCase(maCa)) return 1;
+        return Arrays.asList(CAC_MA).indexOf(maCa);
+    }
+
     public static List<Muc> layKhoang(LocalDate tu, LocalDate den) {
         List<Muc> ketQua = new ArrayList<>();
         for (Object[] dongDuLieu : lichLamViecDAO.timKhoang(tu, den)) {
-            // Ca làm việc.
-            int caLamViec = Arrays.asList(CAC_MA).indexOf(chuyenThanhChuoi(dongDuLieu[1]));
+            int caLamViec = anhXaMaCa(chuyenThanhChuoi(dongDuLieu[1]));
             if (caLamViec >= 0)
                 ketQua.add(
                         new Muc(
@@ -96,11 +103,10 @@ public final class LichLamViecService {
     }
 
     public static String phanCong(LocalDate ngay, int caLamViec, String ma) {
-        yeuCau(Quyen.SCHEDULE_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         if (caLamViec < 0 || caLamViec >= CAC_MA.length) return "Ca không hợp lệ.";
         return thucHienGiaoDich(
                 ketNoi -> {
-                    // Nhân viên.
                     long nhanVien = DanhMucService.layId("nhan_vien", "ma_nhan_vien", ma);
                     lichLamViecDAO.demPhanCong(nhanVien);
                     if (lichLamViecDAO.demNhanVienDangLam(nhanVien) == 0)
@@ -115,13 +121,13 @@ public final class LichLamViecService {
     }
 
     public static void xoa(Muc muc) {
-        yeuCau(Quyen.SCHEDULE_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         lichLamViecDAO.capNhatXoa(muc.maNhanVien, muc.ngay, CAC_MA[muc.caLamViec]);
         thongBao();
     }
 
     public static void danhDauNghiPhepDaDuyet(long nhanVien, LocalDate ngay) {
-        yeuCau(Quyen.APPROVAL_PROCESS);
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
         thucHienGiaoDich(
                 ketNoi -> {
                     lichLamViecDAO.demPhanCong(nhanVien);
@@ -137,7 +143,6 @@ public final class LichLamViecService {
     }
 
     public static int tinhGioTrongThang(String ma, LocalDate ngay) {
-        // Đầu tiên.
         LocalDate dauTien = ngay.withDayOfMonth(1);
         return (int) lichLamViecDAO.demThangSoGio(ma, dauTien, dauTien.plusMonths(1));
     }
@@ -147,7 +152,7 @@ public final class LichLamViecService {
     }
 
     public static String saoChepLichTuan(LocalDate tuTuan, LocalDate denTuan) {
-        yeuCau(Quyen.SCHEDULE_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         if (tuTuan.equals(denTuan)) return "Tuần nguồn và tuần đích không được trùng nhau.";
         return thucHienGiaoDich(
                 ketNoi -> {
@@ -170,7 +175,7 @@ public final class LichLamViecService {
 
     public static String hoanDoiCa(
             LocalDate ngay1, int ca1, String ma1, LocalDate ngay2, int ca2, String ma2) {
-        yeuCau(Quyen.SCHEDULE_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         if (ma1.equals(ma2)) return "Không thể hoán đổi ca với chính mình.";
         return thucHienGiaoDich(
                 ketNoi -> {
@@ -188,7 +193,7 @@ public final class LichLamViecService {
     }
 
     public static void khoaLichTuan(LocalDate thuHai) {
-        yeuCau(Quyen.SCHEDULE_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         lichLamViecDAO.khoaLichKhoang(thuHai, thuHai.plusDays(7));
         thongBao();
     }

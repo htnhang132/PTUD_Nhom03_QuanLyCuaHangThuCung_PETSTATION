@@ -17,7 +17,7 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.SUPPLIERS,
+                        com.petstation.model.LoaiDanhMuc.NHA_CUNG_CAP,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

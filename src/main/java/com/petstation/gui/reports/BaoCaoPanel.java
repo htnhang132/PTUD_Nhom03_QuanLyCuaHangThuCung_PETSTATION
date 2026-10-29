@@ -44,7 +44,7 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
 
         public KieuHienThi chiQuanLy() {
-            return new KieuHienThi(ten, tao, hienTai, com.petstation.model.Quyen.REPORT_VIEW_ALL);
+            return new KieuHienThi(ten, tao, hienTai, com.petstation.model.Quyen.XEM_BAO_CAO_CHUNG);
         }
     }
 
@@ -160,13 +160,24 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
                         BorderFactory.createEmptyBorder(10, 12, 10, 12)));
         pnlTron.add(tron, BorderLayout.CENTER);
 
-        // Hai biểu đồ phóng to chiếm trọn phần thân màn hình mà không cần cuộn dọc
         JSplitPane splitBieuDo = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCot, pnlTron);
         splitBieuDo.setResizeWeight(0.58);
         splitBieuDo.setContinuousLayout(true);
         splitBieuDo.setBorder(null);
         splitBieuDo.setDividerSize(6);
-        add(splitBieuDo, BorderLayout.CENTER);
+
+        JScrollPane scrBang = new JScrollPane(tblBang);
+        scrBang.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240)));
+        scrBang.getViewport().setBackground(Color.WHITE);
+
+        JSplitPane splitChinh =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT, splitBieuDo, scrBang);
+        splitChinh.setResizeWeight(0.62);
+        splitChinh.setContinuousLayout(true);
+        splitChinh.setBorder(null);
+        splitChinh.setDividerSize(6);
+        add(splitChinh, BorderLayout.CENTER);
+
         bieuDo.khiChon(
                 i -> {
                     if (tongHop != null && i < tongHop.dongGoc().size())

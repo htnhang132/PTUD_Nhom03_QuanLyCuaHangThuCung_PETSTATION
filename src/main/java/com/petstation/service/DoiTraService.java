@@ -4,9 +4,9 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.DoiHangDAO;
-import com.petstation.dao.DoiTraDAO;
+import com.petstation.dao.PhieuDoiTraDAO;
 import com.petstation.dao.impl.DoiHangDAOImpl;
-import com.petstation.dao.impl.DoiTraDAOImpl;
+import com.petstation.dao.impl.PhieuDoiTraDAOImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
@@ -18,13 +18,13 @@ import java.util.List;
 /** Đổi phụ kiện trong ba ngày, thu phần chênh lệch; không phát sinh hoàn tiền. */
 public final class DoiTraService {
     private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
-    private static final DoiTraDAO doiTraDAO = new DoiTraDAOImpl();
+    private static final PhieuDoiTraDAO doiTraDAO = new PhieuDoiTraDAOImpl();
 
     private DoiTraService() {}
 
     /** API hoàn tiền cũ chỉ còn để báo rõ quy định khi gặp lời gọi cũ. */
     public static long traHang(long muc, int soLuong, String lyDo) {
-        yeuCau(Quyen.POS_SELL);
+        yeuCau(Quyen.BAN_HANG);
         throw new IllegalArgumentException(
                 "Cần chọn hàng thay thế để đổi phụ kiện; không hoàn tiền.");
     }
@@ -61,7 +61,7 @@ public final class DoiTraService {
         if (doiHangDAO.laHoaDonThayThe(so(goc[0])))
             throw new IllegalArgumentException("Hàng thay thế đã đổi không được đổi tiếp.");
         LocalDate ngay = ((java.sql.Timestamp) goc[3]).toLocalDateTime().toLocalDate();
-        if (ngay.isAfter(LocalDate.now()) || ngay.plusDays(3).isBefore(LocalDate.now()))
+        if (ngay.isAfter(LocalDate.now()) || ngay.plusDays(CaiDatService.laySoNgayDuocDoiTra()).isBefore(LocalDate.now()))
             throw new IllegalArgumentException(
                     "Chỉ được đổi phụ kiện trong ba ngày kể từ ngày mua.");
         long daDoi = doiTraDAO.demDoiTraMuc(dong);
@@ -73,7 +73,7 @@ public final class DoiTraService {
     /** Nạp hàng thay thế và tín dụng đổi hàng vào màn thanh toán chung. */
     public static void lapDoiHang(
             GioHang gio, long dong, int soLuong, String maThayThe, int soLuongMoi, String lyDo) {
-        yeuCau(Quyen.POS_SELL);
+        yeuCau(Quyen.BAN_HANG);
         if (!gio.kiemTraTrong())
             throw new IllegalArgumentException("Hãy thanh toán hoặc treo giỏ hiện tại trước.");
         if (soLuongMoi <= 0 || lyDo == null || lyDo.isBlank())

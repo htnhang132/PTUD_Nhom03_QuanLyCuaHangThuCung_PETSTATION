@@ -107,7 +107,7 @@ public final class ChinhFrame extends JFrame {
         setLocationRelativeTo(null);
 
         pnlThanhCongCu =
-                new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.DASHBOARD), this::diQuayLai);
+                new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.TONG_QUAN), this::diQuayLai);
         pnlThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
         pnlThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         pnlThanhMenu =
@@ -176,7 +176,7 @@ public final class ChinhFrame extends JFrame {
 
         NhatKyHeThongService.datNguoiDung(phienDangNhap.layTenHienThi());
         NhatKyHeThongService.ghiNhatKy("Đăng nhập", "Hệ thống");
-        dieuHuong(MaManHinh.DASHBOARD);
+        dieuHuong(MaManHinh.TONG_QUAN);
     }
 
     private void chuyenBuoc(MaManHinh dich) {
@@ -214,7 +214,7 @@ public final class ChinhFrame extends JFrame {
             return;
         }
 
-        if (id != MaManHinh.CASH_SHIFT) {
+        if (id != MaManHinh.CA_THU_NGAN) {
             dangChoSauCaLamViec = null;
             manHinhBoDangKy.layCaLamViec().datTieuDeDangCho("");
         }
@@ -229,7 +229,7 @@ public final class ChinhFrame extends JFrame {
     private MaManHinh dangChoSauCaLamViec;
 
     private void nhacNhapMoCaLamViec(MaManHinh idDich, DinhNghiaManHinh dich) {
-        if (!manHinhBoDangKy.coTheTruyCap(MaManHinh.CASH_SHIFT)) {
+        if (!manHinhBoDangKy.coTheTruyCap(MaManHinh.CA_THU_NGAN)) {
             HopThoai.hienThiCanhBao(
                     this,
                     "Chưa có ca làm việc đang mở nên chưa thể dùng \""
@@ -241,7 +241,7 @@ public final class ChinhFrame extends JFrame {
         // khi mở ca.
         dangChoSauCaLamViec = idDich;
         manHinhBoDangKy.layCaLamViec().datTieuDeDangCho(dich.tieuDe());
-        hienThi(MaManHinh.CASH_SHIFT, manHinhBoDangKy.layDinhNghia(MaManHinh.CASH_SHIFT), true);
+        hienThi(MaManHinh.CA_THU_NGAN, manHinhBoDangKy.layDinhNghia(MaManHinh.CA_THU_NGAN), true);
     }
 
     private void hienThi(MaManHinh id, DinhNghiaManHinh dinhNghia, boolean lichSuBanGhi) {
@@ -253,10 +253,10 @@ public final class ChinhFrame extends JFrame {
         if (yeuCau != null && yeuCau.manHinh() == id) {
             var q = manHinhBoDangKy.layGioHang().layQuyTrinh();
             switch (id) {
-                case SPA_SCHEDULE -> q.chonLichHen(yeuCau.id());
-                case SPA_INTAKE -> q.chonSpa(yeuCau.id());
-                case CHECKOUT, HOTEL_JOURNAL -> q.chonHotel(yeuCau.id());
-                case HOTEL_BOOKING -> q.chonPhongHotel(yeuCau.id(), yeuCau.ma());
+                case DAT_LICH_HEN_SPA -> q.chonLichHen(yeuCau.id());
+                case TIEP_NHAN_SPA -> q.chonSpa(yeuCau.id());
+                case TRA_PHONG_LUU_TRU, NHAT_KY_CHAM_SOC -> q.chonHotel(yeuCau.id());
+                case DAT_PHONG_LUU_TRU -> q.chonPhongHotel(yeuCau.id(), yeuCau.ma());
                 default -> {}
             }
         }
@@ -280,7 +280,7 @@ public final class ChinhFrame extends JFrame {
         pnlThanhCongCu.datCoTheDiQuayLai(!lichSu.isEmpty());
         if (yeuCau != null
                 && yeuCau.manHinh() == id
-                && id == MaManHinh.HOTEL_BOOKING
+                && id == MaManHinh.DAT_PHONG_LUU_TRU
                 && pnlManHinh
                         instanceof com.petstation.gui.processing.hotel.DatPhongHotelPanel dat) {
             com.petstation.gui.navigation.NguCanhMoBanGhi.xoa();
@@ -319,7 +319,7 @@ public final class ChinhFrame extends JFrame {
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_HOME, KeyEvent.ALT_DOWN_MASK),
                 "home",
-                () -> dieuHuong(MaManHinh.DASHBOARD));
+                () -> dieuHuong(MaManHinh.TONG_QUAN));
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK),
@@ -329,17 +329,17 @@ public final class ChinhFrame extends JFrame {
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0),
                 "pos",
-                () -> dieuHuong(MaManHinh.POS));
+                () -> dieuHuong(MaManHinh.LAP_HOA_DON));
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
                 "orders",
-                () -> dieuHuong(MaManHinh.ORDERS));
+                () -> dieuHuong(MaManHinh.TIM_KIEM_HOA_DON));
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
                 "pay",
-                () -> dieuHuong(MaManHinh.PAYMENT));
+                () -> dieuHuong(MaManHinh.THANH_TOAN));
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK),

@@ -17,7 +17,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho Spa tiếp nhận vùng hiển thị. */
 public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
     public TiepNhanSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.SPA_INTAKE, banHang, dieuHuong);
+        super(LoaiNghiepVu.TIEP_NHAN_SPA, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Tiếp nhận", this::tiepNhan);
         themNut(pnlCacThaoTac, "Thêm dịch vụ", this::themDichVu);

@@ -3,7 +3,7 @@ package com.petstation.dao;
 import java.util.List;
 
 /** Thao tác dữ liệu cho PheDuyet; service gọi qua hợp đồng này. */
-public interface PheDuyetDAO {
+public interface YeuCauPheDuyetDAO {
     long demSoLuongDangCho(Object... cacThamSo);
 
     int capNhatTuChoi(Object... cacThamSo);

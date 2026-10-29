@@ -1,13 +1,13 @@
 package com.petstation.dao.impl;
 
-import com.petstation.dao.PheDuyetDAO;
+import com.petstation.dao.YeuCauPheDuyetDAO;
 import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC phê duyệt DAO. */
-public final class PheDuyetDAOImpl implements PheDuyetDAO {
-    public PheDuyetDAOImpl() {}
+public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
+    public YeuCauPheDuyetDAOImpl() {}
 
     public long demSoLuongDangCho(Object... cacThamSo) {
         return ThaoTacSQL.laySo(

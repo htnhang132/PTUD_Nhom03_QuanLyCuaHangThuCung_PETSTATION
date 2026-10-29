@@ -22,7 +22,7 @@ public final class QuyTrinhManHinh {
     public record QuyTrinh(
             String ten, List<MaManHinh> cacBuoc, List<String> cacNhan, boolean tuanTu) {
         public int layChiSoCua(MaManHinh id) {
-            if (id == MaManHinh.SPA) id = MaManHinh.SPA_INTAKE;
+            if (id == MaManHinh.QUAN_LY_SPA) id = MaManHinh.TIEP_NHAN_SPA;
             return cacBuoc.indexOf(id);
         }
 
@@ -50,17 +50,17 @@ public final class QuyTrinhManHinh {
             List.of(
                     new QuyTrinh(
                             "Bán hàng",
-                            List.of(MaManHinh.POS, MaManHinh.PAYMENT, MaManHinh.PRINT_INVOICE),
+                            List.of(MaManHinh.LAP_HOA_DON, MaManHinh.THANH_TOAN, MaManHinh.IN_HOA_DON),
                             List.of("Lập hóa đơn", "Thanh toán", "Xem hóa đơn"),
                             false),
                     new QuyTrinh(
                             "Lập phiếu Spa",
                             List.of(
-                                    MaManHinh.SPA_SCHEDULE,
-                                    MaManHinh.SPA_INTAKE,
-                                    MaManHinh.SPA_SERVICE_SELECTION,
-                                    MaManHinh.SPA_PROGRESS,
-                                    MaManHinh.SPA_CLOSE),
+                                    MaManHinh.DAT_LICH_HEN_SPA,
+                                    MaManHinh.TIEP_NHAN_SPA,
+                                    MaManHinh.CHON_GOI_SPA,
+                                    MaManHinh.CAP_NHAT_TIEN_DO_SPA,
+                                    MaManHinh.HOAN_TAT_SPA),
                             List.of(
                                     "Lịch hẹn",
                                     "Tiếp nhận",
@@ -71,9 +71,9 @@ public final class QuyTrinhManHinh {
                     new QuyTrinh(
                             "Quản lý lưu trú",
                             List.of(
-                                    MaManHinh.HOTEL_BOOKING,
-                                    MaManHinh.HOTEL_JOURNAL,
-                                    MaManHinh.CHECKOUT),
+                                    MaManHinh.DAT_PHONG_LUU_TRU,
+                                    MaManHinh.NHAT_KY_CHAM_SOC,
+                                    MaManHinh.TRA_PHONG_LUU_TRU),
                             List.of("Đặt phòng", "Nhật ký lưu trú", "Trả phòng"),
                             true));
 

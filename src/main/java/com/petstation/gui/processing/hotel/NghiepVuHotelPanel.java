@@ -29,7 +29,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 pnlCacThaoTac,
                 "Phiếu chăm sóc",
                 () ->
-                        com.petstation.gui.components.common.PhieuChamSocDialog.mo(
+                        com.petstation.gui.components.common.NhatKyChamSocDialog.mo(
                                 this, "HOTEL", layDongChon()));
         themNut(
                 pnlCacThaoTac,
@@ -47,7 +47,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 },
                                 LuuTruService.layCoc(layDongChon())));
         if (com.petstation.service.PhienDangNhapService.layPhien().docVaiTro()
-                == com.petstation.model.VaiTro.STORE_MANAGER)
+                == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG)
             themNut(pnlCacThaoTac, "Điều chỉnh cọc", this::doiCoc);
     }
 
@@ -177,7 +177,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         if (!banHang.kiemTraTrong())
             throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
         BanHangService.quyetToan(loai, layDongChon(), banHang);
-        dieuHuong.accept(MaManHinh.PAYMENT);
+        dieuHuong.accept(MaManHinh.THANH_TOAN);
     }
 
     private BieuMauSQL.TruongDuLieu layTruongPhongDaChon() {

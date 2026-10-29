@@ -17,7 +17,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho dịch vụ Spa lựa chọn vùng hiển thị. */
 public final class ChonDichVuSpaPanel extends NghiepVuSpaPanel {
     public ChonDichVuSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.SPA_SERVICES, banHang, dieuHuong);
+        super(LoaiNghiepVu.GOI_DICH_VU_SPA, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Tiếp nhận", this::tiepNhan);
         themNut(pnlCacThaoTac, "Thêm dịch vụ", this::themDichVu);

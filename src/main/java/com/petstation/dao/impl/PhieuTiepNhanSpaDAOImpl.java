@@ -2,15 +2,15 @@ package com.petstation.dao.impl;
 
 import static com.petstation.database.ThaoTacSQL.*;
 
-import com.petstation.dao.XuLySpaDAO;
+import com.petstation.dao.PhieuTiepNhanSpaDAO;
 import com.petstation.database.ThaoTacSQL;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC Spa DAO. */
-public final class XuLySpaDAOImpl implements XuLySpaDAO {
-    public XuLySpaDAOImpl() {}
+public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
+    public PhieuTiepNhanSpaDAOImpl() {}
 
     public int capNhatTiepNhan(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
@@ -24,12 +24,14 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
 
     public long demTrangThaiSpa(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM chi_tiet_phieu_spa WHERE phieu_spa_id=?", cacThamSo);
+                "SELECT CASE WHEN (goi_id IS NOT NULL OR don_gia>0 OR tong_tien>0) THEN 1 ELSE 0"
+                        + " END FROM phieu_tiep_nhan_spa WHERE id=?",
+                cacThamSo);
     }
 
     public long demLichHen(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM goi_dich_vu_spa WHERE id=? AND" + " trang_thai='ACTIVE'",
+                "SELECT COUNT(*) FROM goi_dich_vu_spa WHERE id=? AND trang_thai='ACTIVE'",
                 cacThamSo);
     }
 
@@ -42,7 +44,7 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
 
     public long layThoiLuongDichVu(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT thoi_gian_du_kien FROM goi_dich_vu_spa WHERE" + " id=?", cacThamSo);
+                "SELECT thoi_gian_du_kien FROM goi_dich_vu_spa WHERE id=?", cacThamSo);
     }
 
     public long demLichTrung(Object... cacThamSo) {
@@ -94,35 +96,74 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
     }
 
     public List<Object[]> layGiaDichVuTheoCanNang(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT TOP(1) b.goi_id,b.don_gia,g.ten_goi FROM bang_gia_spa b"
-                        + " JOIN goi_dich_vu_spa g ON g.id=b.goi_id WHERE"
-                        + " g.ma_goi=? AND g.trang_thai='ACTIVE' AND"
-                        + " b.loai_thu_cung=? AND b.can_nang_tu<=? AND"
-                        + " (b.can_nang_den IS NULL OR b.can_nang_den>?) ORDER BY"
-                        + " b.can_nang_tu DESC,b.id",
-                cacThamSo);
+        String maGoi = String.valueOf(cacThamSo[0]);
+        String loaiThuCung = String.valueOf(cacThamSo[1]);
+        double canNang = ((Number) cacThamSo[2]).doubleValue();
+        List<Object[]> goiList =
+                ThaoTacSQL.truyVan(
+                        "SELECT id, ten_goi, COALESCE(bang_gia, N'') FROM goi_dich_vu_spa WHERE"
+                                + " ma_goi=? AND trang_thai='ACTIVE'",
+                        maGoi);
+        if (goiList.isEmpty()) return List.of();
+        Object[] goi = goiList.get(0);
+        long goiId = ((Number) goi[0]).longValue();
+        String tenGoi = String.valueOf(goi[1]);
+        String bangGia = String.valueOf(goi[2]).trim();
+        if (bangGia.isEmpty()) return List.of();
+
+        long donGiaChon = -1;
+        double maxTu = -1;
+        for (String muc : bangGia.split(";")) {
+            if (muc.isBlank()) continue;
+            String[] p = muc.split(":");
+            if (p.length < 3) continue;
+            if (!p[0].trim().equalsIgnoreCase(loaiThuCung)) continue;
+            String[] khoang = p[1].trim().split("-");
+            double tu = Double.parseDouble(khoang[0].trim());
+            double den =
+                    khoang.length > 1 && !khoang[1].isBlank()
+                            ? Double.parseDouble(khoang[1].trim())
+                            : Double.MAX_VALUE;
+            long gia = Long.parseLong(p[2].trim());
+            if (canNang >= tu && (canNang <= den || den >= 999) && tu >= maxTu) {
+                maxTu = tu;
+                donGiaChon = gia;
+            }
+        }
+        if (donGiaChon < 0) return List.of();
+        return List.<Object[]>of(new Object[] {goiId, donGiaChon, tenGoi});
     }
 
     public int capNhatThemDichVuSpa(Object... cacThamSo) {
+        long phieuSpaId = ((Number) cacThamSo[0]).longValue();
+        long goiId = ((Number) cacThamSo[1]).longValue();
+        String moTa = String.valueOf(cacThamSo[2]);
+        long donGia = ((Number) cacThamSo[3]).longValue();
         return ThaoTacSQL.capNhat(
-                "INSERT INTO"
-                        + " chi_tiet_phieu_spa(phieu_spa_id,goi_id,mo_ta,don_gia,so_luong)"
-                        + " VALUES(?,?,?,?,1)",
-                cacThamSo);
+                "UPDATE phieu_tiep_nhan_spa SET goi_id=COALESCE(goi_id,?),"
+                        + " mo_ta_dich_vu=CASE WHEN mo_ta_dich_vu IS NULL OR mo_ta_dich_vu=N''"
+                        + " THEN ? ELSE mo_ta_dich_vu + N'; ' + ? END,"
+                        + " don_gia=don_gia+?, so_luong=CASE WHEN so_luong<=0 THEN 1 ELSE so_luong"
+                        + " END, tong_tien=tong_tien+? WHERE id=?",
+                goiId,
+                moTa,
+                moTa,
+                donGia,
+                donGia,
+                phieuSpaId);
     }
 
     public int tinhLaiTongPhieuSpa(Object... cacThamSo) {
+        long phieuSpaId = ((Number) cacThamSo[0]).longValue();
         return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET tong_tien=(SELECT"
-                        + " COALESCE(SUM(thanh_tien),0) FROM chi_tiet_phieu_spa WHERE"
-                        + " phieu_spa_id=?) WHERE id=?",
-                cacThamSo);
+                "UPDATE phieu_tiep_nhan_spa SET tong_tien=don_gia*COALESCE(NULLIF(so_luong,0),1)"
+                        + " WHERE id=?",
+                phieuSpaId);
     }
 
     public int capNhatTrangThaiSpa(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET trang_thai=? WHERE id=? AND" + " trang_thai=?",
+                "UPDATE phieu_tiep_nhan_spa SET trang_thai=? WHERE id=? AND trang_thai=?",
                 cacThamSo);
     }
 
@@ -149,13 +190,14 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
 
     public List<Object[]> layPhieuSpaChiTiet(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT mo_ta,don_gia,so_luong,thanh_tien FROM chi_tiet_phieu_spa WHERE"
-                        + " phieu_spa_id=? ORDER BY id",
+                "SELECT COALESCE(mo_ta_dich_vu,N'Dịch vụ Spa'),"
+                        + " COALESCE(NULLIF(don_gia,0),tong_tien),"
+                        + " COALESCE(NULLIF(so_luong,0),1), tong_tien FROM phieu_tiep_nhan_spa"
+                        + " WHERE id=? AND (goi_id IS NOT NULL OR don_gia>0 OR tong_tien>0)",
                 cacThamSo);
     }
 
     public List<Object[]> layChiTietLichHen(long id) {
-
         return truyVan(
                 "SELECT p.ma_thu_cung,g.ma_goi,n.ma_nhan_vien,l.bat_dau FROM lich_hen l"
                         + " JOIN thu_cung p ON p.id=l.thu_cung_id LEFT JOIN goi_dich_vu_spa g"
@@ -165,14 +207,12 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
     }
 
     public List<Object[]> khoaLichHen(long id) {
-
         return truyVan(
-                "SELECT trang_thai FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE" + " id=?", id);
+                "SELECT trang_thai FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE id=?", id);
     }
 
     public long demLichTrungKhiSua(
             long id, long nhanVien, Object thuCung, LocalDateTime ketThuc, LocalDateTime batDau) {
-
         return laySo(
                 "SELECT COUNT(*) FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE"
                         + " id<>? AND (nhan_vien_id=? OR thu_cung_id=?) AND"
@@ -193,7 +233,6 @@ public final class XuLySpaDAOImpl implements XuLySpaDAO {
             LocalDateTime batDau,
             LocalDateTime ketThuc,
             long id) {
-
         return capNhat(
                 "UPDATE lich_hen SET"
                     + " khach_hang_id=?,thu_cung_id=?,dich_vu_id=?,nhan_vien_id=?,bat_dau=?,ket_thuc=?"

@@ -19,7 +19,7 @@ public final class TichDiemService {
     private TichDiemService() {}
 
     public static boolean coTheSuaDanhMuc(String ma) {
-        if (!PhienDangNhapService.layPhien().kiemTraCo(Quyen.PROMOTION_MANAGE)) return false;
+        if (!PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_KHUYEN_MAI)) return false;
         var dong = tichDiemDAO.layRangBuocVoucher(ma);
         return !dong.isEmpty()
                 && dong.get(0)[1] == null
@@ -28,7 +28,7 @@ public final class TichDiemService {
 
     /** Khóa thao tác được giữ nguyên khi gửi lại để tránh trừ điểm hai lần. */
     public static String doiVoucher(String maKhachHang, String khoa) {
-        PhienDangNhapService.yeuCau(Quyen.POS_SELL);
+        PhienDangNhapService.yeuCau(Quyen.BAN_HANG);
         if (khoa == null || khoa.isBlank() || khoa.length() > 80)
             throw new IllegalArgumentException("Thiếu khóa đổi voucher.");
         return thucHienGiaoDich(
@@ -76,7 +76,7 @@ public final class TichDiemService {
     }
 
     public static List<Object[]> layVoucher(String maKhachHang) {
-        PhienDangNhapService.yeuCau(Quyen.POS_SELL);
+        PhienDangNhapService.yeuCau(Quyen.BAN_HANG);
         return tichDiemDAO.layCuaKhach(maKhachHang);
     }
 }

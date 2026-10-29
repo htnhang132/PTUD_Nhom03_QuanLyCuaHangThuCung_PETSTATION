@@ -49,7 +49,7 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
 
     public List<Object[]> layLuaChonSanPham(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT ma_san_pham,ma_san_pham+N' - '+ten FROM san_pham ORDER BY" + " ma_san_pham",
+                "SELECT ma_san_pham,ma_san_pham+N' - '+ten FROM san_pham ORDER BY ma_san_pham",
                 cacThamSo);
     }
 
@@ -57,8 +57,8 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT i.id,h.so_hoa_don+N' / '+COALESCE(i.ten_hang,p.ten)+N' / đã"
                         + " mua '+CAST(i.so_luong AS nvarchar(20)) FROM"
-                        + " chi_tiet_don_hang i JOIN hoa_don h ON"
-                        + " h.don_hang_id=i.don_hang_id JOIN san_pham p ON"
+                        + " chi_tiet_hoa_don i JOIN hoa_don h ON"
+                        + " h.id=i.hoa_don_id JOIN san_pham p ON"
                         + " p.id=i.san_pham_id WHERE h.trang_thai='PAID' ORDER BY h.id"
                         + " DESC,i.id",
                 cacThamSo);

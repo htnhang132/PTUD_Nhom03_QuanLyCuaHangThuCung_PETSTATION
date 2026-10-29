@@ -60,10 +60,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
         pnlCacThaoTac.add(txtTimKiem);
         NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server, giữ bộ lọc hiện tại");
+        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server");
         btnLamMoi.addActionListener(
                 e -> {
                     try {
+                        datLaiBoLoc();
                         taiLaiNen();
                     } catch (RuntimeException loi) {
                         HopThoai.hienThiCanhBao(this, loi.getMessage());
@@ -90,7 +91,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         tblBang.removeColumn(tblBang.getColumnModel().getColumn(0));
-        lienKetBoLoc(txtTimKiem, tblBang);
+        if (kieuNghiepVu != LoaiNghiepVu.HOA_DON) lienKetBoLoc(txtTimKiem, tblBang);
         tblBang.getRowSorter()
                 .addRowSorterListener(
                         e ->
@@ -108,14 +109,10 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                             if (e.getValueIsAdjusting() || tblBang.getSelectedRow() < 0) return;
                             long id = layDongChon();
                             switch (kieuNghiepVu) {
-                                case APPOINTMENTS -> banHang.layQuyTrinh().chonLichHen(id);
-                                case SPA_TICKETS,
-                                                SPA_INTAKE,
-                                                SPA_SERVICES,
-                                                SPA_PROGRESS,
-                                                SPA_CLOSE ->
+                                case LICH_HEN -> banHang.layQuyTrinh().chonLichHen(id);
+                                case PHIEU_SPA, TIEP_NHAN_SPA, GOI_DICH_VU_SPA, TIEN_DO_SPA, HOAN_TAT_SPA ->
                                         banHang.layQuyTrinh().chonSpa(id);
-                                case HOTEL_STAY, HOTEL_BOOKING, HOTEL_JOURNAL, HOTEL_CHECKOUT ->
+                                case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
                                         banHang.layQuyTrinh().chonHotel(id);
                                 default -> {}
                             }
@@ -173,10 +170,10 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         lblSoLuong.setText(ThanhDanhSach.soKetQua(tblBang.getRowCount(), moHinh.getRowCount()));
         long giu =
                 switch (kieuNghiepVu) {
-                    case APPOINTMENTS -> banHang.layQuyTrinh().layLichHen();
-                    case SPA_TICKETS, SPA_INTAKE, SPA_SERVICES, SPA_PROGRESS, SPA_CLOSE ->
+                    case LICH_HEN -> banHang.layQuyTrinh().layLichHen();
+                    case PHIEU_SPA, TIEP_NHAN_SPA, GOI_DICH_VU_SPA, TIEN_DO_SPA, HOAN_TAT_SPA ->
                             banHang.layQuyTrinh().layPhieuSpa();
-                    case HOTEL_STAY, HOTEL_BOOKING, HOTEL_JOURNAL, HOTEL_CHECKOUT ->
+                    case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
                             banHang.layQuyTrinh().layHopDongHotel();
                     default -> 0;
                 };
@@ -193,6 +190,8 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
     }
 
     protected void sauKhiTaiLai() {}
+
+    protected void datLaiBoLoc() {}
 
     private int phienTaiLai;
 

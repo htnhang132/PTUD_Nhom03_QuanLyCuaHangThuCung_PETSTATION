@@ -69,8 +69,8 @@ public final class KhoiTaoQuanTri {
     private static boolean layQuanLyTonTai(Connection ketNoi) throws Exception {
         try (PreparedStatement cauLenh =
                         ketNoi.prepareStatement(
-                                "SELECT TOP 1 1 FROM tai_khoan WHERE vai_tro = 'STORE_MANAGER' AND"
-                                        + " trang_thai='ACTIVE'");
+                                "SELECT TOP 1 1 FROM tai_khoan WHERE vai_tro IN ('QUAN_LY_CUA_HANG', 'STORE_MANAGER') AND"
+                                        + " trang_thai IN ('HOAT_DONG', 'ACTIVE')");
                 ResultSet ketQua = cauLenh.executeQuery()) {
             return ketQua.next();
         }
@@ -79,7 +79,7 @@ public final class KhoiTaoQuanTri {
     private static long themNhanVien(Connection ketNoi, String hoTen, String soDienThoai)
             throws Exception {
         // Mã.
-        String ma = "NV" + System.currentTimeMillis();
+        String ma = DuLieu.taoMa("NV");
         // SQL.
         String sql =
                 """
@@ -105,8 +105,8 @@ public final class KhoiTaoQuanTri {
         String sql =
                 """
                 INSERT INTO tai_khoan
-                    (nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, bat_buoc_doi_mat_khau)
-                VALUES (?, ?, ?, 'STORE_MANAGER', 0)
+                    (nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, quyen, trang_thai, bat_buoc_doi_mat_khau)
+                VALUES (?, ?, ?, 'QUAN_LY_CUA_HANG', 'XEM_TONG_QUAN,QUAN_LY_TAI_KHOAN,QUAN_LY_LICH_LAM_VIEC,XEM_LICH_LAM_VIEC,QUAN_LY_KHACH_HANG,QUAN_LY_THU_CUNG,QUAN_LY_SAN_PHAM,QUAN_LY_NHA_CUNG_CAP,NHAP_KHO,XUAT_HUY_KHO,KIEM_KE_KHO,DE_XUAT_GIA,DUYET_GIA,BAN_HANG,THANH_TOAN,QUAN_LY_CA_THU_NGAN,QUAN_LY_KHUYEN_MAI,QUAN_LY_SPA,QUAN_LY_LUU_TRU,XU_LY_PHE_DUYET,XEM_NHAT_KY,XEM_BAO_CAO_CHUNG,XEM_BAO_CAO_CA', 'HOAT_DONG', 0)
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, idNhanVien);

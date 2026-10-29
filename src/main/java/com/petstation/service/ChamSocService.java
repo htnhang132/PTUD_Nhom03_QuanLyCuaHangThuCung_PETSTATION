@@ -3,8 +3,8 @@ package com.petstation.service;
 import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
-import com.petstation.dao.ChamSocDAO;
-import com.petstation.dao.impl.ChamSocDAOImpl;
+import com.petstation.dao.NhatKyChamSocDAO;
+import com.petstation.dao.impl.NhatKyChamSocDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.io.*;
@@ -14,7 +14,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 public final class ChamSocService {
-    private static final ChamSocDAO chamSocDAO = new ChamSocDAOImpl();
+    private static final NhatKyChamSocDAO chamSocDAO = new NhatKyChamSocDAOImpl();
 
     private ChamSocService() {}
 
@@ -54,7 +54,7 @@ public final class ChamSocService {
     private static void quyen(String loai) {
         if (!Set.of("SPA", "HOTEL").contains(loai))
             throw new IllegalArgumentException("Loại phiếu không hợp lệ.");
-        yeuCau(loai.equals("SPA") ? Quyen.SPA_MANAGE : Quyen.HOTEL_MANAGE);
+        yeuCau(loai.equals("SPA") ? Quyen.QUAN_LY_SPA : Quyen.QUAN_LY_LUU_TRU);
     }
 
     public static List<Object[]> lay(String loai, long id) {
@@ -81,7 +81,7 @@ public final class ChamSocService {
             throw new IllegalArgumentException("Cần tình trạng; nội dung vượt độ dài cho phép.");
         List<Path> copied = new ArrayList<>();
         try {
-            String config = CaiDatService.layTuyChon("CARE_DATA_DIR");
+            String config = CaiDatService.layTuyChon("THU_MUC_ANH_CHAM_SOC");
             Path folder =
                     Path.of(
                             config.isBlank()
@@ -114,7 +114,6 @@ public final class ChamSocService {
                                 viec,
                                 before == null ? null : before.toString(),
                                 after == null ? null : after.toString());
-                        if (loai.equals("HOTEL")) LuuTruService.ghiNhatKy(id, an, viec, tinhTrang);
                         NhatKyHeThongService.ghiNhatKy("Ghi phiếu chăm sóc", loai + " / " + id);
                         return null;
                     });

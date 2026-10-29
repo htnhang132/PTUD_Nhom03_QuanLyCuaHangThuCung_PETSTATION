@@ -15,10 +15,10 @@ public final class DoiHangDAOImpl implements DoiHangDAO {
         return truyVan(
                 "SELECT"
                     + " h.id,h.tong_tien,h.tam_tinh,h.thanh_toan_luc,i.don_gia,i.so_luong,h.trang_thai,p.nhom_hang,COALESCE(k.ma_khach_hang,''),COALESCE(k.ho_ten,''),COALESCE(k.diem_tich_luy,0)"
-                    + " FROM chi_tiet_don_hang i WITH(UPDLOCK,HOLDLOCK) JOIN hoa_don h"
-                    + " WITH(UPDLOCK,HOLDLOCK) ON h.don_hang_id=i.don_hang_id JOIN san_pham p ON"
-                    + " p.id=i.san_pham_id JOIN don_hang d ON d.id=i.don_hang_id LEFT JOIN"
-                    + " khach_hang k ON k.id=d.khach_hang_id WHERE i.id=?",
+                    + " FROM chi_tiet_hoa_don i WITH(UPDLOCK,HOLDLOCK) JOIN hoa_don h"
+                    + " WITH(UPDLOCK,HOLDLOCK) ON h.id=i.hoa_don_id JOIN san_pham p ON"
+                    + " p.id=i.san_pham_id LEFT JOIN khach_hang k ON k.id=h.khach_hang_id WHERE"
+                    + " i.id=?",
                 id);
     }
 
@@ -35,7 +35,7 @@ public final class DoiHangDAOImpl implements DoiHangDAO {
                 "INSERT"
                     + " phieu_doi_tra(ma_phieu,hoa_don_id,nguoi_lap_id,chenh_lech,trang_thai,ly_do,loai_phieu,gia_tri_duoc_doi,khoa_thao_tac)"
                     + " VALUES(?,?,?,?,'PENDING',?,'EXCHANGE',?,?)",
-                taoMa("DOI"),
+                taoMa("DT"),
                 hoaDon,
                 nguoi,
                 chenhLech,

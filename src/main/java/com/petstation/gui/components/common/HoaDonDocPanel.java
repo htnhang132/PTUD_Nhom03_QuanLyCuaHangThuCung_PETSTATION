@@ -94,10 +94,11 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         themCap(khoi, "Tổng thanh toán", TienTe.dinhDang(bienLai.tong()), true);
         String phuongThuc =
                 switch (bienLai.phuongThuc()) {
-                    case CASH -> "Tiền mặt";
-                    case TRANSFER -> "Chuyển khoản / QR";
-                    case CARD -> "Thẻ";
-                    case MIXED -> "Kết hợp";
+                    case TIEN_MAT -> "Tiền mặt";
+                    case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+                    case THE_NGAN_HANG -> "Thẻ";
+                    case DIEM_TICH_LUY -> "Điểm tích lũy";
+                    case KET_HOP -> "Kết hợp";
                 };
         if (bienLai.cacKhoanThu().isEmpty())
             themCap(khoi, phuongThuc, TienTe.dinhDang(bienLai.daNhan()), false);
@@ -106,10 +107,11 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
                 themCap(
                         khoi,
                         switch (d.phuongThuc()) {
-                            case CASH -> "Tiền mặt";
-                            case TRANSFER -> "Chuyển khoản / QR";
-                            case CARD -> "Thẻ";
-                            case MIXED -> "Kết hợp";
+                            case TIEN_MAT -> "Tiền mặt";
+                            case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+                            case THE_NGAN_HANG -> "Thẻ";
+                            case DIEM_TICH_LUY -> "Điểm tích lũy";
+                    case KET_HOP -> "Kết hợp";
                         },
                         TienTe.dinhDang(d.soTien()),
                         false);

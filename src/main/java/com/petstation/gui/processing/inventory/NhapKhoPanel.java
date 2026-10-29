@@ -16,7 +16,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho nhập kho vùng hiển thị. */
 public final class NhapKhoPanel extends NghiepVuKhoPanel {
     public NhapKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.PURCHASE, banHang, dieuHuong);
+        super(LoaiNghiepVu.PHIEU_NHAP_KHO, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Lập phiếu nhập kho", this::nhapKho);
         themNut(pnlCacThaoTac, "Chi tiết", this::layNhapKhoChiTiet);

@@ -26,12 +26,12 @@ import javax.swing.*;
 public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     protected NghiepVuSpaPanel(LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
-        if (kieu != LoaiNghiepVu.APPOINTMENTS && kieu != LoaiNghiepVu.SPA_TICKETS)
+        if (kieu != LoaiNghiepVu.LICH_HEN && kieu != LoaiNghiepVu.PHIEU_SPA)
             themNut(
                     pnlCacThaoTac,
                     "Phiếu chăm sóc",
                     () ->
-                            com.petstation.gui.components.common.PhieuChamSocDialog.mo(
+                            com.petstation.gui.components.common.NhatKyChamSocDialog.mo(
                                     this, "SPA", layDongChon()));
     }
 
@@ -40,7 +40,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
         if (tblBang == null || pnlCacThaoTac == null) return;
         String trangThai = "";
         boolean coDichVu = false;
-        if (tblBang.getSelectedRow() >= 0 && kieuNghiepVu != LoaiNghiepVu.APPOINTMENTS) {
+        if (tblBang.getSelectedRow() >= 0 && kieuNghiepVu != LoaiNghiepVu.LICH_HEN) {
             int dong = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
             trangThai = String.valueOf(moHinh.getValueAt(dong, 7));
             coDichVu = ((Number) moHinh.getValueAt(dong, 6)).longValue() > 0;
@@ -59,7 +59,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                                                     .layPhien()
                                                     .kiemTraCo(
                                                             com.petstation.model.Quyen
-                                                                    .PAYMENT_PROCESS));
+                                                                    .THANH_TOAN));
                     default -> {}
                 }
             }
@@ -95,7 +95,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     protected void tiepNhan() {
         // Lịch hẹn.
         String lichHen = "", thuCung = "";
-        if (kieuNghiepVu == LoaiNghiepVu.APPOINTMENTS && tblBang.getSelectedRow() >= 0) {
+        if (kieuNghiepVu == LoaiNghiepVu.LICH_HEN && tblBang.getSelectedRow() >= 0) {
             lichHen = layNoiDungDongChon(1);
             thuCung = chuyenThanhChuoi(SpaService.layMaLichHenThuCung(layDongChon()));
         }
@@ -131,7 +131,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                             Double.parseDouble(giaTri.get("weight").replace(',', '.')),
                             giaTri.get("note"));
             banHang.layQuyTrinh().chonSpa(id);
-            dieuHuong.accept(MaManHinh.SPA_SERVICE_SELECTION);
+            dieuHuong.accept(MaManHinh.CHON_GOI_SPA);
         }
     }
 
@@ -154,6 +154,6 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
         if (!banHang.kiemTraTrong())
             throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
         BanHangService.quyetToan(loai, layDongChon(), banHang);
-        dieuHuong.accept(MaManHinh.PAYMENT);
+        dieuHuong.accept(MaManHinh.THANH_TOAN);
     }
 }

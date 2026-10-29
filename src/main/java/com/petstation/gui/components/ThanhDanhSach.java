@@ -1,192 +1,113 @@
 package com.petstation.gui.components;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
-import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-/** Thanh một hàng. Thành phần gốc được giữ để quyền và trạng thái không bị sao chép. */
+/** Thanh công cụ một hoặc nhiều hàng có tự động xuống dòng và căn chỉnh đồng bộ chiều cao các nút. */
 public final class ThanhDanhSach extends JPanel {
-    private final List<Component> boLoc = new ArrayList<>();
-    private final JButton locThem = new JButton("Lọc thêm");
-    private final JButton them = new JButton("⋯");
+    private static final int CAO_HANG = 36;
+    private static final int KHOANG_CACH_NGANG = 8;
+    private static final int KHOANG_CACH_DOC = 8;
+    private int chieuCaoDaTinh = -1;
 
     public ThanhDanhSach() {
         setOpaque(false);
         setLayout(null);
-        add(locThem);
-        add(them);
-        locThem.addActionListener(e -> moBoLoc());
-        them.setToolTipText("Các thao tác khác");
-        them.addActionListener(
-                e -> {
-                    JPopupMenu menu = new JPopupMenu();
-                    for (Component c : getComponents())
-                        if (c instanceof AbstractButton b
-                                && c != them
-                                && c != locThem
-                                && !boLoc.contains(c)
-                                && !c.isVisible()) {
-                            JMenuItem item = new JMenuItem(b.getText(), b.getIcon());
-                            item.setEnabled(b.isEnabled());
-                            item.setToolTipText(b.getToolTipText());
-                            item.addActionListener(ev -> b.doClick());
-                            menu.add(item);
+        addComponentListener(
+                new ComponentAdapter() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        int caoMoi = sapXep(false);
+                        if (caoMoi != chieuCaoDaTinh) {
+                            chieuCaoDaTinh = caoMoi;
+                            revalidate();
                         }
-                    menu.show(them, 0, them.getHeight());
+                    }
                 });
     }
 
     public void themBoLoc(Component c) {
         add(c);
-        boLoc.add(c);
     }
 
     public void themBoLoc(String nhan, JComponent c) {
-        JPanel nhom = new JPanel(new BorderLayout(4, 0));
+        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         nhom.setOpaque(false);
         JLabel label = new JLabel(nhan);
+        label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        label.setForeground(MauUngDung.VAN_BAN_TOI);
         label.setLabelFor(c);
-        nhom.add(label, BorderLayout.WEST);
+        c.setPreferredSize(new Dimension(c.getPreferredSize().width, CAO_HANG));
+        nhom.add(label);
         nhom.add(c);
         themBoLoc(nhom);
     }
 
-    private void moBoLoc() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
-        List<Component> an = boLoc.stream().filter(c -> !c.isVisible()).toList();
-        for (Component c : an) {
-            c.setVisible(true);
-            menu.add(c);
-        }
-        menu.addPopupMenuListener(
-                new PopupMenuListener() {
-                    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-
-                    public void popupMenuCanceled(PopupMenuEvent e) {
-                        traLai();
-                    }
-
-                    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                        traLai();
-                    }
-
-                    private void traLai() {
-                        for (Component c : an) if (c.getParent() == menu) ThanhDanhSach.this.add(c);
-                        revalidate();
-                        repaint();
-                    }
-                });
-        menu.show(locThem, 0, locThem.getHeight());
-    }
-
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(700, 36);
+        int rong = getWidth();
+        if (rong <= 0 && getParent() != null && getParent().getWidth() > 0) {
+            rong = getParent().getWidth();
+        }
+        return new Dimension(rong > 0 ? rong : 700, sapXep(false));
     }
 
     @Override
     public Dimension getMinimumSize() {
-        return new Dimension(380, 36);
+        return new Dimension(380, CAO_HANG);
     }
 
     @Override
     public void doLayout() {
-        int w = getWidth(), gap = 8;
-        List<Component> left = new ArrayList<>(), right = new ArrayList<>();
-        Component search = null;
-        for (Component c : getComponents()) {
-            if (c == locThem || c == them) continue;
-            if (c instanceof JTextField && search == null) {
-                search = c;
-                continue;
-            }
-            (boLoc.contains(c) || !(c instanceof AbstractButton) ? left : right).add(c);
-            c.setVisible(true);
+        chieuCaoDaTinh = sapXep(true);
+    }
+
+    private int sapXep(boolean datViTri) {
+        int rong = getWidth();
+        if (rong <= 0 && getParent() != null && getParent().getWidth() > 0) {
+            rong = getParent().getWidth();
         }
-        Component export =
-                right.stream()
-                        .filter(c -> ((AbstractButton) c).getText().contains("Xuất"))
-                        .findFirst()
-                        .orElse(null);
-        if (export != null) {
-            right.remove(export);
-            right.add(export);
-        }
-        Component primary =
-                right.stream()
-                        .filter(c -> ((AbstractButton) c).getText().startsWith("+"))
-                        .findFirst()
-                        .orElseGet(
-                                () ->
-                                        right.stream()
-                                                .filter(c -> c != export)
-                                                .findFirst()
-                                                .orElse(null));
-        if (primary != null) {
-            right.remove(primary);
-            right.add(0, primary);
-        }
-        int searchW = search == null ? 0 : Math.min(260, Math.max(150, w / 5));
-        int total = searchW + (search == null ? 0 : gap);
-        for (Component c : left) total += c.getPreferredSize().width + gap;
-        for (Component c : right) total += c.getPreferredSize().width + gap;
-        if (search != null && total > w) {
-            int shrink = Math.min(total - w, searchW - 150);
-            searchW -= shrink;
-            total -= shrink;
-        }
-        boolean hiddenFilters = false, hiddenActions = false;
-        for (int i = left.size() - 1; total > w && i >= 0; i--) {
-            Component c = left.get(i);
-            c.setVisible(false);
-            total -= c.getPreferredSize().width + gap;
-            if (!hiddenFilters) {
-                total += 96;
-                hiddenFilters = true;
-            }
-        }
-        for (int i = right.size() - 1; total > w && i >= 0; i--) {
-            Component c = right.get(i);
-            if (c == export || c == primary) continue;
-            c.setVisible(false);
-            total -= c.getPreferredSize().width + gap;
-            if (!hiddenActions) {
-                total += 44;
-                hiddenActions = true;
-            }
-        }
-        locThem.setVisible(hiddenFilters);
-        them.setVisible(hiddenActions);
+        if (rong <= 0) rong = 960;
+
         int x = 0;
-        if (search != null) {
-            search.setBounds(0, 0, searchW, 36);
-            x = searchW + gap;
-        }
-        for (Component c : left)
-            if (c.isVisible()) {
-                int cw = c.getPreferredSize().width;
-                c.setBounds(x, 0, cw, 36);
-                x += cw + gap;
-            }
-        if (hiddenFilters) locThem.setBounds(x, 0, 88, 36);
-        int end = w;
-        if (hiddenActions) {
-            them.setBounds(end - 36, 0, 36, 36);
-            end -= 44;
-        }
-        for (int i = right.size() - 1; i >= 0; i--) {
-            Component c = right.get(i);
+        int y = 0;
+
+        for (Component c : getComponents()) {
             if (!c.isVisible()) continue;
-            int cw = c.getPreferredSize().width;
-            end -= cw;
-            c.setBounds(end, 0, cw, 36);
-            end -= gap;
+            Dimension d = c.getPreferredSize();
+            int cw = (d != null) ? d.width : 0;
+            if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 200)) {
+                cw = Math.min(rong, Math.max(220, Math.min(280, cw)));
+            } else if (c instanceof AbstractButton) {
+                cw = Math.min(rong, Math.max(76, cw));
+            } else {
+                cw = Math.min(rong, cw);
+            }
+
+            int ch = CAO_HANG;
+
+            if (x > 0 && x + cw > rong) {
+                x = 0;
+                y += CAO_HANG + KHOANG_CACH_DOC;
+            }
+
+            if (datViTri) {
+                c.setBounds(x, y, cw, ch);
+            }
+            x += cw + KHOANG_CACH_NGANG;
         }
+
+        return y + CAO_HANG;
     }
 
     public static JPanel tieuDe(JLabel title, JLabel count) {

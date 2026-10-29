@@ -4,10 +4,15 @@ import static com.petstation.database.ThaoTacSQL.*;
 
 import com.petstation.dao.DeXuatGiaDAO;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/** Giá đề xuất được tách khỏi giá bán đang áp dụng. */
+/** Giá đề xuất được lưu trực tiếp trong cột de_xuat_gia của bảng san_pham. */
 public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
+    private static final DateTimeFormatter DINH_DANG_ISO =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+
     public DeXuatGiaDAOImpl() {}
 
     public List<Object[]> timSanPham(String ma) {
@@ -16,39 +21,60 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     }
 
     public long them(long sanPham, long nguoi, long cu, long moi, String lyDo) {
-        return com.petstation.database.ThaoTacSQL.them(
-                "INSERT de_xuat_gia(san_pham_id,nguoi_de_xuat_id,gia_hien_tai,gia_de_xuat,ly_do)"
-                        + " VALUES(?,?,?,?,?)",
-                sanPham,
-                nguoi,
-                cu,
-                moi,
-                lyDo);
+        String chuoi =
+                "PENDING|"
+                        + nguoi
+                        + "|"
+                        + cu
+                        + "|"
+                        + moi
+                        + "|"
+                        + (lyDo == null ? "" : lyDo.replace("|", "/").replace(";", ","))
+                        + "|"
+                        + LocalDateTime.now().format(DINH_DANG_ISO);
+        capNhat("UPDATE san_pham SET de_xuat_gia=? WHERE id=?", chuoi, sanPham);
+        return sanPham;
     }
 
     public List<Object[]> timChoDuyet(long id) {
-        return truyVan(
-                "SELECT d.san_pham_id,d.gia_hien_tai,d.gia_de_xuat,p.gia_ban FROM de_xuat_gia d"
-                        + " WITH(UPDLOCK,HOLDLOCK) JOIN san_pham p WITH(UPDLOCK,HOLDLOCK) ON"
-                        + " p.id=d.san_pham_id WHERE d.id=? AND d.trang_thai='PENDING'",
-                id);
+        List<Object[]> dong =
+                truyVan(
+                        "SELECT id, gia_ban, COALESCE(de_xuat_gia, N'') FROM san_pham"
+                                + " WITH(UPDLOCK,HOLDLOCK) WHERE id=?",
+                        id);
+        if (dong.isEmpty()) return List.of();
+        Object[] d = dong.get(0);
+        String dxg = String.valueOf(d[2]).trim();
+        if (dxg.isEmpty()) return List.of();
+        String[] p = dxg.split("\\|");
+        if (p.length < 4 || !"PENDING".equals(p[0].trim())) return List.of();
+        long giaHienTai = Long.parseLong(p[2].trim());
+        long giaDeXuat = Long.parseLong(p[3].trim());
+        return List.<Object[]>of(new Object[] {d[0], giaHienTai, giaDeXuat, d[1]});
     }
 
     public void apDung(long id, long sanPham, long gia, long nguoi) {
-        capNhat("UPDATE san_pham SET gia_ban=? WHERE id=?", gia, sanPham);
+        List<Object[]> choDuyet = timChoDuyet(id);
+        long giaCu = choDuyet.isEmpty() ? gia : ((Number) choDuyet.get(0)[1]).longValue();
         capNhat(
-                "INSERT lich_su_gia(san_pham_id,gia_cu,gia_moi,nguoi_thay_doi_id) SELECT"
-                        + " san_pham_id,gia_hien_tai,gia_de_xuat,? FROM de_xuat_gia WHERE id=?",
+                "UPDATE san_pham SET gia_ban=?,"
+                    + " de_xuat_gia=REPLACE(COALESCE(de_xuat_gia,N''),N'PENDING|',N'APPROVED|'),"
+                    + " lich_su_gia = CASE WHEN lich_su_gia IS NULL OR lich_su_gia=N'' THEN N''"
+                    + " ELSE lich_su_gia + N';' END + CONVERT(NVARCHAR(19), SYSDATETIME(), 120) +"
+                    + " N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(? AS NVARCHAR(20)) + N'|' +"
+                    + " CAST(? AS NVARCHAR(20)) WHERE id=?",
+                gia,
+                giaCu,
+                gia,
                 nguoi,
-                id);
-        capNhat(
-                "UPDATE de_xuat_gia SET trang_thai='APPROVED' WHERE id=? AND trang_thai='PENDING'",
-                id);
+                sanPham);
     }
 
     public void tuChoi(long id) {
         capNhat(
-                "UPDATE de_xuat_gia SET trang_thai='REJECTED' WHERE id=? AND trang_thai='PENDING'",
+                "UPDATE san_pham SET"
+                        + " de_xuat_gia=REPLACE(COALESCE(de_xuat_gia,N''),N'PENDING|',N'REJECTED|')"
+                        + " WHERE id=?",
                 id);
     }
 }

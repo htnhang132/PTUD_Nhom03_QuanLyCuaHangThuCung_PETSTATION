@@ -451,7 +451,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         cacBoSoanThao = new BoSoanThaoTruong[cacTruong.size()];
         // Tách.
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, taoBieuMau());
-        tach.setResizeWeight(0.62);
+        tach.setResizeWeight(1.0);
         tach.setBorder(null);
         tach.setOpaque(false);
         tach.setContinuousLayout(true);
@@ -556,9 +556,14 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         JScrollPane scrKhungCuon = new JScrollPane(pnlBieuMau);
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         scrKhungCuon.getVerticalScrollBar().setUnitIncrement(16);
-        scrKhungCuon.setPreferredSize(new Dimension(360, 0));
+        scrKhungCuon.setPreferredSize(new Dimension(380, 0));
+        scrKhungCuon.setMinimumSize(new Dimension(320, 0));
+        scrKhungCuon.setMaximumSize(new Dimension(420, Integer.MAX_VALUE));
         // Vùng chứa.
         JPanel pnlVungChua = new JPanel(new BorderLayout());
+        pnlVungChua.setPreferredSize(new Dimension(380, 0));
+        pnlVungChua.setMinimumSize(new Dimension(320, 0));
+        pnlVungChua.setMaximumSize(new Dimension(420, Integer.MAX_VALUE));
         pnlVungChua.add(scrKhungCuon);
         return pnlVungChua;
     }
@@ -1050,14 +1055,24 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     private String layMaTiepTheo() {
-        // Lớn nhất.
-        int lonNhat = 0;
+        long lonNhat = 0;
         for (Object[] dongDuLieu : cacDong) {
-            // Các chữ số.
             String cacChuSo = String.valueOf(dongDuLieu[0]).replaceAll("\\D", "");
-            if (!cacChuSo.isEmpty()) lonNhat = Math.max(lonNhat, Integer.parseInt(cacChuSo));
+            if (!cacChuSo.isEmpty()) {
+                try {
+                    lonNhat = Math.max(lonNhat, Long.parseLong(cacChuSo));
+                } catch (NumberFormatException ignored) {
+                }
+            }
         }
-        return cauHinh.maTienTo + String.format("%03d", lonNhat + 1);
+        int soChuSo =
+                switch (cauHinh.maTienTo) {
+                    case "NV", "NCC" -> 4;
+                    case "SP", "KH", "TC", "LH", "VOUCHER", "HDHT" -> 6;
+                    case "SPA", "LO", "PN", "PX", "KK", "DT", "NK", "YC", "MPI" -> 8;
+                    default -> 3;
+                };
+        return cauHinh.maTienTo + String.format("%0" + soChuSo + "d", lonNhat + 1);
     }
 
     // ───────────────────────── Bảng

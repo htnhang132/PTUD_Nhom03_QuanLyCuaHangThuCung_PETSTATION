@@ -3,7 +3,7 @@ package com.petstation.dao;
 import java.util.List;
 
 /** Thao tác dữ liệu cho LuuTru; service gọi qua hợp đồng này. */
-public interface LuuTruDAO {
+public interface HopDongLuuTruDAO {
     List<Object[]> layPhongDangDon();
 
     int capNhatNhanPhong(Object... cacThamSo);

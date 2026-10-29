@@ -1,13 +1,14 @@
 package com.petstation.gui.processing.inventory;
 
-import static com.petstation.util.DuLieu.*;
-
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.NutDinhDang;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
 import com.petstation.model.MaManHinh;
+import com.petstation.model.Quyen;
+import com.petstation.service.CaiDatService;
 import com.petstation.service.KhoService;
+import com.petstation.service.PhienDangNhapService;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -38,11 +39,13 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     private long bienBanHienTaiId = -1;
 
     public KiemKePanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.STOCKTAKE, banHang, dieuHuong);
+        super(LoaiNghiepVu.KIEM_KE, banHang, dieuHuong);
 
         // 1. Thêm các nút chức năng trên thanh công cụ
         themNut(pnlCacThaoTac, "+ Lập đợt kiểm kê", this::moWorkspaceKiemKe);
-        themNut(pnlCacThaoTac, "Cân bằng kho (Duyệt)", this::thucHienCanBangKho);
+        if (PhienDangNhapService.layPhien().kiemTraCo(Quyen.XU_LY_PHE_DUYET)) {
+            themNut(pnlCacThaoTac, "Cân bằng kho (Duyệt)", this::thucHienCanBangKho);
+        }
         themNut(pnlCacThaoTac, "Xem chi tiết", this::xemChiTietBienBan);
 
         // 2. Chuẩn bị bảng Chi tiết kiểm kê ở Master-Detail
@@ -158,8 +161,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             int demLech = 0;
             int tongChenhLech = 0;
             for (Object[] r : cacDong) {
-                // r: [id, ma_san_pham, ten, so_lo, han_su_dung, ton_he_thong, ton_thuc_te,
-                // chenh_lech, nguyen_nhan]
                 int chenhLech = ((Number) r[7]).intValue();
                 if (chenhLech != 0) {
                     demLech++;
@@ -188,6 +189,11 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     }
 
     private void thucHienCanBangKho() {
+        if (!PhienDangNhapService.layPhien().kiemTraCo(Quyen.XU_LY_PHE_DUYET)) {
+            HopThoai.hienThiCanhBao(
+                    this, "Chỉ Cửa hàng trưởng mới có quyền duyệt và cân bằng kho kiểm kê.");
+            return;
+        }
         if (bienBanHienTaiId <= 0) {
             HopThoai.hienThiCanhBao(this, "Vui lòng chọn một biên bản kiểm kê trong bảng.");
             return;
@@ -197,7 +203,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         String soBB = row >= 0 ? tblBang.getValueAt(row, 0).toString() : ("#" + bienBanHienTaiId);
         String trangThai = row >= 0 ? tblBang.getValueAt(row, 2).toString() : "";
 
-        if ("APPROVED".equalsIgnoreCase(trangThai)) {
+        if ("APPROVED".equalsIgnoreCase(trangThai) || "Đã duyệt".equalsIgnoreCase(trangThai)) {
             HopThoai.hienThiThongTin(this, "Biên bản " + soBB + " đã được cân bằng kho trước đó.");
             return;
         }
@@ -244,7 +250,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         (Frame) SwingUtilities.getWindowAncestor(this),
                         "WORKSPACE KIỂM KÊ TỒN KHO THEO ĐỢT",
                         true);
-        dlg.setSize(1100, 680);
+        dlg.setSize(1120, 680);
         dlg.setLocationRelativeTo(this);
         dlg.setLayout(new BorderLayout(0, 10));
 
@@ -254,37 +260,43 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         pnlHeader.setBorder(new EmptyBorder(12, 14, 6, 14));
 
         // Hàng 1: Kỳ kiểm kê + Phạm vi
-        JPanel pnlHang1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        JPanel pnlHang1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
         JTextField txtKyKiemKe =
                 new JTextField(
                         "Kiểm kê T"
                                 + YearMonth.now().getMonthValue()
                                 + "/"
                                 + YearMonth.now().getYear(),
-                        16);
+                        14);
         pnlHang1.add(new JLabel("Kỳ kiểm kê:"));
         pnlHang1.add(txtKyKiemKe);
 
-        JComboBox<String> cboNhomHang =
-                new JComboBox<>(
-                        new String[] {
-                            "TẤT CẢ",
-                            "Thức ăn",
-                            "Đồ chơi & Phụ kiện",
-                            "Vệ sinh & Chăm sóc",
-                            "Thuốc & Y tế",
-                            "Khác"
-                        });
+        Set<String> cacNhom = new LinkedHashSet<>();
+        cacNhom.add("TẤT CẢ");
+        for (Object[] r : KhoService.layDanhSachLoHangKiemKe("TẤT CẢ", false)) {
+            if (r[7] != null && !r[7].toString().isBlank()) {
+                cacNhom.add(r[7].toString());
+            }
+        }
+        JComboBox<String> cboNhomHang = new JComboBox<>(cacNhom.toArray(String[]::new));
         pnlHang1.add(new JLabel("Nhóm hàng:"));
         pnlHang1.add(cboNhomHang);
 
-        JCheckBox chkSapHetHan = new JCheckBox("Lô gần hết hạn (<30 ngày)");
+        JTextField txtTuKhoa = new JTextField(12);
+        txtTuKhoa.setToolTipText("Lọc theo mã SP, tên SP hoặc số lô");
+        pnlHang1.add(new JLabel("Tìm nhanh:"));
+        pnlHang1.add(txtTuKhoa);
+
+        JCheckBox chkSapHetHan = new JCheckBox("Lô sắp hết hạn");
         pnlHang1.add(chkSapHetHan);
 
-        NutDinhDang btnTaiDanhSach = new NutDinhDang("Tải danh sách", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnTaiDanhSach = new NutDinhDang("Lọc danh sách", NutDinhDang.KieuNut.PHU);
         pnlHang1.add(btnTaiDanhSach);
 
-        JCheckBox chkBlindCount = new JCheckBox("Chế độ kiểm kê mù (Blind Count)");
+        boolean macDinhMu =
+                "true".equalsIgnoreCase(
+                        CaiDatService.layTuyChonHoacMacDinh("MAC_DINH_KIEM_KE_MU", "false").trim());
+        JCheckBox chkBlindCount = new JCheckBox("Chế độ kiểm kê mù (Blind Count)", macDinhMu);
         chkBlindCount.setToolTipText(
                 "Ẩn cột Tồn hệ thống và Chênh lệch để nhân viên đếm khách quan");
         pnlHang1.add(chkBlindCount);
@@ -332,7 +344,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 new DefaultTableModel(cacCotWs, 0) {
                     @Override
                     public boolean isCellEditable(int row, int column) {
-                        // Chỉ cho sửa cột Tồn thực tế (7) và Lý do chênh lệch (9)
                         return column == 7 || column == 9;
                     }
                 };
@@ -429,7 +440,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         int tonHT = Integer.parseInt(moHinhWs.getValueAt(i, 6).toString());
                         int tonTT = Integer.parseInt(moHinhWs.getValueAt(i, 7).toString());
                         int diff = tonTT - tonHT;
-                        moHinhWs.setValueAt(diff, i, 8); // Cập nhật cột chênh lệch trong model
+                        moHinhWs.setValueAt(diff, i, 8);
                         if (diff != 0) {
                             soLuongLech++;
                             tongChenhLech += diff;
@@ -437,7 +448,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     }
                     lblThongKeWs.setText(
                             String.format(
-                                    "Tổng: %d mặt hàng | Lệch: %d mặt hàng (%s%d)",
+                                     "Tổng: %d mặt hàng | Lệch: %d mặt hàng (%s%d)",
                                     tongMatHang,
                                     soLuongLech,
                                     tongChenhLech > 0 ? "+" : "",
@@ -471,12 +482,19 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     moHinhWs.setRowCount(0);
                     String nhom = (String) cboNhomHang.getSelectedItem();
                     boolean chiSapHetHan = chkSapHetHan.isSelected();
+                    String tuKhoa = txtTuKhoa.getText().trim().toLowerCase();
                     List<Object[]> cacLo = KhoService.layDanhSachLoHangKiemKe(nhom, chiSapHetHan);
                     for (Object[] r : cacLo) {
-                        // r: [id, ma_san_pham, ten, barcode, so_lo, han_su_dung, so_luong_ton,
-                        // loai_san_pham]
+                        String maSP = String.valueOf(r[1]);
+                        String tenSP = String.valueOf(r[2]);
+                        String soLo = String.valueOf(r[4]);
+                        if (!tuKhoa.isEmpty()
+                                && !maSP.toLowerCase().contains(tuKhoa)
+                                && !tenSP.toLowerCase().contains(tuKhoa)
+                                && !soLo.toLowerCase().contains(tuKhoa)) {
+                            continue;
+                        }
                         int tonHT = ((Number) r[6]).intValue();
-                        // Khởi tạo Tồn thực tế mặc định bằng Tồn HT
                         moHinhWs.addRow(
                                 new Object[] {
                                     r[0],
@@ -486,23 +504,23 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                     r[4],
                                     r[5] == null ? "-" : r[5].toString(),
                                     tonHT,
-                                    tonHT, // Tồn thực tế khởi đầu
-                                    0, // Chênh lệch khởi đầu
-                                    "" // Lý do
+                                    tonHT,
+                                    0,
+                                    ""
                                 });
                     }
                     capNhatThongKe.run();
                 };
 
         btnTaiDanhSach.addActionListener(e -> taiDuLieu.run());
+        cboNhomHang.addActionListener(e -> taiDuLieu.run());
+        chkSapHetHan.addActionListener(e -> taiDuLieu.run());
+        txtTuKhoa.addActionListener(e -> taiDuLieu.run());
 
         // Xử lý bật/tắt Chế độ kiểm kê mù (Blind count)
-        chkBlindCount.addActionListener(
-                e -> {
+        Runnable capNhatBlindCount =
+                () -> {
                     boolean blind = chkBlindCount.isSelected();
-                    // Cột Tồn HT và Chênh lệch là các cột index 5 và 7 trên TableColumnModel hiển
-                    // thị
-                    // Để đơn giản, khi bật Blind Count, set độ rộng = 0 hoặc ẩn text
                     for (int i = 0; i < tblWs.getColumnCount(); i++) {
                         String name = tblWs.getColumnName(i);
                         if ("Tồn HT".equals(name) || "Chênh lệch".equals(name)) {
@@ -518,7 +536,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                             }
                         }
                     }
-                });
+                };
+        chkBlindCount.addActionListener(e -> capNhatBlindCount.run());
 
         // Xử lý quét Barcode
         txtBarcode.addKeyListener(
@@ -534,12 +553,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                 String barcode = moHinhWs.getValueAt(i, 3).toString();
                                 String maSP = moHinhWs.getValueAt(i, 1).toString();
                                 if (code.equalsIgnoreCase(barcode) || code.equalsIgnoreCase(maSP)) {
-                                    // Tăng số lượng thực tế lên 1
                                     int tonHienTai =
                                             Integer.parseInt(moHinhWs.getValueAt(i, 7).toString());
                                     moHinhWs.setValueAt(tonHienTai + 1, i, 7);
 
-                                    // Cuộn tới dòng đó và highlight
                                     int viewRow = tblWs.convertRowIndexToView(i);
                                     tblWs.setRowSelectionInterval(viewRow, viewRow);
                                     tblWs.scrollRectToVisible(tblWs.getCellRect(viewRow, 0, true));
@@ -631,8 +648,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     }
                 });
 
-        // Tải dữ liệu ban đầu
+        // Tải dữ liệu ban đầu và áp dụng chế độ mù mặc định từ Cài đặt
         taiDuLieu.run();
+        capNhatBlindCount.run();
         dlg.setVisible(true);
     }
 }

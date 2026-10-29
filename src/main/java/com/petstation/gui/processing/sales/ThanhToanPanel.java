@@ -124,7 +124,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlGoc.add(taoBieuMau(), "form");
         // Quay lại.
         NutDinhDang btnQuayLai = new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
-        btnQuayLai.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.POS));
+        btnQuayLai.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         pnlGoc.add(
                 layTrongTrangThai(
                         "Chưa có hóa đơn để thanh toán",
@@ -292,7 +292,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         btnXacNhan.addActionListener(suKien -> xacNhanThanhToan());
         // Hủy.
         NutDinhDang btnHuy = new NutDinhDang("Quay lại sửa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnHuy.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.POS));
+        btnHuy.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         // Các thao tác.
         JPanel pnlCacThaoTac = new JPanel(new GridLayout(1, 2, 8, 0));
         pnlCacThaoTac.setOpaque(false);
@@ -316,8 +316,8 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private PhuongThuc layPhuongThuc() {
         return btnChuyenKhoan.isSelected()
-                ? PhuongThuc.TRANSFER
-                : btnTheThanhToan.isSelected() ? PhuongThuc.CARD : PhuongThuc.CASH;
+                ? PhuongThuc.CHUYEN_KHOAN
+                : btnTheThanhToan.isSelected() ? PhuongThuc.THE_NGAN_HANG : PhuongThuc.TIEN_MAT;
     }
 
     private String khoaDoiVoucher;
@@ -489,8 +489,8 @@ public final class ThanhToanPanel extends CoSoPanel {
     private void capNhatQR() {
         chkDaNhanTien.setSelected(false);
         banHang.xacNhanDaNhanTien(layPhuongThuc(), false);
-        boolean chuyenKhoan = layPhuongThuc() == PhuongThuc.TRANSFER;
-        chkDaNhanTien.setVisible(layPhuongThuc() != PhuongThuc.CASH);
+        boolean chuyenKhoan = layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN;
+        chkDaNhanTien.setVisible(layPhuongThuc() != PhuongThuc.TIEN_MAT);
         lblQR.setVisible(chuyenKhoan);
         lblThongTinQR.setVisible(chuyenKhoan);
         qrHopLe = false;
@@ -530,7 +530,7 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private void capNhatPhuongThuc() {
         // Là tiền mặt.
-        boolean laTienMat = layPhuongThuc() == PhuongThuc.CASH;
+        boolean laTienMat = layPhuongThuc() == PhuongThuc.TIEN_MAT;
         txtDaNhan.setEnabled(laTienMat);
         capNhatQR();
         for (Component giaTriDangXet : pnlNhanhCacSoTien.getComponents())
@@ -541,17 +541,17 @@ public final class ThanhToanPanel extends CoSoPanel {
     private void kiemTraDauVao() {
         if (banHang.kiemTraTrong()) return;
         long giaTriTam = banHang.tinhTong();
-        if (layPhuongThuc() != PhuongThuc.CASH) {
+        if (layPhuongThuc() != PhuongThuc.TIEN_MAT) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_XAM);
             lblNhanThayDoi.setText(
                     "Thu đúng "
                             + TienTe.dinhDang(giaTriTam)
                             + "qua "
-                            + (layPhuongThuc() == PhuongThuc.TRANSFER ? "chuyển khoản/QR" : "thẻ"));
+                            + (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN ? "chuyển khoản/QR" : "thẻ"));
             btnXacNhan.setEnabled(
                     !dangXuLy
                             && chkDaNhanTien.isSelected()
-                            && (layPhuongThuc() != PhuongThuc.TRANSFER || qrHopLe));
+                            && (layPhuongThuc() != PhuongThuc.CHUYEN_KHOAN || qrHopLe));
             return;
         }
         // Dòng dữ liệu.
@@ -603,7 +603,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         long giaTriTam = banHang.tinhTong();
         // Dòng dữ liệu.
         long dongDuLieu =
-                layPhuongThuc() == PhuongThuc.CASH ? TienTe.doc(txtDaNhan.getText()) : giaTriTam;
+                layPhuongThuc() == PhuongThuc.TIEN_MAT ? TienTe.doc(txtDaNhan.getText()) : giaTriTam;
         if (dongDuLieu < giaTriTam) return;
         // Đồng ý.
         int dongY =
@@ -621,7 +621,7 @@ public final class ThanhToanPanel extends CoSoPanel {
             GioHang.BienLai bienLai = banHang.hoanTat(layPhuongThuc(), dongDuLieu, thuNgan);
             caLamViec.ghiNhanBanHang(layPhuongThuc(), bienLai.tong());
             banHang.xoa();
-            boDieuHuong.accept(MaManHinh.PRINT_INVOICE);
+            boDieuHuong.accept(MaManHinh.IN_HOA_DON);
         } catch (RuntimeException ngoaiLe) {
             dangXuLy = false;
             kiemTraDauVao();

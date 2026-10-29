@@ -3,7 +3,7 @@ package com.petstation.dao;
 import java.util.List;
 
 /** Thao tác dữ liệu cho CaThuNgan; service gọi qua hợp đồng này. */
-public interface CaThuNganDAO {
+public interface CaLamViecDAO {
     long layCocHotel(long ca, String phuongThuc);
 
     List<Object[]> layNguoiNhan(long taiKhoanHienTai);

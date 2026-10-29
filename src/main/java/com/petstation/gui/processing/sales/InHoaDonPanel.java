@@ -93,7 +93,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         // Tiếp theo.
         NutDinhDang btnTiepTheo =
                 new NutDinhDang("Lập hóa đơn mới (F2)", NutDinhDang.KieuNut.CHINH);
-        btnTiepTheo.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.POS));
+        btnTiepTheo.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         // Gợi ý.
         JLabel lblGoiY =
                 new JLabel(
@@ -121,7 +121,7 @@ public final class InHoaDonPanel extends CoSoPanel {
 
         // Đi.
         NutDinhDang btnDi = new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
-        btnDi.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.POS));
+        btnDi.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         pnlGoc.add(
                 layTrongTrangThai(
                         "Chưa có hóa đơn nào để in",
@@ -142,7 +142,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         cacThe.show(pnlGoc, "receipt");
         // Thay đổi.
         String thayDoi =
-                dongDuLieu.phuongThuc() == PhuongThuc.CASH
+                dongDuLieu.phuongThuc() == PhuongThuc.TIEN_MAT
                         ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.thayDoi())
                         : "";
         lblBieuNgu.setText(
@@ -227,10 +227,11 @@ public final class InHoaDonPanel extends CoSoPanel {
         // Phương thức.
         String phuongThuc =
                 switch (dongDuLieu.phuongThuc()) {
-                    case CASH -> "Tiền mặt";
-                    case TRANSFER -> "Chuyển khoản/QR";
-                    case CARD -> "Thẻ";
-                    case MIXED -> "Kết hợp";
+                    case TIEN_MAT -> "Tiền mặt";
+                    case CHUYEN_KHOAN -> "Chuyển khoản/QR";
+                    case THE_NGAN_HANG -> "Thẻ";
+                    case DIEM_TICH_LUY -> "Điểm tích lũy";
+                    case KET_HOP -> "Kết hợp";
                 };
         boGhepChuoi
                 .append(
@@ -311,10 +312,11 @@ public final class InHoaDonPanel extends CoSoPanel {
         themTong(html, "TỔNG THANH TOÁN", bienLai.tong());
         String phuongThuc =
                 switch (bienLai.phuongThuc()) {
-                    case CASH -> "Tiền mặt";
-                    case TRANSFER -> "Chuyển khoản / QR";
-                    case CARD -> "Thẻ";
-                    case MIXED -> "Kết hợp";
+                    case TIEN_MAT -> "Tiền mặt";
+                    case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+                    case THE_NGAN_HANG -> "Thẻ";
+                    case DIEM_TICH_LUY -> "Điểm tích lũy";
+                    case KET_HOP -> "Kết hợp";
                 };
         themTong(html, "Đã nhận — " + phuongThuc, bienLai.daNhan());
         for (var d : bienLai.cacKhoanThu())
@@ -326,10 +328,11 @@ public final class InHoaDonPanel extends CoSoPanel {
 
     private static String tenPhuongThuc(PhuongThuc pt) {
         return switch (pt) {
-            case CASH -> "Tiền mặt";
-            case TRANSFER -> "Chuyển khoản / QR";
-            case CARD -> "Thẻ";
-            case MIXED -> "Kết hợp";
+            case TIEN_MAT -> "Tiền mặt";
+            case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+            case THE_NGAN_HANG -> "Thẻ";
+                    case DIEM_TICH_LUY -> "Điểm tích lũy";
+            case KET_HOP -> "Kết hợp";
         };
     }
 

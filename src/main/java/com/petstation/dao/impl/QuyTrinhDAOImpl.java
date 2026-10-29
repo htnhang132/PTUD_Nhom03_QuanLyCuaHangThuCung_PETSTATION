@@ -13,8 +13,8 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
 
     public List<Object[]> laySpa(long id) {
         return truyVan(
-                "SELECT trang_thai,(SELECT COUNT(*) FROM chi_tiet_phieu_spa WHERE"
-                        + " phieu_spa_id=t.id) FROM phieu_tiep_nhan_spa t WHERE id=?",
+                "SELECT trang_thai, CASE WHEN (goi_id IS NOT NULL OR don_gia>0 OR tong_tien>0)"
+                        + " THEN 1 ELSE 0 END FROM phieu_tiep_nhan_spa t WHERE id=?",
                 id);
     }
 

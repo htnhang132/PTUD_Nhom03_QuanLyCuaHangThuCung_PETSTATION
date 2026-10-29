@@ -1,13 +1,13 @@
 package com.petstation.dao.impl;
 
-import com.petstation.dao.DoiTraDAO;
+import com.petstation.dao.PhieuDoiTraDAO;
 import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC đổi trả DAO. */
-public final class DoiTraDAOImpl implements DoiTraDAO {
-    public DoiTraDAOImpl() {}
+public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
+    public PhieuDoiTraDAOImpl() {}
 
     public int capNhatApDungDoiTra(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
@@ -18,7 +18,7 @@ public final class DoiTraDAOImpl implements DoiTraDAO {
         return ThaoTacSQL.laySo(
                 "SELECT COALESCE(SUM(c.so_luong),0) FROM chi_tiet_doi_tra c"
                         + " JOIN phieu_doi_tra p ON p.id=c.phieu_doi_tra_id WHERE"
-                        + " c.chi_tiet_don_hang_id=? AND p.trang_thai IN"
+                        + " c.chi_tiet_hoa_don_id=? AND p.trang_thai IN"
                         + " ('PENDING','COMPLETED')",
                 cacThamSo);
     }
@@ -28,17 +28,17 @@ public final class DoiTraDAOImpl implements DoiTraDAO {
                 "SELECT b.lo_hang_id,b.so_luong-COALESCE((SELECT"
                         + " SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN"
                         + " phieu_doi_tra p ON p.id=c.phieu_doi_tra_id WHERE"
-                        + " c.chi_tiet_don_hang_id=b.chi_tiet_don_hang_id AND"
+                        + " c.chi_tiet_hoa_don_id=b.id AND"
                         + " c.lo_hang_id=b.lo_hang_id AND p.trang_thai IN"
-                        + " ('PENDING','COMPLETED')),0) FROM phan_bo_lo_hang b"
-                        + " WHERE b.chi_tiet_don_hang_id=? ORDER BY b.id",
+                        + " ('PENDING','COMPLETED')),0) FROM chi_tiet_hoa_don b"
+                        + " WHERE b.id=? AND b.lo_hang_id IS NOT NULL ORDER BY b.id",
                 cacThamSo);
     }
 
     public int capNhatDoiTraMuc(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
                 "INSERT INTO"
-                    + " chi_tiet_doi_tra(phieu_doi_tra_id,chi_tiet_don_hang_id,lo_hang_id,so_luong,tien_hoan)"
+                    + " chi_tiet_doi_tra(phieu_doi_tra_id,chi_tiet_hoa_don_id,lo_hang_id,so_luong,tien_hoan)"
                     + " VALUES(?,?,?,?,?)",
                 cacThamSo);
     }

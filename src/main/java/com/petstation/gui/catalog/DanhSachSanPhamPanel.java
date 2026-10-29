@@ -1,7 +1,5 @@
 package com.petstation.gui.catalog;
 
-import static com.petstation.gui.components.TruongDanhMuc.*;
-
 import com.petstation.gui.components.QuanLyDanhMucPanel;
 import com.petstation.gui.components.QuanLyDanhMucPanel.CauHinh;
 import com.petstation.gui.components.QuanLyDanhMucPanel.Kieu;
@@ -17,13 +15,32 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.PRODUCTS,
+                        com.petstation.model.LoaiDanhMuc.SAN_PHAM,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
+    private static String taoBarcodeEan13(String maSp) {
+        String digits = maSp == null ? "" : maSp.replaceAll("\\D", "");
+        long num = 1L;
+        if (!digits.isEmpty()) {
+            try {
+                num = Long.parseLong(digits);
+            } catch (NumberFormatException ignored) {
+                num = Math.abs(maSp.hashCode() % 1000000000L);
+            }
+        }
+        String base12 = "893" + String.format(java.util.Locale.ROOT, "%09d", num % 1000000000L);
+        int sum = 0;
+        for (int i = 0; i < 12; i++) {
+            int d = base12.charAt(i) - '0';
+            sum += (i % 2 == 0) ? d : d * 3;
+        }
+        int checkDigit = (10 - (sum % 10)) % 10;
+        return base12 + checkDigit;
+    }
+
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục sản phẩm", "sản phẩm")
                         .themBoLoc("Nhóm hàng", d -> String.valueOf(d[2]))
@@ -42,30 +59,6 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                         .datTienTo("SP")
                         .datTruongDau(10)
                         .themThaoTacBoSung(
-                                "Đề xuất giá",
-                                dong -> {
-                                    javax.swing.JTextField txtGia =
-                                            new javax.swing.JTextField(String.valueOf(dong[4]));
-                                    javax.swing.JTextField txtLyDo = new javax.swing.JTextField();
-                                    if (javax.swing.JOptionPane.showConfirmDialog(
-                                                    null,
-                                                    new Object[] {
-                                                        "Giá đề xuất", txtGia, "Lý do", txtLyDo
-                                                    },
-                                                    "Đề xuất giá bán",
-                                                    javax.swing.JOptionPane.OK_CANCEL_OPTION)
-                                            != javax.swing.JOptionPane.OK_OPTION) return null;
-                                    var yc =
-                                            com.petstation.service.DeXuatGiaService.gui(
-                                                    String.valueOf(dong[0]),
-                                                    com.petstation.util.TienTe.doc(
-                                                            txtGia.getText()),
-                                                    txtLyDo.getText());
-                                    return "Đã gửi "
-                                            + yc.id
-                                            + "; giá hiện tại được giữ đến khi quản lý duyệt.";
-                                })
-                        .themThaoTacBoSung(
                                 "Tạo Barcode",
                                 dong -> {
                                     String ma = String.valueOf(dong[0]);
@@ -74,16 +67,11 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                     if (!barcodeHienTai.isBlank()) {
                                         return "Sản phẩm đã có mã vạch: " + barcodeHienTai;
                                     }
-                                    String maMoi =
-                                            "893"
-                                                    + String.format(
-                                                            java.util.Locale.ROOT,
-                                                            "%09d",
-                                                            Math.abs(ma.hashCode() % 1000000000L));
+                                    String maMoi = taoBarcodeEan13(ma);
                                     long spId = DanhMucService.layId("san_pham", "ma_san_pham", ma);
                                     DanhMucService.capNhatBarcode(spId, maMoi);
                                     if (dong.length > 17) dong[17] = maMoi;
-                                    return "Đã cấp mã vạch mới: " + maMoi;
+                                    return "Đã cấp mã vạch EAN-13 mới: " + maMoi;
                                 })
                         .datBoKiemTra(
                                 dong -> {
@@ -91,12 +79,20 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                             com.petstation.util.TienTe.doc(String.valueOf(dong[4]));
                                     long giaNhap =
                                             com.petstation.util.TienTe.doc(String.valueOf(dong[5]));
+                                    if (giaBan <= 0) {
+                                        return "Giá bán phải lớn hơn 0.";
+                                    }
                                     if (giaNhap > 0 && giaBan < giaNhap) {
                                         return "Giá bán ("
                                                 + com.petstation.util.TienTe.dinhDang(giaBan)
                                                 + ") không được thấp hơn giá nhập gần nhất ("
                                                 + com.petstation.util.TienTe.dinhDang(giaNhap)
                                                 + ").";
+                                    }
+                                    String barcode =
+                                            dong.length > 17 ? String.valueOf(dong[17]).trim() : "";
+                                    if (!barcode.isBlank() && !barcode.matches("\\d{13}")) {
+                                        return "Mã vạch (Barcode) phải gồm đúng 13 chữ số chuẩn EAN-13.";
                                     }
                                     return null;
                                 })
@@ -120,7 +116,7 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
     private static TruongDuLieu taoTruongGia() {
         var gia = TruongDuLieu.tao("Giá bán", Kieu.TIEN_TE).batBuoc().datMacDinh("0");
         if (com.petstation.service.PhienDangNhapService.layPhien().docVaiTro()
-                != com.petstation.model.VaiTro.STORE_MANAGER) gia.chiDoc();
+                != com.petstation.model.VaiTro.QUAN_LY_CUA_HANG) gia.chiDoc();
         return gia;
     }
 
@@ -130,7 +126,14 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Tên sản phẩm", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Nhóm hàng", Kieu.HOP_CHON)
                         .batBuoc()
-                        .datLuaChon("Thức ăn", "Phụ kiện", "Grooming", "Vệ sinh", "Thuốc"),
+                        .datLuaChon(
+                                "Thức ăn",
+                                "Phụ kiện",
+                                "Chuồng - Nệm",
+                                "Vệ sinh",
+                                "Sức khỏe",
+                                "Grooming",
+                                "Thuốc"),
                 TruongDuLieu.tao("Đơn vị tính", Kieu.VAN_BAN).batBuoc(),
                 taoTruongGia(),
                 TruongDuLieu.tao("Giá nhập gần nhất", Kieu.TIEN_TE).an(),

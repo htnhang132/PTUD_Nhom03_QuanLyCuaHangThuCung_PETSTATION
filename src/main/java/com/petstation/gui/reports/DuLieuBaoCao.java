@@ -58,12 +58,59 @@ public final class DuLieuBaoCao {
                     double[] cacGiaTri = new double[cacDong.size()];
                     // Tổng.
                     double tong = 0;
+                    long tongDon = 0;
+                    double tongLoiNhuanGop = 0;
+                    boolean coLoiNhuanGop =
+                            cacCot.length >= 7 && "Lợi nhuận gộp".equals(cacCot[6]);
+                    int cotSoDon = -1;
+                    for (int c = 0; c < cacCot.length; c++) {
+                        if ("Số đơn".equals(cacCot[c]) || "Số hóa đơn".equals(cacCot[c])) {
+                            cotSoDon = c;
+                            break;
+                        }
+                    }
                     for (int chiSo2 = 0; chiSo2 < cacDong.size(); chiSo2++) {
-                        cacNhan[chiSo2] = String.valueOf(cacDong.get(chiSo2)[nhan]);
-                        Object giaTri = cacDong.get(chiSo2)[chiSo];
+                        Object[] dong = cacDong.get(chiSo2);
+                        cacNhan[chiSo2] = String.valueOf(dong[nhan]);
+                        Object giaTri = dong[chiSo];
                         cacGiaTri[chiSo2] = giaTri == null ? 0 : ((Number) giaTri).doubleValue();
                         tong += cacGiaTri[chiSo2];
+                        if (cotSoDon >= 0 && dong[cotSoDon] instanceof Number nDon) {
+                            tongDon += nDon.longValue();
+                        }
+                        if (coLoiNhuanGop && dong[6] instanceof Number nLng) {
+                            tongLoiNhuanGop += nLng.doubleValue();
+                        }
                     }
+                    if (cotSoDon < 0) {
+                        tongDon = cacDong.size();
+                    }
+                    if (coLoiNhuanGop) {
+                        long aov = tongDon > 0 ? Math.round(tong / tongDon) : 0;
+                        double tySuat = tong > 0 ? (tongLoiNhuanGop * 100.0 / tong) : 0;
+                        return new DuLieu(
+                                cacNhan,
+                                cacGiaTri,
+                                tienTe,
+                                "",
+                                cacCot,
+                                cacDong.toArray(Object[][]::new),
+                                new String[] {
+                                    "Tổng số đơn",
+                                    "Doanh thu thuần",
+                                    "Giá trị TB/đơn (AOV)",
+                                    "Lợi nhuận gộp"
+                                },
+                                new String[] {
+                                    tongDon + " đơn",
+                                    TienTe.dinhDang(Math.round(tong)),
+                                    TienTe.dinhDang(aov),
+                                    TienTe.dinhDang(Math.round(tongLoiNhuanGop))
+                                            + String.format(
+                                                    java.util.Locale.ROOT, " (%.1f%%)", tySuat)
+                                });
+                    }
+                    long aov = tongDon > 0 ? Math.round(tong / tongDon) : 0;
                     return new DuLieu(
                             cacNhan,
                             cacGiaTri,
@@ -71,17 +118,21 @@ public final class DuLieuBaoCao {
                             "",
                             cacCot,
                             cacDong.toArray(Object[][]::new),
-                            new String[] {"Số bản ghi", "Tổng", "Kỳ báo cáo", "Đến ngày"},
                             new String[] {
-                                "" + cacDong.size(),
+                                cotSoDon >= 0 ? "Tổng số đơn" : "Số bản ghi",
+                                "Tổng giá trị",
+                                tienTe ? "Giá trị TB (AOV)" : "Trung bình",
+                                "Kỳ báo cáo"
+                            },
+                            new String[] {
+                                "" + (cotSoDon >= 0 ? tongDon : cacDong.size()),
                                 tienTe
                                         ? TienTe.dinhDang(Math.round(tong))
                                         : String.format(java.util.Locale.ROOT, "%.0f", tong),
-                                soNgay.demSoNgay() + " ngày",
-                                soNgay.denNgay()
-                                        .format(
-                                                java.time.format.DateTimeFormatter.ofPattern(
-                                                        "dd/MM/yyyy"))
+                                tienTe
+                                        ? TienTe.dinhDang(aov)
+                                        : String.format(java.util.Locale.ROOT, "%.1f", (double) aov),
+                                soNgay.demSoNgay() + " ngày"
                             });
                 });
     }

@@ -23,14 +23,14 @@ public final class TiemPhongService {
     }
 
     public static List<Object[]> layLichSu(String ma) {
-        PhienDangNhapService.yeuCau(Quyen.PET_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_THU_CUNG);
         return thucHienGiaoDich(
                 c -> tiemPhongDAO.layLichSu(((Number) timThuCung(ma)[0]).longValue()));
     }
 
     public static void luu(
             String ma, long id, String ten, LocalDate ngay, LocalDate han, String ghiChu) {
-        PhienDangNhapService.yeuCau(Quyen.PET_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_THU_CUNG);
         if (ten == null
                 || ten.isBlank()
                 || ten.length() > 120
@@ -53,7 +53,7 @@ public final class TiemPhongService {
     }
 
     public static void xoa(String ma, long id) {
-        PhienDangNhapService.yeuCau(Quyen.PET_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_THU_CUNG);
         thucHienGiaoDich(
                 c -> {
                     tiemPhongDAO.xoa(id, ((Number) timThuCung(ma)[0]).longValue());
@@ -64,7 +64,7 @@ public final class TiemPhongService {
 
     /** Gọi trong transaction tiếp nhận, khóa hồ sơ cùng lúc với việc kiểm tra. */
     public static void kiemTraNhanSpa(String ma) {
-        PhienDangNhapService.yeuCau(Quyen.SPA_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
         Object[] thu = timThuCung(ma);
         LocalDate homNay = LocalDate.now();
         if (thu[1] == null || ((java.sql.Date) thu[1]).toLocalDate().plusMonths(2).isAfter(homNay))

@@ -17,7 +17,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho Hotel vùng hiển thị. */
 public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
     public LuuTruHotelPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.HOTEL_STAY, banHang, dieuHuong);
+        super(LoaiNghiepVu.HOP_DONG_LUU_TRU, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Đặt phòng", this::datPhong);
         themNut(pnlCacThaoTac, "Nhận phòng", () -> LuuTruService.kiemTraVao(layDongChon()));

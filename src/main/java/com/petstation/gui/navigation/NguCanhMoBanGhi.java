@@ -29,7 +29,7 @@ public final class NguCanhMoBanGhi {
         if (r == null
                 || !(root instanceof JComponent view)
                 || view.getClientProperty("maManHinh") != r.manHinh()
-                || r.manHinh() == MaManHinh.HOTEL_BOOKING) return;
+                || r.manHinh() == MaManHinh.DAT_PHONG_LUU_TRU) return;
         if (!chon(root, r)) {
             xoaLoc(root, r);
             if (chon(root, r)) xoa();

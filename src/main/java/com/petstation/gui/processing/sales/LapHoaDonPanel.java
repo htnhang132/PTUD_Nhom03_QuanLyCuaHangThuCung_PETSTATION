@@ -696,7 +696,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 
     private void quyetToan() {
         capNhatCacTong();
-        boDieuHuong.accept(MaManHinh.PAYMENT);
+        boDieuHuong.accept(MaManHinh.THANH_TOAN);
     }
 
     private void treoGioHangHienTai() {
@@ -715,7 +715,7 @@ public class LapHoaDonPanel extends CoSoPanel {
     }
 
     private void hienThiTreoCacGioHang() {
-        boDieuHuong.accept(MaManHinh.PENDING_INVOICES);
+        boDieuHuong.accept(MaManHinh.HOA_DON_CHO);
     }
 
     @Override

@@ -10,8 +10,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public final class PhieuChamSocDialog {
-    private PhieuChamSocDialog() {}
+public final class NhatKyChamSocDialog {
+    private NhatKyChamSocDialog() {}
 
     public static void mo(Component cha, String loai, long id) {
         JDialog dialog =

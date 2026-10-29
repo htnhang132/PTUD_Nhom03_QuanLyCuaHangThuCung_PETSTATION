@@ -99,7 +99,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         NutDinhDang btnLuu = new NutDinhDang("Lưu quy tắc", NutDinhDang.KieuNut.THANH_CONG);
         btnLuu.setEnabled(
                 com.petstation.service.PhienDangNhapService.layPhien()
-                        .kiemTraCo(com.petstation.model.Quyen.ACCOUNT_MANAGE));
+                        .kiemTraCo(com.petstation.model.Quyen.QUAN_LY_TAI_KHOAN));
         btnLuu.addActionListener(
                 suKien -> {
                     try {

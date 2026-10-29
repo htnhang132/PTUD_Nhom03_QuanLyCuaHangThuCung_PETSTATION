@@ -17,7 +17,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.CUSTOMERS,
+                        com.petstation.model.LoaiDanhMuc.KHACH_HANG,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

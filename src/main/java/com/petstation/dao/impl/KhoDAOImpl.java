@@ -2,6 +2,7 @@ package com.petstation.dao.impl;
 
 import com.petstation.dao.KhoDAO;
 import com.petstation.database.ThaoTacSQL;
+import com.petstation.util.DuLieu;
 
 import java.util.List;
 
@@ -11,7 +12,10 @@ public final class KhoDAOImpl implements KhoDAO {
 
     public int capNhatNhapKho(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+? WHERE id=?", cacThamSo);
+                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+?, so_luong_nhap=so_luong_nhap+? WHERE id=?",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1]);
     }
 
     public int capNhatGiaNhapGanNhat(Object... cacThamSo) {
@@ -77,9 +81,14 @@ public final class KhoDAOImpl implements KhoDAO {
 
     public int themLoHang(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "INSERT INTO lo_hang(san_pham_id,so_lo,han_su_dung,so_luong_ton)"
-                        + " VALUES(?,?,?,?)",
-                cacThamSo);
+                "INSERT INTO lo_hang(ma_lo,san_pham_id,so_lo,ngay_nhap,han_su_dung,so_luong_nhap,so_luong_ton)"
+                        + " VALUES(?,?,?,CAST(GETDATE() AS DATE),?,?,?)",
+                DuLieu.taoMa("LO"),
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2],
+                cacThamSo[3],
+                cacThamSo[3]);
     }
 
     public List<Object[]> timXuatHuy(Object... cacThamSo) {
@@ -174,9 +183,9 @@ public final class KhoDAOImpl implements KhoDAO {
     public List<Object[]> layDanhSachLoHangKiemKe(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT l.id, p.ma_san_pham, p.ten, COALESCE(p.barcode, ''), l.so_lo,"
-                    + " l.han_su_dung, l.so_luong_ton, p.loai_san_pham FROM lo_hang l JOIN san_pham"
-                    + " p ON p.id = l.san_pham_id WHERE l.trang_thai = 'ACTIVE' AND p.trang_thai ="
-                    + " 'ACTIVE' ORDER BY p.ma_san_pham, l.han_su_dung",
+                    + " l.han_su_dung, l.so_luong_ton, p.nhom_hang FROM lo_hang l JOIN san_pham"
+                    + " p ON p.id = l.san_pham_id WHERE l.trang_thai = 'AVAILABLE' AND p.trang_thai ="
+                    + " 'SELLING' ORDER BY p.ma_san_pham, l.han_su_dung",
                 cacThamSo);
     }
 

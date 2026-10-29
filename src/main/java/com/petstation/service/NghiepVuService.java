@@ -28,6 +28,6 @@ public final class NghiepVuService {
 
     public static List<Object[]> layCacDong(LoaiNghiepVu kieu) {
         return nghiepVuDAO.layCacDong(
-                kieu, kieu == LoaiNghiepVu.PENDING ? PhienDangNhapService.layIdTaiKhoan() : 0);
+                kieu, kieu == LoaiNghiepVu.GIO_HANG_TREO ? PhienDangNhapService.layIdTaiKhoan() : 0);
     }
 }

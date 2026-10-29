@@ -24,7 +24,7 @@ public final class KhoService {
             int soLuong,
             long giaNhap,
             long daTra) {
-        yeuCau(Quyen.INVENTORY_RECEIVE);
+        yeuCau(Quyen.NHAP_KHO);
         kiemTraDuong(soLuong);
         kiemTraDuong(giaNhap);
         if (loHang.isBlank() || daTra < 0 || daTra > soLuong * giaNhap)
@@ -70,7 +70,7 @@ public final class KhoService {
     }
 
     public static long ghiHuy(long loHang, int soLuong, String lyDo) {
-        yeuCau(Quyen.INVENTORY_ISSUE);
+        yeuCau(Quyen.XUAT_HUY_KHO);
         kiemTraDuong(soLuong);
         if (lyDo.isBlank()) throw new IllegalArgumentException("Cần lý do xuất kho.");
         return thucHienGiaoDich(
@@ -86,7 +86,7 @@ public final class KhoService {
                     khoDAO.capNhatXuatHuy(xuatKho, loHang, soLuong, giaNhap);
                     if (giaNhap >= CaiDatService.ghiGioiHanHuyPheDuyet())
                         PheDuyetService.guiThaoTac(
-                                PheDuyetService.Loai.WRITE_OFF,
+                                PheDuyetService.Loai.XUAT_HUY,
                                 lyDo,
                                 "Tồn " + cacLoHang.get(0)[0],
                                 "Xuất " + soLuong,
@@ -120,9 +120,10 @@ public final class KhoService {
             String lyDo) {}
 
     public static List<Object[]> layDanhSachLoHangKiemKe(String loaiSanPham, boolean chiSapHetHan) {
-        yeuCau(Quyen.INVENTORY_COUNT);
+        yeuCau(Quyen.KIEM_KE_KHO);
         List<Object[]> tatCa = khoDAO.layDanhSachLoHangKiemKe();
-        LocalDate mocHetHan = LocalDate.now().plusDays(30);
+        int soNgayCanhBao = CaiDatService.layHanSuDungCanhBaoSoNgay();
+        LocalDate mocHetHan = LocalDate.now().plusDays(soNgayCanhBao);
         return tatCa.stream()
                 .filter(
                         r -> {
@@ -144,12 +145,12 @@ public final class KhoService {
     }
 
     public static List<Object[]> layChiTietKiemKe(long bienBanId) {
-        yeuCau(Quyen.INVENTORY_COUNT);
+        yeuCau(Quyen.KIEM_KE_KHO);
         return khoDAO.layChiTietKiemKe(bienBanId);
     }
 
     public static long lapBienBanKiemKe(String kyKiemKe, List<DongKiemKe> danhSachDong) {
-        yeuCau(Quyen.INVENTORY_COUNT);
+        yeuCau(Quyen.KIEM_KE_KHO);
         if (danhSachDong == null || danhSachDong.isEmpty()) {
             throw new IllegalArgumentException("Danh sách mặt hàng kiểm kê không được rỗng.");
         }
@@ -200,16 +201,13 @@ public final class KhoService {
 
                     if (coChenhLechFinal) {
                         PheDuyetService.guiThaoTac(
-                                PheDuyetService.Loai.STOCKTAKE,
+                                PheDuyetService.Loai.KIEM_KE,
                                 "Kiểm kê định kỳ: có " + demChenhLechFinal + " mặt hàng chênh lệch",
                                 "Kỳ: " + kyKiemKeFinal,
                                 "Số BB: " + soBienBan,
                                 "STOCKTAKE",
                                 bienBanId,
                                 "");
-                    } else {
-                        // Nếu tất cả khớp số lượng, tự động áp dụng để đánh dấu hoàn tất
-                        apDungKiemKe(bienBanId);
                     }
 
                     NhatKyHeThongService.ghiNhatKy(
@@ -225,7 +223,7 @@ public final class KhoService {
     }
 
     public static void duyetVaCanBangKho(long bienBanId) {
-        yeuCau(Quyen.INVENTORY_COUNT);
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
         thucHienGiaoDich(
                 ketNoi -> {
                     apDungKiemKe(bienBanId);
@@ -236,7 +234,7 @@ public final class KhoService {
     }
 
     public static long kiemKe(long loHang, int thucTe, String lyDo) {
-        yeuCau(Quyen.INVENTORY_COUNT);
+        yeuCau(Quyen.KIEM_KE_KHO);
         if (thucTe < 0) throw new IllegalArgumentException("Tồn thực tế không được âm.");
         return thucHienGiaoDich(
                 ketNoi -> {
@@ -248,14 +246,14 @@ public final class KhoService {
                         throw new IllegalArgumentException("Cần lý do chênh lệch.");
                     long ketQua =
                             khoDAO.themKiemKe(
-                                    taoMa("KK"),
+                                     taoMa("KK"),
                                     layIdTaiKhoan(),
                                     LocalDate.now().toString(),
                                     datPhong == thucTe ? "APPROVED" : "PENDING");
                     khoDAO.capNhatKiemKe(ketQua, loHang, datPhong, thucTe, lyDo);
                     if (datPhong != thucTe)
                         PheDuyetService.guiThaoTac(
-                                PheDuyetService.Loai.STOCKTAKE,
+                                PheDuyetService.Loai.KIEM_KE,
                                 lyDo,
                                 "Tồn sổ " + datPhong,
                                 "Tồn thực " + thucTe,
@@ -278,7 +276,7 @@ public final class KhoService {
     }
 
     public static void thanhToanNhaCungCap(long id, long daTra) {
-        yeuCau(Quyen.INVENTORY_RECEIVE);
+        yeuCau(Quyen.NHAP_KHO);
         if (daTra <= 0) throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
         thucHienGiaoDich(
                 ketNoi -> {
@@ -290,7 +288,7 @@ public final class KhoService {
     }
 
     public static List<Object[]> layNhapKhoChiTiet(long nhapKho) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.INVENTORY_RECEIVE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.NHAP_KHO);
         return khoDAO.layNhapKhoChiTiet(nhapKho);
     }
 }

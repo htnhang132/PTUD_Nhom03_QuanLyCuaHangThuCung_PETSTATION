@@ -5,46 +5,31 @@ import java.time.LocalDateTime;
 
 /** Biểu diễn dữ liệu ánh xạ với bảng san_pham trong SQL Server. */
 public class SanPham {
-    /** Id. */
     private Long id;
-
-    /** Mã sản phẩm. */
     private String maSanPham;
-
-    /** Tên sản phẩm. */
+    private String barcode;
     private String tenSanPham;
-
-    /** Id nhóm hàng. */
     private Long idNhomHang;
-
-    /** Đơn vị. */
     private String donVi;
-
-    /** Giá bán. */
     private BigDecimal giaBan;
-
-    /** URL ảnh. */
+    private BigDecimal giaVon;
+    private Integer nguongTonThap;
+    private Boolean theoDoiHsd;
     private String urlAnh;
-
-    /** Mô tả. */
+    private String thuongHieu;
+    private String quyCach;
+    private String doiTuongSuDung;
     private String moTa;
-
-    /** Cần đơn thuốc. */
     private Boolean canDonThuoc;
-
-    /** Đang hoạt động. */
     private Boolean dangHoatDong;
-
-    /** Thời điểm tạo. */
     private LocalDateTime thoiDiemTao;
-
-    /** Phiên bản bản ghi. */
     private byte[] phienBanBanGhi;
 
-    // Hàm khởi tạo
     public SanPham() {
         this.canDonThuoc = false;
         this.dangHoatDong = true;
+        this.theoDoiHsd = false;
+        this.nguongTonThap = 5;
     }
 
     public SanPham(Long id, String maSanPham, String tenSanPham, BigDecimal giaBan) {
@@ -55,205 +40,158 @@ public class SanPham {
         this.giaBan = giaBan;
     }
 
-    // Chuẩn JavaBeans (get/set)
-    public Long getId() {
+    public Long layId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void datId(Long id) {
         this.id = id;
     }
 
-    public String getMaSanPham() {
+    public String layMaSanPham() {
         return maSanPham;
     }
 
-    public void setMaSanPham(String maSanPham) {
+    public void datMaSanPham(String maSanPham) {
         this.maSanPham = maSanPham;
     }
 
-    public String getTenSanPham() {
-        return tenSanPham;
+    public String layBarcode() {
+        return barcode;
     }
 
-    public void setTenSanPham(String tenSanPham) {
-        this.tenSanPham = tenSanPham;
-    }
-
-    public Long getIdNhomHang() {
-        return idNhomHang;
-    }
-
-    public void setIdNhomHang(Long idNhomHang) {
-        this.idNhomHang = idNhomHang;
-    }
-
-    public String getDonVi() {
-        return donVi;
-    }
-
-    public void setDonVi(String donVi) {
-        this.donVi = donVi;
-    }
-
-    public BigDecimal getGiaBan() {
-        return giaBan;
-    }
-
-    public void setGiaBan(BigDecimal giaBan) {
-        this.giaBan = giaBan;
-    }
-
-    public String getUrlAnh() {
-        return urlAnh;
-    }
-
-    public void setUrlAnh(String urlAnh) {
-        this.urlAnh = urlAnh;
-    }
-
-    public String getMoTa() {
-        return moTa;
-    }
-
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
-    }
-
-    public Boolean isCanDonThuoc() {
-        return canDonThuoc;
-    }
-
-    public void setCanDonThuoc(Boolean canDonThuoc) {
-        this.canDonThuoc = canDonThuoc;
-    }
-
-    public Boolean isDangHoatDong() {
-        return dangHoatDong;
-    }
-
-    public void setDangHoatDong(Boolean dangHoatDong) {
-        this.dangHoatDong = dangHoatDong;
-    }
-
-    public LocalDateTime getThoiDiemTao() {
-        return thoiDiemTao;
-    }
-
-    public void setThoiDiemTao(LocalDateTime thoiDiemTao) {
-        this.thoiDiemTao = thoiDiemTao;
-    }
-
-    public byte[] getPhienBanBanGhi() {
-        return phienBanBanGhi;
-    }
-
-    public void setPhienBanBanGhi(byte[] phienBanBanGhi) {
-        this.phienBanBanGhi = phienBanBanGhi;
-    }
-
-    // Truy xuất và cập nhật thuộc tính kiểu tiếng Việt (Tương thích mã nguồn hiện có)
-    public Long layId() {
-        return getId();
-    }
-
-    public void datId(Long id) {
-        setId(id);
-    }
-
-    public String layMaSanPham() {
-        return getMaSanPham();
-    }
-
-    public void datMaSanPham(String maSanPham) {
-        setMaSanPham(maSanPham);
+    public void datBarcode(String barcode) {
+        this.barcode = barcode;
     }
 
     public String layTenSanPham() {
-        return getTenSanPham();
+        return tenSanPham;
     }
 
     public void datTenSanPham(String tenSanPham) {
-        setTenSanPham(tenSanPham);
+        this.tenSanPham = tenSanPham;
     }
 
     public Long layIdNhomHang() {
-        return getIdNhomHang();
+        return idNhomHang;
     }
 
     public void datIdNhomHang(Long idNhomHang) {
-        setIdNhomHang(idNhomHang);
+        this.idNhomHang = idNhomHang;
     }
 
     public String layDonVi() {
-        return getDonVi();
+        return donVi;
     }
 
     public void datDonVi(String donVi) {
-        setDonVi(donVi);
+        this.donVi = donVi;
     }
 
     public BigDecimal layGiaBan() {
-        return getGiaBan();
+        return giaBan;
     }
 
     public void datGiaBan(BigDecimal giaBan) {
-        setGiaBan(giaBan);
+        this.giaBan = giaBan;
+    }
+
+    public BigDecimal layGiaVon() {
+        return giaVon;
+    }
+
+    public void datGiaVon(BigDecimal giaVon) {
+        this.giaVon = giaVon;
+    }
+
+    public Integer layNguongTonThap() {
+        return nguongTonThap;
+    }
+
+    public void datNguongTonThap(Integer nguongTonThap) {
+        this.nguongTonThap = nguongTonThap;
+    }
+
+    public Boolean layTheoDoiHsd() {
+        return theoDoiHsd;
+    }
+
+    public void datTheoDoiHsd(Boolean theoDoiHsd) {
+        this.theoDoiHsd = theoDoiHsd;
     }
 
     public String layURLAnh() {
-        return getUrlAnh();
+        return urlAnh;
     }
 
     public void datURLAnh(String urlAnh) {
-        setUrlAnh(urlAnh);
+        this.urlAnh = urlAnh;
+    }
+
+    public String layThuongHieu() {
+        return thuongHieu;
+    }
+
+    public void datThuongHieu(String thuongHieu) {
+        this.thuongHieu = thuongHieu;
+    }
+
+    public String layQuyCach() {
+        return quyCach;
+    }
+
+    public void datQuyCach(String quyCach) {
+        this.quyCach = quyCach;
+    }
+
+    public String layDoiTuongSuDung() {
+        return doiTuongSuDung;
+    }
+
+    public void datDoiTuongSuDung(String doiTuongSuDung) {
+        this.doiTuongSuDung = doiTuongSuDung;
     }
 
     public String layMoTa() {
-        return getMoTa();
+        return moTa;
     }
 
     public void datMoTa(String moTa) {
-        setMoTa(moTa);
+        this.moTa = moTa;
     }
 
     public Boolean layCanDonThuoc() {
-        return isCanDonThuoc();
+        return canDonThuoc;
     }
 
     public void datCanDonThuoc(Boolean canDonThuoc) {
-        setCanDonThuoc(canDonThuoc);
+        this.canDonThuoc = canDonThuoc;
     }
 
     public Boolean layDangHoatDong() {
-        return isDangHoatDong();
+        return dangHoatDong;
     }
 
     public void datDangHoatDong(Boolean dangHoatDong) {
-        setDangHoatDong(dangHoatDong);
+        this.dangHoatDong = dangHoatDong;
     }
 
     public LocalDateTime layThoiDiemTao() {
-        return getThoiDiemTao();
+        return thoiDiemTao;
     }
 
     public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
-        setThoiDiemTao(thoiDiemTao);
+        this.thoiDiemTao = thoiDiemTao;
     }
 
     public byte[] layPhienBanBanGhi() {
-        return getPhienBanBanGhi();
+        return phienBanBanGhi;
     }
 
     public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
-        setPhienBanBanGhi(phienBanBanGhi);
+        this.phienBanBanGhi = phienBanBanGhi;
     }
 
-    /**
-     * Biểu diễn đối tượng dưới dạng chuỗi.
-     *
-     * @return chuỗi mô tả đối tượng
-     */
     @Override
     public String toString() {
         return "SanPham{"

@@ -55,7 +55,7 @@ public final class ThanhTieuDe extends JPanel {
         btnThuongHieu.setFocusPainted(false);
         btnThuongHieu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnThuongHieu.setToolTipText("Về màn hình chính (Alt+Home)");
-        btnThuongHieu.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.DASHBOARD));
+        btnThuongHieu.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.TONG_QUAN));
         add(btnThuongHieu, BorderLayout.CENTER);
 
         // Các control.

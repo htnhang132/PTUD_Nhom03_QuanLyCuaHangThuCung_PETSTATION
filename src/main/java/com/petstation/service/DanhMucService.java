@@ -56,43 +56,43 @@ public final class DanhMucService {
     }
 
     public static CacDong layKhachHang() {
-        return new CacDong(LoaiDanhMuc.CUSTOMERS);
+        return new CacDong(LoaiDanhMuc.KHACH_HANG);
     }
 
     public static CacDong layThuCung() {
-        return new CacDong(LoaiDanhMuc.PETS);
+        return new CacDong(LoaiDanhMuc.THU_CUNG);
     }
 
     public static CacDong layNhanVien() {
-        return new CacDong(LoaiDanhMuc.STAFF);
+        return new CacDong(LoaiDanhMuc.NHAN_VIEN);
     }
 
     public static CacDong layTaiKhoan() {
-        return new CacDong(LoaiDanhMuc.ACCOUNTS);
+        return new CacDong(LoaiDanhMuc.TAI_KHOAN);
     }
 
     public static CacDong laySanPham() {
-        return new CacDong(LoaiDanhMuc.PRODUCTS);
+        return new CacDong(LoaiDanhMuc.SAN_PHAM);
     }
 
     public static CacDong layNhaCungCap() {
-        return new CacDong(LoaiDanhMuc.SUPPLIERS);
+        return new CacDong(LoaiDanhMuc.NHA_CUNG_CAP);
     }
 
     public static CacDong layKhuyenMai() {
-        return new CacDong(LoaiDanhMuc.PROMOTIONS);
+        return new CacDong(LoaiDanhMuc.KHUYEN_MAI);
     }
 
     public static CacDong layVoucher() {
-        return new CacDong(LoaiDanhMuc.VOUCHERS);
+        return new CacDong(LoaiDanhMuc.VOUCHER);
     }
 
     public static CacDong layDichVuSpa() {
-        return new CacDong(LoaiDanhMuc.SPA);
+        return new CacDong(LoaiDanhMuc.DICH_VU_SPA);
     }
 
     public static CacDong layPhong() {
-        return new CacDong(LoaiDanhMuc.ROOMS);
+        return new CacDong(LoaiDanhMuc.PHONG_LUU_TRU);
     }
 
     public static List<String> layLuaChonKhachHang() {
@@ -123,21 +123,21 @@ public final class DanhMucService {
         // Quyền.
         Quyen quyen =
                 switch (danhMuc.loai) {
-                    case CUSTOMERS, VOUCHERS -> Quyen.CUSTOMER_MANAGE;
-                    case PETS -> Quyen.PET_MANAGE;
-                    case STAFF, ACCOUNTS -> Quyen.ACCOUNT_MANAGE;
-                    case PRODUCTS -> Quyen.PRODUCT_MANAGE;
-                    case SUPPLIERS -> Quyen.SUPPLIER_MANAGE;
-                    case PROMOTIONS -> Quyen.PROMOTION_MANAGE;
-                    case SPA -> Quyen.SPA_MANAGE;
-                    case ROOMS -> Quyen.HOTEL_MANAGE;
+                    case KHACH_HANG, VOUCHER -> Quyen.QUAN_LY_KHACH_HANG;
+                    case THU_CUNG -> Quyen.QUAN_LY_THU_CUNG;
+                    case NHAN_VIEN, TAI_KHOAN -> Quyen.QUAN_LY_TAI_KHOAN;
+                    case SAN_PHAM -> Quyen.QUAN_LY_SAN_PHAM;
+                    case NHA_CUNG_CAP -> Quyen.QUAN_LY_NHA_CUNG_CAP;
+                    case KHUYEN_MAI -> Quyen.QUAN_LY_KHUYEN_MAI;
+                    case DICH_VU_SPA -> Quyen.QUAN_LY_SPA;
+                    case PHONG_LUU_TRU -> Quyen.QUAN_LY_LUU_TRU;
                 };
         yeuCau(quyen);
 
         thucHienGiaoDich(
                 ketNoi -> {
-                    if (danhMuc.loai == LoaiDanhMuc.VOUCHERS) {
-                        yeuCau(Quyen.PROMOTION_MANAGE);
+                    if (danhMuc.loai == LoaiDanhMuc.VOUCHER) {
+                        yeuCau(Quyen.QUAN_LY_KHUYEN_MAI);
                         String ma = String.valueOf(truoc == null ? giaTri[0] : truoc[0]);
                         var rangBuoc = tichDiemDAO.layRangBuocVoucher(ma);
                         if (!rangBuoc.isEmpty() && rangBuoc.get(0)[1] != null)
@@ -158,7 +158,7 @@ public final class DanhMucService {
                                     "Voucher đã dùng chỉ được tra cứu, không sửa hoặc phát hành"
                                             + " lại.");
                     }
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS && giaTri.length >= 17) {
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM && giaTri.length >= 17) {
                         String anh = String.valueOf(giaTri[10]);
                         if (!anh.isBlank()
                                 && !com.petstation.util.TaiAnhSanPham.kiemTraDuongDan(anh))
@@ -171,12 +171,12 @@ public final class DanhMucService {
                                 throw new IllegalArgumentException(
                                         "Thông tin chi tiết sản phẩm quá dài.");
                     }
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
-                            && layPhien().docVaiTro() == com.petstation.model.VaiTro.STORE_MANAGER)
-                        yeuCau(Quyen.PRICE_APPROVE);
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM
+                            && layPhien().docVaiTro() == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG)
+                        yeuCau(Quyen.DUYET_GIA);
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM
                             && layPhien().docVaiTro()
-                                    != com.petstation.model.VaiTro.STORE_MANAGER) {
+                                    != com.petstation.model.VaiTro.QUAN_LY_CUA_HANG) {
                         var sp = deXuatGiaDAO.timSanPham(String.valueOf(giaTri[0]));
                         long giaCu = sp.isEmpty() ? 0 : ((Number) sp.get(0)[1]).longValue();
                         if (com.petstation.util.TienTe.doc(String.valueOf(giaTri[4])) != giaCu)
@@ -195,7 +195,7 @@ public final class DanhMucService {
                             truoc == null ? "Thêm" : "Sửa", danhMuc.loai + " " + giaTri[0]);
                     return null;
                 });
-        if (danhMuc.loai == LoaiDanhMuc.PRODUCTS)
+        if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM)
             for (Runnable boLangNghe : List.copyOf(GIA_CAC_BO_LANG_NGHE)) boLangNghe.run();
     }
 
@@ -208,17 +208,17 @@ public final class DanhMucService {
     }
 
     public static int khoaCacTaiKhoanCua(String maNhanVien) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         return danhMucDAO.khoaCacTaiKhoanCua(maNhanVien);
     }
 
     public static void datLaiMatKhau(String tenDangNhap, String matKhau) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         danhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
     }
 
     public static void capNhatBarcode(long sanPhamId, String barcode) {
-        yeuCau(Quyen.PRODUCT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SAN_PHAM);
         danhMucDAO.capNhatBarcode(sanPhamId, barcode);
     }
 
@@ -227,18 +227,18 @@ public final class DanhMucService {
     }
 
     public static void ngungKinhDoanhSanPham(long sanPhamId) {
-        yeuCau(Quyen.PRODUCT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SAN_PHAM);
         danhMucDAO.ngungKinhDoanhSanPham(sanPhamId);
     }
 
     public static String layTenDangNhapTheoNhanVien(long nhanVienId) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         return danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
     }
 
     public static void capNhatHoacTaoTaiKhoan(
             long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         String daCo = danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
         if (daCo == null) {
             danhMucDAO.taoTaiKhoanNhanVien(nhanVienId, tenDangNhap, matKhauHash, vaiTro);

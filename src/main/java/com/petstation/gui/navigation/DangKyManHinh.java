@@ -11,7 +11,6 @@ import com.petstation.gui.catalog.DanhMucThuCungPanel;
 import com.petstation.gui.catalog.TichDiemVoucherPanel;
 import com.petstation.gui.dashboard.TongQuanPanel;
 import com.petstation.gui.processing.approval.TrungTamPheDuyetPanel;
-import com.petstation.gui.processing.approval.YeuCauHoaDonPanel;
 import com.petstation.gui.processing.hotel.DatPhongHotelPanel;
 import com.petstation.gui.processing.hotel.LuuTruHotelPanel;
 import com.petstation.gui.processing.hotel.NhatKyLuuTruPanel;
@@ -69,7 +68,7 @@ public final class DangKyManHinh {
     /** Các màn bán hàng chỉ dùng được khi đã mở ca. */
     /** Cần mở ca làm việc. */
     private static final Set<MaManHinh> CAN_MO_CA_LAM_VIEC =
-            EnumSet.of(MaManHinh.POS, MaManHinh.PAYMENT);
+            EnumSet.of(MaManHinh.LAP_HOA_DON, MaManHinh.THANH_TOAN);
 
     /** Phiên đăng nhập. */
     private final PhienDangNhap phienDangNhap;
@@ -105,260 +104,255 @@ public final class DangKyManHinh {
     }
 
     private void dangKyTatCa() {
-        dangKy(MaManHinh.DASHBOARD, "Màn hình chính", "Chọn một công việc để bắt đầu.", null);
+        dangKy(MaManHinh.TONG_QUAN, "Màn hình chính", "Chọn một công việc để bắt đầu.", null);
 
         // 1. Hệ thống
         dangKy(
-                MaManHinh.CHANGE_PASSWORD,
+                MaManHinh.DOI_MAT_KHAU,
                 "Đổi mật khẩu",
                 "Cập nhật mật khẩu tài khoản hiện tại.",
                 null);
         dangKy(
-                MaManHinh.ACCOUNT_PERMISSION,
+                MaManHinh.TAI_KHOAN_PHAN_QUYEN,
                 "Tài khoản & phân quyền",
                 "Tài khoản, vai trò và ma trận quyền (chỉ Cửa hàng trưởng).",
-                Quyen.ACCOUNT_MANAGE);
+                Quyen.QUAN_LY_TAI_KHOAN);
         dangKy(
-                MaManHinh.SETTINGS,
+                MaManHinh.CAI_DAT,
                 "Cài đặt",
                 "Cửa hàng, hóa đơn, VAT, ngưỡng tồn, phí trả phòng trễ.",
-                Quyen.ACCOUNT_MANAGE);
+                Quyen.QUAN_LY_TAI_KHOAN);
         dangKy(
-                MaManHinh.AUDIT_LOG,
+                MaManHinh.NHAT_KY_HE_THONG,
                 "Nhật ký hệ thống",
                 "Chỉ đọc: thời gian, người dùng, thao tác, đối tượng.",
-                Quyen.AUDIT_VIEW);
+                Quyen.XEM_NHAT_KY);
 
         // 2. Danh mục (chỉ CRUD)
         dangKy(
-                MaManHinh.CUSTOMERS,
+                MaManHinh.DANH_MUC_KHACH_HANG,
                 "Khách hàng",
                 "Danh mục khách hàng: thêm, sửa, xóa, lưu.",
-                Quyen.CUSTOMER_MANAGE);
+                Quyen.QUAN_LY_KHACH_HANG);
         dangKy(
-                MaManHinh.PETS,
+                MaManHinh.DANH_MUC_THU_CUNG,
                 "Hồ sơ thú cưng",
                 "Danh mục thú cưng, bắt buộc có chủ nuôi.",
-                Quyen.PET_MANAGE);
-        dangKy(MaManHinh.STAFF, "Nhân viên", "Danh mục nhân viên.", Quyen.ACCOUNT_MANAGE);
+                Quyen.QUAN_LY_THU_CUNG);
+        dangKy(MaManHinh.DANH_MUC_NHAN_VIEN, "Nhân viên", "Danh mục nhân viên.", Quyen.QUAN_LY_TAI_KHOAN);
         dangKy(
-                MaManHinh.INVENTORY,
+                MaManHinh.DANH_MUC_SAN_PHAM,
                 "Sản phẩm",
-                "Danh mục sản phẩm, tab Lịch sử giá. Tồn kho chỉ đổi qua Nhập, Xuất, Kiểm kê.",
-                Quyen.PRODUCT_MANAGE);
+                "Danh mục sản phẩm. Tồn kho chỉ cập nhật qua Nhập kho, Xuất kho, Kiểm kê.",
+                Quyen.QUAN_LY_SAN_PHAM);
         dangKy(
-                MaManHinh.SPA_SERVICES,
+                MaManHinh.DANH_MUC_DICH_VU_SPA,
                 "Dịch vụ Spa",
                 "Danh mục dịch vụ, giá theo loài và cân nặng.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.HOTEL_ROOMS,
+                MaManHinh.DANH_MUC_PHONG_LUU_TRU,
                 "Phòng lưu trú",
                 "Danh mục phòng. Trạng thái do nghiệp vụ cập nhật, chỉ \"bảo trì\" chỉnh tay.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
-                MaManHinh.SUPPLIERS,
+                MaManHinh.DANH_MUC_NHA_CUNG_CAP,
                 "Nhà cung cấp",
                 "Danh mục nhà cung cấp.",
-                Quyen.SUPPLIER_MANAGE);
+                Quyen.QUAN_LY_NHA_CUNG_CAP);
         dangKy(
-                MaManHinh.PROMOTIONS,
+                MaManHinh.DANH_MUC_KHUYEN_MAI,
                 "Khuyến mãi",
                 "Danh mục chương trình khuyến mãi.",
-                Quyen.PROMOTION_MANAGE);
+                Quyen.QUAN_LY_KHUYEN_MAI);
         dangKy(
-                MaManHinh.LOYALTY_VOUCHER,
+                MaManHinh.TICH_DIEM_VOUCHER,
                 "Điểm thưởng và voucher",
                 "Quy tắc điểm, hạng thành viên và voucher.",
-                Quyen.CUSTOMER_MANAGE);
+                Quyen.QUAN_LY_KHACH_HANG);
 
         // 3. Tìm kiếm (chỉ xem)
         dangKy(
-                MaManHinh.ORDERS,
+                MaManHinh.TIM_KIEM_HOA_DON,
                 "Tìm kiếm hóa đơn",
                 "Lọc theo ngày, mã HĐ, khách, thu ngân, trạng thái. Chỉ xem và in lại.",
-                Quyen.POS_SELL);
+                Quyen.BAN_HANG);
         dangKy(
-                MaManHinh.CUSTOMER_DETAIL,
+                MaManHinh.TRA_CUU_KHACH_HANG,
                 "Lịch sử khách hàng",
                 "Hóa đơn, phiếu Spa, lưu trú, thú cưng, điểm.",
-                Quyen.CUSTOMER_MANAGE);
+                Quyen.QUAN_LY_KHACH_HANG);
         dangKy(
-                MaManHinh.BATCH_STOCK,
+                MaManHinh.TRA_CUU_LO_HANG,
                 "Tồn kho theo lô",
                 "Số lô, hạn dùng, tồn. Vàng: sắp hết hạn, đỏ: hết hạn.",
-                Quyen.PRODUCT_MANAGE);
+                Quyen.QUAN_LY_SAN_PHAM);
         dangKy(
-                MaManHinh.SPA_DAILY,
+                MaManHinh.TRA_CUU_LICH_SPA,
                 "Phiếu Spa trong ngày",
                 "Lọc theo ngày và trạng thái. Mở phiếu để sang Xử lý.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.HOTEL_MAP,
+                MaManHinh.SO_DO_PHONG_LUU_TRU,
                 "Sơ đồ phòng lưu trú",
                 "Lưới phòng theo trạng thái. Phòng quá hạn trả tô đỏ.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
-                MaManHinh.SCHEDULE,
+                MaManHinh.TRA_CUU_LICH_LAM_VIEC,
                 "Lịch làm việc",
                 "Lịch toàn cửa hàng theo tuần: ca Sáng, Chiều, Tối.",
-                Quyen.SCHEDULE_MANAGE);
+                Quyen.QUAN_LY_LICH_LAM_VIEC);
         dangKy(
-                MaManHinh.PERSONAL_SCHEDULE,
+                MaManHinh.LICH_CA_NHAN,
                 "Lịch làm việc cá nhân",
                 "Ca của bạn, ngày nghỉ, tổng giờ trong tháng.",
-                Quyen.SCHEDULE_VIEW);
+                Quyen.XEM_LICH_LAM_VIEC);
 
         // 4. Xử lý: bán hàng
         dangKy(
-                MaManHinh.POS,
+                MaManHinh.LAP_HOA_DON,
                 "Lập hóa đơn",
                 "Quét mã hoặc nhập mã sản phẩm, rồi Enter.",
-                Quyen.POS_SELL);
+                Quyen.BAN_HANG);
         dangKy(
-                MaManHinh.PAYMENT,
+                MaManHinh.THANH_TOAN,
                 "Thanh toán",
                 "Chọn phương thức và xác nhận thanh toán.",
-                Quyen.PAYMENT_PROCESS);
+                Quyen.THANH_TOAN);
         dangKy(
-                MaManHinh.PRINT_INVOICE,
+                MaManHinh.IN_HOA_DON,
                 "Xem hóa đơn",
                 "Xem trước, in hoặc xuất PDF.",
-                Quyen.POS_SELL);
-        dangKy(MaManHinh.PENDING_INVOICES, "Đơn nháp", "Danh sách đơn treo.", Quyen.POS_SELL);
+                Quyen.BAN_HANG);
+        dangKy(MaManHinh.HOA_DON_CHO, "Đơn nháp", "Danh sách đơn treo.", Quyen.BAN_HANG);
         dangKy(
-                MaManHinh.INVOICE_EDIT_REQUEST,
-                "Yêu cầu sửa/hủy hóa đơn",
-                "Gửi yêu cầu sang Phê duyệt, không sửa trực tiếp.",
-                Quyen.POS_SELL);
-        dangKy(
-                MaManHinh.RETURNS,
+                MaManHinh.DOI_TRA_HANG_HOA,
                 "Đổi hàng",
                 "Tìm hóa đơn gốc và đổi phụ kiện, thu chênh lệch.",
-                Quyen.POS_SELL);
+                Quyen.BAN_HANG);
 
         // 4. Xử lý: Spa (danh sách phiếu đang chạy, rồi 5 bước)
         dangKy(
-                MaManHinh.SPA,
+                MaManHinh.QUAN_LY_SPA,
                 "Lập phiếu Spa",
                 "Tiếp nhận thú cưng, lập phiếu và thực hiện dịch vụ theo từng bước.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.SPA_SCHEDULE,
+                MaManHinh.DAT_LICH_HEN_SPA,
                 "Spa: Lịch hẹn",
                 "Chọn khách, thú, dịch vụ, ngày giờ, nhân viên.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.SPA_INTAKE,
+                MaManHinh.TIEP_NHAN_SPA,
                 "Spa: Tiếp nhận",
                 "Cân nặng, tình trạng, lưu ý, ảnh.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.SPA_SERVICE_SELECTION,
+                MaManHinh.CHON_GOI_SPA,
                 "Spa: Chọn dịch vụ",
                 "Dịch vụ thực tế, giá theo cân nặng, phụ phí.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.SPA_PROGRESS,
+                MaManHinh.CAP_NHAT_TIEN_DO_SPA,
                 "Spa: Tiến độ",
                 "Chờ, đang làm, hoàn thành.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
         dangKy(
-                MaManHinh.SPA_CLOSE,
+                MaManHinh.HOAN_TAT_SPA,
                 "Spa: Đóng phiếu",
                 "Chốt tổng tiền rồi chuyển sang Thanh toán.",
-                Quyen.SPA_MANAGE);
+                Quyen.QUAN_LY_SPA);
 
         // 4. Xử lý: ThuCung Hotel (danh sách thú đang lưu trú, rồi 3 bước)
         dangKy(
-                MaManHinh.HOTEL,
+                MaManHinh.QUAN_LY_LUU_TRU,
                 "Quản lý lưu trú",
                 "Danh sách thú đang lưu trú. Bấm + Đặt phòng để bắt đầu.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
-                MaManHinh.HOTEL_BOOKING,
+                MaManHinh.DAT_PHONG_LUU_TRU,
                 "Lưu trú: Đặt phòng",
                 "Chọn khách, thú, phòng trống, ngày vào ra, tiền cọc.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
-                MaManHinh.HOTEL_JOURNAL,
+                MaManHinh.NHAT_KY_CHAM_SOC,
                 "Lưu trú: Nhật ký chăm sóc",
                 "Check-in, chăm sóc hằng ngày, gia hạn, dịch vụ thêm.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
-                MaManHinh.CHECKOUT,
+                MaManHinh.TRA_PHONG_LUU_TRU,
                 "Lưu trú: Trả phòng và quyết toán",
                 "Số ngày × giá phòng + phụ phí trễ + dịch vụ − tiền cọc.",
-                Quyen.HOTEL_MANAGE);
+                Quyen.QUAN_LY_LUU_TRU);
 
         // 4. Xử lý: kho, ca, lịch, phê duyệt
         dangKy(
-                MaManHinh.PURCHASE,
+                MaManHinh.NHAP_KHO,
                 "Lập phiếu nhập kho",
                 "Lập phiếu nhập: số lô, hạn dùng, công nợ.",
-                Quyen.INVENTORY_RECEIVE);
+                Quyen.NHAP_KHO);
         dangKy(
-                MaManHinh.GOODS_WRITE_OFF,
+                MaManHinh.XUAT_HUY_KHO,
                 "Xuất hủy hàng hóa",
                 "Chọn lý do, lô và số lượng.",
-                Quyen.INVENTORY_ISSUE);
+                Quyen.XUAT_HUY_KHO);
         dangKy(
-                MaManHinh.STOCKTAKE,
+                MaManHinh.KIEM_KE_TON_KHO,
                 "Kiểm kê tồn kho",
                 "Nhập số thực tế, chênh lệch gửi duyệt.",
-                Quyen.INVENTORY_COUNT);
+                Quyen.KIEM_KE_KHO);
         dangKy(
-                MaManHinh.CASH_SHIFT,
+                MaManHinh.CA_THU_NGAN,
                 "Ca thu ngân",
                 "Quản lý ca và tiền mặt.",
-                Quyen.CASH_SHIFT_MANAGE);
+                Quyen.QUAN_LY_CA_THU_NGAN);
         dangKy(
-                MaManHinh.STAFF_SCHEDULE,
+                MaManHinh.PHAN_LICH_NHAN_VIEN,
                 "Phân lịch nhân viên",
                 "Phân ca theo lưới tuần, cảnh báo ca thiếu người (chỉ Cửa hàng trưởng).",
-                Quyen.SCHEDULE_MANAGE);
+                Quyen.QUAN_LY_LICH_LAM_VIEC);
         dangKy(
-                MaManHinh.APPROVALS,
+                MaManHinh.PHE_DUYET_YEU_CAU,
                 "Phê duyệt yêu cầu",
                 "Duyệt hoặc từ chối yêu cầu (chỉ Cửa hàng trưởng).",
-                Quyen.APPROVAL_PROCESS);
+                Quyen.XU_LY_PHE_DUYET);
 
         // 5. Thống kê (chỉ xem và xuất)
         dangKy(
-                MaManHinh.REPORTS,
+                MaManHinh.THONG_KE_DOANH_THU,
                 "Thống kê doanh thu",
                 "Theo ngày, nhân viên, ca, nguồn, phương thức thanh toán.",
-                Quyen.REPORT_VIEW_OWN_SHIFT);
+                Quyen.XEM_BAO_CAO_CA);
         dangKy(
-                MaManHinh.REPORT_GOODS,
+                MaManHinh.THONG_KE_HANG_HOA,
                 "Thống kê hàng hóa",
                 "Bán chạy, nhập–xuất–tồn, tồn thấp, sắp hết hạn.",
-                Quyen.REPORT_VIEW_OWN_SHIFT);
+                Quyen.XEM_BAO_CAO_CA);
         dangKy(
-                MaManHinh.REPORT_SPA,
+                MaManHinh.THONG_KE_SPA,
                 "Thống kê dịch vụ Spa",
                 "Số phiếu, dịch vụ phổ biến, tỷ lệ hủy, hiệu suất.",
-                Quyen.REPORT_VIEW_OWN_SHIFT);
+                Quyen.XEM_BAO_CAO_CA);
         dangKy(
-                MaManHinh.REPORT_HOTEL,
+                MaManHinh.THONG_KE_LUU_TRU,
                 "Thống kê lưu trú",
                 "Công suất phòng, số ngày lưu trú, lượt quá hạn.",
-                Quyen.REPORT_VIEW_OWN_SHIFT);
+                Quyen.XEM_BAO_CAO_CA);
         dangKy(
-                MaManHinh.REPORT_CUSTOMERS,
+                MaManHinh.THONG_KE_KHACH_HANG,
                 "Thống kê khách hàng",
                 "Khách mới, thân thiết, top chi tiêu, điểm và voucher.",
-                Quyen.REPORT_VIEW_ALL);
+                Quyen.XEM_BAO_CAO_CHUNG);
         dangKy(
-                MaManHinh.REPORT_SUPPLIER_DEBT,
+                MaManHinh.THONG_KE_CONG_NO_NCC,
                 "Công nợ nhà cung cấp",
                 "Tổng nhập, đã trả, còn nợ.",
-                Quyen.REPORT_VIEW_ALL);
+                Quyen.XEM_BAO_CAO_CHUNG);
         dangKy(
-                MaManHinh.REPORT_STAFF,
+                MaManHinh.THONG_KE_NHAN_VIEN,
                 "Thống kê nhân viên",
                 "Số ca, giờ làm, doanh số, phiếu Spa đã thực hiện.",
-                Quyen.REPORT_VIEW_ALL);
+                Quyen.XEM_BAO_CAO_CHUNG);
     }
 
     private void dangKy(MaManHinh id, String tieuDe, String goiY, Quyen quyen) {
@@ -387,76 +381,75 @@ public final class DangKyManHinh {
             throw new com.petstation.service.PhanQuyenException(
                     "Bạn không có quyền mở màn hình này.");
         return switch (id) {
-            case DASHBOARD -> new TongQuanPanel(boDieuHuong, this::coTheTruyCap, caLamViec);
+            case TONG_QUAN -> new TongQuanPanel(boDieuHuong, this::coTheTruyCap, caLamViec);
             // Hệ thống
-            case CHANGE_PASSWORD -> new DoiMatKhauPanel(boDieuHuong);
-            case ACCOUNT_PERMISSION -> new TaiKhoanPhanQuyenPanel();
-            case SETTINGS ->
+            case DOI_MAT_KHAU -> new DoiMatKhauPanel(boDieuHuong);
+            case TAI_KHOAN_PHAN_QUYEN -> new TaiKhoanPhanQuyenPanel();
+            case CAI_DAT ->
                     new CaiDatPanel(
                             phienDangNhap == null
                                     || phienDangNhap.docVaiTro()
-                                            == com.petstation.model.VaiTro.STORE_MANAGER);
-            case AUDIT_LOG -> new NhatKyHeThongPanel();
+                                            == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG);
+            case NHAT_KY_HE_THONG -> new NhatKyHeThongPanel();
             // Danh mục
-            case CUSTOMERS -> new DanhMucKhachHangPanel();
-            case PETS -> new DanhMucThuCungPanel();
-            case STAFF -> new DanhMucNhanVienPanel();
-            case INVENTORY -> new DanhMucSanPhamPanel();
-            case SPA_SERVICES -> new DanhMucDichVuSpaPanel();
-            case HOTEL_ROOMS -> new DanhMucPhongHotelPanel();
-            case SUPPLIERS -> new DanhMucNhaCungCapPanel();
-            case PROMOTIONS -> new DanhMucKhuyenMaiPanel();
-            case LOYALTY_VOUCHER -> new TichDiemVoucherPanel();
+            case DANH_MUC_KHACH_HANG -> new DanhMucKhachHangPanel();
+            case DANH_MUC_THU_CUNG -> new DanhMucThuCungPanel();
+            case DANH_MUC_NHAN_VIEN -> new DanhMucNhanVienPanel();
+            case DANH_MUC_SAN_PHAM -> new DanhMucSanPhamPanel();
+            case DANH_MUC_DICH_VU_SPA -> new DanhMucDichVuSpaPanel();
+            case DANH_MUC_PHONG_LUU_TRU -> new DanhMucPhongHotelPanel();
+            case DANH_MUC_NHA_CUNG_CAP -> new DanhMucNhaCungCapPanel();
+            case DANH_MUC_KHUYEN_MAI -> new DanhMucKhuyenMaiPanel();
+            case TICH_DIEM_VOUCHER -> new TichDiemVoucherPanel();
             // Tìm kiếm
-            case ORDERS -> new TimKiemHoaDonPanel(banHang, boDieuHuong);
-            case CUSTOMER_DETAIL -> new LichSuKhachHangPanel();
-            case BATCH_STOCK -> new TimKiemTonTheoLoPanel(banHang, boDieuHuong);
-            case SPA_DAILY -> new TraCuuPhieuSpaPanel(banHang, boDieuHuong);
-            case HOTEL_MAP -> new TraCuuPhongHotelPanel(banHang, boDieuHuong);
-            case SCHEDULE ->
+            case TIM_KIEM_HOA_DON -> new TimKiemHoaDonPanel(banHang, boDieuHuong);
+            case TRA_CUU_KHACH_HANG -> new LichSuKhachHangPanel();
+            case TRA_CUU_LO_HANG -> new TimKiemTonTheoLoPanel(banHang, boDieuHuong);
+            case TRA_CUU_LICH_SPA -> new TraCuuPhieuSpaPanel(banHang, boDieuHuong);
+            case SO_DO_PHONG_LUU_TRU -> new TraCuuPhongHotelPanel(banHang, boDieuHuong);
+            case TRA_CUU_LICH_LAM_VIEC ->
                     new TraCuuLichLamViecPanel(
                             phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
-            case PERSONAL_SCHEDULE ->
+            case LICH_CA_NHAN ->
                     new LichCaNhanPanel(
                             phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
             // Xử lý: bán hàng
-            case POS -> new LapHoaDonPanel(banHang, boDieuHuong);
-            case PAYMENT ->
+            case LAP_HOA_DON -> new LapHoaDonPanel(banHang, boDieuHuong);
+            case THANH_TOAN ->
                     new ThanhToanPanel(
                             banHang, caLamViec, phienDangNhap.layTenHienThi(), boDieuHuong);
-            case PRINT_INVOICE -> new InHoaDonPanel(banHang, boDieuHuong);
-            case PENDING_INVOICES -> new DonHangTreoPanel(banHang, boDieuHuong);
-            case INVOICE_EDIT_REQUEST -> new YeuCauHoaDonPanel(boDieuHuong);
-            case RETURNS -> new DoiTraPanel(banHang, boDieuHuong);
+            case IN_HOA_DON -> new InHoaDonPanel(banHang, boDieuHuong);
+            case HOA_DON_CHO -> new DonHangTreoPanel(banHang, boDieuHuong);
+            case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);
             // Xử lý: Spa
-            case SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
-            case SPA_SCHEDULE -> new LichHenSpaPanel(banHang, boDieuHuong);
-            case SPA_INTAKE -> new TiepNhanSpaPanel(banHang, boDieuHuong);
-            case SPA_SERVICE_SELECTION -> new ChonDichVuSpaPanel(banHang, boDieuHuong);
-            case SPA_PROGRESS -> new TienDoSpaPanel(banHang, boDieuHuong);
-            case SPA_CLOSE -> new DongPhieuSpaPanel(banHang, boDieuHuong);
+            case QUAN_LY_SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
+            case DAT_LICH_HEN_SPA -> new LichHenSpaPanel(banHang, boDieuHuong);
+            case TIEP_NHAN_SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
+            case CHON_GOI_SPA -> new ChonDichVuSpaPanel(banHang, boDieuHuong);
+            case CAP_NHAT_TIEN_DO_SPA -> new TienDoSpaPanel(banHang, boDieuHuong);
+            case HOAN_TAT_SPA -> new DongPhieuSpaPanel(banHang, boDieuHuong);
             // Xử lý: ThuCung Hotel
-            case HOTEL -> new LuuTruHotelPanel(banHang, boDieuHuong);
-            case HOTEL_BOOKING -> new DatPhongHotelPanel(banHang, boDieuHuong);
-            case HOTEL_JOURNAL -> new NhatKyLuuTruPanel(banHang, boDieuHuong);
-            case CHECKOUT -> new QuyetToanLuuTruPanel(banHang, boDieuHuong);
+            case QUAN_LY_LUU_TRU -> new LuuTruHotelPanel(banHang, boDieuHuong);
+            case DAT_PHONG_LUU_TRU -> new DatPhongHotelPanel(banHang, boDieuHuong);
+            case NHAT_KY_CHAM_SOC -> new NhatKyLuuTruPanel(banHang, boDieuHuong);
+            case TRA_PHONG_LUU_TRU -> new QuyetToanLuuTruPanel(banHang, boDieuHuong);
             // Xử lý: kho, ca, lịch, phê duyệt
-            case PURCHASE -> new NhapKhoPanel(banHang, boDieuHuong);
-            case GOODS_WRITE_OFF -> new XuatHuyKhoPanel(banHang, boDieuHuong);
-            case STOCKTAKE -> new KiemKePanel(banHang, boDieuHuong);
-            case CASH_SHIFT -> new CaThuNganPanel(caLamViec);
-            case STAFF_SCHEDULE ->
+            case NHAP_KHO -> new NhapKhoPanel(banHang, boDieuHuong);
+            case XUAT_HUY_KHO -> new XuatHuyKhoPanel(banHang, boDieuHuong);
+            case KIEM_KE_TON_KHO -> new KiemKePanel(banHang, boDieuHuong);
+            case CA_THU_NGAN -> new CaThuNganPanel(caLamViec);
+            case PHAN_LICH_NHAN_VIEN ->
                     new PhanLichNhanVienPanel(
                             phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
-            case APPROVALS -> new TrungTamPheDuyetPanel();
+            case PHE_DUYET_YEU_CAU -> new TrungTamPheDuyetPanel();
             // Thống kê
-            case REPORTS -> new ThongKeDoanhThuPanel();
-            case REPORT_GOODS -> new ThongKeHangHoaPanel();
-            case REPORT_SPA -> new ThongKeSpaPanel();
-            case REPORT_HOTEL -> new ThongKeHotelPanel();
-            case REPORT_CUSTOMERS -> new ThongKeKhachHangPanel();
-            case REPORT_SUPPLIER_DEBT -> new ThongKeCongNoPanel();
-            case REPORT_STAFF -> new ThongKeNhanVienPanel();
+            case THONG_KE_DOANH_THU -> new ThongKeDoanhThuPanel();
+            case THONG_KE_HANG_HOA -> new ThongKeHangHoaPanel();
+            case THONG_KE_SPA -> new ThongKeSpaPanel();
+            case THONG_KE_LUU_TRU -> new ThongKeHotelPanel();
+            case THONG_KE_KHACH_HANG -> new ThongKeKhachHangPanel();
+            case THONG_KE_CONG_NO_NCC -> new ThongKeCongNoPanel();
+            case THONG_KE_NHAN_VIEN -> new ThongKeNhanVienPanel();
         };
     }
 }

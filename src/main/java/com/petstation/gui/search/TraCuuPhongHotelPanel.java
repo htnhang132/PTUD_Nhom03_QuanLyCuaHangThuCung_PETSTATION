@@ -28,7 +28,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                         "Tất cả", "Trống", "Có thú", "Đang dọn", "Bảo trì", "Ngừng hoạt động"
                     });
     private final JLabel lblKetQua = new JLabel();
-    private List<ThongTinPhong> cacPhong = List.of();
+    private List<PhongHotel> cacPhong = List.of();
     private boolean dangNap;
     private JWindow chiTiet;
     private javax.swing.Timer choHienThi;
@@ -125,12 +125,12 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
 
     private void nap() {
         anChiTiet();
-        cacPhong = QuyTrinhService.layThongTinPhong();
+        cacPhong = QuyTrinhService.layPhongHotel();
         Object daChon = cboLoai.getSelectedItem();
         dangNap = true;
         cboLoai.removeAllItems();
         cboLoai.addItem("Tất cả");
-        cacPhong.stream().map(ThongTinPhong::loai).distinct().sorted().forEach(cboLoai::addItem);
+        cacPhong.stream().map(PhongHotel::loai).distinct().sorted().forEach(cboLoai::addItem);
         if (daChon != null) cboLoai.setSelectedItem(daChon);
         dangNap = false;
         loc();
@@ -155,7 +155,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         pnlPhong.repaint();
     }
 
-    private JButton taoThe(ThongTinPhong phong) {
+    private JButton taoThe(PhongHotel phong) {
         JButton the = new JButton();
         the.setName("phong:" + phong.id());
         the.setLayout(new BorderLayout(0, 10));
@@ -252,7 +252,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         }
     }
 
-    public void moPhong(ThongTinPhong phong) {
+    public void moPhong(PhongHotel phong) {
         if (!List.of("AVAILABLE", "OCCUPIED").contains(phong.trangThai())) {
             HopThoai.hienThiThongTin(
                     this,
@@ -270,14 +270,14 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                 return;
             }
             gio.layQuyTrinh().chonHotel(phong.dangO().id());
-            dieuHuong.accept(MaManHinh.HOTEL_JOURNAL);
+            dieuHuong.accept(MaManHinh.NHAT_KY_CHAM_SOC);
         } else {
             gio.layQuyTrinh().chonHotel(0);
-            dieuHuong.accept(MaManHinh.HOTEL_BOOKING);
+            dieuHuong.accept(MaManHinh.DAT_PHONG_LUU_TRU);
         }
     }
 
-    private void henChiTiet(JComponent the, ThongTinPhong phong) {
+    private void henChiTiet(JComponent the, PhongHotel phong) {
         anChiTiet();
         choHienThi = new javax.swing.Timer(300, e -> hienChiTiet(the, phong));
         choHienThi.setRepeats(false);
@@ -292,7 +292,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         }
     }
 
-    private void hienChiTiet(JComponent the, ThongTinPhong phong) {
+    private void hienChiTiet(JComponent the, PhongHotel phong) {
         if (!the.isShowing()) return;
         chiTiet = new JWindow(SwingUtilities.getWindowAncestor(this));
         JLabel noiDung = new JLabel(layChiTiet(phong));
@@ -322,7 +322,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         chiTiet.setVisible(true);
     }
 
-    public static String layChiTiet(ThongTinPhong phong) {
+    public static String layChiTiet(PhongHotel phong) {
         StringBuilder s =
                 new StringBuilder(
                         "<html><body style='width:270px'><b>"
@@ -346,7 +346,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         return s.append("</body></html>").toString();
     }
 
-    private static String layLich(ThongTinPhong.LichPhong lich) {
+    private static String layLich(PhongHotel.LichPhong lich) {
         var d = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         return "Thú cưng: "
                 + html(lich.thuCung())

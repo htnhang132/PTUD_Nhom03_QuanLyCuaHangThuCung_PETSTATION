@@ -73,7 +73,7 @@ public final class ThanhQuyTrinh extends JPanel {
                 suKien -> {
                     if (quyTrinh == null) return;
                     if (quyTrinh.kiemTraCuoiCung(hienTaiManHinh))
-                        boDieuHuong.accept(MaManHinh.PAYMENT);
+                        boDieuHuong.accept(MaManHinh.THANH_TOAN);
                     else quyTrinh.layTiepTheo(hienTaiManHinh).ifPresent(boDieuHuong);
                 });
         setPreferredSize(new Dimension(0, 44));

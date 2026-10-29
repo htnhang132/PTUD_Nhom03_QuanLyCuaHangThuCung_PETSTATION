@@ -5,12 +5,12 @@ import static com.petstation.service.HoTroNghiepVuService.*;
 import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.BanHangDAO;
+import com.petstation.dao.HoaDonDAO;
 import com.petstation.dao.KhoanThuDAO;
-import com.petstation.dao.LuuTruDAO;
-import com.petstation.dao.impl.BanHangDAOImpl;
+import com.petstation.dao.HopDongLuuTruDAO;
+import com.petstation.dao.impl.HoaDonDAOImpl;
 import com.petstation.dao.impl.KhoanThuDAOImpl;
-import com.petstation.dao.impl.LuuTruDAOImpl;
+import com.petstation.dao.impl.HopDongLuuTruDAOImpl;
 import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
 
@@ -19,9 +19,9 @@ import java.util.*;
 
 /** Quản lý đặt phòng, hợp đồng lưu trú, chăm sóc và quyết toán tiền Hotel. */
 public final class LuuTruService {
-    private static final BanHangDAO banHangDAO = new BanHangDAOImpl();
+    private static final HoaDonDAO banHangDAO = new HoaDonDAOImpl();
     private static final KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
-    private static final LuuTruDAO luuTruDAO = new LuuTruDAOImpl();
+    private static final HopDongLuuTruDAO luuTruDAO = new HopDongLuuTruDAOImpl();
 
     public static long datPhong(
             String maThuCung,
@@ -53,7 +53,7 @@ public final class LuuTruService {
                             id,
                             java.util.List.of(
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.CASH, tienCoc, tienCoc, true)),
+                                            PhuongThuc.TIEN_MAT, tienCoc, tienCoc, true)),
                             "COC-" + java.util.UUID.randomUUID());
                     return id;
                 });
@@ -65,7 +65,7 @@ public final class LuuTruService {
             LocalDateTime batDau,
             LocalDateTime ketThuc,
             String ghiChu) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau))
             throw new IllegalArgumentException("Ngày ra phải sau ngày vào.");
         return thucHienGiaoDich(
@@ -86,7 +86,7 @@ public final class LuuTruService {
                     long yeuCau = (Math.multiplyExact(tinhSoNgay(batDau, ketThuc), gia) + 1) / 2;
                     long id =
                             luuTruDAO.themDatPhong(
-                                    taoMa("HT"),
+                                    taoMa("HDHT"),
                                     thu[1],
                                     thu[0],
                                     p[0],
@@ -102,12 +102,12 @@ public final class LuuTruService {
     }
 
     public static java.util.List<Object[]> layCoc(long id) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         return luuTruDAO.layLichSuThuCoc(id);
     }
 
     public static long[] layMucCoc(long id) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var r = luuTruDAO.layMucCoc(id);
         if (r.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hợp đồng.");
         return new long[] {layGiaTri(r.get(0)[0]), layGiaTri(r.get(0)[1])};
@@ -115,7 +115,7 @@ public final class LuuTruService {
 
     public static void thuCoc(
             long id, java.util.List<com.petstation.model.DongThuTien> dong, String khoa) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (khoa == null || !khoa.matches("[A-Za-z0-9-]{1,90}"))
             throw new IllegalArgumentException("Thiếu khóa thu cọc.");
         thucHienGiaoDich(
@@ -145,8 +145,8 @@ public final class LuuTruService {
     }
 
     public static void dieuChinhCoc(long id, long muc, String lyDo) {
-        yeuCau(Quyen.HOTEL_MANAGE);
-        if (layPhien().docVaiTro() != com.petstation.model.VaiTro.STORE_MANAGER)
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        if (layPhien().docVaiTro() != com.petstation.model.VaiTro.QUAN_LY_CUA_HANG)
             throw new IllegalArgumentException("Chỉ quản lý được điều chỉnh mức cọc.");
         if (lyDo == null || lyDo.isBlank() || lyDo.length() > 1000)
             throw new IllegalArgumentException("Cần lý do điều chỉnh.");
@@ -173,7 +173,7 @@ public final class LuuTruService {
     }
 
     public static long tinhCocDuKien(String maPhong, LocalDateTime batDau, LocalDateTime ketThuc) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau))
             throw new IllegalArgumentException("Ngày ra phải sau ngày vào.");
         var phong = luuTruDAO.timDatPhong(maPhong);
@@ -183,7 +183,7 @@ public final class LuuTruService {
     }
 
     public static void kiemTraVao(long hopDongLuuTru) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         thucHienGiaoDich(
                 ketNoi -> {
                     // Phòng.
@@ -199,7 +199,7 @@ public final class LuuTruService {
     }
 
     public static void ghiNhatKy(long hopDongLuuTru, String anUong, String veSinh, String sucKhoe) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (sucKhoe.isBlank()) throw new IllegalArgumentException("Cần ghi tình trạng thú cưng.");
         thucHienGiaoDich(
                 ketNoi -> {
@@ -241,7 +241,7 @@ public final class LuuTruService {
     }
 
     public static void hoanTatDonPhong(long id) {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         thucHienGiaoDich(
                 ketNoi -> {
                     if (luuTruDAO.danhDauPhongKhaDung(id) != 1)
@@ -252,12 +252,12 @@ public final class LuuTruService {
     }
 
     public static List<Object[]> layPhongDangDon() {
-        yeuCau(Quyen.HOTEL_MANAGE);
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
         return luuTruDAO.layPhongDangDon();
     }
 
     public static List<Object[]> layNhatKyChiTiet(long hopDongLuuTru) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.HOTEL_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_LUU_TRU);
         return luuTruDAO.layNhatKyChiTiet(hopDongLuuTru);
     }
 }

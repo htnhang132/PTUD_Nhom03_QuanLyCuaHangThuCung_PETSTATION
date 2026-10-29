@@ -21,36 +21,45 @@ public final class QuyenVaiTroService {
     public static Set<Quyen> tao(VaiTro vaiTro) {
         // Các quyền.
         Set<Quyen> cacQuyen = EnumSet.noneOf(Quyen.class);
-        for (Object[] dong : quyenVaiTroDAO.timCua(vaiTro.name()))
-            cacQuyen.add(Quyen.valueOf(String.valueOf(dong[0])));
+        for (Object[] dong : quyenVaiTroDAO.timCua(vaiTro.name())) {
+            if (dong != null && dong.length > 0 && dong[0] != null) {
+                try {
+                    Quyen q = Quyen.docTuCSDL(String.valueOf(dong[0]));
+                    if (q != null) {
+                        cacQuyen.add(q);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
         return cacQuyen;
     }
 
     public static String layNhan(Quyen vungDangXet) {
         return switch (vungDangXet) {
-            case DASHBOARD_VIEW -> "Xem màn hình chính";
-            case ACCOUNT_MANAGE -> "Tài khoản, nhân viên, cài đặt";
-            case SCHEDULE_MANAGE -> "Phân lịch nhân viên";
-            case SCHEDULE_VIEW -> "Xem lịch làm việc";
-            case CUSTOMER_MANAGE -> "Khách hàng";
-            case PET_MANAGE -> "Hồ sơ thú cưng";
-            case PRODUCT_MANAGE -> "Sản phẩm";
-            case SUPPLIER_MANAGE -> "Nhà cung cấp";
-            case INVENTORY_RECEIVE -> "Lập phiếu nhập kho";
-            case INVENTORY_ISSUE -> "Xuất hủy hàng hóa";
-            case INVENTORY_COUNT -> "Kiểm kê";
-            case PRICE_PROPOSE -> "Đề xuất giá";
-            case PRICE_APPROVE -> "Duyệt giá";
-            case POS_SELL -> "Lập hóa đơn, đổi hàng";
-            case PAYMENT_PROCESS -> "Thanh toán";
-            case CASH_SHIFT_MANAGE -> "Mở ca / Kết ca";
-            case PROMOTION_MANAGE -> "Khuyến mãi, tích điểm, voucher";
-            case SPA_MANAGE -> "Dịch vụ Spa";
-            case HOTEL_MANAGE -> "Pet Hotel";
-            case APPROVAL_PROCESS -> "Phê duyệt yêu cầu";
-            case AUDIT_VIEW -> "Nhật ký hệ thống";
-            case REPORT_VIEW_ALL -> "Thống kê toàn cửa hàng";
-            case REPORT_VIEW_OWN_SHIFT -> "Thống kê ca của mình";
+            case XEM_TONG_QUAN -> "Xem màn hình chính";
+            case QUAN_LY_TAI_KHOAN -> "Tài khoản, nhân viên, cài đặt";
+            case QUAN_LY_LICH_LAM_VIEC -> "Phân lịch nhân viên";
+            case XEM_LICH_LAM_VIEC -> "Xem lịch làm việc";
+            case QUAN_LY_KHACH_HANG -> "Khách hàng";
+            case QUAN_LY_THU_CUNG -> "Hồ sơ thú cưng";
+            case QUAN_LY_SAN_PHAM -> "Sản phẩm";
+            case QUAN_LY_NHA_CUNG_CAP -> "Nhà cung cấp";
+            case NHAP_KHO -> "Lập phiếu nhập kho";
+            case XUAT_HUY_KHO -> "Xuất hủy hàng hóa";
+            case KIEM_KE_KHO -> "Kiểm kê";
+            case DE_XUAT_GIA -> "Đề xuất giá";
+            case DUYET_GIA -> "Duyệt giá";
+            case BAN_HANG -> "Lập hóa đơn, đổi hàng";
+            case THANH_TOAN -> "Thanh toán";
+            case QUAN_LY_CA_THU_NGAN -> "Mở ca / Kết ca";
+            case QUAN_LY_KHUYEN_MAI -> "Khuyến mãi, tích điểm, voucher";
+            case QUAN_LY_SPA -> "Dịch vụ Spa";
+            case QUAN_LY_LUU_TRU -> "Pet Hotel";
+            case XU_LY_PHE_DUYET -> "Phê duyệt yêu cầu";
+            case XEM_NHAT_KY -> "Nhật ký hệ thống";
+            case XEM_BAO_CAO_CHUNG -> "Báo cáo doanh thu chung";
+            case XEM_BAO_CAO_CA -> "Báo cáo ca làm việc";
         };
     }
 }

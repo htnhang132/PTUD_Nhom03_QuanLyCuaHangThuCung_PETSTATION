@@ -3,7 +3,7 @@ package com.petstation.dao;
 import java.util.List;
 
 /** Thao tác dữ liệu cho BanHang; service gọi qua hợp đồng này. */
-public interface BanHangDAO {
+public interface HoaDonDAO {
     List<Object[]> layNguonBienLai(String soHoaDon);
 
     Object timHoaDonTheoKhoaThu(Object... cacThamSo);

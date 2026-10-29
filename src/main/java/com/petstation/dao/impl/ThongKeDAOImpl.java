@@ -39,9 +39,8 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                     + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy,COALESCE(SUM(h.tong_tien),0)"
-                    + " FROM khach_hang k LEFT JOIN don_hang d ON d.khach_hang_id=k.id LEFT JOIN"
-                    + " hoa_don h ON h.don_hang_id=d.id AND h.trang_thai='PAID' AND"
-                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<? GROUP BY"
+                    + " FROM khach_hang k LEFT JOIN hoa_don h ON h.khach_hang_id=k.id AND"
+                    + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? GROUP BY"
                     + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy ORDER BY"
                     + " COALESCE(SUM(h.tong_tien),0) DESC,k.ma_khach_hang",
                 cacThamSo);
@@ -81,17 +80,17 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
         String loc = taiKhoan == null ? "" : " AND s.tai_khoan_id=" + taiKhoan;
         return ThaoTacSQL.truyVan(
                 "WITH ledger AS (SELECT CAST(h.thanh_toan_luc AS date) ngay,h.tong_tien so_tien"
-                    + " FROM hoa_don h JOIN don_hang d ON d.id=h.don_hang_id JOIN phien_lam_viec s"
-                    + " ON s.id=d.phien_lam_viec_id WHERE h.trang_thai='PAID'"
+                    + " FROM hoa_don h JOIN phien_lam_viec s"
+                    + " ON s.id=h.phien_lam_viec_id WHERE h.trang_thai='PAID'"
                         + loc
                         + " UNION ALL SELECT CAST(p.tao_luc AS date),p.chenh_lech FROM"
-                        + " phieu_doi_tra p JOIN hoa_don h ON h.id=p.hoa_don_id JOIN don_hang d ON"
-                        + " d.id=h.don_hang_id JOIN phien_lam_viec s ON s.id=d.phien_lam_viec_id"
+                        + " phieu_doi_tra p JOIN hoa_don h ON h.id=p.hoa_don_id JOIN phien_lam_viec s"
+                        + " ON s.id=h.phien_lam_viec_id"
                         + " WHERE p.trang_thai='COMPLETED' AND p.loai_phieu='LEGACY_RETURN'"
                         + loc
-                        + " UNION ALL SELECT CAST(k.nhan_luc AS date),k.so_tien FROM"
-                        + " khoan_thu k JOIN phien_lam_viec s ON s.id=k.phien_id"
-                        + " WHERE k.hop_dong_id IS NOT NULL"
+                        + " UNION ALL SELECT CAST(k.nhan_coc_luc AS date),k.tien_coc FROM"
+                        + " hop_dong_luu_tru k JOIN phien_lam_viec s ON s.id=k.phien_nhan_coc_id"
+                        + " WHERE k.da_nhan_coc=1 AND k.nhan_coc_luc IS NOT NULL"
                         + loc
                         + ") SELECT ngay,SUM(so_tien) FROM ledger WHERE ngay>=? AND ngay<? GROUP BY"
                         + " ngay ORDER BY ngay",
@@ -107,7 +106,18 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
             Long nhanVien) {
         String nhom =
                 switch (nhomTongHop) {
-                    case "method" -> "k.phuong_thuc";
+                    case "method" -> "LEFT(sp.value, CHARINDEX(':', sp.value) - 1)";
+                    case "staff" -> "n.ho_ten";
+                    case "shift" -> "s.ten_ca";
+                    default ->
+                            "CASE WHEN EXISTS(SELECT 1 FROM phieu_tiep_nhan_spa t WHERE"
+                                + " t.hoa_don_id=h.id) THEN 'Spa' WHEN EXISTS(SELECT 1 FROM"
+                                + " hop_dong_luu_tru t WHERE t.hoa_don_id=h.id) THEN 'Hotel' ELSE"
+                                + " N'Hàng hóa' END";
+                };
+        String nhomDoiTra =
+                switch (nhomTongHop) {
+                    case "method" -> "h.hinh_thuc_thanh_toan";
                     case "staff" -> "n.ho_ten";
                     case "shift" -> "s.ten_ca";
                     default ->
@@ -118,7 +128,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 };
         String nhomCoc =
                 switch (nhomTongHop) {
-                    case "method" -> "k.phuong_thuc";
+                    case "method" -> "COALESCE(k.phuong_thuc_coc, 'CASH')";
                     case "staff" -> "n.ho_ten";
                     case "shift" -> "s.ten_ca";
                     default -> "'Hotel'";
@@ -127,26 +137,27 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
         return ThaoTacSQL.truyVan(
                 "WITH ledger AS (SELECT "
                         + nhom
-                        + " nhan,k.so_tien so_tien,h.id hoa_don,CAST(h.thanh_toan_luc AS date) ngay"
-                        + " FROM hoa_don h JOIN khoan_thu k ON k.hoa_don_id=h.id JOIN don_hang d ON"
-                        + " d.id=h.don_hang_id JOIN phien_lam_viec s ON s.id=d.phien_lam_viec_id"
+                        + " nhan,COALESCE(TRY_CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, 50) AS decimal(18,2)), h.tong_tien) so_tien,h.id hoa_don,CAST(h.thanh_toan_luc AS date) ngay"
+                        + " FROM hoa_don h JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
                         + " JOIN tai_khoan tk ON tk.id=s.tai_khoan_id JOIN nhan_vien n ON"
-                        + " n.id=tk.nhan_vien_id WHERE h.trang_thai='PAID'"
+                        + " n.id=tk.nhan_vien_id"
+                        + " CROSS APPLY STRING_SPLIT(CASE WHEN h.chi_tiet_thanh_toan IS NOT NULL AND CHARINDEX(':', h.chi_tiet_thanh_toan) > 0 THEN h.chi_tiet_thanh_toan ELSE h.hinh_thuc_thanh_toan + ':' + CAST(h.tong_tien AS varchar(30)) END, ';') sp"
+                        + " WHERE h.trang_thai='PAID' AND CHARINDEX(':', sp.value) > 0"
                         + loc
                         + " UNION ALL SELECT "
-                        + nhom.replace("k.phuong_thuc", "h.hinh_thuc_thanh_toan")
+                        + nhomDoiTra
                         + ",p.chenh_lech,NULL,CAST(p.tao_luc AS date) FROM phieu_doi_tra p JOIN"
-                        + " hoa_don h ON h.id=p.hoa_don_id JOIN don_hang d ON d.id=h.don_hang_id"
-                        + " JOIN phien_lam_viec s ON s.id=d.phien_lam_viec_id JOIN tai_khoan tk ON"
+                        + " hoa_don h ON h.id=p.hoa_don_id"
+                        + " JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id JOIN tai_khoan tk ON"
                         + " tk.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=tk.nhan_vien_id WHERE"
                         + " p.trang_thai='COMPLETED' AND p.loai_phieu='LEGACY_RETURN'"
                         + loc
                         + " UNION ALL SELECT "
                         + nhomCoc
-                        + ",k.so_tien,NULL,CAST(k.nhan_luc AS date) FROM khoan_thu k"
-                        + " JOIN phien_lam_viec s ON s.id=k.phien_id JOIN tai_khoan tk ON"
+                        + ",k.tien_coc,NULL,CAST(k.nhan_coc_luc AS date) FROM hop_dong_luu_tru k"
+                        + " JOIN phien_lam_viec s ON s.id=k.phien_nhan_coc_id JOIN tai_khoan tk ON"
                         + " tk.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=tk.nhan_vien_id WHERE"
-                        + " k.hop_dong_id IS NOT NULL"
+                        + " k.da_nhan_coc=1 AND k.nhan_coc_luc IS NOT NULL"
                         + loc
                         + ") SELECT nhan,SUM(so_tien),COUNT(DISTINCT hoa_don) FROM ledger WHERE"
                         + " ngay>=? AND ngay<? GROUP BY nhan ORDER BY SUM(so_tien) DESC",
@@ -160,13 +171,13 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 "SELECT TOP(10) p.ma_san_pham,p.ten,SUM(i.so_luong)-SUM(COALESCE(r.qty,0))"
                     + " qty,SUM(CASE WHEN h.tam_tinh>0 THEN"
                     + " i.so_luong*i.don_gia*(h.tong_tien+COALESCE(ex.credit,0))/h.tam_tinh ELSE 0"
-                    + " END)-SUM(COALESCE(r.refund,0)) amount FROM chi_tiet_don_hang i JOIN"
+                    + " END)-SUM(COALESCE(r.refund,0)) amount FROM chi_tiet_hoa_don i JOIN"
                     + " san_pham p ON p.id=i.san_pham_id JOIN hoa_don h ON"
-                    + " h.don_hang_id=i.don_hang_id JOIN don_hang d ON d.id=h.don_hang_id JOIN"
-                    + " phien_lam_viec s ON s.id=d.phien_lam_viec_id OUTER APPLY(SELECT"
+                    + " h.id=i.hoa_don_id JOIN"
+                    + " phien_lam_viec s ON s.id=h.phien_lam_viec_id OUTER APPLY(SELECT"
                     + " SUM(c.so_luong) qty,SUM(c.tien_hoan) refund FROM chi_tiet_doi_tra c JOIN"
                     + " phieu_doi_tra x ON x.id=c.phieu_doi_tra_id WHERE"
-                    + " c.chi_tiet_don_hang_id=i.id AND x.trang_thai='COMPLETED') r OUTER"
+                    + " c.chi_tiet_hoa_don_id=i.id AND x.trang_thai='COMPLETED') r OUTER"
                     + " APPLY(SELECT SUM(dx.gia_tri_duoc_doi) credit FROM phieu_doi_tra dx WHERE"
                     + " dx.hoa_don_thay_the_id=h.id AND dx.loai_phieu='EXCHANGE' AND"
                     + " dx.trang_thai='COMPLETED') ex WHERE h.trang_thai='PAID' AND"
@@ -180,14 +191,13 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     public List<Object[]> layDuLieuSpa(
             java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
         return ThaoTacSQL.truyVan(
-                "SELECT g.ma_goi,g.ten_goi,SUM(c.so_luong),SUM(CASE WHEN h.tam_tinh>0 THEN"
-                    + " c.thanh_tien*h.tong_tien/h.tam_tinh ELSE 0 END) FROM chi_tiet_phieu_spa c"
-                    + " JOIN goi_dich_vu_spa g ON g.id=c.goi_id JOIN phieu_tiep_nhan_spa t ON"
-                    + " t.id=c.phieu_spa_id JOIN hoa_don h ON h.id=t.hoa_don_id JOIN don_hang d ON"
-                    + " d.id=h.don_hang_id JOIN phien_lam_viec s ON s.id=d.phien_lam_viec_id WHERE"
-                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND t.trang_thai='PAID'"
+                "SELECT g.ma_goi,g.ten_goi,SUM(t.so_luong),SUM(CASE WHEN h.tam_tinh>0 THEN"
+                    + " t.tong_tien*h.tong_tien/h.tam_tinh ELSE t.tong_tien END) FROM"
+                    + " phieu_tiep_nhan_spa t JOIN goi_dich_vu_spa g ON g.id=t.goi_id JOIN hoa_don"
+                    + " h ON h.id=t.hoa_don_id JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
+                    + " WHERE h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND t.trang_thai='PAID'"
                         + (taiKhoan == null ? "" : " AND s.tai_khoan_id=" + taiKhoan)
-                        + " GROUP BY g.ma_goi,g.ten_goi ORDER BY SUM(c.so_luong) DESC",
+                        + " GROUP BY g.ma_goi,g.ten_goi ORDER BY SUM(t.so_luong) DESC",
                 tu,
                 denNgay);
     }
@@ -211,9 +221,8 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " DATEDIFF(day,h.ngay_vao,h.ngay_ra_thuc_te) END),SUM(d.tong_tien+CASE WHEN"
                     + " h.da_nhan_coc=1 THEN h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h JOIN"
                     + " phong_hotel p ON p.id=h.phong_id JOIN hoa_don d ON d.id=h.hoa_don_id JOIN"
-                    + " don_hang o ON o.id=d.don_hang_id JOIN phien_lam_viec s ON"
-                    + " s.id=o.phien_lam_viec_id WHERE d.trang_thai='PAID' AND d.thanh_toan_luc>=?"
-                    + " AND d.thanh_toan_luc<?"
+                    + " phien_lam_viec s ON s.id=d.phien_lam_viec_id WHERE d.trang_thai='PAID' AND"
+                    + " d.thanh_toan_luc>=? AND d.thanh_toan_luc<?"
                         + (taiKhoan == null ? "" : " AND s.tai_khoan_id=" + taiKhoan)
                         + " GROUP BY p.loai_phong ORDER BY p.loai_phong",
                 tu,
@@ -222,13 +231,21 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
 
     public List<Object[]> layDoanhThuHoanTat(Object... thamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT CAST(h.thanh_toan_luc AS date),SUM(h.tong_tien+COALESCE(c.coc,0)),COUNT(*)"
-                    + " FROM hoa_don h JOIN don_hang d ON d.id=h.don_hang_id OUTER APPLY(SELECT"
-                    + " SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE hoa_don_id=h.id AND"
-                    + " da_nhan_coc=1)c JOIN phien_lam_viec s ON s.id=d.phien_lam_viec_id WHERE"
-                    + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND (?"
-                    + " IS NULL OR s.tai_khoan_id=?) GROUP BY CAST(h.thanh_toan_luc AS date) ORDER"
-                    + " BY 1",
+                "SELECT CAST(h.thanh_toan_luc AS date),"
+                    + " COUNT(DISTINCT h.id),"
+                    + " SUM(h.tam_tinh + COALESCE(c.coc, 0)),"
+                    + " SUM(h.giam_gia),"
+                    + " SUM(COALESCE(dt.hoan_tra, 0)),"
+                    + " SUM(h.tong_tien + COALESCE(c.coc, 0) - COALESCE(dt.hoan_tra, 0)),"
+                    + " SUM(h.tong_tien + COALESCE(c.coc, 0) - COALESCE(dt.hoan_tra, 0) - COALESCE(gv.gia_von, 0))"
+                    + " FROM hoa_don h"
+                    + " OUTER APPLY (SELECT SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE hoa_don_id=h.id AND da_nhan_coc=1) c"
+                    + " OUTER APPLY (SELECT SUM(CASE WHEN p.chenh_lech < 0 THEN -p.chenh_lech ELSE 0 END) hoan_tra FROM phieu_doi_tra p WHERE p.hoa_don_id=h.id AND p.trang_thai='COMPLETED') dt"
+                    + " OUTER APPLY (SELECT SUM(ct.so_luong * COALESCE(NULLIF(l.gia_nhap, 0), sp.gia_nhap_gan_nhat, ct.don_gia * 0.6)) gia_von FROM chi_tiet_hoa_don ct JOIN san_pham sp ON sp.id=ct.san_pham_id LEFT JOIN lo_hang l ON l.id=ct.lo_hang_id WHERE ct.hoa_don_id=h.id) gv"
+                    + " JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
+                    + " WHERE h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                    + " AND (? IS NULL OR s.tai_khoan_id=?)"
+                    + " GROUP BY CAST(h.thanh_toan_luc AS date) ORDER BY 1",
                 thamSo);
     }
 
@@ -238,14 +255,12 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n ON n.id=c.phieu_nhap_id JOIN"
                     + " san_pham p ON p.id=c.san_pham_id WHERE n.trang_thai='POSTED' AND"
                     + " n.ngay_nhap>=? AND n.ngay_nhap<? UNION ALL SELECT p.ma_san_pham,p.ten,N'Bán"
-                    + " hàng',-b.so_luong FROM phan_bo_lo_hang b JOIN lo_hang l ON"
-                    + " l.id=b.lo_hang_id JOIN san_pham p ON p.id=l.san_pham_id JOIN"
-                    + " chi_tiet_don_hang c ON c.id=b.chi_tiet_don_hang_id JOIN hoa_don h ON"
-                    + " h.don_hang_id=c.don_hang_id WHERE h.trang_thai='PAID' AND"
-                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<? UNION ALL SELECT"
-                    + " p.ma_san_pham,p.ten,N'Nhận hàng đổi',c.so_luong FROM chi_tiet_doi_tra c"
-                    + " JOIN phieu_doi_tra n ON n.id=c.phieu_doi_tra_id JOIN lo_hang l ON"
-                    + " l.id=c.lo_hang_id JOIN san_pham p ON p.id=l.san_pham_id WHERE"
+                    + " hàng',-c.so_luong FROM chi_tiet_hoa_don c JOIN san_pham p ON"
+                    + " p.id=c.san_pham_id JOIN hoa_don h ON h.id=c.hoa_don_id WHERE"
+                    + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? UNION"
+                    + " ALL SELECT p.ma_san_pham,p.ten,N'Nhận hàng đổi',c.so_luong FROM"
+                    + " chi_tiet_doi_tra c JOIN phieu_doi_tra n ON n.id=c.phieu_doi_tra_id JOIN"
+                    + " lo_hang l ON l.id=c.lo_hang_id JOIN san_pham p ON p.id=l.san_pham_id WHERE"
                     + " n.trang_thai='COMPLETED' AND n.tao_luc>=? AND n.tao_luc<? UNION ALL SELECT"
                     + " p.ma_san_pham,p.ten,N'Xuất hủy',-c.so_luong FROM chi_tiet_phieu_xuat c JOIN"
                     + " phieu_xuat_kho n ON n.id=c.phieu_xuat_id JOIN lo_hang l ON"
@@ -274,23 +289,22 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
 
     public List<Object[]> layCocTrongKy(Object... thamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT CAST(k.nhan_luc AS date),SUM(k.so_tien),COUNT(DISTINCT CASE WHEN k.khoa"
-                    + " LIKE 'LEGACY-%' THEN k.khoa ELSE"
-                    + " LEFT(k.khoa,LEN(k.khoa)-CHARINDEX('-',REVERSE(k.khoa))) END) FROM khoan_thu"
-                    + " k JOIN phien_lam_viec s ON s.id=k.phien_id WHERE k.hop_dong_id IS NOT NULL"
-                    + " AND k.nhan_luc>=? AND k.nhan_luc<? AND (? IS NULL OR s.tai_khoan_id=?)"
-                    + " GROUP BY CAST(k.nhan_luc AS date) ORDER BY 1",
+                "SELECT CAST(k.nhan_coc_luc AS date),SUM(k.tien_coc),COUNT(DISTINCT k.id)"
+                    + " FROM hop_dong_luu_tru k JOIN phien_lam_viec s ON s.id=k.phien_nhan_coc_id"
+                    + " WHERE k.da_nhan_coc=1 AND k.nhan_coc_luc>=? AND k.nhan_coc_luc<?"
+                    + " AND (? IS NULL OR s.tai_khoan_id=?)"
+                    + " GROUP BY CAST(k.nhan_coc_luc AS date) ORDER BY 1",
                 thamSo);
     }
 
     public List<Object[]> layLuotKhach(Object... thamSo) {
         return ThaoTacSQL.truyVan(
-                "WITH khach AS (SELECT k.id,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu JOIN don_hang"
-                    + " dc ON dc.id=cu.don_hang_id WHERE dc.khach_hang_id=k.id AND"
+                "WITH khach AS (SELECT k.id,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu"
+                    + " WHERE cu.khach_hang_id=k.id AND"
                     + " cu.trang_thai='PAID' AND cu.thanh_toan_luc<?) THEN N'Khách quay lại' ELSE"
                     + " N'Khách mua lần đầu' END nhom FROM khach_hang k) SELECT"
                     + " k.nhom,COUNT(DISTINCT k.id),COUNT(h.id),SUM(h.tong_tien) FROM khach k JOIN"
-                    + " don_hang d ON d.khach_hang_id=k.id JOIN hoa_don h ON h.don_hang_id=d.id"
+                    + " hoa_don h ON h.khach_hang_id=k.id"
                     + " WHERE h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
                     + " GROUP BY k.nhom",
                 thamSo);
@@ -312,10 +326,10 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " n.ho_ten,s.ten_ca,s.mo_luc,s.dong_luc,s.tien_dau_ca,COALESCE(h.tien,0),COALESCE(c.coc,0),s.tien_thuc_te,s.chenh_lech"
                     + " FROM phien_lam_viec s JOIN tai_khoan t ON t.id=s.tai_khoan_id JOIN"
                     + " nhan_vien n ON n.id=t.nhan_vien_id OUTER APPLY(SELECT SUM(tong_tien) tien"
-                    + " FROM hoa_don h JOIN don_hang d ON d.id=h.don_hang_id WHERE"
-                    + " d.phien_lam_viec_id=s.id AND h.trang_thai='PAID')h OUTER APPLY(SELECT"
-                    + " SUM(so_tien) coc FROM khoan_thu WHERE phien_id=s.id AND hop_dong_id IS NOT"
-                    + " NULL)c WHERE s.mo_luc>=? AND s.mo_luc<? ORDER BY s.mo_luc DESC",
+                    + " FROM hoa_don h WHERE h.phien_lam_viec_id=s.id AND h.trang_thai='PAID')h"
+                    + " OUTER APPLY(SELECT SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE"
+                    + " phien_nhan_coc_id=s.id AND da_nhan_coc=1)c WHERE s.mo_luc>=? AND s.mo_luc<?"
+                    + " ORDER BY s.mo_luc DESC",
                 thamSo);
     }
 
@@ -352,16 +366,26 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     }
 
     public List<Object[]> layHangTonDong() {
+        int soNgay = 45;
+        try {
+            soNgay =
+                    Math.max(
+                            1,
+                            Integer.parseInt(
+                                    String.valueOf(java.util.Objects.requireNonNullElse(new CaiDatDAOImpl().timGiaTri("SO_NGAY_TON_DONG"), "45"))
+                                            .trim()));
+        } catch (NumberFormatException ignored) {
+        }
         return ThaoTacSQL.truyVan(
                 "SELECT p.ma_san_pham, p.ten, COALESCE(SUM(l.so_luong_ton), 0) ton,"
                     + " COALESCE(p.gia_nhap_gan_nhat, 0) gia_nhap, COALESCE(SUM(l.so_luong_ton), 0)"
                     + " * COALESCE(p.gia_nhap_gan_nhat, 0) von_chon FROM san_pham p JOIN lo_hang l"
                     + " ON l.san_pham_id = p.id WHERE l.so_luong_ton > 0 AND NOT EXISTS (SELECT 1"
-                    + " FROM chi_tiet_don_hang ct JOIN don_hang dh ON dh.id = ct.don_hang_id JOIN"
-                    + " hoa_don hd ON hd.don_hang_id = dh.id WHERE ct.san_pham_id = p.id AND"
-                    + " hd.trang_thai = 'PAID' AND hd.thanh_toan_luc >= DATEADD(day, -45,"
-                    + " GETDATE())) GROUP BY p.ma_san_pham, p.ten, p.gia_nhap_gan_nhat ORDER BY"
-                    + " von_chon DESC");
+                    + " FROM chi_tiet_hoa_don ct JOIN hoa_don hd ON hd.id = ct.hoa_don_id WHERE"
+                    + " ct.san_pham_id = p.id AND hd.trang_thai = 'PAID' AND hd.thanh_toan_luc >="
+                    + " DATEADD(day, -?, GETDATE())) GROUP BY p.ma_san_pham, p.ten,"
+                    + " p.gia_nhap_gan_nhat ORDER BY von_chon DESC",
+                soNgay);
     }
 
     public List<Object[]> layHaoHutKiemKe(java.time.LocalDate tu, java.time.LocalDate denNgay) {

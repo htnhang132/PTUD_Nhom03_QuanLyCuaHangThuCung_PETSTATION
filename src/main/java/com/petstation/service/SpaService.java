@@ -5,8 +5,8 @@ import static com.petstation.service.HoTroNghiepVuService.*;
 import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.XuLySpaDAO;
-import com.petstation.dao.impl.XuLySpaDAOImpl;
+import com.petstation.dao.PhieuTiepNhanSpaDAO;
+import com.petstation.dao.impl.PhieuTiepNhanSpaDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.*;
@@ -14,11 +14,11 @@ import java.util.*;
 
 /** Quản lý tiếp nhận, lựa chọn dịch vụ, tiến độ và hoàn thành phiếu Spa. */
 public final class SpaService {
-    private static final XuLySpaDAO xuLySpaDAO = new XuLySpaDAOImpl();
+    private static final PhieuTiepNhanSpaDAO xuLySpaDAO = new PhieuTiepNhanSpaDAOImpl();
 
     public static long datLichHen(
             String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         if (batDau == null || batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0)))
             throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
         return thucHienGiaoDich(
@@ -50,7 +50,7 @@ public final class SpaService {
     }
 
     public static Object[] layChiTietLichHen(long id) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         var rows = xuLySpaDAO.layChiTietLichHen(id);
         if (rows.isEmpty()) throw new IllegalArgumentException("Lịch hẹn không còn tồn tại.");
         return rows.get(0);
@@ -58,7 +58,7 @@ public final class SpaService {
 
     public static void suaLichHen(
             long id, String maThuCung, String maGoi, String maNhanVien, LocalDateTime batDau) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         if (batDau == null || batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0)))
             throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
         thucHienGiaoDich(
@@ -82,7 +82,7 @@ public final class SpaService {
     }
 
     public static long tiepNhan(String maThuCung, String maLichHen, double canNang, String ghiChu) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         if (!Double.isFinite(canNang) || canNang <= 0)
             throw new IllegalArgumentException("Cân nặng phải lớn hơn 0.");
         return thucHienGiaoDich(
@@ -117,7 +117,7 @@ public final class SpaService {
     }
 
     public static void themDichVuSpa(long phieuSpa, String maGoiDichVu) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         thucHienGiaoDich(
                 ketNoi -> {
                     // Các phiếu Spa.
@@ -146,7 +146,7 @@ public final class SpaService {
     }
 
     public static void layTrangThaiSpa(long phieuSpa, String tiepTheo) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         // Dự kiến.
         String duKien =
                 switch (tiepTheo) {
@@ -168,7 +168,7 @@ public final class SpaService {
     }
 
     public static void huyLichHen(long id, String ma) {
-        yeuCau(Quyen.SPA_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SPA);
         thucHienGiaoDich(
                 ketNoi -> {
                     if (xuLySpaDAO.huyLichHenBanGhi(id) != 1)
@@ -179,12 +179,12 @@ public final class SpaService {
     }
 
     public static Object layMaLichHenThuCung(long lichHen) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.SPA_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_SPA);
         return xuLySpaDAO.layMaLichHenThuCung(lichHen);
     }
 
     public static List<Object[]> layPhieuSpaChiTiet(long phieuSpa) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.SPA_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_SPA);
         return xuLySpaDAO.layPhieuSpaChiTiet(phieuSpa);
     }
 }

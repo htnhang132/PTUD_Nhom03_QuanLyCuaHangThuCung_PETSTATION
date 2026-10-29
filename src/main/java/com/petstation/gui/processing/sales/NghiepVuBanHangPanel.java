@@ -50,18 +50,18 @@ public abstract class NghiepVuBanHangPanel extends BangNghiepVuPanel {
                 giaTri.get("replacement"),
                 docSoLuong(giaTri, "newQty"),
                 giaTri.get("reason"));
-        dieuHuong.accept(MaManHinh.PAYMENT);
+        dieuHuong.accept(MaManHinh.THANH_TOAN);
     }
 
     protected void hienThiHoaDon() {
         banHang.datBienLaiCuoi(BanHangService.layBienLai(layNoiDungDongChon(1)));
-        dieuHuong.accept(MaManHinh.PRINT_INVOICE);
+        dieuHuong.accept(MaManHinh.IN_HOA_DON);
     }
 
     protected void quyetToan(String loai) {
         if (!banHang.kiemTraTrong())
             throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
         BanHangService.quyetToan(loai, layDongChon(), banHang);
-        dieuHuong.accept(MaManHinh.PAYMENT);
+        dieuHuong.accept(MaManHinh.THANH_TOAN);
     }
 }

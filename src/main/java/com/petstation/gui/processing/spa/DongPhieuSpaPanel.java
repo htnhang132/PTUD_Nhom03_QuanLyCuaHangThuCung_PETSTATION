@@ -17,7 +17,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho Spa đóng vùng hiển thị. */
 public final class DongPhieuSpaPanel extends NghiepVuSpaPanel {
     public DongPhieuSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.SPA_CLOSE, banHang, dieuHuong);
+        super(LoaiNghiepVu.HOAN_TAT_SPA, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Tiếp nhận", this::tiepNhan);
         themNut(pnlCacThaoTac, "Thêm dịch vụ", this::themDichVu);

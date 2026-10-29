@@ -295,11 +295,11 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     }
 
     private void dieuHuongQuayLai() {
-        dieuHuong.accept(com.petstation.model.MaManHinh.DASHBOARD);
+        dieuHuong.accept(com.petstation.model.MaManHinh.TONG_QUAN);
     }
 
     private void dieuHuongDenTrangChinh() {
-        dieuHuong.accept(com.petstation.model.MaManHinh.DASHBOARD);
+        dieuHuong.accept(com.petstation.model.MaManHinh.TONG_QUAN);
     }
 
     private void dangKyBanPhimPhimTat(String khoa, java.awt.event.ActionListener thaoTac) {

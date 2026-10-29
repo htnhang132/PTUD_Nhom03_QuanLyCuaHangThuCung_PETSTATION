@@ -119,7 +119,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         pnlVungChua.add(pnlChiTiet);
         // Tách.
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, pnlVungChua);
-        tach.setResizeWeight(0.55);
+        tach.setResizeWeight(1.0);
         tach.setBorder(null);
         tach.setOpaque(false);
         add(tach, BorderLayout.CENTER);

@@ -16,7 +16,7 @@ public final class QuyTrinhService {
     public static void chuyenBuoc(String tu, String den, GioHang gio) {
         var q = gio.layQuyTrinh();
         if (den.startsWith("SPA_")) {
-            PhienDangNhapService.yeuCau(Quyen.SPA_MANAGE);
+            PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
             if (den.equals("SPA_SCHEDULE") || den.equals("SPA_INTAKE")) return;
             var dong = quyTrinhDAO.laySpa(q.layPhieuSpa());
             if (dong.isEmpty())
@@ -32,7 +32,7 @@ public final class QuyTrinhService {
                 throw new IllegalArgumentException("Cần hoàn thành dịch vụ trước khi đóng phiếu.");
         }
         if (den.equals("HOTEL_JOURNAL") || den.equals("CHECKOUT")) {
-            PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
+            PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
             String trangThai = quyTrinhDAO.layTrangThaiHotel(q.layHopDongHotel());
             if (!List.of("BOOKED", "CHECKED_IN").contains(trangThai))
                 throw new IllegalArgumentException(
@@ -51,17 +51,17 @@ public final class QuyTrinhService {
     }
 
     public static List<Object[]> layLichHen(long id) {
-        PhienDangNhapService.yeuCau(Quyen.SPA_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
         return quyTrinhDAO.layLichHen(id);
     }
 
     public static List<Object[]> layPhong() {
-        PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
         return quyTrinhDAO.layPhong();
     }
 
-    public static List<com.petstation.model.ThongTinPhong> layThongTinPhong() {
-        PhienDangNhapService.yeuCau(Quyen.HOTEL_MANAGE);
+    public static List<com.petstation.model.PhongHotel> layPhongHotel() {
+        PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var lich = quyTrinhDAO.layLichPhong();
         return quyTrinhDAO.layPhongChiTiet().stream()
                 .map(
@@ -72,10 +72,10 @@ public final class QuyTrinhService {
                                             .filter(l -> ((Number) l[0]).longValue() == id)
                                             .toList();
                             java.util.function.Function<
-                                            Object[], com.petstation.model.ThongTinPhong.LichPhong>
+                                            Object[], com.petstation.model.PhongHotel.LichPhong>
                                     doi =
                                             l ->
-                                                    new com.petstation.model.ThongTinPhong
+                                                    new com.petstation.model.PhongHotel
                                                             .LichPhong(
                                                             ((Number) l[1]).longValue(),
                                                             l[2].toString(),
@@ -90,7 +90,7 @@ public final class QuyTrinhService {
                                             .map(doi)
                                             .findFirst()
                                             .orElse(null);
-                            return new com.petstation.model.ThongTinPhong(
+                            return new com.petstation.model.PhongHotel(
                                     id,
                                     p[1].toString(),
                                     p[2].toString(),

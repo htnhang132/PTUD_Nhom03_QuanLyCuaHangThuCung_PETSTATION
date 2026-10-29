@@ -435,11 +435,12 @@ public class DangNhapFrame extends JFrame {
                     // Nguyên nhân.
                     Throwable nguyenNhan =
                             ngoaiLe.getCause() == null ? ngoaiLe : ngoaiLe.getCause();
+                    nguyenNhan.printStackTrace();
                     // Thông báo.
                     String thongBao =
                             nguyenNhan instanceof XacThucException
                                     ? nguyenNhan.getMessage()
-                                    : "Không thể đăng nhập. Vui lòng thử lại.";
+                                    : ("Lỗi đăng nhập: " + (nguyenNhan.getMessage() != null ? nguyenNhan.getMessage() : "Không thể đăng nhập. Vui lòng thử lại."));
                     hienThiThongBao(thongBao, MauUngDung.VAN_BAN_NGUY_HIEM);
                     txtVanBanMatKhau.setText("");
                     txtVanBanMatKhau.requestFocusInWindow();

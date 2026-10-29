@@ -4,8 +4,8 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.CaThuNganDAO;
-import com.petstation.dao.impl.CaThuNganDAOImpl;
+import com.petstation.dao.CaLamViecDAO;
+import com.petstation.dao.impl.CaLamViecDAOImpl;
 import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
 
@@ -14,7 +14,7 @@ import java.util.*;
 
 /** Quản lý mở ca, doanh thu, tiền bàn giao và đóng ca của tài khoản hiện tại. */
 public final class CaThuNganService {
-    private static final CaThuNganDAO caThuNganDAO = new CaThuNganDAOImpl();
+    private static final CaLamViecDAO caThuNganDAO = new CaLamViecDAOImpl();
 
     /** Các bộ lắng nghe. */
     private final List<Runnable> cacBoLangNghe = new ArrayList<>();
@@ -63,15 +63,15 @@ public final class CaThuNganService {
     }
 
     public long layDoanhThuTienMat() {
-        return layDoanhThu(PhuongThuc.CASH);
+        return layDoanhThu(PhuongThuc.TIEN_MAT);
     }
 
     public long layDoanhThuChuyenKhoan() {
-        return layDoanhThu(PhuongThuc.TRANSFER);
+        return layDoanhThu(PhuongThuc.CHUYEN_KHOAN);
     }
 
     public long layDoanhThuThe() {
-        return layDoanhThu(PhuongThuc.CARD);
+        return layDoanhThu(PhuongThuc.THE_NGAN_HANG);
     }
 
     public int demHoaDon() {
@@ -83,9 +83,9 @@ public final class CaThuNganService {
     }
 
     public long layTongCocHotel() {
-        return layCocHotel(PhuongThuc.CASH)
-                + layCocHotel(PhuongThuc.TRANSFER)
-                + layCocHotel(PhuongThuc.CARD);
+        return layCocHotel(PhuongThuc.TIEN_MAT)
+                + layCocHotel(PhuongThuc.CHUYEN_KHOAN)
+                + layCocHotel(PhuongThuc.THE_NGAN_HANG);
     }
 
     public long layTienMatDuKien() {
@@ -116,7 +116,7 @@ public final class CaThuNganService {
     }
 
     public void mo(String ten, long soTien) {
-        yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
         if (ten == null || ten.isBlank()) throw new IllegalArgumentException("Chưa chọn tên ca.");
         if (soTien < 0) throw new IllegalArgumentException("Tiền đầu ca phải không âm.");
         thucHienGiaoDich(
@@ -150,7 +150,7 @@ public final class CaThuNganService {
     }
 
     public List<NguoiNhan> layNguoiNhan() {
-        yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
         return caThuNganDAO.layNguoiNhan(layIdTaiKhoan()).stream()
                 .map(
                         d ->
@@ -163,7 +163,7 @@ public final class CaThuNganService {
 
     /** Kết ca và lưu người nhận bằng khóa ngoại, cùng giao dịch với số tiền. */
     public void dong(long daDem, String ghiChu, HinhThucBanGiao hinhThuc, Long nguoiNhan) {
-        yeuCau(Quyen.CASH_SHIFT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
         Objects.requireNonNull(hinhThuc, "Chưa chọn hình thức bàn giao.");
         if (hinhThuc == HinhThucBanGiao.NOP_QUY && nguoiNhan != null)
             throw new IllegalArgumentException("Nộp quỹ không có người nhận ca.");

@@ -46,24 +46,24 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         JPanel pnlThongTinCuaHang = layNhomBox("Thông tin pháp nhân & Liên hệ");
         taoTruong(
                 pnlThongTinCuaHang,
-                "STORE_NAME",
+                "TEN_CUA_HANG",
                 "Tên cửa hàng",
                 "Tên hiển thị trên hóa đơn và chứng từ");
         taoTruong(
                 pnlThongTinCuaHang,
-                "STORE_ADDRESS",
+                "DIA_CHI_CUA_HANG",
                 "Địa chỉ cửa hàng",
                 "Địa chỉ in trên tiêu đề hóa đơn");
-        taoTruong(pnlThongTinCuaHang, "STORE_PHONE", "Số điện thoại / Hotline", "Hotline liên hệ");
+        taoTruong(pnlThongTinCuaHang, "SO_DIEN_THOAI_CUA_HANG", "Số điện thoại / Hotline", "Hotline liên hệ");
         taoTruong(
-                pnlThongTinCuaHang, "STORE_EMAIL", "Email cửa hàng", "Hộp thư chăm sóc khách hàng");
-        taoTruong(pnlThongTinCuaHang, "STORE_WEBSITE", "Website", "Địa chỉ website cửa hàng");
-        taoTruong(pnlThongTinCuaHang, "STORE_TAX_CODE", "Mã số thuế", "Mã số thuế doanh nghiệp");
+                pnlThongTinCuaHang, "EMAIL_CUA_HANG", "Email cửa hàng", "Hộp thư chăm sóc khách hàng");
+        taoTruong(pnlThongTinCuaHang, "WEBSITE_CUA_HANG", "Website", "Địa chỉ website cửa hàng");
+        taoTruong(pnlThongTinCuaHang, "MA_SO_THUE", "Mã số thuế", "Mã số thuế doanh nghiệp");
 
         JPanel pnlHoaDonVaMayIn = layNhomBox("Bán hàng, Thuế & Thiết bị");
         taoTruong(
                 pnlHoaDonVaMayIn,
-                "VAT_PERCENT",
+                "THUE_VAT_PHAN_TRAM",
                 "Thuế VAT (%)",
                 "Thuế suất GTGT áp dụng chung (0 - 100%)");
 
@@ -90,17 +90,17 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         // VietQR
         taoTruong(
                 pnlHoaDonVaMayIn,
-                "BANK_BIN",
+                "MA_BIN_NGAN_HANG",
                 "Mã BIN ngân hàng VietQR",
                 "Mã BIN 6 số ngân hàng (VD: 970436 - Vietcombank)");
         taoTruong(
                 pnlHoaDonVaMayIn,
-                "BANK_ACCOUNT",
+                "SO_TAI_KHOAN_NGAN_HANG",
                 "Số tài khoản nhận tiền",
                 "Số tài khoản ngân hàng thụ hưởng");
         taoTruong(
                 pnlHoaDonVaMayIn,
-                "BANK_ACCOUNT_NAME",
+                "TEN_CHU_TAI_KHOAN",
                 "Chủ tài khoản (IN HOA)",
                 "Tên chủ tài khoản viết hoa không dấu");
 
@@ -113,24 +113,24 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         JPanel pnlKho1 = layNhomBox("Cảnh báo tồn kho & Hạn dùng");
         taoTruong(
                 pnlKho1,
-                "LOW_STOCK_THRESHOLD",
+                "NGUONG_TON_KHO_THAP",
                 "Ngưỡng tồn thấp cảnh báo",
                 "Sản phẩm có tồn kho dưới mức này sẽ hiện cảnh báo");
         taoTruong(
                 pnlKho1,
-                "EXPIRY_WARN_DAYS",
+                "SO_NGAY_CANH_BAO_HET_HAN",
                 "Cảnh báo trước hạn dùng (ngày)",
                 "Lô hàng sắp hết hạn trong khoảng số ngày này sẽ được tô đỏ");
         taoTruong(
                 pnlKho1,
-                "DEAD_STOCK_DAYS",
+                "SO_NGAY_TON_DONG",
                 "Ngưỡng hàng tồn đọng / chôn vốn (ngày)",
                 "Hàng nhập kho quá số ngày này chưa bán được xem là tồn đọng");
 
         JPanel pnlKho2 = layNhomBox("Xuất hủy & Kiểm kê");
         taoTruong(
                 pnlKho2,
-                "WRITEOFF_APPROVAL_LIMIT",
+                "HAN_MUC_XUAT_HUY_CAN_DUYET",
                 "Hạn mức xuất hủy cần duyệt (đồng)",
                 "Phiếu xuất hủy vượt giá trị này cần Quản lý phê duyệt");
 
@@ -149,26 +149,26 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         JPanel pnlNhanSu1 = layNhomBox("Chính sách làm việc & Ca trực");
         taoTruong(
                 pnlNhanSu1,
-                "MAX_WEEKLY_HOURS",
+                "SO_GIO_TOI_DA_MOI_TUAN",
                 "Số giờ làm việc tối đa mỗi tuần (giờ)",
                 "Cảnh báo khi phân ca vượt quá số giờ quy định");
         taoTruong(
                 pnlNhanSu1,
-                "SHIFT_SWAP_HOURS_AHEAD",
+                "SO_GIO_BAO_TRUOC_DOI_CA",
                 "Thời gian báo trước khi đổi ca (giờ)",
                 "Nhân viên phải gửi yêu cầu đổi ca trước ca làm ít nhất");
 
         JPanel pnlNhanSu2 = layNhomBox("Quy định dịch vụ & Đổi trả");
         taoTruong(
                 pnlNhanSu2,
-                "LATE_CHECKOUT_FEE",
+                "PHI_TRA_PHONG_TRE",
                 "Phí trả phòng lưu trú trễ (đồng/ngày)",
                 "Phí phụ thu khi khách nhận thú cưng trễ ngày hẹn");
         taoTruong(
                 pnlNhanSu2,
-                "RETURN_WINDOW_DAYS",
+                "SO_NGAY_DOI_TRA",
                 "Thời hạn đổi trả phụ kiện (ngày)",
-                "Chính sách đổi trả phụ kiện trong vòng 3 ngày (cố định)");
+                "Số ngày tối đa cho phép khách hàng đổi trả phụ kiện kể từ ngày mua");
 
         tab3.add(pnlNhanSu1);
         tab3.add(pnlNhanSu2);
@@ -179,7 +179,7 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         JPanel pnlHeThong1 = layNhomBox("Đường dẫn dữ liệu");
         taoTruongThuMuc(
                 pnlHeThong1,
-                "CARE_DATA_DIR",
+                "THU_MUC_ANH_CHAM_SOC",
                 "Thư mục lưu trữ hình ảnh chăm sóc thú cưng",
                 "Mặc định thư mục PetStation trong thư mục người dùng");
 
@@ -317,12 +317,12 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     private void inThu() {
         JTextArea txtTrang =
                 new JTextArea(
-                        CaiDatService.lay("STORE_NAME")
+                        CaiDatService.lay("TEN_CUA_HANG")
                                 + "\n"
-                                + CaiDatService.lay("STORE_ADDRESS")
+                                + CaiDatService.lay("DIA_CHI_CUA_HANG")
                                 + "\n"
                                 + "Hotline: "
-                                + CaiDatService.lay("STORE_PHONE")
+                                + CaiDatService.lay("SO_DIEN_THOAI_CUA_HANG")
                                 + "\n"
                                 + "--------------------------------\n"
                                 + "IN THỬ PET STATION POS\n"
@@ -342,56 +342,55 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
                 this, "Bạn có chắc muốn đặt lại các thông số cấu hình về giá trị tiêu chuẩn?")) {
             return;
         }
-        if (cacDauVao.containsKey("VAT_PERCENT")) cacDauVao.get("VAT_PERCENT").setText("8");
-        if (cacDauVao.containsKey("LOW_STOCK_THRESHOLD"))
-            cacDauVao.get("LOW_STOCK_THRESHOLD").setText("10");
-        if (cacDauVao.containsKey("EXPIRY_WARN_DAYS"))
-            cacDauVao.get("EXPIRY_WARN_DAYS").setText("30");
-        if (cacDauVao.containsKey("DEAD_STOCK_DAYS"))
-            cacDauVao.get("DEAD_STOCK_DAYS").setText("45");
-        if (cacDauVao.containsKey("WRITEOFF_APPROVAL_LIMIT"))
-            cacDauVao.get("WRITEOFF_APPROVAL_LIMIT").setText("500000");
-        if (cacDauVao.containsKey("MAX_WEEKLY_HOURS"))
-            cacDauVao.get("MAX_WEEKLY_HOURS").setText("40");
-        if (cacDauVao.containsKey("SHIFT_SWAP_HOURS_AHEAD"))
-            cacDauVao.get("SHIFT_SWAP_HOURS_AHEAD").setText("12");
-        if (cacDauVao.containsKey("LATE_CHECKOUT_FEE"))
-            cacDauVao.get("LATE_CHECKOUT_FEE").setText("100000");
-        if (cacDauVao.containsKey("RETURN_WINDOW_DAYS"))
-            cacDauVao.get("RETURN_WINDOW_DAYS").setText("3");
+        if (cacDauVao.containsKey("THUE_VAT_PHAN_TRAM")) cacDauVao.get("THUE_VAT_PHAN_TRAM").setText("8");
+        if (cacDauVao.containsKey("NGUONG_TON_KHO_THAP"))
+            cacDauVao.get("NGUONG_TON_KHO_THAP").setText("10");
+        if (cacDauVao.containsKey("SO_NGAY_CANH_BAO_HET_HAN"))
+            cacDauVao.get("SO_NGAY_CANH_BAO_HET_HAN").setText("30");
+        if (cacDauVao.containsKey("SO_NGAY_TON_DONG"))
+            cacDauVao.get("SO_NGAY_TON_DONG").setText("45");
+        if (cacDauVao.containsKey("HAN_MUC_XUAT_HUY_CAN_DUYET"))
+            cacDauVao.get("HAN_MUC_XUAT_HUY_CAN_DUYET").setText("500000");
+        if (cacDauVao.containsKey("SO_GIO_TOI_DA_MOI_TUAN"))
+            cacDauVao.get("SO_GIO_TOI_DA_MOI_TUAN").setText("40");
+        if (cacDauVao.containsKey("SO_GIO_BAO_TRUOC_DOI_CA"))
+            cacDauVao.get("SO_GIO_BAO_TRUOC_DOI_CA").setText("12");
+        if (cacDauVao.containsKey("PHI_TRA_PHONG_TRE"))
+            cacDauVao.get("PHI_TRA_PHONG_TRE").setText("100000");
+        if (cacDauVao.containsKey("SO_NGAY_DOI_TRA"))
+            cacDauVao.get("SO_NGAY_DOI_TRA").setText("3");
         chkBlindCountDefault.setSelected(false);
     }
 
     private void nap() {
         for (var muc : cacDauVao.entrySet()) {
             String k = muc.getKey();
-            if (k.equals("DEAD_STOCK_DAYS")) {
+            if (k.equals("SO_NGAY_TON_DONG")) {
                 muc.getValue().setText(CaiDatService.layTuyChonHoacMacDinh(k, "45"));
-            } else if (k.equals("MAX_WEEKLY_HOURS")) {
+            } else if (k.equals("SO_GIO_TOI_DA_MOI_TUAN")) {
                 muc.getValue().setText(CaiDatService.layTuyChonHoacMacDinh(k, "40"));
-            } else if (k.equals("SHIFT_SWAP_HOURS_AHEAD")) {
+            } else if (k.equals("SO_GIO_BAO_TRUOC_DOI_CA")) {
                 muc.getValue().setText(CaiDatService.layTuyChonHoacMacDinh(k, "12"));
-            } else if (k.startsWith("BANK_") || k.equals("CARE_DATA_DIR")) {
+            } else if (k.equals("SO_NGAY_DOI_TRA")) {
+                muc.getValue().setText(CaiDatService.layTuyChonHoacMacDinh(k, "3"));
+            } else if (k.equals("MA_BIN_NGAN_HANG")
+                    || k.equals("SO_TAI_KHOAN_NGAN_HANG")
+                    || k.equals("TEN_CHU_TAI_KHOAN")
+                    || k.equals("THU_MUC_ANH_CHAM_SOC")) {
                 muc.getValue().setText(CaiDatService.layTuyChon(k));
             } else {
                 muc.getValue().setText(CaiDatService.lay(k));
             }
         }
 
-        // Cố định thời hạn đổi trả
-        if (cacDauVao.containsKey("RETURN_WINDOW_DAYS")) {
-            cacDauVao.get("RETURN_WINDOW_DAYS").setText("3");
-            cacDauVao.get("RETURN_WINDOW_DAYS").setEditable(false);
-        }
-
         // Blind count default
         boolean blind =
                 Boolean.parseBoolean(
-                        CaiDatService.layTuyChonHoacMacDinh("BLIND_COUNT_DEFAULT", "false"));
+                        CaiDatService.layTuyChonHoacMacDinh("MAC_DINH_KIEM_KE_MU", "false"));
         chkBlindCountDefault.setSelected(blind);
 
         // Máy in
-        String daChon = CaiDatService.lay("PRINTER");
+        String daChon = CaiDatService.lay("MAY_IN");
         if (!daChon.isBlank()) cboMayIn.setSelectedItem(daChon);
 
         ghiNhanDaNap();
@@ -417,20 +416,20 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         if (!coTheSua) return;
         try {
             // Validation
-            int vat = Integer.parseInt(cacDauVao.get("VAT_PERCENT").getText().trim());
+            int vat = Integer.parseInt(cacDauVao.get("THUE_VAT_PHAN_TRAM").getText().trim());
             if (vat < 0 || vat > 100)
                 throw new IllegalArgumentException("Thuế VAT phải từ 0% đến 100%.");
 
-            long lowStock = Long.parseLong(cacDauVao.get("LOW_STOCK_THRESHOLD").getText().trim());
+            long lowStock = Long.parseLong(cacDauVao.get("NGUONG_TON_KHO_THAP").getText().trim());
             if (lowStock < 0) throw new IllegalArgumentException("Ngưỡng tồn thấp không được âm.");
 
-            long expiryDays = Long.parseLong(cacDauVao.get("EXPIRY_WARN_DAYS").getText().trim());
+            long expiryDays = Long.parseLong(cacDauVao.get("SO_NGAY_CANH_BAO_HET_HAN").getText().trim());
             if (expiryDays < 0)
                 throw new IllegalArgumentException("Số ngày cảnh báo hạn dùng không được âm.");
 
             Map<String, String> giaTri = new LinkedHashMap<>();
             cacDauVao.forEach((khoa, truong) -> giaTri.put(khoa, truong.getText().trim()));
-            giaTri.put("BLIND_COUNT_DEFAULT", String.valueOf(chkBlindCountDefault.isSelected()));
+            giaTri.put("MAC_DINH_KIEM_KE_MU", String.valueOf(chkBlindCountDefault.isSelected()));
 
             String mayIn =
                     "Không có máy in".equals(cboMayIn.getSelectedItem())

@@ -16,7 +16,7 @@ import javax.swing.*;
 /** Cung cấp giao diện và xử lý tương tác cho hàng hóa xuất hủy vùng hiển thị. */
 public final class XuatHuyKhoPanel extends NghiepVuKhoPanel {
     public XuatHuyKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.WRITE_OFF, banHang, dieuHuong);
+        super(LoaiNghiepVu.PHIEU_XUAT_KHO, banHang, dieuHuong);
         themNut(pnlCacThaoTac, "+ Lập phiếu xuất hủy", this::ghiHuy);
     }
 }

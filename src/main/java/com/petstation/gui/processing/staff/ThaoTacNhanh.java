@@ -35,7 +35,7 @@ public final class ThaoTacNhanh {
                             DateTimeFormatter.ofPattern("dd/MM/uuuu")
                                     .withResolverStyle(java.time.format.ResolverStyle.STRICT));
             PheDuyetService.guiThaoTac(
-                    PheDuyetService.Loai.LEAVE,
+                    PheDuyetService.Loai.NGHI_PHEP,
                     cacGiaTri.get("reason"),
                     "Lịch làm việc ngày " + ngay,
                     "Nghỉ phép",

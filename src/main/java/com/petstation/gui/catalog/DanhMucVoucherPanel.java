@@ -17,7 +17,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     @Override
     protected boolean coTheChinhSua() {
         return com.petstation.service.PhienDangNhapService.layPhien()
-                .kiemTraCo(com.petstation.model.Quyen.PROMOTION_MANAGE);
+                .kiemTraCo(com.petstation.model.Quyen.QUAN_LY_KHUYEN_MAI);
     }
 
     @Override
@@ -31,7 +31,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.VOUCHERS,
+                        com.petstation.model.LoaiDanhMuc.VOUCHER,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

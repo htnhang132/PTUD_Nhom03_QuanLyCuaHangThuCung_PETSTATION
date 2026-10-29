@@ -5,8 +5,8 @@ import static com.petstation.service.HoTroNghiepVuService.*;
 import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.util.DuLieu.*;
 
-import com.petstation.dao.PheDuyetDAO;
-import com.petstation.dao.impl.PheDuyetDAOImpl;
+import com.petstation.dao.YeuCauPheDuyetDAO;
+import com.petstation.dao.impl.YeuCauPheDuyetDAOImpl;
 import com.petstation.model.Quyen;
 
 import java.time.LocalDate;
@@ -16,22 +16,35 @@ import java.util.*;
 
 /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho phê duyệt dịch vụ. */
 public final class PheDuyetService {
-    private static final PheDuyetDAO pheDuyetDAO = new PheDuyetDAOImpl();
+    private static final YeuCauPheDuyetDAO pheDuyetDAO = new YeuCauPheDuyetDAOImpl();
 
     /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho loại. */
     public enum Loai {
-        INVOICE("Sửa/hủy hóa đơn"),
-        RETURN("Đổi trả vượt hạn mức"),
-        WRITE_OFF("Xuất hủy giá trị lớn"),
-        STOCKTAKE("Điều chỉnh kiểm kê"),
-        LEAVE("Nghỉ phép"),
-        PRICE("Đề xuất giá bán");
+        SUA_HOA_DON("Sửa/hủy hóa đơn"),
+        DOI_TRA("Đổi trả vượt hạn mức"),
+        XUAT_HUY("Xuất hủy giá trị lớn"),
+        KIEM_KE("Điều chỉnh kiểm kê"),
+        NGHI_PHEP("Nghỉ phép"),
+        GIA_BAN("Đề xuất giá bán");
 
         /** Nhãn. */
         public final String nhan;
 
         Loai(String nhan) {
             this.nhan = nhan;
+        }
+
+        public static Loai docTuCSDL(String ma) {
+            if (ma == null || ma.isBlank()) return SUA_HOA_DON;
+            return switch (ma.trim()) {
+                case "INVOICE", "SUA_HOA_DON" -> SUA_HOA_DON;
+                case "RETURN", "DOI_TRA" -> DOI_TRA;
+                case "WRITE_OFF", "XUAT_HUY" -> XUAT_HUY;
+                case "STOCKTAKE", "KIEM_KE" -> KIEM_KE;
+                case "LEAVE", "NGHI_PHEP" -> NGHI_PHEP;
+                case "PRICE", "GIA_BAN" -> GIA_BAN;
+                default -> Loai.valueOf(ma.trim());
+            };
         }
     }
 
@@ -57,7 +70,7 @@ public final class PheDuyetService {
 
         YeuCau(Object[] dongDuLieu) {
             id = chuyenThanhChuoi(dongDuLieu[0]);
-            loai = Loai.valueOf(chuyenThanhChuoi(dongDuLieu[1]));
+            loai = Loai.docTuCSDL(chuyenThanhChuoi(dongDuLieu[1]));
             nguoiGui = chuyenThanhChuoi(dongDuLieu[2]);
             thoiGian = ((java.sql.Timestamp) dongDuLieu[3]).toLocalDateTime();
             lyDo = chuyenThanhChuoi(dongDuLieu[4]);
@@ -65,8 +78,8 @@ public final class PheDuyetService {
             sau = chuyenThanhChuoi(dongDuLieu[6]);
             trangThai =
                     switch (chuyenThanhChuoi(dongDuLieu[7])) {
-                        case "APPROVED" -> "Đã duyệt";
-                        case "REJECTED" -> "Từ chối";
+                        case "APPROVED", "DA_DUYET" -> "Đã duyệt";
+                        case "REJECTED", "TU_CHOI" -> "Từ chối";
                         default -> "Chờ duyệt";
                     };
             daQuyetDinhTheo = chuyenThanhChuoi(dongDuLieu[8]);
@@ -97,21 +110,21 @@ public final class PheDuyetService {
         // Quyền.
         Quyen quyen =
                 switch (loai) {
-                    case INVOICE, RETURN -> Quyen.POS_SELL;
-                    case WRITE_OFF -> Quyen.INVENTORY_ISSUE;
-                    case STOCKTAKE -> Quyen.INVENTORY_COUNT;
-                    case LEAVE -> Quyen.SCHEDULE_VIEW;
-                    case PRICE -> Quyen.PRICE_PROPOSE;
+                    case SUA_HOA_DON, DOI_TRA -> Quyen.BAN_HANG;
+                    case XUAT_HUY -> Quyen.XUAT_HUY_KHO;
+                    case KIEM_KE -> Quyen.KIEM_KE_KHO;
+                    case NGHI_PHEP -> Quyen.XEM_LICH_LAM_VIEC;
+                    case GIA_BAN -> Quyen.DE_XUAT_GIA;
                 };
         yeuCau(quyen);
         boolean dungThaoTac =
                 switch (loai) {
-                    case INVOICE -> Set.of("INVOICE_NOTE", "CANCEL_INVOICE").contains(thaoTac);
-                    case RETURN -> false;
-                    case WRITE_OFF -> "WRITE_OFF".equals(thaoTac);
-                    case STOCKTAKE -> "STOCKTAKE".equals(thaoTac);
-                    case LEAVE -> "LEAVE".equals(thaoTac);
-                    case PRICE -> "PRICE_CHANGE".equals(thaoTac);
+                    case SUA_HOA_DON -> Set.of("INVOICE_NOTE", "CANCEL_INVOICE").contains(thaoTac);
+                    case DOI_TRA -> false;
+                    case XUAT_HUY -> "WRITE_OFF".equals(thaoTac);
+                    case KIEM_KE -> "STOCKTAKE".equals(thaoTac);
+                    case NGHI_PHEP -> "LEAVE".equals(thaoTac);
+                    case GIA_BAN -> "PRICE_CHANGE".equals(thaoTac);
                 };
         if (!dungThaoTac || dich <= 0)
             throw new IllegalArgumentException("Thao tác không phù hợp với loại phê duyệt.");
@@ -151,7 +164,7 @@ public final class PheDuyetService {
     }
 
     public static void duyet(YeuCau yeuCau, String nguoiDuyet) {
-        yeuCau(Quyen.APPROVAL_PROCESS);
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
         thucHienGiaoDich(
                 ketNoi -> {
                     List<Object[]> cacDong = pheDuyetDAO.timDuyet(yeuCau.id);
@@ -173,7 +186,7 @@ public final class PheDuyetService {
     }
 
     public static void tuChoi(YeuCau yeuCau, String nguoiDuyet, String lyDo) {
-        yeuCau(Quyen.APPROVAL_PROCESS);
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
         if (lyDo.isBlank()) throw new IllegalArgumentException("Cần lý do từ chối.");
         thucHienGiaoDich(
                 ketNoi -> {
@@ -210,13 +223,13 @@ public final class PheDuyetService {
     }
 
     public static void layHoaDonYeuCau(String hoaDon, boolean huy, String lyDo, String thayDoi) {
-        yeuCau(Quyen.POS_SELL);
+        yeuCau(Quyen.BAN_HANG);
         // Id.
         long id = layId("hoa_don", "so_hoa_don", hoaDon);
         if (lyDo.isBlank() || !huy && thayDoi.isBlank())
             throw new IllegalArgumentException("Cần lý do và nội dung cần sửa.");
         PheDuyetService.guiThaoTac(
-                PheDuyetService.Loai.INVOICE,
+                PheDuyetService.Loai.SUA_HOA_DON,
                 lyDo,
                 hoaDon,
                 huy ? "Hủy hóa đơn" : thayDoi,
@@ -226,7 +239,7 @@ public final class PheDuyetService {
     }
 
     public static void apDungPheDuyet(String thaoTac, long dich, String noiDungXuLy) {
-        yeuCau(Quyen.APPROVAL_PROCESS);
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
         switch (thaoTac) {
             case "PRICE_CHANGE" -> DeXuatGiaService.apDung(dich);
             case "WRITE_OFF" -> KhoService.apDungXuatHuy(dich);

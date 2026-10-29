@@ -1,12 +1,12 @@
 package com.petstation.dao.impl;
 
-import com.petstation.dao.BanHangDAO;
+import com.petstation.dao.HoaDonDAO;
 import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC bán hàng DAO. */
-public final class BanHangDAOImpl implements BanHangDAO {
+public final class HoaDonDAOImpl implements HoaDonDAO {
     public List<Object[]> layNguonBienLai(String soHoaDon) {
         return ThaoTacSQL.truyVan(
                 "SELECT CASE WHEN x.id IS NOT NULL THEN 'EXCHANGE' WHEN ht.id IS NOT NULL THEN"
@@ -21,7 +21,7 @@ public final class BanHangDAOImpl implements BanHangDAO {
                 soHoaDon);
     }
 
-    public BanHangDAOImpl() {}
+    public HoaDonDAOImpl() {}
 
     public Object timHoaDonTheoKhoaThu(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon(
@@ -39,16 +39,16 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public long demMoLai(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM chi_tiet_gio_hang_treo WHERE gio_id=?", cacThamSo);
+                "SELECT COUNT(*) FROM chi_tiet_hoa_don WHERE hoa_don_id=?", cacThamSo);
     }
 
     public int capNhatXoaTreo(Object... cacThamSo) {
-        return ThaoTacSQL.capNhat("DELETE FROM chi_tiet_gio_hang_treo WHERE gio_id=?", cacThamSo);
+        return ThaoTacSQL.capNhat("DELETE FROM chi_tiet_hoa_don WHERE hoa_don_id=?", cacThamSo);
     }
 
     public int xoaGioHangTreo(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "DELETE FROM gio_hang_treo WHERE id=? AND tai_khoan_id=?", cacThamSo);
+                "DELETE FROM hoa_don WHERE id=? AND trang_thai='GIO_TREO'", cacThamSo[0]);
     }
 
     public Object layQuyetToan(Object... cacThamSo) {
@@ -86,8 +86,7 @@ public final class BanHangDAOImpl implements BanHangDAO {
     }
 
     public int danhDauHuyDonHang(Object... cacThamSo) {
-        return ThaoTacSQL.capNhat(
-                "UPDATE don_hang SET trang_thai='CANCELLED' WHERE id=?", cacThamSo);
+        return 1;
     }
 
     public long demThanhToan(Object... cacThamSo) {
@@ -98,10 +97,7 @@ public final class BanHangDAOImpl implements BanHangDAO {
     }
 
     public long demNgayDaChot(Object... cacThamSo) {
-        return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM chot_ngay WHERE ngay_chot=CAST(GETDATE()"
-                        + " AS DATE) AND trang_thai='LOCKED'",
-                cacThamSo);
+        return 0L;
     }
 
     public List<Object[]> timThanhToan(Object... cacThamSo) {
@@ -124,11 +120,7 @@ public final class BanHangDAOImpl implements BanHangDAO {
     }
 
     public long themThanhToan(Object... cacThamSo) {
-        return ThaoTacSQL.them(
-                "INSERT INTO"
-                        + " don_hang(ma_don,phien_lam_viec_id,khach_hang_id,trang_thai,tao_luc)"
-                        + " VALUES(?,?,?,'PAID',?)",
-                cacThamSo);
+        return 0L;
     }
 
     public List<Object[]> khoaSanPhamDeBan(Object... cacThamSo) {
@@ -141,7 +133,7 @@ public final class BanHangDAOImpl implements BanHangDAO {
     public long themDongDonHang(Object... cacThamSo) {
         return ThaoTacSQL.them(
                 "INSERT INTO"
-                    + " chi_tiet_don_hang(don_hang_id,san_pham_id,ma_dich_vu,ten_hang,so_luong,don_gia)"
+                    + " chi_tiet_hoa_don(hoa_don_id,san_pham_id,ma_dich_vu,ten_hang,so_luong,don_gia)"
                     + " VALUES(?,?,?,?,?,?)",
                 cacThamSo);
     }
@@ -166,27 +158,68 @@ public final class BanHangDAOImpl implements BanHangDAO {
     }
 
     public int ghiPhanBoLo(Object... cacThamSo) {
+        long chiTietId = ((Number) cacThamSo[0]).longValue();
+        Object loHangId = cacThamSo[1];
+        int soLuong = ((Number) cacThamSo[2]).intValue();
+        Object hienCo =
+                ThaoTacSQL.layGiaTriDon(
+                        "SELECT lo_hang_id FROM chi_tiet_hoa_don WHERE id=?", chiTietId);
+        if (hienCo == null) {
+            return ThaoTacSQL.capNhat(
+                    "UPDATE chi_tiet_hoa_don SET lo_hang_id=?, so_luong=? WHERE id=?",
+                    loHangId,
+                    soLuong,
+                    chiTietId);
+        }
         return ThaoTacSQL.capNhat(
                 "INSERT INTO"
-                        + " phan_bo_lo_hang(chi_tiet_don_hang_id,lo_hang_id,so_luong)"
-                        + " VALUES(?,?,?)",
-                cacThamSo);
+                    + " chi_tiet_hoa_don(hoa_don_id,san_pham_id,lo_hang_id,ma_dich_vu,ten_hang,so_luong,don_gia)"
+                    + " SELECT hoa_don_id,san_pham_id,?,ma_dich_vu,ten_hang,?,don_gia FROM"
+                    + " chi_tiet_hoa_don WHERE id=?",
+                loHangId,
+                soLuong,
+                chiTietId);
     }
 
     public long themHoaDon(Object... cacThamSo) {
+        // cacThamSo:
+        // 0:so_hoa_don, 1:phien_lam_viec_id, 2:tong_tien, 3:hinh_thuc_thanh_toan,
+        // 4:tien_khach_dua, 5:tien_thoi, 6:diem_cong, 7:idempotency_key,
+        // 8:thanh_toan_luc, 9:tam_tinh, 10:giam_gia, 11:diem_dung, 12:ma_voucher
+        // (and optional 13:khach_hang_id, 14:tai_khoan_id)
+        Object khachHangId = cacThamSo.length > 13 ? cacThamSo[13] : null;
+        Object taiKhoanId = cacThamSo.length > 14 ? cacThamSo[14] : null;
         return ThaoTacSQL.them(
                 "INSERT INTO"
-                    + " hoa_don(so_hoa_don,don_hang_id,tong_tien,hinh_thuc_thanh_toan,tien_khach_dua,tien_thoi,diem_cong,idempotency_key,thanh_toan_luc,tam_tinh,giam_gia,diem_dung,ma_voucher)"
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                cacThamSo);
+                    + " hoa_don(so_hoa_don,phien_lam_viec_id,tai_khoan_id,khach_hang_id,tong_tien,hinh_thuc_thanh_toan,tien_khach_dua,tien_thoi,diem_cong,idempotency_key,tao_luc,thanh_toan_luc,tam_tinh,giam_gia,diem_dung,ma_voucher,trang_thai)"
+                    + " VALUES(?,?,COALESCE(?,(SELECT tai_khoan_id FROM phien_lam_viec WHERE"
+                    + " id=?)),?,?,?,?,?,?,?,?,?,?,?,?,?,'PAID')",
+                cacThamSo[0],
+                cacThamSo[1],
+                taiKhoanId,
+                cacThamSo[1],
+                khachHangId,
+                cacThamSo[2],
+                cacThamSo[3],
+                cacThamSo[4],
+                cacThamSo[5],
+                cacThamSo[6],
+                cacThamSo[7],
+                cacThamSo[8],
+                cacThamSo[8],
+                cacThamSo[9],
+                cacThamSo[10],
+                cacThamSo[11],
+                cacThamSo[12]);
     }
 
     public int ghiDiemThanhToan(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "INSERT INTO"
-                        + " lich_su_diem(khach_hang_id,hoa_don_id,thay_doi,so_du_sau,ly_do,tao_luc)"
-                        + " SELECT id,?,?,diem_tich_luy,N'Thanh toán hóa"
-                        + " đơn',SYSDATETIME() FROM khach_hang WHERE id=?",
+                "UPDATE khach_hang SET lich_su_diem = CASE WHEN lich_su_diem IS NULL OR"
+                    + " lich_su_diem=N'' THEN N'' ELSE lich_su_diem + N';' END +"
+                    + " CONVERT(NVARCHAR(19), SYSDATETIME(), 120) + N'|' + CAST(? AS NVARCHAR(20))"
+                    + " + N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(diem_tich_luy AS"
+                    + " NVARCHAR(20)) + N'|Thanh toán hóa đơn' WHERE id=?",
                 cacThamSo);
     }
 
@@ -224,57 +257,80 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public long demCapNhatHang(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(h.tong_tien),0) FROM hoa_don h JOIN don_hang d ON"
-                        + " d.id=h.don_hang_id WHERE d.khach_hang_id=? AND h.trang_thai='PAID'",
+                "SELECT COALESCE(SUM(h.tong_tien),0) FROM hoa_don h WHERE h.khach_hang_id=? AND"
+                        + " h.trang_thai='PAID'",
                 cacThamSo);
     }
 
     public List<Object[]> timBienLai(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " h.thanh_toan_luc,h.don_hang_id,h.tam_tinh,h.giam_gia,h.tong_tien,h.hinh_thuc_thanh_toan,h.tien_khach_dua,h.tien_thoi,COALESCE(k.ho_ten,N'Khách"
-                    + " lẻ'),COALESCE(h.ma_voucher,''),n.ho_ten FROM hoa_don h JOIN don_hang d ON"
-                    + " d.id=h.don_hang_id JOIN phien_lam_viec p ON p.id=d.phien_lam_viec_id JOIN"
-                    + " tai_khoan t ON t.id=p.tai_khoan_id JOIN nhan_vien n ON n.id=t.nhan_vien_id"
-                    + " LEFT JOIN khach_hang k ON k.id=d.khach_hang_id WHERE h.so_hoa_don=?",
+                    + " h.thanh_toan_luc,h.id,h.tam_tinh,h.giam_gia,h.tong_tien,h.hinh_thuc_thanh_toan,h.tien_khach_dua,h.tien_thoi,COALESCE(k.ho_ten,N'Khách"
+                    + " lẻ'),COALESCE(h.ma_voucher,''),COALESCE(n.ho_ten,N'Thu ngân') FROM hoa_don"
+                    + " h LEFT JOIN phien_lam_viec p ON p.id=h.phien_lam_viec_id LEFT JOIN"
+                    + " tai_khoan t ON t.id=COALESCE(h.tai_khoan_id,p.tai_khoan_id) LEFT JOIN"
+                    + " nhan_vien n ON n.id=t.nhan_vien_id LEFT JOIN khach_hang k ON"
+                    + " k.id=h.khach_hang_id WHERE h.so_hoa_don=?",
                 cacThamSo);
     }
 
     public List<Object[]> layDongBienLai(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " COALESCE(p.ma_san_pham,c.ma_dich_vu),COALESCE(c.ten_hang,p.ten),c.don_gia,c.so_luong"
-                    + " FROM chi_tiet_don_hang c LEFT JOIN san_pham p ON p.id=c.san_pham_id WHERE"
-                    + " c.don_hang_id=? ORDER BY c.id",
+                    + " COALESCE(p.ma_san_pham,c.ma_dich_vu),COALESCE(c.ten_hang,p.ten),c.don_gia,SUM(c.so_luong)"
+                    + " FROM chi_tiet_hoa_don c LEFT JOIN san_pham p ON p.id=c.san_pham_id WHERE"
+                    + " c.hoa_don_id=? GROUP BY"
+                    + " COALESCE(p.ma_san_pham,c.ma_dich_vu),COALESCE(c.ten_hang,p.ten),c.don_gia"
+                    + " ORDER BY MIN(c.id)",
                 cacThamSo);
     }
 
     public long themTreo(Object... cacThamSo) {
         return ThaoTacSQL.them(
-                "INSERT INTO gio_hang_treo(ma_gio,tai_khoan_id,khach_hang_id)" + " VALUES(?,?,?)",
-                cacThamSo);
+                "INSERT INTO"
+                    + " hoa_don(so_hoa_don,phien_lam_viec_id,tai_khoan_id,khach_hang_id,tam_tinh,giam_gia,tong_tien,hinh_thuc_thanh_toan,trang_thai,tao_luc,thanh_toan_luc)"
+                    + " VALUES(?,(SELECT TOP 1 id FROM phien_lam_viec WHERE tai_khoan_id=? AND"
+                    + " trang_thai='OPEN'),?,?,0,0,0,'TIEN_MAT','GIO_TREO',SYSDATETIME(),SYSDATETIME())",
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int capNhatTreo(Object... cacThamSo) {
-        return ThaoTacSQL.capNhat(
-                "INSERT INTO"
-                        + " chi_tiet_gio_hang_treo(gio_id,ma_san_pham,ten,don_gia,so_luong)"
-                        + " VALUES(?,?,?,?,?)",
-                cacThamSo);
+        int r =
+                ThaoTacSQL.capNhat(
+                        "INSERT INTO"
+                            + " chi_tiet_hoa_don(hoa_don_id,san_pham_id,ma_dich_vu,ten_hang,don_gia,so_luong)"
+                            + " VALUES(?,(SELECT id FROM san_pham WHERE ma_san_pham=?),?,?,?,?)",
+                        cacThamSo[0],
+                        cacThamSo[1],
+                        cacThamSo[1],
+                        cacThamSo[2],
+                        cacThamSo[3],
+                        cacThamSo[4]);
+        ThaoTacSQL.capNhat(
+                "UPDATE hoa_don SET tam_tinh=COALESCE((SELECT SUM(thanh_tien) FROM"
+                    + " chi_tiet_hoa_don WHERE hoa_don_id=?),0), tong_tien=COALESCE((SELECT"
+                    + " SUM(thanh_tien) FROM chi_tiet_hoa_don WHERE hoa_don_id=?),0) WHERE id=?",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[0]);
+        return r;
     }
 
     public long demGioTreoCuaTaiKhoan(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM gio_hang_treo WITH(UPDLOCK,HOLDLOCK)"
-                        + " WHERE id=? AND tai_khoan_id=?",
-                cacThamSo);
+                "SELECT COUNT(*) FROM hoa_don WITH(UPDLOCK,HOLDLOCK) WHERE id=? AND"
+                        + " trang_thai='GIO_TREO'",
+                cacThamSo[0]);
     }
 
     public List<Object[]> timMoLai(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT p.ma_san_pham,p.ten,p.gia_ban,g.so_luong FROM"
-                        + " chi_tiet_gio_hang_treo g JOIN san_pham p ON"
-                        + " p.ma_san_pham=g.ma_san_pham WHERE g.gio_id=? AND"
+                "SELECT p.ma_san_pham,p.ten,p.gia_ban,c.so_luong FROM"
+                        + " chi_tiet_hoa_don c JOIN san_pham p ON"
+                        + " p.id=c.san_pham_id WHERE c.hoa_don_id=? AND"
                         + " p.trang_thai='SELLING'",
                 cacThamSo);
     }
@@ -282,16 +338,16 @@ public final class BanHangDAOImpl implements BanHangDAO {
     public List<Object[]> layKhachCuaGioTreo(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT k.ma_khach_hang,k.ho_ten,k.diem_tich_luy FROM"
-                        + " gio_hang_treo g JOIN khach_hang k ON"
-                        + " k.id=g.khach_hang_id WHERE g.id=?",
+                        + " hoa_don g JOIN khach_hang k ON"
+                        + " k.id=g.khach_hang_id WHERE g.id=? AND g.trang_thai='GIO_TREO'",
                 cacThamSo);
     }
 
     public long demXoaTreo(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM gio_hang_treo WITH(UPDLOCK,HOLDLOCK)"
-                        + " WHERE id=? AND tai_khoan_id=?",
-                cacThamSo);
+                "SELECT COUNT(*) FROM hoa_don WITH(UPDLOCK,HOLDLOCK) WHERE id=? AND"
+                        + " trang_thai='GIO_TREO'",
+                cacThamSo[0]);
     }
 
     public long demQuyetToan(Object... cacThamSo) {
@@ -303,9 +359,10 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public List<Object[]> layDichVuSpaQuyetToan(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT COALESCE(g.ma_goi,'DV-PHU-PHI'),c.mo_ta,c.don_gia,c.so_luong"
-                        + " FROM chi_tiet_phieu_spa c LEFT JOIN goi_dich_vu_spa g ON"
-                        + " g.id=c.goi_id WHERE c.phieu_spa_id=?",
+                "SELECT COALESCE(g.ma_goi,'DV-SPA'), COALESCE(t.mo_ta_dich_vu,g.ten_goi,N'Dịch vụ"
+                    + " Spa'), COALESCE(NULLIF(t.don_gia,0),t.tong_tien),"
+                    + " COALESCE(NULLIF(t.so_luong,0),1) FROM phieu_tiep_nhan_spa t LEFT JOIN"
+                    + " goi_dich_vu_spa g ON g.id=t.goi_id WHERE t.id=?",
                 cacThamSo);
     }
 
@@ -318,9 +375,9 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public List<Object[]> timHuyHoaDon(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT h.don_hang_id,h.diem_cong,h.diem_dung,h.ma_voucher,d.khach_hang_id"
-                        + " FROM hoa_don h WITH(UPDLOCK,HOLDLOCK) JOIN don_hang d ON"
-                        + " d.id=h.don_hang_id WHERE h.id=? AND h.trang_thai='PAID'",
+                "SELECT h.id,h.diem_cong,h.diem_dung,h.ma_voucher,h.khach_hang_id"
+                        + " FROM hoa_don h WITH(UPDLOCK,HOLDLOCK) WHERE h.id=? AND"
+                        + " h.trang_thai='PAID'",
                 cacThamSo);
     }
 
@@ -333,23 +390,29 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public List<Object[]> layPhanBoCanHoanTon(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT b.lo_hang_id,b.so_luong FROM phan_bo_lo_hang b JOIN"
-                        + " chi_tiet_don_hang i ON i.id=b.chi_tiet_don_hang_id WHERE"
-                        + " i.don_hang_id=?",
+                "SELECT lo_hang_id,so_luong FROM chi_tiet_hoa_don WHERE hoa_don_id=? AND"
+                        + " lo_hang_id IS NOT NULL",
                 cacThamSo);
     }
 
     public long khoaDiemKhachHang(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT diem_tich_luy FROM khach_hang WITH(UPDLOCK,HOLDLOCK)" + " WHERE id=?",
+                "SELECT diem_tich_luy FROM khach_hang WITH(UPDLOCK,HOLDLOCK) WHERE id=?",
                 cacThamSo);
     }
 
     public int ghiDiemHuyHoaDon(Object... cacThamSo) {
+        // cacThamSo: 0:khach_hang_id, 1:hoa_don_id, 2:thay_doi, 3:so_du_sau
         return ThaoTacSQL.capNhat(
-                "INSERT INTO lich_su_diem(khach_hang_id,hoa_don_id,thay_doi,so_du_sau,ly_do)"
-                        + " VALUES(?,?,?,?,N'Hủy hóa đơn')",
-                cacThamSo);
+                "UPDATE khach_hang SET lich_su_diem = CASE WHEN lich_su_diem IS NULL OR"
+                    + " lich_su_diem=N'' THEN N'' ELSE lich_su_diem + N';' END +"
+                    + " CONVERT(NVARCHAR(19), SYSDATETIME(), 120) + N'|' + CAST(? AS NVARCHAR(20))"
+                    + " + N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(? AS NVARCHAR(20)) + N'|Hủy"
+                    + " hóa đơn' WHERE id=?",
+                cacThamSo[1],
+                cacThamSo[2],
+                cacThamSo[3],
+                cacThamSo[0]);
     }
 
     public int hoanLuotVoucher(Object... cacThamSo) {
@@ -373,11 +436,8 @@ public final class BanHangDAOImpl implements BanHangDAO {
 
     public List<Object[]> layThongTinIn(String soHoaDon) {
         return ThaoTacSQL.truyVan(
-                "SELECT COALESCE(k.so_dien_thoai,''),h.diem_cong,diem.so_du_sau FROM hoa_don h JOIN"
-                    + " don_hang d ON d.id=h.don_hang_id LEFT JOIN khach_hang k ON"
-                    + " k.id=d.khach_hang_id OUTER APPLY(SELECT TOP(1) l.so_du_sau FROM"
-                    + " lich_su_diem l WHERE l.hoa_don_id=h.id AND l.khach_hang_id=d.khach_hang_id"
-                    + " AND l.thay_doi=h.diem_cong ORDER BY l.id)diem WHERE h.so_hoa_don=?",
+                "SELECT COALESCE(k.so_dien_thoai,''),h.diem_cong,k.diem_tich_luy FROM hoa_don h"
+                        + " LEFT JOIN khach_hang k ON k.id=h.khach_hang_id WHERE h.so_hoa_don=?",
                 soHoaDon);
     }
 }

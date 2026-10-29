@@ -33,7 +33,7 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
     }
 
     public String taoVoucher(long khachHang, String khoa) {
-        String ma = taoMa("SPA");
+        String ma = taoMa("VOUCHER");
         capNhat(
                 "INSERT"
                     + " voucher(ma_voucher,khach_hang_id,menh_gia,hieu_luc_den,chi_ap_dung_spa,so_luong,da_dung,don_toi_thieu,trang_thai,khoa_doi_diem)"
@@ -42,13 +42,11 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
                 khachHang,
                 khoa);
         capNhat(
-                "UPDATE khach_hang SET diem_tich_luy=diem_tich_luy-200 WHERE id=? AND"
-                        + " diem_tich_luy>=200",
-                khachHang);
-        capNhat(
-                "INSERT lich_su_diem(khach_hang_id,thay_doi,so_du_sau,ly_do) SELECT"
-                    + " id,-200,diem_tich_luy,N'Đổi 200 điểm lấy voucher '+? FROM khach_hang WHERE"
-                    + " id=?",
+                "UPDATE khach_hang SET diem_tich_luy=diem_tich_luy-200,"
+                    + " lich_su_diem = CASE WHEN lich_su_diem IS NULL OR lich_su_diem=N'' THEN N''"
+                    + " ELSE lich_su_diem + N';' END + CONVERT(NVARCHAR(19), SYSDATETIME(), 120) +"
+                    + " N'||-200|' + CAST(diem_tich_luy-200 AS NVARCHAR(20)) + N'|Đổi 200 điểm lấy"
+                    + " voucher ' + ? WHERE id=? AND diem_tich_luy>=200",
                 ma,
                 khachHang);
         return ma;

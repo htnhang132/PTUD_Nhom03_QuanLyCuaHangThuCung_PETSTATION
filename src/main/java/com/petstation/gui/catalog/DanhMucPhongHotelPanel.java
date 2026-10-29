@@ -17,7 +17,7 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.ROOMS,
+                        com.petstation.model.LoaiDanhMuc.PHONG_LUU_TRU,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

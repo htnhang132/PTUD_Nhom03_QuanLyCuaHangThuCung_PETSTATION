@@ -2,14 +2,15 @@ package com.petstation.dao.impl;
 
 import static com.petstation.database.ThaoTacSQL.*;
 
-import com.petstation.dao.LuuTruDAO;
+import com.petstation.dao.HopDongLuuTruDAO;
 import com.petstation.database.ThaoTacSQL;
+import com.petstation.util.DuLieu;
 
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC Hotel DAO. */
-public final class LuuTruDAOImpl implements LuuTruDAO {
-    public LuuTruDAOImpl() {}
+public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
+    public HopDongLuuTruDAOImpl() {}
 
     public List<Object[]> layPhongDangDon() {
         return ThaoTacSQL.truyVan(
@@ -72,9 +73,14 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     public int capNhatNhatKy(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
                 "INSERT INTO"
-                    + " nhat_ky_cham_soc(hop_dong_id,nhan_vien_id,an_uong,ve_sinh,tinh_trang,thoi_gian)"
-                    + " VALUES(?,?,?,?,?,SYSDATETIME())",
-                cacThamSo);
+                    + " nhat_ky_cham_soc(ma_nhat_ky,hop_dong_id,nhan_vien_id,an_uong,ve_sinh,tinh_trang,thoi_gian)"
+                    + " VALUES(?,?,?,?,?,?,SYSDATETIME())",
+                DuLieu.taoMa("NK"),
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2],
+                cacThamSo[3],
+                cacThamSo[4]);
     }
 
     public List<Object[]> timHotelConPhaiThu(Object... cacThamSo) {
@@ -102,20 +108,18 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     }
 
     public int datMucCoc(long muc, long id) {
-
         return capNhat("UPDATE hop_dong_luu_tru SET coc_yeu_cau=? WHERE id=?", muc, id);
     }
 
     public List<Object[]> layLichSuThuCoc(long id) {
-
         return truyVan(
-                "SELECT phuong_thuc,so_tien,khach_dua,tien_thua,nhan_luc,phien_id FROM khoan_thu"
-                        + " WHERE hop_dong_id=? ORDER BY id",
+                "SELECT COALESCE(phuong_thuc_coc,'TIEN_MAT'),tien_coc,tien_coc,CAST(0 AS"
+                        + " BIGINT),nhan_coc_luc,phien_nhan_coc_id FROM hop_dong_luu_tru WHERE"
+                        + " id=? AND da_nhan_coc=1",
                 id);
     }
 
     public List<Object[]> layMucCoc(long id) {
-
         return truyVan(
                 "SELECT COALESCE(coc_yeu_cau,tien_coc),CASE WHEN da_nhan_coc=1 THEN"
                         + " tien_coc ELSE 0 END FROM hop_dong_luu_tru WHERE id=?",
@@ -123,7 +127,6 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     }
 
     public List<Object[]> khoaHopDongThuCoc(long id) {
-
         return truyVan(
                 "SELECT trang_thai,COALESCE(coc_yeu_cau,tien_coc),CASE WHEN"
                         + " da_nhan_coc=1 THEN tien_coc ELSE 0 END FROM"
@@ -132,15 +135,13 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     }
 
     public long demKhoaThuCoc(long id, String tienToKhoa) {
-
         return laySo(
-                "SELECT COUNT(*) FROM khoan_thu WHERE hop_dong_id=? AND khoa" + " LIKE ?",
+                "SELECT COUNT(*) FROM hop_dong_luu_tru WHERE id=? AND khoa_thu_coc LIKE ?",
                 id,
                 tienToKhoa);
     }
 
     public int ghiNhanTongCoc(long tongCoc, long taiKhoan, long ca, long id) {
-
         return capNhat(
                 "UPDATE hop_dong_luu_tru SET"
                     + " tien_coc=?,da_nhan_coc=1,nhan_coc_luc=SYSDATETIME(),nhan_coc_boi=?,phien_nhan_coc_id=?"
@@ -152,7 +153,6 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     }
 
     public List<Object[]> khoaHopDongDoiCoc(long id) {
-
         return truyVan(
                 "SELECT ngay_vao,ngay_ra_du_kien,COALESCE(gia_dem,(SELECT"
                         + " p.gia_dem FROM phong_hotel p WHERE"
@@ -163,7 +163,6 @@ public final class LuuTruDAOImpl implements LuuTruDAO {
     }
 
     public int dieuChinhMucCoc(long muc, String lyDo, long id) {
-
         return capNhat(
                 "UPDATE hop_dong_luu_tru SET coc_yeu_cau=?,ly_do_doi_coc=? WHERE id=?",
                 muc,

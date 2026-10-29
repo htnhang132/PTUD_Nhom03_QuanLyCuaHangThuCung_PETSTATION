@@ -12,16 +12,22 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
     public ThongKeDoanhThuPanel() {
         super(
                 "Thống kê doanh thu",
-                "Tiền thu trong kỳ gồm thanh toán và cọc lưu trú; doanh thu hoàn tất xem riêng.",
+                "Tiền thu trong kỳ gồm thanh toán và cọc lưu trú; doanh thu hoàn tất kèm lợi nhuận gộp.",
                 "Thống kê doanh thu".replace(' ', '_'),
                 List.of(
                         taoKieuHienThi(
                                 "Doanh thu hoàn tất",
                                 new String[] {
-                                    "Ngày", "Doanh thu hoàn tất (gồm cọc đã cấn trừ)", "Số hóa đơn"
+                                    "Ngày",
+                                    "Số đơn",
+                                    "Doanh thu gốc",
+                                    "Chiết khấu/Voucher",
+                                    "Hoàn trả",
+                                    "Doanh thu thuần",
+                                    "Lợi nhuận gộp"
                                 },
                                 0,
-                                1,
+                                5,
                                 true,
                                 ThongKeService::layDoanhThuHoanTat),
                         taoKieuHienThi(

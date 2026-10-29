@@ -166,19 +166,19 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
 
     private void lamMoi() {
         pnlCacPhimTat.removeAll();
-        themPhimTat("Lập hóa đơn (F2)", MaManHinh.POS, NutDinhDang.KieuNut.CHINH);
-        themPhimTat("Tạo lịch hẹn Spa", MaManHinh.SPA_SCHEDULE, NutDinhDang.KieuNut.PHU);
-        themPhimTat("Đặt phòng Hotel", MaManHinh.HOTEL_BOOKING, NutDinhDang.KieuNut.PHU);
+        themPhimTat("Lập hóa đơn (F2)", MaManHinh.LAP_HOA_DON, NutDinhDang.KieuNut.CHINH);
+        themPhimTat("Tạo lịch hẹn Spa", MaManHinh.DAT_LICH_HEN_SPA, NutDinhDang.KieuNut.PHU);
+        themPhimTat("Đặt phòng Hotel", MaManHinh.DAT_PHONG_LUU_TRU, NutDinhDang.KieuNut.PHU);
         themPhimTat(
                 caLamViec.kiemTraMo() ? "Kết ca" : "Mở ca",
-                MaManHinh.CASH_SHIFT,
+                MaManHinh.CA_THU_NGAN,
                 NutDinhDang.KieuNut.TRONG_SUOT);
-        themPhimTat("Lập phiếu nhập kho", MaManHinh.PURCHASE, NutDinhDang.KieuNut.TRONG_SUOT);
+        themPhimTat("Lập phiếu nhập kho", MaManHinh.NHAP_KHO, NutDinhDang.KieuNut.TRONG_SUOT);
         // Đang chờ.
         long dangCho = PheDuyetService.demChoDuyet();
         themPhimTat(
                 dangCho > 0 ? "Phê duyệt (" + dangCho + ")" : "Phê duyệt",
-                MaManHinh.APPROVALS,
+                MaManHinh.PHE_DUYET_YEU_CAU,
                 dangCho > 0 ? NutDinhDang.KieuNut.NGUY_HIEM : NutDinhDang.KieuNut.TRONG_SUOT);
         pnlCacPhimTat.revalidate();
         pnlCacPhimTat.repaint();
@@ -224,9 +224,9 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Doanh thu theo ngày.
         java.util.Map<java.time.LocalDate, Double> doanhThuTheoNgay = new java.util.HashMap<>();
         // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
-        if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.REPORT_VIEW_ALL)
+        if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CHUNG)
                 || PhienDangNhapService.layPhien()
-                        .kiemTraCo(com.petstation.model.Quyen.REPORT_VIEW_OWN_SHIFT)) {
+                        .kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CA)) {
             for (Object[] dong : com.petstation.service.ThongKeService.layDoanhThuTheoNgay(7))
                 doanhThuTheoNgay.put(
                         ((java.sql.Date) dong[0]).toLocalDate(), ((Number) dong[1]).doubleValue());
@@ -243,9 +243,9 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Hạng.
         int hang = 1;
         // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
-        if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.REPORT_VIEW_ALL)
+        if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CHUNG)
                 || PhienDangNhapService.layPhien()
-                        .kiemTraCo(com.petstation.model.Quyen.REPORT_VIEW_OWN_SHIFT)) {
+                        .kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CA)) {
             for (Object[] sanPham : com.petstation.service.ThongKeService.laySanPhamBanChay(7)) {
                 if (hang > 5) break;
                 trenMoHinh.addRow(

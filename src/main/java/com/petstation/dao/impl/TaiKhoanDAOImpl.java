@@ -21,8 +21,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     public Optional<TaiKhoan> timTheoTenDangNhap(Connection ketNoi, String tenDangNhap)
             throws Exception {
         // SQL.
-        String sql =
-                """
+        String sql = """
                 SELECT id, nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, trang_thai,
                        so_lan_dang_nhap_sai, khoa_den, bat_buoc_doi_mat_khau
                 FROM tai_khoan
@@ -44,7 +43,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
                                 ketQua.getString("ten_dang_nhap"),
                                 ketQua.getString("mat_khau_hash"),
                                 VaiTro.docTuCSDL(ketQua.getString("vai_tro")),
-                                TrangThaiTaiKhoan.valueOf(ketQua.getString("trang_thai")),
+                                TrangThaiTaiKhoan.docTuCSDL(ketQua.getString("trang_thai")),
                                 ketQua.getInt("so_lan_dang_nhap_sai"),
                                 khoaDenLuc == null ? null : khoaDenLuc.toLocalDateTime(),
                                 ketQua.getBoolean("bat_buoc_doi_mat_khau")));
@@ -54,23 +53,65 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
 
     @Override
     public Set<Quyen> timCacQuyen(Connection ketNoi, long idTaiKhoan) throws Exception {
-        // SQL.
-        String sql =
-                """
-                SELECT q.ma_quyen
-                FROM tai_khoan tk
-                JOIN vai_tro_quyen vtq ON vtq.vai_tro = tk.vai_tro
-                JOIN quyen q ON q.ma_quyen = vtq.ma_quyen
-                WHERE tk.id = ?
-                """;
-        // Các quyền.
+        String sql = "SELECT vai_tro, quyen FROM tai_khoan WHERE id = ?";
         Set<Quyen> cacQuyen = EnumSet.noneOf(Quyen.class);
+        String tenVaiTro = null;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, idTaiKhoan);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
-                while (ketQua.next()) {
-                    cacQuyen.add(Quyen.valueOf(ketQua.getString("ma_quyen")));
+                if (ketQua.next()) {
+                    tenVaiTro = ketQua.getString("vai_tro");
+                    String chuoiQuyen = ketQua.getString("quyen");
+                    if (chuoiQuyen != null && !chuoiQuyen.isBlank()) {
+                        for (String ma : chuoiQuyen.split("[,;]")) {
+                            if (!ma.isBlank()) {
+                                try {
+                                    Quyen q = Quyen.docTuCSDL(ma.trim());
+                                    if (q != null) cacQuyen.add(q);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+        }
+
+        if (cacQuyen.isEmpty() && tenVaiTro != null) {
+            VaiTro vt = VaiTro.docTuCSDL(tenVaiTro);
+            try {
+                for (Object[] dq : new QuyenVaiTroDAOImpl().timCua(vt.name())) {
+                    if (dq != null && dq.length > 0 && dq[0] != null) {
+                        try {
+                            Quyen q = Quyen.docTuCSDL(String.valueOf(dq[0]));
+                            if (q != null) cacQuyen.add(q);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (cacQuyen.isEmpty()) {
+            String sqlFallback = """
+                    SELECT vtq.ma_quyen
+                    FROM tai_khoan tk
+                    JOIN vai_tro_quyen vtq ON vtq.vai_tro = tk.vai_tro
+                    WHERE tk.id = ?
+                    """;
+            try (PreparedStatement cauLenhFallback = ketNoi.prepareStatement(sqlFallback)) {
+                cauLenhFallback.setLong(1, idTaiKhoan);
+                try (ResultSet rs = cauLenhFallback.executeQuery()) {
+                    while (rs.next()) {
+                        try {
+                            Quyen q = Quyen.docTuCSDL(rs.getString("ma_quyen"));
+                            if (q != null) cacQuyen.add(q);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
             }
         }
         return cacQuyen;
@@ -93,8 +134,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     @Override
     public void ghiNhanDangNhapThanhCong(Connection ketNoi, long idTaiKhoan) throws Exception {
         // SQL.
-        String sql =
-                """
+        String sql = """
                 UPDATE tai_khoan
                 SET so_lan_dang_nhap_sai = 0, khoa_den = NULL, dang_nhap_cuoi = SYSUTCDATETIME()
                 WHERE id = ?

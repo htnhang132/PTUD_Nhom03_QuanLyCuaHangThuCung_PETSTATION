@@ -19,7 +19,7 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.PROMOTIONS,
+                        com.petstation.model.LoaiDanhMuc.KHUYEN_MAI,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }

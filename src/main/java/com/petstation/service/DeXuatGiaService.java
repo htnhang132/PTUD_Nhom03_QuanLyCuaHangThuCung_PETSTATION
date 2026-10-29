@@ -15,7 +15,7 @@ public final class DeXuatGiaService {
     private DeXuatGiaService() {}
 
     public static PheDuyetService.YeuCau gui(String ma, long gia, String lyDo) {
-        yeuCau(Quyen.PRICE_PROPOSE);
+        yeuCau(Quyen.DE_XUAT_GIA);
         if (gia <= 0 || lyDo == null || lyDo.isBlank())
             throw new IllegalArgumentException("Giá đề xuất phải dương và cần lý do.");
         return thucHienGiaoDich(
@@ -34,7 +34,7 @@ public final class DeXuatGiaService {
                                     gia,
                                     lyDo);
                     return PheDuyetService.guiThaoTac(
-                            PheDuyetService.Loai.PRICE,
+                            PheDuyetService.Loai.GIA_BAN,
                             lyDo,
                             ma + ": " + cu,
                             ma + ": " + gia,
@@ -45,8 +45,8 @@ public final class DeXuatGiaService {
     }
 
     static void apDung(long id) {
-        yeuCau(Quyen.PRICE_APPROVE);
-        if (layPhien().docVaiTro() != VaiTro.STORE_MANAGER)
+        yeuCau(Quyen.DUYET_GIA);
+        if (layPhien().docVaiTro() != VaiTro.QUAN_LY_CUA_HANG)
             throw new PhanQuyenException("Chỉ cửa hàng trưởng được áp dụng giá bán.");
         var dong = deXuatGiaDAO.timChoDuyet(id);
         if (dong.isEmpty()) throw new IllegalArgumentException("Đề xuất giá đã xử lý.");
@@ -60,7 +60,7 @@ public final class DeXuatGiaService {
     }
 
     static void tuChoi(long id) {
-        yeuCau(Quyen.PRICE_APPROVE);
+        yeuCau(Quyen.DUYET_GIA);
         deXuatGiaDAO.tuChoi(id);
     }
 }

@@ -1,14 +1,15 @@
 package com.petstation.gui.catalog;
 
-import com.petstation.gui.components.DanhMucNhieuTabPanel;
+import com.petstation.gui.components.CoSoPanel;
 
-import javax.swing.JPanel;
+import java.awt.BorderLayout;
 
-/** Cung cấp giao diện và xử lý tương tác cho sản phẩm danh mục vùng hiển thị. */
-public final class DanhMucSanPhamPanel extends DanhMucNhieuTabPanel {
+/** Cung cấp giao diện cho danh mục sản phẩm (hiển thị trực tiếp danh sách sản phẩm). */
+public final class DanhMucSanPhamPanel extends CoSoPanel {
+    private final DanhSachSanPhamPanel pnlDanhSach = new DanhSachSanPhamPanel();
+
     public DanhMucSanPhamPanel() {
-        super(
-                new String[] {"Danh sách sản phẩm", "Lịch sử giá"},
-                new JPanel[] {new DanhSachSanPhamPanel(), new LichSuGiaPanel()});
+        setLayout(new BorderLayout());
+        add(pnlDanhSach, BorderLayout.CENTER);
     }
 }

@@ -380,8 +380,8 @@ public final class CaThuNganPanel extends CoSoPanel {
                         TienTe.dinhDang(
                                 caLamViec.layDoanhThuChuyenKhoan()
                                         + caLamViec.layDoanhThuThe()
-                                        + caLamViec.layCocHotel(PhuongThuc.TRANSFER)
-                                        + caLamViec.layCocHotel(PhuongThuc.CARD))));
+                                        + caLamViec.layCocHotel(PhuongThuc.CHUYEN_KHOAN)
+                                        + caLamViec.layCocHotel(PhuongThuc.THE_NGAN_HANG))));
         pnlCacChiSo.add(
                 layChiSoThe("Cọc Hotel tiền mặt", TienTe.dinhDang(caLamViec.layTienCocHotel())));
         pnlCacChiSo.add(

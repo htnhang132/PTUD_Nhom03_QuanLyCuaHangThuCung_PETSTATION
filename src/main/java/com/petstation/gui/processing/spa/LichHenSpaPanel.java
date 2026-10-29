@@ -38,7 +38,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private boolean dangNap, choNap;
 
     public LichHenSpaPanel(GioHang gio, Consumer<MaManHinh> nav) {
-        super(LoaiNghiepVu.APPOINTMENTS, gio, nav);
+        super(LoaiNghiepVu.LICH_HEN, gio, nav);
         Component bang = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
         remove(bang);
         content.setOpaque(false);
@@ -115,7 +115,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         if (selected != null && names.contains(selected)) nhanVien.setSelectedItem(selected);
         dangNap = false;
         var request = com.petstation.gui.navigation.NguCanhMoBanGhi.lay();
-        if (request != null && request.manHinh() == MaManHinh.SPA_SCHEDULE) {
+        if (request != null && request.manHinh() == MaManHinh.DAT_LICH_HEN_SPA) {
             for (int r = 0; r < moHinh.getRowCount(); r++)
                 if (((Number) moHinh.getValueAt(r, 0)).longValue() == request.id())
                     ngay.datNgayDuocChon(time(moHinh.getValueAt(r, 6)).toLocalDate());

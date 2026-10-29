@@ -2,20 +2,21 @@ package com.petstation.dao.impl;
 
 import static com.petstation.database.ThaoTacSQL.*;
 
-import com.petstation.dao.ChamSocDAO;
+import com.petstation.dao.NhatKyChamSocDAO;
+import com.petstation.util.DuLieu;
 
 import java.util.List;
 
 /** Truy vấn ChamSocService; quyền và transaction do tầng service quyết định. */
-public final class ChamSocDAOImpl implements ChamSocDAO {
-    public ChamSocDAOImpl() {}
+public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
+    public NhatKyChamSocDAOImpl() {}
 
     public List<Object[]> layLichSu(boolean spa, long id) {
-        String fk = spa ? "spa_id" : "hotel_id";
+        String fk = spa ? "spa_id" : "hop_dong_id";
         return truyVan(
                 "SELECT"
-                    + " p.id,p.tao_luc,n.ho_ten,p.tinh_trang,p.an_uong,p.huong_dan_thuoc,p.da_thuc_hien,p.anh_truoc,p.anh_sau"
-                    + " FROM phieu_cham_soc p JOIN nhan_vien n ON n.id=p.nhan_vien_id WHERE p."
+                    + " p.id,p.thoi_gian,n.ho_ten,p.tinh_trang,COALESCE(p.an_uong,N''),COALESCE(p.huong_dan_thuoc,N''),COALESCE(p.da_thuc_hien,p.ve_sinh,N''),p.anh_truoc,p.anh_sau"
+                    + " FROM nhat_ky_cham_soc p JOIN nhan_vien n ON n.id=p.nhan_vien_id WHERE p."
                         + fk
                         + "=? ORDER BY p.id DESC",
                 id);
@@ -40,13 +41,15 @@ public final class ChamSocDAOImpl implements ChamSocDAO {
 
         return capNhat(
                 "INSERT INTO"
-                    + " phieu_cham_soc(spa_id,hotel_id,nhan_vien_id,tinh_trang,an_uong,huong_dan_thuoc,da_thuc_hien,anh_truoc,anh_sau)"
-                    + " VALUES(?,?,?,?,?,?,?,?,?)",
+                    + " nhat_ky_cham_soc(ma_nhat_ky,spa_id,hop_dong_id,nhan_vien_id,tinh_trang,an_uong,ve_sinh,huong_dan_thuoc,da_thuc_hien,anh_truoc,anh_sau,thoi_gian)"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,SYSDATETIME())",
+                DuLieu.taoMa("NK"),
                 spa,
                 hotel,
                 nhanVien,
                 tinhTrang,
                 an,
+                viec,
                 thuoc,
                 viec,
                 anhTruoc,

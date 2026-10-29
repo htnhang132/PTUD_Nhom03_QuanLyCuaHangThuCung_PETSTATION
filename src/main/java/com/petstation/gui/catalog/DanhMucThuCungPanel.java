@@ -1,7 +1,5 @@
 package com.petstation.gui.catalog;
 
-import static com.petstation.gui.components.TruongDanhMuc.*;
-
 import com.petstation.gui.components.QuanLyDanhMucPanel;
 import com.petstation.gui.components.QuanLyDanhMucPanel.CauHinh;
 import com.petstation.gui.components.QuanLyDanhMucPanel.Kieu;
@@ -17,30 +15,21 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
                 taoCauHinh(),
                 taoCacTruong(),
                 DanhMucService.chuanBi(
-                        com.petstation.model.LoaiDanhMuc.PETS,
+                        com.petstation.model.LoaiDanhMuc.THU_CUNG,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Hồ sơ thú cưng", "thú cưng")
                         .themBoLoc("Loài", d -> String.valueOf(d[2]))
                         .themBoLoc("Chủ nuôi", d -> String.valueOf(d[8]))
                         .datTienTo("TC")
-                        .themThaoTacBoSung(
-                                "Lịch sử tiêm phòng",
-                                dong -> {
-                                    new LichSuTiemPhongDialog(null, String.valueOf(dong[0]))
-                                            .setVisible(true);
-                                    return null;
-                                })
                         .timKiem("Tìm theo tên thú, giống, chủ nuôi...")
                         .datTrangThai(13, "Đang hoạt động", "Ngừng hoạt động")
                         .datBoKiemTra(
                                 dongDuLieu -> {
-                                    // Chiều rộng.
                                     String chieuRong = String.valueOf(dongDuLieu[6]).trim();
                                     return chieuRong.isEmpty()
                                                     || chieuRong.matches("\\d{1,3}([.,]\\d{1,2})?")
@@ -52,22 +41,19 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
-                TruongDuLieu.tao("Mã thú", Kieu.VAN_BAN).chiDoc(),
+                TruongDuLieu.tao("Mã thú cưng", Kieu.VAN_BAN).chiDoc().kiemTraDuyNhat().batBuoc(),
                 TruongDuLieu.tao("Tên thú cưng", Kieu.VAN_BAN).batBuoc(),
-                TruongDuLieu.tao("Loài", Kieu.HOP_CHON).batBuoc().datLuaChon("Chó", "Mèo"),
-                TruongDuLieu.tao("Giống", Kieu.VAN_BAN).an(),
-                TruongDuLieu.tao("Giới tính", Kieu.HOP_CHON).datLuaChon("Đực", "Cái").an(),
-                TruongDuLieu.tao("Ngày sinh", Kieu.NGAY).an(),
-                TruongDuLieu.tao("Cân nặng (kg)", Kieu.VAN_BAN).an(),
-                TruongDuLieu.tao("Màu lông", Kieu.VAN_BAN).an(),
-                TruongDuLieu.tao("Chủ nuôi", Kieu.HOP_CHON)
-                        .batBuoc()
-                        .layDong(DanhMucService::layLuaChonKhachHang),
-                TruongDuLieu.tao("Tiêm chủng", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Dị ứng / lưu ý sức khỏe", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Tính cách", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Ảnh", Kieu.TEP).an(),
-                TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
-                        .datLuaChon("Đang hoạt động", "Ngừng hoạt động"));
+                TruongDuLieu.tao("Loài", Kieu.HOP_CHON).datLuaChon("Chó", "Mèo").batBuoc(),
+                TruongDuLieu.tao("Giống", Kieu.VAN_BAN).batBuoc(),
+                TruongDuLieu.tao("Giới tính", Kieu.HOP_CHON).datLuaChon("Đực", "Cái"),
+                TruongDuLieu.tao("Ngày sinh", Kieu.NGAY),
+                TruongDuLieu.tao("Cân nặng (kg)", Kieu.VAN_BAN),
+                TruongDuLieu.tao("Màu lông", Kieu.VAN_BAN),
+                TruongDuLieu.tao("Chủ nuôi", Kieu.HOP_CHON).layDong(DanhMucService::layLuaChonKhachHang).batBuoc(),
+                TruongDuLieu.tao("Tính trạng sức khỏe", Kieu.VUNG),
+                TruongDuLieu.tao("Dị ứng / Bệnh lý", Kieu.VUNG),
+                TruongDuLieu.tao("Tính cách", Kieu.VUNG),
+                TruongDuLieu.tao("Ảnh đại diện", Kieu.TEP).an(),
+                TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON).datLuaChon("Đang hoạt động", "Ngừng hoạt động"));
     }
 }

@@ -22,9 +22,9 @@ public final class ThuTienDialog {
         JComboBox<PhuongThucItem> cboPhuongThuc =
                 new JComboBox<>(
                         new PhuongThucItem[] {
-                            new PhuongThucItem(PhuongThuc.CASH, "Tiền mặt"),
-                            new PhuongThucItem(PhuongThuc.TRANSFER, "Chuyển khoản QR"),
-                            new PhuongThucItem(PhuongThuc.CARD, "Thẻ ngân hàng")
+                            new PhuongThucItem(PhuongThuc.TIEN_MAT, "Tiền mặt"),
+                            new PhuongThucItem(PhuongThuc.CHUYEN_KHOAN, "Chuyển khoản QR"),
+                            new PhuongThucItem(PhuongThuc.THE_NGAN_HANG, "Thẻ ngân hàng")
                         });
 
         JTextField txtKhachDua = new JTextField(String.valueOf(canThu), 12);
@@ -58,8 +58,8 @@ public final class ThuTienDialog {
         Runnable capNhatGiaoDien =
                 () -> {
                     PhuongThucItem chon = (PhuongThucItem) cboPhuongThuc.getSelectedItem();
-                    PhuongThuc pt = chon != null ? chon.phuongThuc() : PhuongThuc.CASH;
-                    if (pt == PhuongThuc.CASH) {
+                    PhuongThuc pt = chon != null ? chon.phuongThuc() : PhuongThuc.TIEN_MAT;
+                    if (pt == PhuongThuc.TIEN_MAT) {
                         lblNhanKhachDua.setVisible(true);
                         txtKhachDua.setVisible(true);
                         lblNhanTienThua.setVisible(true);
@@ -73,7 +73,7 @@ public final class ThuTienDialog {
                         } catch (Exception ex) {
                             lblTienThua.setText("Số tiền chưa đúng");
                         }
-                    } else if (pt == PhuongThuc.TRANSFER) {
+                    } else if (pt == PhuongThuc.CHUYEN_KHOAN) {
                         lblNhanKhachDua.setVisible(false);
                         txtKhachDua.setVisible(false);
                         lblNhanTienThua.setVisible(false);
@@ -136,14 +136,14 @@ public final class ThuTienDialog {
                 == JOptionPane.OK_OPTION) {
             try {
                 PhuongThucItem chon = (PhuongThucItem) cboPhuongThuc.getSelectedItem();
-                PhuongThuc pt = chon != null ? chon.phuongThuc() : PhuongThuc.CASH;
-                if (pt == PhuongThuc.CASH) {
+                PhuongThuc pt = chon != null ? chon.phuongThuc() : PhuongThuc.TIEN_MAT;
+                if (pt == PhuongThuc.TIEN_MAT) {
                     long khachDua = docTien(txtKhachDua);
                     if (khachDua < canThu) {
                         throw new IllegalArgumentException(
                                 "Tiền khách đưa phải lớn hơn hoặc bằng số tiền cần thu.");
                     }
-                    return List.of(new DongThuTien(PhuongThuc.CASH, canThu, khachDua, true));
+                    return List.of(new DongThuTien(PhuongThuc.TIEN_MAT, canThu, khachDua, true));
                 } else {
                     if (!chkDaNhanTien.isSelected()) {
                         throw new IllegalArgumentException(
