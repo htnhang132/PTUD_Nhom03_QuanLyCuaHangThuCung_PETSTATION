@@ -38,4 +38,5 @@ public interface DanhMucDAO {
     boolean tonTaiTenNcc(String ten, String maLoaiTru);
 
     boolean tonTaiSdtNcc(String soDienThoai, String maLoaiTru);
+    String layAnhChupNcc(String maNcc);
 }

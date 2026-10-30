@@ -232,14 +232,34 @@ public final class DanhMucService {
                                             + " giá bán.");
                         if (sp.isEmpty()) giaTri[9] = "Ngừng kinh doanh";
                     }
+                    boolean laNcc = danhMuc.loai == LoaiDanhMuc.NHA_CUNG_CAP;
+
+                    String maCu = String.valueOf(
+                            truoc == null ? giaTri[0] : truoc[0]);
+
+                    String duLieuCu = laNcc
+                            ? danhMucDAO.layAnhChupNcc(maCu)
+                            : null;
+
                     danhMucDAO.luu(
-                            danhMuc.loai,
-                            truoc,
-                            giaTri,
-                            layIdTaiKhoan(),
-                            layPhien().docVaiTro().name());
-                    NhatKyHeThongService.ghiNhatKy(
-                            truoc == null ? "Thêm" : "Sửa", danhMuc.loai + " " + giaTri[0]);
+                            danhMuc.loai, truoc, giaTri,
+                            layIdTaiKhoan(), layPhien().docVaiTro().name());
+
+                    if (laNcc) {
+                        String maMoi = String.valueOf(giaTri[0]);
+
+                        NhatKyHeThongService.ghiThayDoi(
+                                ketNoi,
+                                truoc == null ? "Thêm NCC" : "Sửa NCC",
+                                "NHA_CUNG_CAP",
+                                maMoi,
+                                duLieuCu,
+                                danhMucDAO.layAnhChupNcc(maMoi));
+                    } else {
+                        NhatKyHeThongService.ghiNhatKy(
+                                truoc == null ? "Thêm" : "Sửa",
+                                danhMuc.loai + " " + giaTri[0]);
+                    }
                     return null;
                 });
         if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM)

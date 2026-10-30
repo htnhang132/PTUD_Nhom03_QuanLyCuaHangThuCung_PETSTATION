@@ -740,4 +740,19 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 soDienThoai.replaceAll("[\\s.]", ""),
                 maLoaiTru) > 0;
     }
+    @Override
+    public String layAnhChupNcc(String maNcc) {
+        Object json = layGiaTriDon(
+                """
+                SELECT ma_ncc, ten, nguoi_dai_dien, so_dien_thoai,
+                       dia_chi, ma_so_thue, dieu_khoan, trang_thai,
+                       nhom_mat_hang, ghi_chu
+                FROM nha_cung_cap WITH (UPDLOCK, HOLDLOCK)
+                WHERE ma_ncc = ?
+                FOR JSON PATH, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER
+                """,
+                maNcc);
+
+        return json == null ? null : String.valueOf(json);
+    }
 }
