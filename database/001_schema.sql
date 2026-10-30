@@ -611,7 +611,13 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     [noi_dung_sau] NVARCHAR(MAX) NULL,
     [payload] NVARCHAR(MAX) NULL,
     CONSTRAINT [PK_yeu_cau_phe_duyet_1] PRIMARY KEY CLUSTERED ([id]),
-    CONSTRAINT [UQ_yeu_cau_phe_duyet_2] UNIQUE NONCLUSTERED ([ma_yeu_cau])
+    CONSTRAINT [UQ_yeu_cau_phe_duyet_2] UNIQUE NONCLUSTERED ([ma_yeu_cau]),
+    CONSTRAINT [CK_yeu_cau_phe_duyet_loai]
+        CHECK ([loai] IN ('SUA_HOA_DON', 'DOI_TRA', 'XUAT_HUY', 'KIEM_KE', 'NGHI_PHEP', 'GIA_BAN')),
+    CONSTRAINT [CK_yeu_cau_phe_duyet_loai_doi_tuong]
+        CHECK ([loai_doi_tuong] IN ('PRICE_CHANGE', 'WRITE_OFF', 'STOCKTAKE', 'RETURN', 'LEAVE', 'INVOICE_NOTE', 'CANCEL_INVOICE')),
+    CONSTRAINT [CK_yeu_cau_phe_duyet_trang_thai]
+        CHECK ([trang_thai] IN ('PENDING', 'APPROVED', 'REJECTED', 'NEEDS_INFO', 'CANCELLED'))
 );
 
 

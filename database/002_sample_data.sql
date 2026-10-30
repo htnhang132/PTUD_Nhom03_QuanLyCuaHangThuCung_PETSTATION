@@ -13,6 +13,25 @@
     - C06: sample audit records are data, while audit policy is documented separately.
 */
 
+--tạo và dung database PetStation cho lần đầu chạy
+--create database PetStation
+--use PetStation
+
+--Drop database khi thực hiện chỉnh sửa 
+--USE master;
+--GO
+
+---- Chuyển database sang đơn người dùng và ngắt kết nối ngay lập tức
+--ALTER DATABASE [PetStation] 
+--SET SINGLE_USER 
+--WITH ROLLBACK IMMEDIATE;
+--GO
+
+---- Tiến hành xóa database
+--DROP DATABASE [PetStation];
+--GO
+
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 SET ANSI_NULLS ON;
@@ -897,14 +916,15 @@ VALUES
 SET IDENTITY_INSERT dbo.[voucher] OFF;
 
 -- yeu_cau_phe_duyet (4 dòng)
+-- loai: mã nghiệp vụ; loai_doi_tuong: mã action thực thi được service duyệt hỗ trợ.
 DBCC CHECKIDENT ('dbo.yeu_cau_phe_duyet', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[yeu_cau_phe_duyet] ON;
 INSERT INTO dbo.[yeu_cau_phe_duyet] ([id], [ma_yeu_cau], [loai], [nguoi_gui_id], [loai_doi_tuong], [ma_doi_tuong], [ly_do], [trang_thai], [nguoi_xu_ly_id], [phan_hoi], [gui_luc], [xu_ly_luc], [noi_dung_truoc], [noi_dung_sau], [payload])
 VALUES
-    (1, N'YC00000001', N'KIEM_KE', 4, N'KIEM_KE', N'1', N'chờ duyệt chênh lệch', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Tồn sổ 3', N'Tồn thực 2', N''),
-    (2, N'YC00000002', N'GIA_BAN', 4, N'GIA_BAN', N'44', N'thử duyệt hoặc từ chối', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'30000', N'35000', N''),
-    (3, N'YC00000003', N'GIA_BAN', 4, N'GIA_BAN', N'53', N'thử duyệt hoặc từ chối', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'70000', N'75000', N''),
-    (4, N'YC00000004', N'NGHI_PHEP', 5, N'NGHI_PHEP', N'17', N'xin nghỉ phép', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Đang phân công', N'Nghỉ một ngày', N'2026-10-22');
+    (1, N'YC00000001', N'KIEM_KE', 4, N'STOCKTAKE', N'1', N'chờ duyệt chênh lệch', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Tồn sổ 3', N'Tồn thực 2', N''),
+    (2, N'YC00000002', N'GIA_BAN', 4, N'PRICE_CHANGE', N'44', N'thử duyệt hoặc từ chối', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'30000', N'35000', N''),
+    (3, N'YC00000003', N'GIA_BAN', 4, N'PRICE_CHANGE', N'53', N'thử duyệt hoặc từ chối', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'70000', N'75000', N''),
+    (4, N'YC00000004', N'NGHI_PHEP', 5, N'LEAVE', N'17', N'xin nghỉ phép', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Đang phân công', N'Nghỉ một ngày', N'2026-10-22');
 SET IDENTITY_INSERT dbo.[yeu_cau_phe_duyet] OFF;
 
 COMMIT;
