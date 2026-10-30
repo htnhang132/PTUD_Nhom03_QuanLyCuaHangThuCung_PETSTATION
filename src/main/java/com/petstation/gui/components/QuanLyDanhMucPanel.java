@@ -899,7 +899,30 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         if (cauHinh.boChuanHoa != null) cauHinh.boChuanHoa.accept(cacGiaTri);
         // Trước.
         Object[] truoc = cheDo == CheDo.SUA ? hienTai.clone() : null;
-        // Đã lưu.
+
+        boolean laNcc =
+                cacDong instanceof com.petstation.service.DanhMucService.CacDong dm
+                && dm.loai == com.petstation.model.LoaiDanhMuc.NHA_CUNG_CAP;
+
+        if (laNcc && truoc != null) {
+            String[] cu = java.util.Arrays.stream(truoc)
+                    .map(v -> java.util.Objects.toString(v, "").trim())
+                    .toArray(String[]::new);
+
+            String[] moi = java.util.Arrays.stream(cacGiaTri)
+                    .map(v -> java.util.Objects.toString(v, "").trim())
+                    .toArray(String[]::new);
+
+            // Chuẩn hóa SĐT theo cùng quy tắc lưu.
+            cu[3] = cu[3].replaceAll("[\\s.]", "");
+            moi[3] = moi[3].replaceAll("[\\s.]", "");
+
+            if (java.util.Arrays.equals(cu, moi)) {
+                HopThoai.hienThiThongTin(this, "Không có dữ liệu mới.");
+                return;
+            }
+        }
+
         Object[] daLuu;
         try {
             try {
