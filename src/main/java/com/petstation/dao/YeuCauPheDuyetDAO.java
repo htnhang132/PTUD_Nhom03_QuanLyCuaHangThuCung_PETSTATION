@@ -27,4 +27,9 @@ public interface YeuCauPheDuyetDAO {
     int tuChoiPhieuDoiTra(Object... cacThamSo);
 
     int danhDauYeuCauTuChoi(Object... cacThamSo);
+    
+    int yeuCauBoSung(
+            long nguoiXuLyId,
+            String noiDung,
+            String maYeuCau);
 }

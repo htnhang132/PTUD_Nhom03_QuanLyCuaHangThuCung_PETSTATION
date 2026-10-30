@@ -211,7 +211,30 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             // Đang chờ.
             boolean dangCho = dongDuLieu.trangThai.equals("Chờ duyệt");
             // Các nút.
-            JPanel pnlCacNut = new JPanel(new GridLayout(1, 2, 8, 0));
+            JPanel pnlCacNut = new JPanel(new GridLayout(1, 3, 8, 0));
+
+            NutDinhDang btnBoSung = new NutDinhDang(
+                    "Yêu cầu bổ sung", NutDinhDang.KieuNut.PHU);
+
+            btnBoSung.setEnabled(dangCho);
+
+            btnBoSung.addActionListener(e -> {
+                List<String> nhap = BieuMauDialog.layYeuCauNhap(
+                        this,
+                        "Yêu cầu bổ sung",
+                        new String[] {"Nội dung cần bổ sung *"},
+                        new String[] {""});
+
+                if (nhap == null) return;
+
+                try {
+                    PheDuyetService.yeuCauBoSung(dongDuLieu.id, nhap.get(0));
+                    taiLai();
+                } catch (RuntimeException ex) {
+                    HopThoai.hienThiCanhBao(this, ex.getMessage());
+                }
+            });
+
             pnlCacNut.setOpaque(false);
             // Duyệt.
             NutDinhDang btnDuyet = new NutDinhDang("Duyệt", NutDinhDang.KieuNut.THANH_CONG);
@@ -223,6 +246,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             btnTuChoi.addActionListener(suKien -> tuChoi(dongDuLieu));
             pnlCacNut.add(btnDuyet);
             pnlCacNut.add(btnTuChoi);
+            pnlCacNut.add(btnBoSung);
             pnlChiTiet.add(pnlCacNut, BorderLayout.SOUTH);
         }
         pnlChiTiet.revalidate();

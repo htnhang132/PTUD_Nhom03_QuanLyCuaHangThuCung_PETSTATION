@@ -78,9 +78,12 @@ public final class PheDuyetService {
             sau = chuyenThanhChuoi(dongDuLieu[6]);
             trangThai =
                     switch (chuyenThanhChuoi(dongDuLieu[7])) {
-                        case "APPROVED", "DA_DUYET" -> "Đã duyệt";
-                        case "REJECTED", "TU_CHOI" -> "Từ chối";
-                        default -> "Chờ duyệt";
+	                    case "APPROVED", "DA_DUYET" -> "Đã duyệt";
+	                    case "REJECTED", "TU_CHOI" -> "Từ chối";
+	                    case "NEEDS_INFO", "CHO_BO_SUNG" -> "Chờ bổ sung";
+	                    case "CANCELLED", "DA_HUY" -> "Đã hủy";
+	                    case "PENDING", "CHO_DUYET" -> "Chờ duyệt";
+	                    default -> "Trạng thái không xác định";
                     };
             daQuyetDinhTheo = chuyenThanhChuoi(dongDuLieu[8]);
             tuChoiLyDo = chuyenThanhChuoi(dongDuLieu[9]);
@@ -261,5 +264,30 @@ public final class PheDuyetService {
 
     public static void xoaBoLangNghe() {
         CAC_BO_LANG_NGHE.clear();
+    }
+    
+    public static void yeuCauBoSung(String ma, String noiDung) {
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
+
+        if (noiDung == null || noiDung.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Cần nhập nội dung yêu cầu bổ sung.");
+        }
+
+        thucHienGiaoDich(ketNoi -> {
+            int soDong = pheDuyetDAO.yeuCauBoSung(
+                    layIdTaiKhoan(), noiDung.trim(), ma);
+
+            if (soDong != 1) {
+                throw new IllegalStateException(
+                        "Yêu cầu không còn ở trạng thái chờ duyệt.");
+            }
+
+            NhatKyHeThongService.ghiNhatKy(
+                    "Yêu cầu bổ sung", ma + " / " + noiDung);
+            return null;
+        });
+
+        thongBao();
     }
 }

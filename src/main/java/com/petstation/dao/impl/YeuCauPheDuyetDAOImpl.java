@@ -90,4 +90,22 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
                     + " WHERE ma_yeu_cau=?",
                 cacThamSo);
     }
+    @Override
+    public int yeuCauBoSung(
+            long nguoiXuLyId,
+            String noiDung,
+            String maYeuCau) {
+
+        return ThaoTacSQL.capNhat(
+                """
+                UPDATE yeu_cau_phe_duyet
+                SET trang_thai = 'NEEDS_INFO',
+                    nguoi_xu_ly_id = ?,
+                    phan_hoi = ?,
+                    xu_ly_luc = SYSDATETIME()
+                WHERE ma_yeu_cau = ?
+                  AND trang_thai = 'PENDING'
+                """,
+                nguoiXuLyId, noiDung, maYeuCau);
+    }
 }
