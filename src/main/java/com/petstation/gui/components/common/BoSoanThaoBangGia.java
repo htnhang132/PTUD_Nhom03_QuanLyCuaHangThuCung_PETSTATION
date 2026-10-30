@@ -132,13 +132,19 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             // Giá.
             long gia = TienTe.doc(String.valueOf(moHinh.getValueAt(dongDuLieu, 2)));
             if (loai.isEmpty() && canNang.isEmpty() && gia < 0) continue;
+            if (gia <= 0) {
+                throw new IllegalArgumentException(
+                    "Dòng " + (dongDuLieu + 1)
+                        + ": Giá dịch vụ phải lớn hơn 0."
+                );
+            }
             if (boGhepChuoi.length() > 0) boGhepChuoi.append(';');
             boGhepChuoi
                     .append(loai)
                     .append('|')
                     .append(canNang)
                     .append('|')
-                    .append(Math.max(gia, 0));
+                    .append(gia);
         }
         return boGhepChuoi.toString();
     }
