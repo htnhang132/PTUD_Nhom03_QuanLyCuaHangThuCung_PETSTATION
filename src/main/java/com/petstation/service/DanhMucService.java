@@ -117,7 +117,21 @@ public final class DanhMucService {
         GIA_CAC_BO_LANG_NGHE.add(boLangNghe);
     }
 
-    public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri) {
+    public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri){
+        luu(cacDong, truoc, giaTri, false);
+    } 
+    public static final class TrungSoDienThoaiException
+    extends IllegalArgumentException {
+
+	public TrungSoDienThoaiException(String thongBao) {
+	    super(thongBao);
+		}
+    }
+    public static void luu(
+            List<Object[]> cacDong,
+            Object[] truoc,
+            Object[] giaTri,
+            boolean xacNhanTrungSdt){
         if (!(cacDong instanceof CacDong danhMuc))
             throw new IllegalArgumentException("Danh mục chưa nối SQL Server.");
         // Quyền.
@@ -157,6 +171,39 @@ public final class DanhMucService {
                             throw new IllegalArgumentException(
                                     "Voucher đã dùng chỉ được tra cứu, không sửa hoặc phát hành"
                                             + " lại.");
+                    }
+                    if (danhMuc.loai == LoaiDanhMuc.NHA_CUNG_CAP) {
+                        String maLoaiTru = truoc == null
+                                ? ""
+                                : String.valueOf(truoc[0]);
+
+                        String ten = String.valueOf(giaTri[1]).trim();
+                        String sdt = String.valueOf(giaTri[3])
+                                .replaceAll("[\\s.]", "");
+
+                        if (ten.isBlank()) {
+                            throw new IllegalArgumentException(
+                                    "Tên nhà cung cấp không được để trống.");
+                        }
+
+                        if (!sdt.matches("0\\d{9}")) {
+                            throw new IllegalArgumentException(
+                                    "Số điện thoại phải gồm 10 chữ số, bắt đầu bằng 0.");
+                        }
+
+                        if (danhMucDAO.tonTaiTenNcc(ten, maLoaiTru)) {
+                            throw new IllegalArgumentException(
+                                    "Tên nhà cung cấp đã tồn tại.");
+                        }
+
+                        if (danhMucDAO.tonTaiSdtNcc(sdt, maLoaiTru)
+                                && !xacNhanTrungSdt) {
+                            throw new TrungSoDienThoaiException(
+                                    "Số điện thoại đã được nhà cung cấp khác sử dụng.");
+                        }
+
+                        giaTri[1] = ten;
+                        giaTri[3] = sdt;
                     }
                     if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM && giaTri.length >= 17) {
                         String anh = String.valueOf(giaTri[10]);
