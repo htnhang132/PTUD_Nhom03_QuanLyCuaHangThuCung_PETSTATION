@@ -122,10 +122,23 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                                 + " NULLIF(p.anh,'') IS NULL THEN 1 ELSE 0 END,p.ma_san_pham";
 
                     case NHA_CUNG_CAP ->
-                            "SELECT"
-                                + " ma_ncc,ten,nguoi_dai_dien,so_dien_thoai,dia_chi,ma_so_thue,dieu_khoan,CASE"
-                                + " trang_thai WHEN 'COOPERATING' THEN N'Đang hợp tác' ELSE N'Ngừng"
-                                + " hợp tác' END FROM nha_cung_cap ORDER BY ma_ncc";
+                    """
+                    SELECT ma_ncc,
+                           ten,
+                           COALESCE(nguoi_dai_dien, N''),
+                           so_dien_thoai,
+                           COALESCE(dia_chi, N''),
+                           COALESCE(ma_so_thue, ''),
+                           dieu_khoan,
+                           CASE trang_thai
+                               WHEN 'COOPERATING' THEN N'Đang hợp tác'
+                               ELSE N'Ngừng hợp tác'
+                           END,
+                           COALESCE(nhom_mat_hang, N''),
+                           COALESCE(ghi_chu, N'')
+                    FROM nha_cung_cap
+                    ORDER BY ma_ncc
+                    """;
                     case KHUYEN_MAI ->
                             "SELECT ma_chuong_trinh,ten,CASE loai_giam WHEN 'PERCENT' THEN N'Giảm"
                                 + " %' ELSE N'Giảm tiền' END,CASE nguon WHEN 'PRODUCT' THEN N'Sản"
@@ -550,28 +563,22 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 }
             }
             case NHA_CUNG_CAP ->
-                    layThemHoacCapNhat(
-                            "nha_cung_cap",
-                            "ma_ncc",
-                            khoa,
-                            new String[] {
-                                "ma_ncc",
-                                "ten",
-                                "nguoi_dai_dien",
-                                "so_dien_thoai",
-                                "dia_chi",
-                                "ma_so_thue",
-                                "dieu_khoan",
-                                "trang_thai"
-                            },
-                            giaTri2[0],
-                            giaTri2[1],
-                            giaTri2[2],
-                            giaTri2[3],
-                            giaTri2[4],
-                            giaTri2[5],
-                            giaTri2[6],
-                            "Đang hợp tác".equals(giaTri2[7]) ? "COOPERATING" : "INACTIVE");
+            layThemHoacCapNhat(
+                    "nha_cung_cap",
+                    "ma_ncc",
+                    khoa,
+                    new String[] {
+                        "ma_ncc", "ten", "nguoi_dai_dien",
+                        "so_dien_thoai", "dia_chi", "ma_so_thue",
+                        "dieu_khoan", "trang_thai",
+                        "nhom_mat_hang", "ghi_chu"
+                    },
+                    giaTri2[0], giaTri2[1], giaTri2[2],
+                    giaTri2[3], giaTri2[4], giaTri2[5],
+                    giaTri2[6],
+                    "Đang hợp tác".equals(giaTri2[7])
+                            ? "COOPERATING" : "INACTIVE",
+                    giaTri2[8], giaTri2[9]);
             case KHUYEN_MAI ->
                     layThemHoacCapNhat(
                             "chuong_trinh_khuyen_mai",
