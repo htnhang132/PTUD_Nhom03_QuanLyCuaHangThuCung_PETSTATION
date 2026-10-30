@@ -1,5 +1,6 @@
 package com.petstation.dao;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -60,4 +61,9 @@ public interface PhieuTiepNhanSpaDAO {
             LocalDateTime batDau,
             LocalDateTime ketThuc,
             long id);
+
+    List<Object[]> timKiem(
+        LocalDate tuNgay,
+        LocalDate denNgay,
+        String trangThai);
 }

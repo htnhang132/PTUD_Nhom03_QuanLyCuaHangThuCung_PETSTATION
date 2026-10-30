@@ -187,4 +187,32 @@ public final class SpaService {
         PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_SPA);
         return xuLySpaDAO.layPhieuSpaChiTiet(phieuSpa);
     }
+
+    public static List<Object[]> timKiem(
+        LocalDate tuNgay,
+        LocalDate denNgay,
+        String trangThai) {
+
+        yeuCau(Quyen.QUAN_LY_SPA);
+
+        if ((tuNgay == null) != (denNgay == null)) {
+            throw new IllegalArgumentException(
+                "Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.");
+        }
+
+        if (tuNgay != null && tuNgay.isAfter(denNgay)) {
+            throw new IllegalArgumentException(
+                "Ngày bắt đầu không được sau ngày kết thúc.");
+        }
+
+        String maTrangThai = trangThai == null ? "" : trangThai.trim();
+
+        if (!Set.of(
+            "", "RECEIVED", "IN_PROGRESS", "COMPLETED", "PAID"
+        ).contains(maTrangThai)) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ.");
+        }
+
+        return xuLySpaDAO.timKiem(tuNgay, denNgay, maTrangThai);
+    }
 }

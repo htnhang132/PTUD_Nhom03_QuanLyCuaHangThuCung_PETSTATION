@@ -5,7 +5,9 @@ import static com.petstation.database.ThaoTacSQL.*;
 import com.petstation.dao.PhieuTiepNhanSpaDAO;
 import com.petstation.database.ThaoTacSQL;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC Spa DAO. */
@@ -244,5 +246,43 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
                 batDau,
                 ketThuc,
                 id);
+    }
+    @Override
+    public List<Object[]> timKiem(
+        LocalDate tuNgay,
+        LocalDate denNgay,
+        String trangThai) {
+
+        String sql = """
+                SELECT t.id, t.ma_phieu, k.ho_ten, p.ten,
+                       t.can_nang_thuc_te, n.ho_ten,
+                       t.tong_tien, t.trang_thai, t.tao_luc
+                FROM phieu_tiep_nhan_spa t
+                JOIN thu_cung p ON p.id = t.thu_cung_id
+                JOIN khach_hang k ON k.id = p.khach_hang_id
+                LEFT JOIN nhan_vien n ON n.id = t.nhan_vien_id
+                WHERE 1 = 1
+                """;
+
+        List<Object> thamSo = new ArrayList<>();
+
+        if (tuNgay != null) {
+            sql += " AND t.tao_luc >= ?";
+            thamSo.add(tuNgay.atStartOfDay());
+        }
+
+        if (denNgay != null) {
+            sql += " AND t.tao_luc < ?";
+            thamSo.add(denNgay.plusDays(1).atStartOfDay());
+        }
+
+        if (trangThai != null && !trangThai.isBlank()) {
+            sql += " AND t.trang_thai = ?";
+            thamSo.add(trangThai);
+        }
+
+        sql += " ORDER BY t.tao_luc DESC, t.id DESC";
+
+        return truyVan(sql, thamSo.toArray());
     }
 }

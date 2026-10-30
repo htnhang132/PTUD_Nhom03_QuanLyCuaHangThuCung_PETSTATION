@@ -150,13 +150,22 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
 
     private boolean dangTai;
 
+    /**
+     * Các màn mặc định vẫn lấy dữ liệu như trước.
+     * Khi ghi đè, giữ cấu trúc cột và không truy cập thành phần Swing vì hàm có thể chạy nền.
+     * Hàm cũng có thể được gọi trong lúc constructor lớp cha đang chạy.
+     */
+    protected List<Object[]> layDuLieu() {
+        return NghiepVuService.layCacDong(kieuNghiepVu);
+    }
+
     protected void lamMoi() {
         if (SwingUtilities.isEventDispatchThread()
                 && com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()) {
             taiLaiNen();
             return;
         }
-        Object[][] duLieu = NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
+        Object[][] duLieu = layDuLieu().toArray(Object[][]::new);
         apDungDuLieu(duLieu);
     }
 
@@ -205,7 +214,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         var session = com.petstation.service.PhienDangNhapService.layPhienHienTai();
         new SwingWorker<Object[][], Void>() {
             protected Object[][] doInBackground() {
-                return NghiepVuService.layCacDong(kieuNghiepVu).toArray(Object[][]::new);
+                return layDuLieu().toArray(Object[][]::new);
             }
 
             protected void done() {
