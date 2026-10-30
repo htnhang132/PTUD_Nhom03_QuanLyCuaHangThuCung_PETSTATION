@@ -1,6 +1,22 @@
--- CREATE DATABASE PetStation COLLATE Vietnamese_CI_AS;
--- GO
+/*
+  Pet Station - 001_schema.sql
+  Purpose: create the database schema only; this file does not insert business data.
 
+  Run in a dedicated, empty Pet Station database created in SSMS.
+  Safety checks:
+    - refuse to run in a SQL Server system database;
+    - refuse to run if user tables already exist;
+    - execute schema DDL in a single transaction and roll back on failure.
+
+  Security-course mapping:
+    - C01: data integrity and secure-by-default design (constraints/indexes);
+    - C03: T-SQL error handling with TRY/CATCH and THROW;
+    - C05: transaction atomicity and rollback;
+    - C02: schema objects are the resources whose permissions should be least-privilege.
+  The existing table, key, constraint, and index definitions below are preserved.
+*/
+
+SET NOCOUNT ON;
 SET XACT_ABORT ON;
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
@@ -9,6 +25,24 @@ SET ANSI_WARNINGS ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET ARITHABORT ON;
 SET NUMERIC_ROUNDABORT OFF;
+
+IF DB_NAME() IN (N'master', N'model', N'msdb', N'tempdb')
+BEGIN
+    ;THROW 51000, 'Run 001_schema.sql only inside a dedicated application database.', 1;
+END;
+
+IF EXISTS (
+    SELECT 1
+    FROM sys.tables
+    WHERE is_ms_shipped = 0
+      AND name <> N'sysdiagrams'
+)
+BEGIN
+    ;THROW 51001, '001_schema.sql requires an empty database. No existing objects were dropped.', 1;
+END;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
 
 CREATE TABLE dbo.[bien_ban_kiem_ke] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -20,7 +54,7 @@ CREATE TABLE dbo.[bien_ban_kiem_ke] (
     CONSTRAINT [PK_bien_ban_kiem_ke_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_bien_ban_kiem_ke_2] UNIQUE NONCLUSTERED ([so_bien_ban])
 );
-GO
+
 
 CREATE TABLE dbo.[ca_lam_viec] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -34,7 +68,7 @@ CREATE TABLE dbo.[ca_lam_viec] (
     CONSTRAINT [UQ_ca_lam_viec_2] UNIQUE NONCLUSTERED ([ma_ca]),
     CONSTRAINT [CK_ca_lam_viec_1] CHECK ([so_nhan_su_toi_thieu]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[cai_dat] (
     [khoa] VARCHAR(100) NOT NULL,
@@ -43,7 +77,7 @@ CREATE TABLE dbo.[cai_dat] (
     [ngay_cap_nhat] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     CONSTRAINT [PK_cai_dat_1] PRIMARY KEY CLUSTERED ([khoa])
 );
-GO
+
 
 CREATE TABLE dbo.[chi_tiet_doi_tra] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -56,7 +90,7 @@ CREATE TABLE dbo.[chi_tiet_doi_tra] (
     CONSTRAINT [CK_chi_tiet_doi_tra_1] CHECK ([so_luong]>(0)),
     CONSTRAINT [CK_chi_tiet_doi_tra_2] CHECK ([tien_hoan]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[chi_tiet_hoa_don] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -74,7 +108,7 @@ CREATE TABLE dbo.[chi_tiet_hoa_don] (
     CONSTRAINT [CK_chi_tiet_hoa_don_2] CHECK ([so_luong]>(0)),
     CONSTRAINT [CK_chi_tiet_hoa_don_gia] CHECK ([don_gia]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[chi_tiet_kiem_ke] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -85,7 +119,7 @@ CREATE TABLE dbo.[chi_tiet_kiem_ke] (
     [nguyen_nhan] NVARCHAR(1000) NULL,
     CONSTRAINT [PK_chi_tiet_kiem_ke_1] PRIMARY KEY CLUSTERED ([id])
 );
-GO
+
 
 CREATE TABLE dbo.[chi_tiet_phieu_nhap] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -99,7 +133,7 @@ CREATE TABLE dbo.[chi_tiet_phieu_nhap] (
     CONSTRAINT [CK_chi_tiet_phieu_nhap_1] CHECK ([gia_nhap]>(0)),
     CONSTRAINT [CK_chi_tiet_phieu_nhap_2] CHECK ([so_luong]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[chi_tiet_phieu_xuat] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -111,7 +145,7 @@ CREATE TABLE dbo.[chi_tiet_phieu_xuat] (
     CONSTRAINT [CK_chi_tiet_phieu_xuat_1] CHECK ([gia_tri]>=(0)),
     CONSTRAINT [CK_chi_tiet_phieu_xuat_2] CHECK ([so_luong]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[chuong_trinh_khuyen_mai] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -130,7 +164,7 @@ CREATE TABLE dbo.[chuong_trinh_khuyen_mai] (
     CONSTRAINT [CK_chuong_trinh_khuyen_mai_2] CHECK ([gia_tri]>(0)),
     CONSTRAINT [CK_km_ngay] CHECK ([ket_thuc]>[bat_dau])
 );
-GO
+
 
 CREATE TABLE dbo.[goi_dich_vu_spa] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -147,7 +181,7 @@ CREATE TABLE dbo.[goi_dich_vu_spa] (
     CONSTRAINT [UQ_goi_dich_vu_spa_3] UNIQUE NONCLUSTERED ([ma_goi]),
     CONSTRAINT [CK_goi_dich_vu_spa_1] CHECK ([thoi_gian_du_kien]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[hoa_don] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -174,7 +208,7 @@ CREATE TABLE dbo.[hoa_don] (
     CONSTRAINT [UQ_hoa_don_4] UNIQUE NONCLUSTERED ([so_hoa_don]),
     CONSTRAINT [CK_hoa_don_1] CHECK ([tong_tien]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[hop_dong_luu_tru] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -203,7 +237,7 @@ CREATE TABLE dbo.[hop_dong_luu_tru] (
     CONSTRAINT [UQ_hop_dong_luu_tru_2] UNIQUE NONCLUSTERED ([ma_hop_dong]),
     CONSTRAINT [CK_hop_dong_luu_tru_1] CHECK ([gia_dem]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[khach_hang] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -225,7 +259,7 @@ CREATE TABLE dbo.[khach_hang] (
     CONSTRAINT [UQ_khach_hang_3] UNIQUE NONCLUSTERED ([ma_khach_hang]),
     CONSTRAINT [CK_khach_hang_1] CHECK ([diem_tich_luy]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[lich_hen] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -242,7 +276,7 @@ CREATE TABLE dbo.[lich_hen] (
     CONSTRAINT [PK_lich_hen_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_lich_hen_2] UNIQUE NONCLUSTERED ([ma_lich_hen])
 );
-GO
+
 
 CREATE TABLE dbo.[lich_lam_viec] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -256,7 +290,7 @@ CREATE TABLE dbo.[lich_lam_viec] (
     CONSTRAINT [CK_lich_lam_viec_1] CHECK ([loai]='LEAVE' OR [loai]='WORK'),
     CONSTRAINT [CK_lich_trang_thai] CHECK ([trang_thai]='CANCELLED' OR [trang_thai]='LOCKED' OR [trang_thai]='OPEN')
 );
-GO
+
 
 CREATE TABLE dbo.[lo_hang] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -276,7 +310,7 @@ CREATE TABLE dbo.[lo_hang] (
     CONSTRAINT [UQ_lo_hang] UNIQUE NONCLUSTERED ([san_pham_id], [so_lo]),
     CONSTRAINT [CK_lo_hang_1] CHECK ([so_luong_ton]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[nha_cung_cap] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -293,7 +327,7 @@ CREATE TABLE dbo.[nha_cung_cap] (
     CONSTRAINT [PK_nha_cung_cap_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_nha_cung_cap_2] UNIQUE NONCLUSTERED ([ma_ncc])
 );
-GO
+
 
 CREATE TABLE dbo.[nhan_vien] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -312,7 +346,7 @@ CREATE TABLE dbo.[nhan_vien] (
     CONSTRAINT [UQ_nhan_vien_2] UNIQUE NONCLUSTERED ([so_dien_thoai]),
     CONSTRAINT [UQ_nhan_vien_3] UNIQUE NONCLUSTERED ([ma_nhan_vien])
 );
-GO
+
 
 CREATE TABLE dbo.[nhat_ky_cham_soc] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -331,7 +365,7 @@ CREATE TABLE dbo.[nhat_ky_cham_soc] (
     [tep_dinh_kem] NVARCHAR(500) NULL,
     CONSTRAINT [PK_nhat_ky_cham_soc_1] PRIMARY KEY CLUSTERED ([id])
 );
-GO
+
 
 CREATE TABLE dbo.[nhat_ky_he_thong] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -348,7 +382,7 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     [ket_qua] NVARCHAR(100) NULL,
     CONSTRAINT [PK_nhat_ky_he_thong_1] PRIMARY KEY CLUSTERED ([id])
 );
-GO
+
 
 CREATE TABLE dbo.[phien_lam_viec] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -370,7 +404,7 @@ CREATE TABLE dbo.[phien_lam_viec] (
     CONSTRAINT [CK_phien_hinh_thuc_ban_giao] CHECK ([hinh_thuc_ban_giao]='BAN_GIAO' OR [hinh_thuc_ban_giao]='NOP_QUY'),
     CONSTRAINT [CK_phien_trang_thai] CHECK ([trang_thai]='LOCKED' OR [trang_thai]='HANDED_OVER' OR [trang_thai]='RECONCILED' OR [trang_thai]='PENDING_APPROVAL' OR [trang_thai]='OPEN')
 );
-GO
+
 
 CREATE TABLE dbo.[phieu_doi_tra] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -388,7 +422,7 @@ CREATE TABLE dbo.[phieu_doi_tra] (
     CONSTRAINT [PK_phieu_doi_tra_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_phieu_doi_tra_2] UNIQUE NONCLUSTERED ([ma_phieu])
 );
-GO
+
 
 CREATE TABLE dbo.[phieu_nhap_kho] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -405,7 +439,7 @@ CREATE TABLE dbo.[phieu_nhap_kho] (
     CONSTRAINT [CK_phieu_nhap_kho_1] CHECK ([da_tra]>=(0)),
     CONSTRAINT [CK_phieu_nhap_kho_2] CHECK ([tong_tien]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -428,7 +462,7 @@ CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     CONSTRAINT [UQ_phieu_tiep_nhan_spa_2] UNIQUE NONCLUSTERED ([ma_phieu]),
     CONSTRAINT [CK_phieu_tiep_nhan_spa_1] CHECK ([can_nang_thuc_te]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[phieu_xuat_kho] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -442,7 +476,7 @@ CREATE TABLE dbo.[phieu_xuat_kho] (
     CONSTRAINT [PK_phieu_xuat_kho_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_phieu_xuat_kho_2] UNIQUE NONCLUSTERED ([so_phieu])
 );
-GO
+
 
 CREATE TABLE dbo.[phong_hotel] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -460,7 +494,7 @@ CREATE TABLE dbo.[phong_hotel] (
     CONSTRAINT [CK_phong_hotel_1] CHECK ([gia_dem]>(0)),
     CONSTRAINT [CK_phong_hotel_2] CHECK ([suc_chua]>(0))
 );
-GO
+
 
 CREATE TABLE dbo.[san_pham] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -491,7 +525,7 @@ CREATE TABLE dbo.[san_pham] (
     CONSTRAINT [CK_san_pham_2] CHECK ([gia_nhap_gan_nhat]>(0)),
     CONSTRAINT [CK_san_pham_3] CHECK ([ton_toi_thieu]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[tai_khoan] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -511,7 +545,7 @@ CREATE TABLE dbo.[tai_khoan] (
     CONSTRAINT [CK_tai_khoan_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'TAM_KHOA', 'NGUNG_HOAT_DONG', 'ACTIVE', 'INACTIVE')),
     CONSTRAINT [CK_tai_khoan_vai_tro] CHECK ([vai_tro] IN ('QUAN_LY_CUA_HANG', 'CUA_HANG_TRUONG', 'NHAN_VIEN_KHO', 'NHAN_VIEN_BAN_HANG', 'NHAN_VIEN_SPA_HOTEL', 'STORE_MANAGER', 'WAREHOUSE_STAFF', 'SALES_STAFF', 'SPA_HOTEL_STAFF'))
 );
-GO
+
 
 CREATE TABLE dbo.[thu_cung] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -537,7 +571,7 @@ CREATE TABLE dbo.[thu_cung] (
     CONSTRAINT [CK_thu_cung_1] CHECK ([can_nang]>(0)),
     CONSTRAINT [CK_thu_cung_2] CHECK ([loai] IN (N'Chó', N'Mèo', 'DOG', 'CAT'))
 );
-GO
+
 
 CREATE TABLE dbo.[voucher] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -558,7 +592,7 @@ CREATE TABLE dbo.[voucher] (
     CONSTRAINT [CK_voucher_2] CHECK ([menh_gia]>(0)),
     CONSTRAINT [CK_voucher_3] CHECK ([so_luong]>=(0))
 );
-GO
+
 
 CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     [id] BIGINT IDENTITY(1,1) NOT NULL,
@@ -579,148 +613,156 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     CONSTRAINT [PK_yeu_cau_phe_duyet_1] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [UQ_yeu_cau_phe_duyet_2] UNIQUE NONCLUSTERED ([ma_yeu_cau])
 );
-GO
+
 
 -- Khóa ngoại: tạo sau khi đã có đủ bảng.
 ALTER TABLE dbo.[bien_ban_kiem_ke] ADD CONSTRAINT [FK_bien_ban_kiem_ke_nguoi_lap_id] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[cai_dat] ADD CONSTRAINT [FK_cai_dat_nguoi_cap_nhat_id] FOREIGN KEY ([nguoi_cap_nhat_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_chi_tiet_hoa_don_id] FOREIGN KEY ([chi_tiet_hoa_don_id]) REFERENCES dbo.[chi_tiet_hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_lo_hang_id] FOREIGN KEY ([lo_hang_id]) REFERENCES dbo.[lo_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_phieu_doi_tra_id] FOREIGN KEY ([phieu_doi_tra_id]) REFERENCES dbo.[phieu_doi_tra] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_hoa_don_id] FOREIGN KEY ([hoa_don_id]) REFERENCES dbo.[hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_san_pham_id] FOREIGN KEY ([san_pham_id]) REFERENCES dbo.[san_pham] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_lo_hang_id] FOREIGN KEY ([lo_hang_id]) REFERENCES dbo.[lo_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_kiem_ke] ADD CONSTRAINT [FK_chi_tiet_kiem_ke_bien_ban_id] FOREIGN KEY ([bien_ban_id]) REFERENCES dbo.[bien_ban_kiem_ke] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_kiem_ke] ADD CONSTRAINT [FK_chi_tiet_kiem_ke_lo_hang_id] FOREIGN KEY ([lo_hang_id]) REFERENCES dbo.[lo_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_phieu_nhap] ADD CONSTRAINT [FK_chi_tiet_phieu_nhap_phieu_nhap_id] FOREIGN KEY ([phieu_nhap_id]) REFERENCES dbo.[phieu_nhap_kho] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_phieu_nhap] ADD CONSTRAINT [FK_chi_tiet_phieu_nhap_san_pham_id] FOREIGN KEY ([san_pham_id]) REFERENCES dbo.[san_pham] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_lo_hang_id] FOREIGN KEY ([lo_hang_id]) REFERENCES dbo.[lo_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_phieu_xuat_id] FOREIGN KEY ([phieu_xuat_id]) REFERENCES dbo.[phieu_xuat_kho] ([id]);
-GO
+
 ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_phien_lam_viec_id] FOREIGN KEY ([phien_lam_viec_id]) REFERENCES dbo.[phien_lam_viec] ([id]);
-GO
+
 ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_tai_khoan_id] FOREIGN KEY ([tai_khoan_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_khach_hang_id] FOREIGN KEY ([khach_hang_id]) REFERENCES dbo.[khach_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_hoa_don_id] FOREIGN KEY ([hoa_don_id]) REFERENCES dbo.[hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_khach_hang_id] FOREIGN KEY ([khach_hang_id]) REFERENCES dbo.[khach_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_nhan_coc_boi] FOREIGN KEY ([nhan_coc_boi]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_phien_nhan_coc_id] FOREIGN KEY ([phien_nhan_coc_id]) REFERENCES dbo.[phien_lam_viec] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_phong_id] FOREIGN KEY ([phong_id]) REFERENCES dbo.[phong_hotel] ([id]);
-GO
+
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_thu_cung_id] FOREIGN KEY ([thu_cung_id]) REFERENCES dbo.[thu_cung] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_hen] ADD CONSTRAINT [FK_lich_hen_khach_hang_id] FOREIGN KEY ([khach_hang_id]) REFERENCES dbo.[khach_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_hen] ADD CONSTRAINT [FK_lich_hen_nhan_vien_id] FOREIGN KEY ([nhan_vien_id]) REFERENCES dbo.[nhan_vien] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_hen] ADD CONSTRAINT [FK_lich_hen_thu_cung_id] FOREIGN KEY ([thu_cung_id]) REFERENCES dbo.[thu_cung] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_hen] ADD CONSTRAINT [FK_lich_hen_dich_vu] FOREIGN KEY ([dich_vu_id]) REFERENCES dbo.[goi_dich_vu_spa] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_lam_viec] ADD CONSTRAINT [FK_lich_lam_viec_ca_lam_viec_id] FOREIGN KEY ([ca_lam_viec_id]) REFERENCES dbo.[ca_lam_viec] ([id]);
-GO
+
 ALTER TABLE dbo.[lich_lam_viec] ADD CONSTRAINT [FK_lich_lam_viec_nhan_vien_id] FOREIGN KEY ([nhan_vien_id]) REFERENCES dbo.[nhan_vien] ([id]);
-GO
+
 ALTER TABLE dbo.[lo_hang] ADD CONSTRAINT [FK_lo_hang_san_pham_id] FOREIGN KEY ([san_pham_id]) REFERENCES dbo.[san_pham] ([id]);
-GO
+
 ALTER TABLE dbo.[nhat_ky_cham_soc] ADD CONSTRAINT [FK_nhat_ky_cham_soc_hop_dong_id] FOREIGN KEY ([hop_dong_id]) REFERENCES dbo.[hop_dong_luu_tru] ([id]);
-GO
+
 ALTER TABLE dbo.[nhat_ky_cham_soc] ADD CONSTRAINT [FK_nhat_ky_cham_soc_spa_id] FOREIGN KEY ([spa_id]) REFERENCES dbo.[phieu_tiep_nhan_spa] ([id]);
-GO
+
 ALTER TABLE dbo.[nhat_ky_cham_soc] ADD CONSTRAINT [FK_nhat_ky_cham_soc_nhan_vien_id] FOREIGN KEY ([nhan_vien_id]) REFERENCES dbo.[nhan_vien] ([id]);
-GO
+
 ALTER TABLE dbo.[nhat_ky_he_thong] ADD CONSTRAINT [FK_nhat_ky_he_thong_tai_khoan_id] FOREIGN KEY ([tai_khoan_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_lich_lam_viec_id] FOREIGN KEY ([lich_lam_viec_id]) REFERENCES dbo.[lich_lam_viec] ([id]);
-GO
+
 ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_nguoi_nhan_ban_giao_id] FOREIGN KEY ([nguoi_nhan_ban_giao_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_tai_khoan_id] FOREIGN KEY ([tai_khoan_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don_id] FOREIGN KEY ([hoa_don_id]) REFERENCES dbo.[hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don_thay_the_id] FOREIGN KEY ([hoa_don_thay_the_id]) REFERENCES dbo.[hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_nguoi_lap_id] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_nhap_kho] ADD CONSTRAINT [FK_phieu_nhap_kho_nguoi_lap_id] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_nhap_kho] ADD CONSTRAINT [FK_phieu_nhap_kho_nha_cung_cap_id] FOREIGN KEY ([nha_cung_cap_id]) REFERENCES dbo.[nha_cung_cap] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_goi_id] FOREIGN KEY ([goi_id]) REFERENCES dbo.[goi_dich_vu_spa] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_hoa_don_id] FOREIGN KEY ([hoa_don_id]) REFERENCES dbo.[hoa_don] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_lich_hen_id] FOREIGN KEY ([lich_hen_id]) REFERENCES dbo.[lich_hen] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_nhan_vien_id] FOREIGN KEY ([nhan_vien_id]) REFERENCES dbo.[nhan_vien] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_thu_cung_id] FOREIGN KEY ([thu_cung_id]) REFERENCES dbo.[thu_cung] ([id]);
-GO
+
 ALTER TABLE dbo.[phieu_xuat_kho] ADD CONSTRAINT [FK_phieu_xuat_kho_nguoi_lap_id] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[tai_khoan] ADD CONSTRAINT [FK_tai_khoan_nhan_vien_id] FOREIGN KEY ([nhan_vien_id]) REFERENCES dbo.[nhan_vien] ([id]);
-GO
+
 ALTER TABLE dbo.[thu_cung] ADD CONSTRAINT [FK_thu_cung_khach_hang_id] FOREIGN KEY ([khach_hang_id]) REFERENCES dbo.[khach_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[voucher] ADD CONSTRAINT [FK_voucher_khach_hang_id] FOREIGN KEY ([khach_hang_id]) REFERENCES dbo.[khach_hang] ([id]);
-GO
+
 ALTER TABLE dbo.[yeu_cau_phe_duyet] ADD CONSTRAINT [FK_yeu_cau_phe_duyet_nguoi_gui_id] FOREIGN KEY ([nguoi_gui_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 ALTER TABLE dbo.[yeu_cau_phe_duyet] ADD CONSTRAINT [FK_yeu_cau_phe_duyet_nguoi_xu_ly_id] FOREIGN KEY ([nguoi_xu_ly_id]) REFERENCES dbo.[tai_khoan] ([id]);
-GO
+
 
 -- Chỉ mục phục vụ tra cứu.
 CREATE INDEX [IX_hoa_don_phien_trang_thai] ON dbo.[hoa_don] ([phien_lam_viec_id], [trang_thai]);
-GO
+
 CREATE INDEX [IX_hoa_don_thoi_gian] ON dbo.[hoa_don] ([thanh_toan_luc] DESC);
-GO
+
 CREATE UNIQUE INDEX [UX_hoa_don_idempotency] ON dbo.[hoa_don] ([idempotency_key]) WHERE ([idempotency_key] IS NOT NULL AND [idempotency_key]<>'');
-GO
+
 CREATE INDEX [IX_hotel_thoi_gian] ON dbo.[hop_dong_luu_tru] ([phong_id], [ngay_vao], [ngay_ra_du_kien], [trang_thai]);
-GO
+
 CREATE INDEX [IX_khach_hang_phone] ON dbo.[khach_hang] ([so_dien_thoai]);
-GO
+
 CREATE INDEX [IX_lich_hen_thoi_gian] ON dbo.[lich_hen] ([bat_dau], [ket_thuc], [trang_thai]);
-GO
+
 CREATE INDEX [IX_lich_ngay_ca] ON dbo.[lich_lam_viec] ([ngay_lam], [ca_lam_viec_id]);
-GO
+
 CREATE INDEX [IX_lo_hang_fefo] ON dbo.[lo_hang] ([san_pham_id], [han_su_dung], [trang_thai]) INCLUDE ([so_luong_ton]);
-GO
+
 CREATE INDEX [IX_audit_time] ON dbo.[nhat_ky_he_thong] ([thoi_gian] DESC);
-GO
+
 CREATE UNIQUE INDEX [UX_phien_open] ON dbo.[phien_lam_viec] ([tai_khoan_id]) WHERE ([trang_thai]='OPEN');
-GO
+
 CREATE UNIQUE INDEX [UX_doi_hang_khoa] ON dbo.[phieu_doi_tra] ([khoa_thao_tac]) WHERE ([khoa_thao_tac] IS NOT NULL);
-GO
+
 CREATE UNIQUE INDEX [UX_doi_hang_hoa_don] ON dbo.[phieu_doi_tra] ([hoa_don_thay_the_id]) WHERE ([hoa_don_thay_the_id] IS NOT NULL);
-GO
+
 CREATE INDEX [IX_spa_pending] ON dbo.[phieu_tiep_nhan_spa] ([trang_thai], [tao_luc]);
-GO
+
 CREATE UNIQUE INDEX [UX_san_pham_barcode] ON dbo.[san_pham] ([barcode]) WHERE ([barcode] IS NOT NULL AND [barcode]<>'');
-GO
+
 CREATE INDEX [IX_tai_khoan_username_status] ON dbo.[tai_khoan] ([ten_dang_nhap], [trang_thai]);
-GO
+
 CREATE UNIQUE INDEX [UX_voucher_doi_diem] ON dbo.[voucher] ([khoa_doi_diem]) WHERE ([khoa_doi_diem] IS NOT NULL);
-GO
+
 CREATE INDEX [IX_approval_status] ON dbo.[yeu_cau_phe_duyet] ([trang_thai], [gui_luc]);
-GO
+
+
+    COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF XACT_STATE() <> 0
+        ROLLBACK TRANSACTION;
+    THROW;
+END CATCH;

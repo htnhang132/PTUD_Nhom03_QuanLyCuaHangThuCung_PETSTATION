@@ -60,10 +60,10 @@ Script tạo `PetStationDemo2` nếu chưa có, rồi chạy hai file SQL. Nếu
 
 Tạo một database trống, nên dùng collation `Vietnamese_CI_AS`. Chọn đúng database trong SSMS, chạy lần lượt:
 
-1. `database/001_schema.sql`: 48 bảng, khóa chính/ngoại, CHECK và chỉ mục.
+1. `database/001_schema.sql`: 31 bảng, khóa chính/ngoại, CHECK và chỉ mục.
 2. `database/002_sample_data.sql`: dữ liệu mẫu, mỗi bảng có dữ liệu dùng một `INSERT ... VALUES` nhiều dòng.
 
-File schema yêu cầu database trống. File mẫu **xóa dữ liệu ứng dụng hiện có** rồi chèn lại trong transaction; chỉ chạy trên database demo/test đã sao lưu. Script xóa bảng con trước, chèn bảng cha trước và giữ kiểm tra khóa ngoại/CHECK bật suốt quá trình. Ngày nghiệp vụ mẫu tính tương đối theo ngày nạp; ngày sinh và ngày thu thập nguồn được giữ cố định. `PN-DAU-KY` và lịch sử điểm đầu kỳ giải thích số dư có sẵn của bộ mẫu.
+File schema yêu cầu database trống. File mẫu **không xóa dữ liệu đang có**. Script yêu cầu các bảng dbo trống, kiểm tra điều kiện trước khi chèn và nạp dữ liệu trong một transaction; chỉ chạy trên database demo/test mới. Các câu INSERT dùng ID mẫu và được sắp theo thứ tự đáp ứng khóa ngoại; script không tắt kiểm tra CHECK/FK. Ngày nghiệp vụ mẫu tính tương đối theo ngày nạp; ngày sinh và ngày thu thập nguồn được giữ cố định. `PN-DAU-KY` và lịch sử điểm đầu kỳ giải thích số dư có sẵn của bộ mẫu.
 
 ## 4. Cấu hình ứng dụng
 
