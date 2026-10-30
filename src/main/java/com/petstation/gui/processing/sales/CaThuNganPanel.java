@@ -37,7 +37,8 @@ public final class CaThuNganPanel extends CoSoPanel {
     // Trang mở ca
     /** Tên ca làm việc. */
     private final JComboBox<String> cboTenCaLamViec =
-            BieuMauPanel.layHopChon(new String[] {"Ca sáng", "Ca chiều", "Ca tối"});
+    		BieuMauPanel.layHopChon(
+    		        new String[] {"Ca sáng", "Ca chiều"});
 
     /** Mở bộ đếm. */
     private final BoDemMenhGia pnlMoBoDem = new BoDemMenhGia();
@@ -335,9 +336,8 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private static String layDeXuatCaLamViec() {
-        // Chiều cao.
-        int chieuCao = LocalTime.now().getHour();
-        return chieuCao < 12 ? "Ca sáng" : chieuCao < 18 ? "Ca chiều" : "Ca tối";
+        LocalTime now = LocalTime.now();
+        return now.isBefore(LocalTime.of(14, 30)) ? "Ca sáng" : "Ca chiều";
     }
 
     private void lamMoi() {
