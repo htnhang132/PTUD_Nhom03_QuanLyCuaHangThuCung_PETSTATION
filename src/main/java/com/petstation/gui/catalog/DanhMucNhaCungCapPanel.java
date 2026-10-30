@@ -42,7 +42,9 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Mã số thuế", Kieu.VAN_BAN).kiemTraDuyNhat(),
                 TruongDuLieu.tao("Điều khoản thanh toán", Kieu.HOP_CHON)
                         .datLuaChon("Trả ngay", "15 ngày", "30 ngày", "45 ngày"),
-                TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
-                        .datLuaChon("Đang hợp tác", "Ngừng hợp tác"));
+                        TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
+                        .datLuaChon("Đang hợp tác", "Ngừng hợp tác"),
+                TruongDuLieu.tao("Nhóm mặt hàng cung cấp", Kieu.VAN_BAN),
+                TruongDuLieu.tao("Ghi chú", Kieu.VAN_BAN));
     }
 }
