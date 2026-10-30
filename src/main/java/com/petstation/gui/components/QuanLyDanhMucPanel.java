@@ -902,9 +902,25 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Đã lưu.
         Object[] daLuu;
         try {
-            com.petstation.service.DanhMucService.luu(cacDong, truoc, cacGiaTri);
+            try {
+                com.petstation.service.DanhMucService.luu(
+                        cacDong, truoc, cacGiaTri);
+            } catch (com.petstation.service.DanhMucService
+                    .TrungSoDienThoaiException ex) {
+
+                boolean vanLuu = HopThoai.xacNhan(
+                        this,
+                        ex.getMessage()
+                                + "\nNếu đây là chi nhánh khác, bạn có muốn vẫn lưu?");
+
+                if (!vanLuu) return;
+
+                com.petstation.service.DanhMucService.luu(
+                        cacDong, truoc, cacGiaTri, true);
+            }
         } catch (RuntimeException ngoaiLe) {
-            HopThoai.hienThiCanhBao(this, "Không thể lưu: " + ngoaiLe.getMessage());
+            HopThoai.hienThiCanhBao(
+                    this, "Không thể lưu: " + ngoaiLe.getMessage());
             return;
         }
         if (cheDo == CheDo.MOI) {
