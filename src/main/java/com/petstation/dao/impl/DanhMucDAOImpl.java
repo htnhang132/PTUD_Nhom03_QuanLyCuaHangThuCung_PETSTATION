@@ -715,4 +715,29 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 dsQuyen,
                 nhanVienId);
     }
+    @Override
+    public boolean tonTaiTenNcc(String ten, String maLoaiTru) {
+        return laySo(
+                """
+                SELECT COUNT(*)
+                FROM nha_cung_cap WITH (UPDLOCK, HOLDLOCK)
+                WHERE LOWER(LTRIM(RTRIM(ten))) = LOWER(?)
+                  AND ma_ncc <> ?
+                """,
+                ten.trim(),
+                maLoaiTru) > 0;
+    }
+
+    @Override
+    public boolean tonTaiSdtNcc(String soDienThoai, String maLoaiTru) {
+        return laySo(
+                """
+                SELECT COUNT(*)
+                FROM nha_cung_cap WITH (UPDLOCK, HOLDLOCK)
+                WHERE REPLACE(REPLACE(so_dien_thoai, ' ', ''), '.', '') = ?
+                  AND ma_ncc <> ?
+                """,
+                soDienThoai.replaceAll("[\\s.]", ""),
+                maLoaiTru) > 0;
+    }
 }
