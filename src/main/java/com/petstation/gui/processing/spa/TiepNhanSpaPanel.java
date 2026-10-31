@@ -32,4 +32,5 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         themNut(pnlCacThaoTac, "Thanh toán", () -> quyetToan("SPA"));
         themNut(pnlCacThaoTac, "Chi tiết dịch vụ", this::laySpaChiTiet);
     }
+
 }

@@ -878,6 +878,14 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         return truongDangXet.giaTriMacDinh;
     }
 
+    /**
+     * Cho phép màn hình khác mở chế độ thêm,
+     * dùng lại toàn bộ cơ chế nhập và kiểm tra hiện có.
+     */
+    public final void moTaoMoi() {
+        batDauTaoMoi();
+    }
+
     private void batDauTaoMoi() {
         if (!coTheChinhSua())
             return;
@@ -948,7 +956,17 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         int dauTienKhongHopLe = -1;
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
             TruongDuLieu truongDangXet = cacTruong.get(chiSo);
-            String giaTri = layDauVao(chiSo);
+            String giaTri;
+
+            try {
+                giaTri = layDauVao(chiSo);
+            } catch (IllegalArgumentException e) {
+                HopThoai.hienThiCanhBao(
+                    this,
+                    "Dữ liệu không hợp lệ:\n" + e.getMessage()
+                );
+                return;
+            }
             if (chiSo == 0 && truongDangXet.docChi)
                 giaTri = cheDo == CheDo.MOI
                         ? String.valueOf(layDauVao(0))
