@@ -18,6 +18,47 @@ public final class ChamSocService {
 
     private ChamSocService() {}
 
+    /**
+     * Kiểm tra thư mục ảnh là SMB/UNC dùng chung và máy hiện tại có quyền đọc/ghi.
+     * Ví dụ: \\\\PETSTATION-NAS\\DuLieuPetStation\\cham-soc
+     */
+    public static void kiemTraThuMucAnhDungChung() {
+        layThuMucAnhDungChung();
+    }
+
+    private static Path layThuMucAnhDungChung() {
+        String config = CaiDatService.layTuyChon("THU_MUC_ANH_CHAM_SOC").trim();
+        String dauGachCheo = Character.toString((char) 92);
+        if (config.isBlank())
+            throw new IllegalArgumentException(
+                    "Chưa cấu hình thư mục ảnh chăm sóc dùng chung. "
+                            + "Quản lý cần nhập đường dẫn UNC trong Cài đặt hệ thống.");
+        if (!config.startsWith(dauGachCheo + dauGachCheo))
+            throw new IllegalArgumentException(
+                    "Ảnh chăm sóc phải lưu trên thư mục mạng UNC, ví dụ "
+                            + "\\\\PETSTATION-NAS\\DuLieuPetStation\\cham-soc. "
+                            + "Không dùng thư mục C:, D: hoặc ổ mạng Z: trên từng máy.");
+
+        Path folder;
+        try {
+            folder = Path.of(config).toAbsolutePath().normalize();
+            Files.createDirectories(folder);
+            Path probe = folder.resolve(".petstation-write-" + UUID.randomUUID() + ".tmp");
+            Files.writeString(
+                    probe,
+                    "PetStation shared storage check",
+                    StandardOpenOption.CREATE_NEW,
+                    StandardOpenOption.WRITE);
+            Files.deleteIfExists(probe);
+        } catch (IOException | InvalidPathException ex) {
+            throw new IllegalArgumentException(
+                    "Không truy cập được thư mục ảnh dùng chung. Kiểm tra kết nối mạng "
+                            + "và quyền đọc/ghi của tài khoản Windows.",
+                    ex);
+        }
+        return folder;
+    }
+
     public static Path saoChepAnh(Path source, Path directory) throws IOException {
         if (!Files.isRegularFile(source) || Files.size(source) > 10 * 1024 * 1024)
             throw new IllegalArgumentException("Ảnh phải là tệp JPEG/PNG tối đa 10 MB.");
@@ -81,16 +122,8 @@ public final class ChamSocService {
             throw new IllegalArgumentException("Cần tình trạng; nội dung vượt độ dài cho phép.");
         List<Path> copied = new ArrayList<>();
         try {
-            String config = CaiDatService.layTuyChon("THU_MUC_ANH_CHAM_SOC");
             Path folder =
-                    Path.of(
-                            config.isBlank()
-                                    ? Path.of(
-                                                    System.getProperty("user.home"),
-                                                    "PetStation",
-                                                    "cham-soc")
-                                            .toString()
-                                    : config);
+                    (truoc != null || sau != null) ? layThuMucAnhDungChung() : null;
             Path before = truoc == null ? null : saoChepAnh(truoc, folder);
             if (before != null) copied.add(before);
             Path after = sau == null ? null : saoChepAnh(sau, folder);

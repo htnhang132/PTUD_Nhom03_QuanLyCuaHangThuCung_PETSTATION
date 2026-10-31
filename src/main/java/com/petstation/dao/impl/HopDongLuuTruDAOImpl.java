@@ -25,17 +25,74 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
 
     public List<Object[]> timDatPhong(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT id,gia_dem,trang_thai,loai_phong FROM phong_hotel"
+                "SELECT id,gia_dem,trang_thai,loai_phong,suc_chua FROM phong_hotel"
                         + " WITH(UPDLOCK,HOLDLOCK) WHERE ma_phong=?",
                 cacThamSo);
     }
 
-    public long demDatPhong(Object... cacThamSo) {
+    public long demPhongDatTrung(
+            long phongId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau) {
         return ThaoTacSQL.laySo(
                 "SELECT COUNT(*) FROM hop_dong_luu_tru WITH(UPDLOCK,HOLDLOCK)"
-                        + " WHERE (phong_id=? OR thu_cung_id=?) AND trang_thai IN"
-                        + " ('BOOKED','CHECKED_IN') AND ngay_vao<? AND"
-                        + " ngay_ra_du_kien>?",
+                        + " WHERE phong_id=? AND trang_thai IN ('BOOKED','CHECKED_IN')"
+                        + " AND ngay_vao<? AND ngay_ra_du_kien>?",
+                phongId, ketThuc, batDau);
+    }
+
+    public long demThuCungDatTrung(
+            long thuCungId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau) {
+        return ThaoTacSQL.laySo(
+                "SELECT COUNT(*) FROM hop_dong_luu_tru WITH(UPDLOCK,HOLDLOCK)"
+                        + " WHERE thu_cung_id=? AND trang_thai IN ('BOOKED','CHECKED_IN')"
+                        + " AND ngay_vao<? AND ngay_ra_du_kien>?",
+                thuCungId, ketThuc, batDau);
+    }
+
+    public long demPhongDatTrungBoQua(
+            long phongId, java.time.LocalDateTime ketThuc,
+            java.time.LocalDateTime batDau, long boQuaId) {
+        return ThaoTacSQL.laySo(
+                "SELECT COUNT(*) FROM hop_dong_luu_tru WITH(UPDLOCK,HOLDLOCK)"
+                        + " WHERE phong_id=? AND trang_thai IN ('BOOKED','CHECKED_IN')"
+                        + " AND ngay_vao<? AND ngay_ra_du_kien>? AND id<>?",
+                phongId, ketThuc, batDau, boQuaId);
+    }
+
+    public long demThuCungDatTrungBoQua(
+            long thuCungId, java.time.LocalDateTime ketThuc,
+            java.time.LocalDateTime batDau, long boQuaId) {
+        return ThaoTacSQL.laySo(
+                "SELECT COUNT(*) FROM hop_dong_luu_tru WITH(UPDLOCK,HOLDLOCK)"
+                        + " WHERE thu_cung_id=? AND trang_thai IN ('BOOKED','CHECKED_IN')"
+                        + " AND ngay_vao<? AND ngay_ra_du_kien>? AND id<>?",
+                thuCungId, ketThuc, batDau, boQuaId);
+    }
+
+    public List<Object[]> layDatPhongSua(long id) {
+        return ThaoTacSQL.truyVan(
+                "SELECT h.trang_thai,p.ma_thu_cung,r.ma_phong,h.ngay_vao,"
+                        + " h.ngay_ra_du_kien,h.ghi_chu,h.tien_coc,h.da_nhan_coc,"
+                        + " COALESCE(h.coc_yeu_cau,h.tien_coc),COALESCE(h.gia_dem,r.gia_dem)"
+                        + " FROM hop_dong_luu_tru h WITH(UPDLOCK,HOLDLOCK)"
+                        + " JOIN thu_cung p ON p.id=h.thu_cung_id"
+                        + " JOIN phong_hotel r ON r.id=h.phong_id WHERE h.id=?",
+                id);
+    }
+
+    public int capNhatDatPhong(Object... cacThamSo) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE hop_dong_luu_tru SET khach_hang_id=?,thu_cung_id=?,phong_id=?,"
+                        + " ngay_vao=?,ngay_ra_du_kien=?,gia_dem=?,coc_yeu_cau=?,ghi_chu=?"
+                        + " WHERE id=? AND trang_thai='BOOKED' AND hoa_don_id IS NULL",
+                cacThamSo);
+    }
+
+    public int huyDatPhong(Object... cacThamSo) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE hop_dong_luu_tru SET trang_thai='CANCELLED',ly_do_huy=?,"
+                        + " huy_luc=SYSDATETIME(),huy_boi=?"
+                        + " WHERE id=? AND trang_thai='BOOKED' AND hoa_don_id IS NULL"
+                        + " AND da_nhan_coc=0 AND COALESCE(tien_coc,0)=0",
                 cacThamSo);
     }
 
@@ -113,9 +170,11 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
 
     public List<Object[]> layLichSuThuCoc(long id) {
         return truyVan(
-                "SELECT COALESCE(phuong_thuc_coc,'TIEN_MAT'),tien_coc,tien_coc,CAST(0 AS"
-                        + " BIGINT),nhan_coc_luc,phien_nhan_coc_id FROM hop_dong_luu_tru WHERE"
-                        + " id=? AND da_nhan_coc=1",
+                "SELECT l.phuong_thuc,l.so_tien,l.khach_dua,l.tien_thua,l.tao_luc,"
+                        + " COALESCE(p.ten_ca,CONVERT(NVARCHAR(30),l.phien_lam_viec_id))"
+                        + " FROM lich_su_thu_coc_hotel l LEFT JOIN phien_lam_viec p"
+                        + " ON p.id=l.phien_lam_viec_id WHERE l.hop_dong_id=?"
+                        + " ORDER BY l.tao_luc,l.id",
                 id);
     }
 
@@ -136,7 +195,8 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
 
     public long demKhoaThuCoc(long id, String tienToKhoa) {
         return laySo(
-                "SELECT COUNT(*) FROM hop_dong_luu_tru WHERE id=? AND khoa_thu_coc LIKE ?",
+                "SELECT COUNT(*) FROM lich_su_thu_coc_hotel"
+                        + " WHERE hop_dong_id=? AND khoa_thu_coc=?",
                 id,
                 tienToKhoa);
     }

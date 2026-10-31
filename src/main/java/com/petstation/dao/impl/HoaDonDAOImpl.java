@@ -309,10 +309,12 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                         cacThamSo[2],
                         cacThamSo[3],
                         cacThamSo[4]);
+        // chi_tiet_hoa_don không có cột tính sẵn thanh_tien.
+        // Đơn nháp chưa áp dụng giảm giá/thuế ở từng dòng nên tính trực tiếp số lượng * đơn giá.
         ThaoTacSQL.capNhat(
-                "UPDATE hoa_don SET tam_tinh=COALESCE((SELECT SUM(thanh_tien) FROM"
+                "UPDATE hoa_don SET tam_tinh=COALESCE((SELECT SUM(so_luong*don_gia) FROM"
                     + " chi_tiet_hoa_don WHERE hoa_don_id=?),0), tong_tien=COALESCE((SELECT"
-                    + " SUM(thanh_tien) FROM chi_tiet_hoa_don WHERE hoa_don_id=?),0) WHERE id=?",
+                    + " SUM(so_luong*don_gia) FROM chi_tiet_hoa_don WHERE hoa_don_id=?),0) WHERE id=?",
                 cacThamSo[0],
                 cacThamSo[0],
                 cacThamSo[0]);
@@ -425,11 +427,12 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     public List<Object[]> layCoTheBanCacSanPham(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,COALESCE(SUM(l.so_luong_ton),0),COALESCE(p.anh,'')"
+                    + " p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,COALESCE(SUM(l.so_luong_ton),0),"
+                    + " COALESCE(p.anh,''),COALESCE(p.barcode,'')"
                     + " FROM san_pham p LEFT JOIN lo_hang l ON l.san_pham_id=p.id AND"
                     + " l.trang_thai='AVAILABLE' AND (l.han_su_dung IS NULL OR"
                     + " l.han_su_dung>=CAST(GETDATE() AS date)) WHERE p.trang_thai='SELLING' GROUP"
-                    + " BY p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,p.anh ORDER BY CASE WHEN"
+                    + " BY p.ma_san_pham,p.ten,p.nhom_hang,p.gia_ban,p.anh,p.barcode ORDER BY CASE WHEN"
                     + " NULLIF(p.anh,'') IS NULL THEN 1 ELSE 0 END,p.ma_san_pham",
                 cacThamSo);
     }

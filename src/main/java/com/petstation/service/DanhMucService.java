@@ -196,8 +196,18 @@ public final class DanhMucService {
                                     "Tên nhà cung cấp đã tồn tại.");
                         }
 
-                        if (danhMucDAO.tonTaiSdtNcc(sdt, maLoaiTru)
-                                && !xacNhanTrungSdt) {
+                     // Chuẩn hóa số điện thoại cũ giống cách chuẩn hóa số mới.
+                        String sdtCu = truoc == null
+                                ? ""
+                                : String.valueOf(truoc[3]).replaceAll("[\\s.]", "");
+
+                        // Chỉ kiểm tra trùng khi thêm mới hoặc thực sự đổi số điện thoại.
+                        boolean canKiemTraTrungSdt =
+                                truoc == null || !sdt.equals(sdtCu);
+
+                        if (canKiemTraTrungSdt
+                                && !xacNhanTrungSdt
+                                && danhMucDAO.tonTaiSdtNcc(sdt, maLoaiTru)) {
                             throw new TrungSoDienThoaiException(
                                     "Số điện thoại đã được nhà cung cấp khác sử dụng.");
                         }

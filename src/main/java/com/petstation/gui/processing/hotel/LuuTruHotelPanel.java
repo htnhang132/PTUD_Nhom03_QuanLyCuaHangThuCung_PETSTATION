@@ -20,8 +20,9 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         super(LoaiNghiepVu.HOP_DONG_LUU_TRU, banHang, dieuHuong);
 
         themNut(pnlCacThaoTac, "+ Đặt phòng", this::datPhong);
+        themNut(pnlCacThaoTac, "Sửa đặt phòng", this::suaDatPhong);
+        themNut(pnlCacThaoTac, "Hủy đặt phòng", this::huyDatPhong);
         themNut(pnlCacThaoTac, "Nhận phòng", () -> LuuTruService.kiemTraVao(layDongChon()));
-        themNut(pnlCacThaoTac, "Ghi chăm sóc", this::ghiNhatKy);
         themNut(pnlCacThaoTac, "Xem nhật ký", this::layNhatKyChiTiet);
         themNut(pnlCacThaoTac, "Quyết toán", () -> quyetToan("HOTEL"));
     }

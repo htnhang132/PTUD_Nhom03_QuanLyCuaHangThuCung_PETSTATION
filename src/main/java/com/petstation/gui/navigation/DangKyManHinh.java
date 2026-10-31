@@ -75,6 +75,8 @@ public final class DangKyManHinh {
 
     /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
+    /** Đường quay lại riêng từ màn hình thanh toán. */
+    private final Consumer<MaManHinh> quayLaiTuThanhToan;
 
     /** Các định nghĩa. */
     private final Map<MaManHinh, DinhNghiaManHinh> cacDinhNghia = new EnumMap<>(MaManHinh.class);
@@ -85,12 +87,28 @@ public final class DangKyManHinh {
     /** Bán hàng. */
     private final GioHang banHang = com.petstation.service.GioHangService.tao();
 
-    public DangKyManHinh(PhienDangNhap phienDangNhap, Consumer<MaManHinh> boDieuHuong) {
-        this.phienDangNhap = phienDangNhap;
-        this.boDieuHuong = boDieuHuong;
-        dangKyTatCa();
+    /** Tương thích với các điểm khởi tạo cũ. */
+    public DangKyManHinh(
+            PhienDangNhap phienDangNhap,
+            Consumer<MaManHinh> boDieuHuong) {
+        this(phienDangNhap, boDieuHuong, boDieuHuong);
     }
 
+    /** Khởi tạo với callback quay lại thanh toán riêng. */
+    public DangKyManHinh(
+            PhienDangNhap phienDangNhap,
+            Consumer<MaManHinh> boDieuHuong,
+            Consumer<MaManHinh> quayLaiTuThanhToan) {
+
+        this.phienDangNhap = phienDangNhap;
+        this.boDieuHuong = boDieuHuong;
+        this.quayLaiTuThanhToan =
+                quayLaiTuThanhToan != null
+                        ? quayLaiTuThanhToan
+                        : boDieuHuong;
+
+        dangKyTatCa();
+    }
     public CaThuNganService layCaLamViec() {
         return caLamViec;
     }
@@ -416,8 +434,12 @@ public final class DangKyManHinh {
             // Xử lý: bán hàng
             case LAP_HOA_DON -> new LapHoaDonPanel(banHang, boDieuHuong);
             case THANH_TOAN ->
-                    new ThanhToanPanel(
-                            banHang, caLamViec, phienDangNhap.layTenHienThi(), boDieuHuong);
+            new ThanhToanPanel(
+                    banHang,
+                    caLamViec,
+                    phienDangNhap.layTenHienThi(),
+                    boDieuHuong,
+                    quayLaiTuThanhToan);
             case IN_HOA_DON -> new InHoaDonPanel(banHang, boDieuHuong);
             case HOA_DON_CHO -> new DonHangTreoPanel(banHang, boDieuHuong);
             case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);

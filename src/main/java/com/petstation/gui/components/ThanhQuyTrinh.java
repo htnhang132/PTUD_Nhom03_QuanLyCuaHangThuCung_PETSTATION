@@ -94,7 +94,12 @@ public final class ThanhQuyTrinh extends JPanel {
             pnlVungChua.removeAll();
             // Mới.
             ChiBaoBuoc moi = new ChiBaoBuoc(truongDangXet.cacNhan());
-            moi.datKhiBam(chiSo -> boDieuHuong.accept(truongDangXet.cacBuoc().get(chiSo)));
+            // Luồng bán hàng không cho phép nhảy bước bằng cách bấm trực tiếp.
+            // Spa/Hotel vẫn giữ cơ chế chọn bước hiện có.
+            moi.datKhiBam(
+                    truongDangXet.tuanTu()
+                            ? chiSo -> boDieuHuong.accept(truongDangXet.cacBuoc().get(chiSo))
+                            : null);
             pnlVungChua.add(moi, BorderLayout.CENTER);
             lblTen.setText(truongDangXet.ten());
             pnlVungChua.putClientProperty("indicator", moi);

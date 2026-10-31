@@ -21,7 +21,6 @@ public final class QuyetToanLuuTruPanel extends NghiepVuHotelPanel {
 
         themNut(pnlCacThaoTac, "+ Đặt phòng", this::datPhong);
         themNut(pnlCacThaoTac, "Nhận phòng", () -> LuuTruService.kiemTraVao(layDongChon()));
-        themNut(pnlCacThaoTac, "Ghi chăm sóc", this::ghiNhatKy);
         themNut(pnlCacThaoTac, "Xem nhật ký", this::layNhatKyChiTiet);
         themNut(pnlCacThaoTac, "Quyết toán", () -> quyetToan("HOTEL"));
     }

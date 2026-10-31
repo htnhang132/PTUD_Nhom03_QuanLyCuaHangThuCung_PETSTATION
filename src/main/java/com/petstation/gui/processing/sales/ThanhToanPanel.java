@@ -13,6 +13,7 @@ import com.petstation.service.CaThuNganService;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -22,96 +23,96 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Cung cấp giao diện và xử lý tương tác cho thanh toán vùng hiển thị.
+ * Màn hình thanh toán hóa đơn.
  *
- * <p>Thanh toán hóa đơn đang lập: chọn phương thức, áp voucher, nhập tiền khách đưa, tính tiền thừa
- * tự động.
+ * <p>Hỗ trợ tiền mặt, chuyển khoản VietQR và thẻ. QR nhúng số tiền phải trả
+ * cùng mã hóa đơn dự kiến; thu ngân vẫn phải xác nhận đã kiểm tra giao dịch
+ * thực tế vì ứng dụng chưa kết nối webhook/API ngân hàng.
  */
 public final class ThanhToanPanel extends CoSoPanel {
-    /** Bán hàng. */
     private final GioHang banHang;
-
-    /** Ca làm việc. */
     private final CaThuNganService caLamViec;
-
-    /** Thu ngân. */
     private final String thuNgan;
-
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
+    private final Consumer<MaManHinh> quayLaiTuThanhToan;
 
-    /** Các thẻ. */
     private final CardLayout cacThe = new CardLayout();
-
-    /** Gốc. */
     private final JPanel pnlGoc = new JPanel(cacThe);
-
-    /** Dòng vùng chứa. */
     private final JPanel pnlDongVungChua = taoVungTrongSuot(new BorderLayout());
 
-    /** Tạm tính. */
     private final JLabel lblTamTinh = new JLabel();
-
-    /** Giảm giá. */
     private final JLabel lblGiamGia = new JLabel();
-
-    /** Tổng. */
     private final JLabel lblTong = new JLabel();
 
-    /** Trường voucher. */
     private final JTextField txtTruongVoucher = BieuMauPanel.layTruongVanBan("");
-
-    /** Voucher thông báo. */
     private final JLabel lblVoucherThongBao = new JLabel("");
 
-    /** Tiền mặt. */
     private final JRadioButton btnTienMat = new JRadioButton("Tiền mặt", true);
-
-    /** Chuyển khoản. */
     private final JRadioButton btnChuyenKhoan = new JRadioButton("Chuyển khoản / QR");
-
-    /** Thẻ thanh toán. */
     private final JRadioButton btnTheThanhToan = new JRadioButton("Thẻ");
 
-    /** Đã nhận. */
+    private final JButton btnChonVoucher = new JButton("Chọn voucher của khách");
+
     private final JTextField txtDaNhan = BieuMauPanel.layTruongVanBan("");
+    private final JPanel pnlNhanhCacSoTien =
+            new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    private final JPanel pnlNhapTienMat = new JPanel();
 
-    /** Nhanh các số tiền. */
-    private final JPanel pnlNhanhCacSoTien = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-
-    /** Nhãn thay đổi. */
     private final JLabel lblNhanThayDoi = new JLabel("");
-
-    /** Xác nhận. */
     private final NutDinhDang btnXacNhan =
             new NutDinhDang("Xác nhận thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
+    private final NutDinhDang btnQuayLaiTrangThaiRong =
+            new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
 
-    /** Đang xử lý. */
-    private boolean dangXuLy;
+    private final NutDinhDang btnHuy =
+            new NutDinhDang("Quay lại sửa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
 
+    private final JPanel pnlQRThanhToan = new JPanel();
     private final JLabel lblQR = new JLabel();
     private final JLabel lblThongTinQR = new JLabel();
-    private final JCheckBox chkDaNhanTien = new JCheckBox("Tôi đã kiểm tra và nhận đủ tiền");
-    private boolean qrHopLe;
+    private final JLabel lblNoiDungQR = new JLabel();
+    private final JLabel lblTrangThaiQR = new JLabel();
+    private final JButton btnSaoChepNoiDungQR = new JButton("Sao chép nội dung");
 
+    private final JCheckBox chkDaNhanTien =
+            new JCheckBox("Tôi đã kiểm tra và nhận đủ tiền");
+    private boolean dangXuLy;
+    private boolean qrHopLe;
+    private String noiDungChuyenKhoanQR = "";
+
+    /** Constructor tương thích với những nơi khởi tạo màn hình thanh toán cũ. */
     public ThanhToanPanel(
             GioHang banHang,
             CaThuNganService caLamViec,
             String thuNgan,
             Consumer<MaManHinh> boDieuHuong) {
+        this(banHang, caLamViec, thuNgan, boDieuHuong, boDieuHuong);
+    }
+
+    /**
+     * Constructor có callback riêng cho nút Quay lại.
+     * Callback này được ChinhFrame kiểm tra trước khi cho phép trở về bước lập hóa đơn.
+     */
+    public ThanhToanPanel(
+            GioHang banHang,
+            CaThuNganService caLamViec,
+            String thuNgan,
+            Consumer<MaManHinh> boDieuHuong,
+            Consumer<MaManHinh> quayLaiTuThanhToan) {
         this.banHang = banHang;
         this.caLamViec = caLamViec;
         this.thuNgan = thuNgan;
         this.boDieuHuong = boDieuHuong;
+        this.quayLaiTuThanhToan = quayLaiTuThanhToan;
         setLayout(new BorderLayout(0, 14));
 
-        // Tiêu đề.
         JLabel lblTieuDe = taoTieuDeMuc("Thanh toán");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
-        // Gợi ý.
-        JLabel lblGoiY = new JLabel("Kiểm tra hóa đơn, chọn phương thức và xác nhận.");
+
+        JLabel lblGoiY =
+                new JLabel("Kiểm tra hóa đơn, chọn phương thức và xác nhận.");
         lblGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
-        // Đầu.
+
         JPanel pnlDau = new JPanel();
         pnlDau.setOpaque(false);
         pnlDau.setLayout(new BoxLayout(pnlDau, BoxLayout.Y_AXIS));
@@ -122,167 +123,231 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         pnlGoc.setOpaque(false);
         pnlGoc.add(taoBieuMau(), "form");
-        // Quay lại.
-        NutDinhDang btnQuayLai = new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
-        btnQuayLai.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
+
+        btnQuayLaiTrangThaiRong.addActionListener(
+                suKien -> quayLaiManHinhNguon());
+
         pnlGoc.add(
                 layTrongTrangThai(
                         "Chưa có hóa đơn để thanh toán",
                         "Hãy thêm sản phẩm ở màn Lập đơn hàng trước.",
-                        btnQuayLai),
+                        btnQuayLaiTrangThaiRong),
                 "empty");
         add(pnlGoc, BorderLayout.CENTER);
         lamMoi();
     }
+    /**
+     * Xác định màn hình quay lại theo nghiệp vụ đang thanh toán.
+     */
+    private MaManHinh layManHinhQuayLaiTheoNguon() {
+        String nguon = banHang.layKieuNguon();
+
+        if ("HOTEL".equals(nguon)) {
+            return MaManHinh.TRA_PHONG_LUU_TRU;
+        }
+
+        if ("SPA".equals(nguon)) {
+            return MaManHinh.HOAN_TAT_SPA;
+        }
+
+        return MaManHinh.LAP_HOA_DON;
+    }
+
+    /**
+     * Quay lại màn hình nguồn bằng callback riêng.
+     * Không sử dụng callback chuyển bước của thanh quy trình.
+     */
+    private void quayLaiManHinhNguon() {
+        MaManHinh manHinhDich = layManHinhQuayLaiTheoNguon();
+        quayLaiTuThanhToan.accept(manHinhDich);
+    }
+
+    /**
+     * Cập nhật nội dung nút theo nghiệp vụ hiện tại.
+     */
+    private void capNhatNhanNutQuayLai() {
+        String nguon = banHang.layKieuNguon();
+
+        if ("HOTEL".equals(nguon)) {
+            btnQuayLaiTrangThaiRong.setText("Về trả phòng Hotel");
+            btnHuy.setText("Quay lại trả phòng");
+        } else if ("SPA".equals(nguon)) {
+            btnQuayLaiTrangThaiRong.setText("Về đóng phiếu Spa");
+            btnHuy.setText("Quay lại đóng phiếu");
+        } else {
+            btnQuayLaiTrangThaiRong.setText("Về lập đơn hàng");
+            btnHuy.setText("Quay lại sửa đơn");
+        }
+    }
 
     private JPanel taoBieuMau() {
-        // Biểu mẫu.
         JPanel pnlBieuMau = new JPanel(new GridLayout(1, 2, 16, 0));
         pnlBieuMau.setOpaque(false);
 
-        // Trái.
+        // Cột trái: thông tin hóa đơn.
         JPanel pnlTrai = layThe(new BorderLayout(0, 12));
         pnlTrai.add(taoTieuDeMuc("Hóa đơn"), BorderLayout.NORTH);
         pnlTrai.add(pnlDongVungChua, BorderLayout.CENTER);
-        // Các tổng.
+
         JPanel pnlCacTong = new JPanel(new GridLayout(3, 2, 0, 4));
         pnlCacTong.setOpaque(false);
         pnlCacTong.add(new JLabel("Tạm tính"));
         lblTamTinh.setHorizontalAlignment(SwingConstants.RIGHT);
         pnlCacTong.add(lblTamTinh);
+
         pnlCacTong.add(new JLabel("Giảm giá và voucher"));
         lblGiamGia.setHorizontalAlignment(SwingConstants.RIGHT);
         pnlCacTong.add(lblGiamGia);
-        // Văn bản tổng.
+
         JLabel lblVanBanTong = new JLabel("Cần thanh toán");
         lblVanBanTong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
         pnlCacTong.add(lblVanBanTong);
+
         lblTong.setHorizontalAlignment(SwingConstants.RIGHT);
         lblTong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 24));
         lblTong.setForeground(MauUngDung.DO_THUONG_HIEU);
         pnlCacTong.add(lblTong);
         pnlTrai.add(pnlCacTong, BorderLayout.SOUTH);
 
-        // Phải.
+        // Cột phải: phương thức thanh toán.
         JPanel pnlPhai = layThe(new BorderLayout(0, 12));
         pnlPhai.add(taoTieuDeMuc("Phương thức thanh toán"), BorderLayout.NORTH);
-        // Nội dung.
+
         JPanel pnlNoiDung = new JPanel();
         pnlNoiDung.setOpaque(false);
         pnlNoiDung.setLayout(new BoxLayout(pnlNoiDung, BoxLayout.Y_AXIS));
+        // Khoảng đệm đồng đều quanh nội dung cột phải.
+        pnlNoiDung.setBorder(new EmptyBorder(8, 10, 8, 10));
 
-        // Nhóm.
         ButtonGroup nhom = new ButtonGroup();
-        // Các phương thức.
-        JPanel pnlCacPhuongThuc = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        JPanel pnlCacPhuongThuc =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         pnlCacPhuongThuc.setOpaque(false);
+
         for (JRadioButton btnDongDuLieu :
-                new JRadioButton[] {btnTienMat, btnChuyenKhoan, btnTheThanhToan}) {
+                new JRadioButton[] {
+                    btnTienMat, btnChuyenKhoan, btnTheThanhToan
+                }) {
             btnDongDuLieu.setOpaque(false);
             btnDongDuLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             btnDongDuLieu.addActionListener(suKien -> capNhatPhuongThuc());
             nhom.add(btnDongDuLieu);
             pnlCacPhuongThuc.add(btnDongDuLieu);
         }
+
         pnlCacPhuongThuc.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlCacPhuongThuc.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         pnlNoiDung.add(pnlCacPhuongThuc);
         pnlNoiDung.add(Box.createVerticalStrut(14));
 
+        // Voucher.
         pnlNoiDung.add(layNhan("Mã voucher"));
-        // Voucher dòng.
+
         JPanel pnlVoucherDong = new JPanel(new BorderLayout(8, 0));
         pnlVoucherDong.setOpaque(false);
         txtTruongVoucher.setPreferredSize(new Dimension(180, 36));
-        // Áp dụng.
-        NutDinhDang btnApDung = new NutDinhDang("Áp dụng", NutDinhDang.KieuNut.TRONG_SUOT);
+
+        NutDinhDang btnApDung =
+                new NutDinhDang("Áp dụng", NutDinhDang.KieuNut.TRONG_SUOT);
         btnApDung.addActionListener(suKien -> apDungVoucher());
         txtTruongVoucher.addActionListener(suKien -> apDungVoucher());
+
         pnlVoucherDong.add(txtTruongVoucher, BorderLayout.CENTER);
         pnlVoucherDong.add(btnApDung, BorderLayout.EAST);
         pnlVoucherDong.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlVoucherDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         pnlNoiDung.add(pnlVoucherDong);
+
         lblVoucherThongBao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         lblVoucherThongBao.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblVoucherThongBao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
         pnlNoiDung.add(lblVoucherThongBao);
-        JPanel pnlVoucherKhach = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+
+        // Tách nút chọn voucher khỏi ô nhập bằng một khoảng dọc nhỏ.
+        pnlNoiDung.add(Box.createVerticalStrut(8));
+
+        JPanel pnlVoucherKhach =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlVoucherKhach.setOpaque(false);
         pnlVoucherKhach.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JButton btnChonVoucher = new JButton("Voucher của khách");
-        btnChonVoucher.addActionListener(e -> chonVoucher());
-        JButton btnDoiDiem = new JButton("Đổi 200 điểm → voucher Spa");
-        btnDoiDiem.addActionListener(e -> doiVoucher());
-        pnlVoucherKhach.add(btnChonVoucher);
-        pnlVoucherKhach.add(btnDoiDiem);
-        pnlNoiDung.add(pnlVoucherKhach);
-        pnlNoiDung.add(Box.createVerticalStrut(10));
 
-        pnlNoiDung.add(layNhan("Tiền khách đưa"));
+        btnChonVoucher.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        btnChonVoucher.setFocusPainted(false);
+        btnChonVoucher.setEnabled(false);
+        btnChonVoucher.setToolTipText(
+                "Vui lòng chọn khách hàng ở màn hình Lập hóa đơn trước.");
+        btnChonVoucher.addActionListener(suKien -> chonVoucher());
+
+        pnlVoucherKhach.add(btnChonVoucher);
+        pnlNoiDung.add(pnlVoucherKhach);
+        pnlNoiDung.add(Box.createVerticalStrut(12));
+
+        // Khu vực tiền mặt.
+        pnlNhapTienMat.setOpaque(false);
+        pnlNhapTienMat.setLayout(new BoxLayout(pnlNhapTienMat, BoxLayout.Y_AXIS));
+        pnlNhapTienMat.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        pnlNhapTienMat.add(layNhan("Tiền khách đưa"));
         txtDaNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         txtDaNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
         txtDaNhan.getAccessibleContext().setAccessibleName("Tiền khách đưa");
-        txtDaNhan
-                .getDocument()
-                .addDocumentListener(
-                        new javax.swing.event.DocumentListener() {
-                            /**
-                             * Thêm cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
-                            @Override
-                            public void insertUpdate(javax.swing.event.DocumentEvent suKien) {
-                                kiemTraDauVao();
-                            }
 
-                            /**
-                             * Xóa cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
-                            @Override
-                            public void removeUpdate(javax.swing.event.DocumentEvent suKien) {
-                                kiemTraDauVao();
-                            }
+        txtDaNhan.getDocument().addDocumentListener(
+                new javax.swing.event.DocumentListener() {
+                    @Override
+                    public void insertUpdate(
+                            javax.swing.event.DocumentEvent suKien) {
+                        kiemTraDauVao();
+                    }
 
-                            /**
-                             * Lấy đã thay đổi cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
-                            @Override
-                            public void changedUpdate(javax.swing.event.DocumentEvent suKien) {
-                                kiemTraDauVao();
-                            }
-                        });
-        pnlNoiDung.add(txtDaNhan);
-        pnlNoiDung.add(Box.createVerticalStrut(6));
+                    @Override
+                    public void removeUpdate(
+                            javax.swing.event.DocumentEvent suKien) {
+                        kiemTraDauVao();
+                    }
+
+                    @Override
+                    public void changedUpdate(
+                            javax.swing.event.DocumentEvent suKien) {
+                        kiemTraDauVao();
+                    }
+                });
+
+        pnlNhapTienMat.add(txtDaNhan);
+        pnlNhapTienMat.add(Box.createVerticalStrut(6));
+
         pnlNhanhCacSoTien.setOpaque(false);
         pnlNhanhCacSoTien.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlNhanhCacSoTien.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
-        pnlNoiDung.add(pnlNhanhCacSoTien);
-        pnlNoiDung.add(Box.createVerticalStrut(12));
+        pnlNhapTienMat.add(pnlNhanhCacSoTien);
+        pnlNhapTienMat.add(Box.createVerticalStrut(12));
+
         lblNhanThayDoi.setFont(MauUngDung.taoPhongChu(Font.BOLD, 16));
         lblNhanThayDoi.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pnlNoiDung.add(lblNhanThayDoi);
-        lblQR.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblThongTinQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlNhapTienMat.add(lblNhanThayDoi);
+
+        pnlNoiDung.add(pnlNhapTienMat);
+
+        // Khu vực QR: QR + tài khoản nhận + số tiền + mã hóa đơn.
+        taoKhuVucQR();
+        pnlNoiDung.add(pnlQRThanhToan);
+
         chkDaNhanTien.setAlignmentX(Component.LEFT_ALIGNMENT);
         chkDaNhanTien.setOpaque(false);
         chkDaNhanTien.addActionListener(
-                e -> {
-                    banHang.xacNhanDaNhanTien(layPhuongThuc(), chkDaNhanTien.isSelected());
+                suKien -> {
+                    banHang.xacNhanDaNhanTien(
+                            layPhuongThuc(), chkDaNhanTien.isSelected());
                     kiemTraDauVao();
                 });
-        pnlNoiDung.add(lblQR);
-        pnlNoiDung.add(lblThongTinQR);
+        pnlNoiDung.add(Box.createVerticalStrut(8));
         pnlNoiDung.add(chkDaNhanTien);
+
         pnlNoiDung.add(Box.createVerticalGlue());
-        // Nội dung vùng chứa.
+
         JPanel pnlNoiDungVungChua = taoVungTrongSuot(new BorderLayout());
         pnlNoiDungVungChua.add(pnlNoiDung, BorderLayout.NORTH);
+
         JScrollPane scrThanhToan = new JScrollPane(pnlNoiDungVungChua);
         scrThanhToan.setBorder(null);
         scrThanhToan.getVerticalScrollBar().setUnitIncrement(16);
@@ -290,10 +355,10 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         btnXacNhan.setPreferredSize(new Dimension(0, 46));
         btnXacNhan.addActionListener(suKien -> xacNhanThanhToan());
-        // Hủy.
-        NutDinhDang btnHuy = new NutDinhDang("Quay lại sửa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnHuy.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
-        // Các thao tác.
+
+        btnHuy.addActionListener(
+                suKien -> quayLaiManHinhNguon());
+
         JPanel pnlCacThaoTac = new JPanel(new GridLayout(1, 2, 8, 0));
         pnlCacThaoTac.setOpaque(false);
         pnlCacThaoTac.add(btnHuy);
@@ -305,8 +370,76 @@ public final class ThanhToanPanel extends CoSoPanel {
         return pnlBieuMau;
     }
 
+    private void taoKhuVucQR() {
+        pnlQRThanhToan.setOpaque(false);
+        pnlQRThanhToan.setLayout(new BoxLayout(pnlQRThanhToan, BoxLayout.Y_AXIS));
+        pnlQRThanhToan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlQRThanhToan.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(MauUngDung.VIEN),
+                        new EmptyBorder(10, 10, 10, 10)));
+
+        JLabel lblTieuDeQR = new JLabel("Quét mã bằng ứng dụng ngân hàng");
+        lblTieuDeQR.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        lblTieuDeQR.setForeground(MauUngDung.NAU);
+        lblTieuDeQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlQRThanhToan.add(lblTieuDeQR);
+        pnlQRThanhToan.add(Box.createVerticalStrut(8));
+
+        // Đặt QR trong một vùng rộng toàn bộ và căn giữa bằng FlowLayout.
+        // Cách này bảo đảm QR vẫn nằm chính giữa kể cả khi cột thanh toán
+        // rộng hơn kích thước ảnh QR.
+        lblQR.setHorizontalAlignment(SwingConstants.CENTER);
+        lblQR.setPreferredSize(new Dimension(220, 220));
+        lblQR.setMinimumSize(new Dimension(220, 220));
+        lblQR.setMaximumSize(new Dimension(220, 220));
+
+        JPanel pnlCanGiuaQR = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        pnlCanGiuaQR.setOpaque(false);
+        pnlCanGiuaQR.add(lblQR);
+        pnlCanGiuaQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlCanGiuaQR.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+        pnlQRThanhToan.add(pnlCanGiuaQR);
+        pnlQRThanhToan.add(Box.createVerticalStrut(8));
+
+        lblThongTinQR.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        lblThongTinQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlQRThanhToan.add(lblThongTinQR);
+        pnlQRThanhToan.add(Box.createVerticalStrut(8));
+
+        JLabel lblNhanNoiDung = new JLabel("Nội dung chuyển khoản");
+        lblNhanNoiDung.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
+        lblNhanNoiDung.setForeground(MauUngDung.VAN_BAN_XAM);
+        lblNhanNoiDung.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlQRThanhToan.add(lblNhanNoiDung);
+
+        JPanel pnlDongNoiDung = new JPanel(new BorderLayout(8, 0));
+        pnlDongNoiDung.setOpaque(false);
+        pnlDongNoiDung.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        lblNoiDungQR.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
+        lblNoiDungQR.setForeground(MauUngDung.DO_THUONG_HIEU);
+        pnlDongNoiDung.add(lblNoiDungQR, BorderLayout.CENTER);
+
+        btnSaoChepNoiDungQR.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+        btnSaoChepNoiDungQR.setFocusPainted(false);
+        btnSaoChepNoiDungQR.addActionListener(
+                suKien -> saoChepNoiDungQR());
+        pnlDongNoiDung.add(btnSaoChepNoiDungQR, BorderLayout.EAST);
+        pnlQRThanhToan.add(pnlDongNoiDung);
+        pnlQRThanhToan.add(Box.createVerticalStrut(8));
+
+        lblTrangThaiQR.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+        lblTrangThaiQR.setForeground(MauUngDung.CAM);
+        lblTrangThaiQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblTrangThaiQR.setText(
+                "Chưa xác nhận giao dịch. Thu ngân cần kiểm tra tài khoản nhận tiền.");
+        pnlQRThanhToan.add(lblTrangThaiQR);
+
+        pnlQRThanhToan.setVisible(false);
+    }
+
     private JLabel layNhan(String vanBan) {
-        // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         lblDongDangXet.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -317,35 +450,56 @@ public final class ThanhToanPanel extends CoSoPanel {
     private PhuongThuc layPhuongThuc() {
         return btnChuyenKhoan.isSelected()
                 ? PhuongThuc.CHUYEN_KHOAN
-                : btnTheThanhToan.isSelected() ? PhuongThuc.THE_NGAN_HANG : PhuongThuc.TIEN_MAT;
+                : btnTheThanhToan.isSelected()
+                        ? PhuongThuc.THE_NGAN_HANG
+                        : PhuongThuc.TIEN_MAT;
     }
 
-    private String khoaDoiVoucher;
+    private void capNhatTrangThaiVoucherKhach() {
+        boolean coKhachHang =
+                banHang.layMaKhachHang() != null
+                        && !banHang.layMaKhachHang().isBlank();
+
+        btnChonVoucher.setEnabled(coKhachHang);
+        btnChonVoucher.setToolTipText(
+                coKhachHang
+                        ? "Chọn voucher đang sở hữu của khách hàng."
+                        : "Vui lòng chọn khách hàng ở màn hình Lập hóa đơn trước.");
+    }
 
     private void chonVoucher() {
         if (banHang.layMaKhachHang().isBlank()) {
-            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng trước.");
+            HopThoai.hienThiCanhBao(
+                    this, "Cần chọn khách hàng ở màn hình Lập hóa đơn trước.");
+            capNhatTrangThaiVoucherKhach();
             return;
         }
+
         try {
             var cacVoucher =
-                    com.petstation.service.TichDiemService.layVoucher(banHang.layMaKhachHang());
+                    com.petstation.service.TichDiemService.layVoucher(
+                            banHang.layMaKhachHang());
+
             if (cacVoucher.isEmpty()) {
-                HopThoai.hienThiThongTin(this, "Khách hàng chưa có voucher riêng.");
+                HopThoai.hienThiThongTin(
+                        this, "Khách hàng chưa có voucher riêng.");
                 return;
             }
+
             String[] cacMa =
                     cacVoucher.stream()
                             .map(
                                     v ->
                                             v[0]
                                                     + " — "
-                                                    + TienTe.dinhDang(((Number) v[1]).longValue())
+                                                    + TienTe.dinhDang(
+                                                            ((Number) v[1]).longValue())
                                                     + " — "
                                                     + v[3]
                                                     + " — hạn "
                                                     + v[2])
                             .toArray(String[]::new);
+
             String chon =
                     (String)
                             JOptionPane.showInputDialog(
@@ -356,6 +510,7 @@ public final class ThanhToanPanel extends CoSoPanel {
                                     null,
                                     cacMa,
                                     cacMa[0]);
+
             if (chon != null) {
                 txtTruongVoucher.setText(chon.split(" — ", 2)[0]);
                 apDungVoucher();
@@ -365,36 +520,13 @@ public final class ThanhToanPanel extends CoSoPanel {
         }
     }
 
-    private void doiVoucher() {
-        if (banHang.layMaKhachHang().isBlank()) {
-            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng trước.");
-            return;
-        }
-        if (!HopThoai.xacNhan(
-                this, "Trừ 200 điểm của khách để đổi voucher Spa 150.000đ, hạn 60 ngày?")) return;
-        if (khoaDoiVoucher == null) khoaDoiVoucher = "PAYREDEEM-" + java.util.UUID.randomUUID();
-        try {
-            String ma =
-                    com.petstation.service.TichDiemService.doiVoucher(
-                            banHang.layMaKhachHang(), khoaDoiVoucher);
-            khoaDoiVoucher = null;
-            txtTruongVoucher.setText(ma);
-            apDungVoucher();
-            HopThoai.hienThiThongTin(
-                    this, "Đã đổi voucher " + ma + ". Chỉ áp dụng cho Spa của khách hàng này.");
-        } catch (RuntimeException loi) {
-            HopThoai.hienThiCanhBao(this, loi.getMessage());
-        }
-    }
-
     private void apDungVoucher() {
-        // Lỗi.
         String loi = banHang.apDungVoucher(txtTruongVoucher.getText());
+
         if (loi != null) {
             lblVoucherThongBao.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
             lblVoucherThongBao.setText(loi);
-        } else // Kiểm tra dữ liệu hiện có trước khi tiếp tục xử lý.
-        if (banHang.layMaVoucher().isEmpty()) {
+        } else if (banHang.layMaVoucher().isEmpty()) {
             lblVoucherThongBao.setText("");
         } else {
             lblVoucherThongBao.setForeground(MauUngDung.XANH_LA);
@@ -404,30 +536,31 @@ public final class ThanhToanPanel extends CoSoPanel {
                             + ": −"
                             + TienTe.dinhDang(banHang.laySoTienVoucher()));
         }
+
         lamMoiCacTong();
     }
 
     private void lamMoi() {
+        capNhatNhanNutQuayLai();
+        capNhatTrangThaiVoucherKhach();
+
         if (banHang.kiemTraTrong()) {
             cacThe.show(pnlGoc, "empty");
             return;
         }
+
+
         cacThe.show(pnlGoc, "form");
-        // Mô hình.
+
         DefaultTableModel moHinh =
-                new DefaultTableModel(new String[] {"Sản phẩm", "SL", "Đơn giá", "Thành tiền"}, 0) {
-                    /**
-                     * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                     *
-                     * @param dongDuLieu dòng dữ liệu
-                     * @param giaTriDangXet giá trị đang xét
-                     * @return kết quả kiểm tra điều kiện xử lý
-                     */
+                new DefaultTableModel(
+                        new String[] {"Sản phẩm", "SL", "Đơn giá", "Thành tiền"}, 0) {
                     @Override
                     public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                         return false;
                     }
                 };
+
         for (GioHang.DongHang dongDangXet : banHang.layCacDong()) {
             moHinh.addRow(
                     new Object[] {
@@ -437,11 +570,14 @@ public final class ThanhToanPanel extends CoSoPanel {
                         TienTe.dinhDang(dongDangXet.docSoTien())
                     });
         }
+
         pnlDongVungChua.removeAll();
         JScrollPane scrHang = taoBangDinhDang(moHinh);
-        com.petstation.gui.components.common.BangChiTietHoaDon.apDung(layBang(scrHang));
+        com.petstation.gui.components.common.BangChiTietHoaDon.apDung(
+                layBang(scrHang));
         pnlDongVungChua.add(scrHang, BorderLayout.CENTER);
         pnlDongVungChua.revalidate();
+
         txtTruongVoucher.setText(banHang.layMaVoucher());
         lblVoucherThongBao.setText("");
         txtDaNhan.setText("");
@@ -453,10 +589,13 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private void lamMoiCacTong() {
         lblTamTinh.setText(TienTe.dinhDang(banHang.tinhTamTinh()));
-        // Ngày đang xét.
+
         long ngayDangXet = banHang.tinhGiamGia();
-        lblGiamGia.setText(ngayDangXet == 0 ? "0₫" : "−" + TienTe.dinhDang(ngayDangXet));
+        lblGiamGia.setText(
+                ngayDangXet == 0 ? "0₫" : "−" + TienTe.dinhDang(ngayDangXet));
+
         lblTong.setText(TienTe.dinhDang(banHang.tinhTong()));
+
         capNhatQR();
         dungLaiNhanhCacSoTien();
         kiemTraDauVao();
@@ -464,174 +603,312 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private void dungLaiNhanhCacSoTien() {
         pnlNhanhCacSoTien.removeAll();
+
         long giaTriTam = banHang.tinhTong();
-        // Các lựa chọn.
         Set<Long> cacLuaChon = new LinkedHashSet<>();
         cacLuaChon.add(giaTriTam);
+
         for (long buoc : new long[] {50_000, 100_000, 500_000}) {
-            // Lên.
             long len = ((giaTriTam + buoc - 1) / buoc) * buoc;
             if (len >= giaTriTam) cacLuaChon.add(len);
         }
+
         for (long soTien : cacLuaChon) {
-            // Giá trị sau.
             JButton btnGiaTriSau =
-                    new JButton(soTien == giaTriTam ? "Đủ tiền" : TienTe.dinhDang(soTien));
+                    new JButton(
+                            soTien == giaTriTam
+                                    ? "Đủ tiền"
+                                    : TienTe.dinhDang(soTien));
+
             btnGiaTriSau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
             btnGiaTriSau.setFocusPainted(false);
-            btnGiaTriSau.addActionListener(suKien -> txtDaNhan.setText(String.valueOf(soTien)));
+
+            // Nút đầu tiên sát lề trái; các nút sau cách nhau 8px.
+            if (pnlNhanhCacSoTien.getComponentCount() > 0) {
+                pnlNhanhCacSoTien.add(Box.createHorizontalStrut(8));
+            }
+
+            btnGiaTriSau.addActionListener(
+                    suKien -> txtDaNhan.setText(String.valueOf(soTien)));
             pnlNhanhCacSoTien.add(btnGiaTriSau);
         }
+
         pnlNhanhCacSoTien.revalidate();
         pnlNhanhCacSoTien.repaint();
     }
 
+    /**
+     * Tạo QR theo đúng số tiền phải trả và mã hóa đơn dự kiến.
+     * Mã hóa đơn này được BanHangService dùng lại khi ghi hóa đơn.
+     */
     private void capNhatQR() {
+        boolean laTienMat = layPhuongThuc() == PhuongThuc.TIEN_MAT;
+        boolean chuyenKhoan =
+                layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN;
+
+        pnlNhapTienMat.setVisible(laTienMat);
+        pnlQRThanhToan.setVisible(chuyenKhoan);
+        chkDaNhanTien.setVisible(!laTienMat);
+
+        chkDaNhanTien.setText(
+                chuyenKhoan
+                        ? "Tôi đã kiểm tra và nhận đủ tiền trên tài khoản ngân hàng"
+                        : "Tôi đã xác nhận giao dịch thẻ thành công");
+
+        // Mỗi lần số tiền/phương thức thay đổi phải xác nhận lại.
         chkDaNhanTien.setSelected(false);
         banHang.xacNhanDaNhanTien(layPhuongThuc(), false);
-        boolean chuyenKhoan = layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN;
-        chkDaNhanTien.setVisible(layPhuongThuc() != PhuongThuc.TIEN_MAT);
-        lblQR.setVisible(chuyenKhoan);
-        lblThongTinQR.setVisible(chuyenKhoan);
+
         qrHopLe = false;
-        if (!chuyenKhoan) return;
+        noiDungChuyenKhoanQR = "";
+        btnSaoChepNoiDungQR.setEnabled(false);
+
+        if (!chuyenKhoan) {
+            pnlNoiDungRepaint();
+            return;
+        }
+
         try {
-            String bin = com.petstation.service.CaiDatService.layTuyChon("BANK_BIN");
-            String tk = com.petstation.service.CaiDatService.layTuyChon("BANK_ACCOUNT");
-            String ten = com.petstation.service.CaiDatService.layTuyChon("BANK_ACCOUNT_NAME");
-            com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(bin, tk, ten);
-            String thamChieu = banHang.layKhoaThanhToan().replace("-", "");
-            String noiDung =
+            String bin =
+                    com.petstation.service.CaiDatService.layTuyChon("BANK_BIN");
+            String taiKhoan =
+                    com.petstation.service.CaiDatService.layTuyChon("BANK_ACCOUNT");
+            String tenChuTaiKhoan =
+                    com.petstation.service.CaiDatService.layTuyChon(
+                            "BANK_ACCOUNT_NAME");
+
+            com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(
+                    bin, taiKhoan, tenChuTaiKhoan);
+
+            // Quan trọng: dùng mã hóa đơn HD... thay cho khóa nội bộ PAY-...
+            String maHoaDon = banHang.layMaHoaDonDuKien();
+            long soTienCanChuyen = banHang.tinhTong();
+
+            String duLieuQR =
                     com.petstation.util.TaoMaVietQR.taoNoiDung(
-                            bin, tk, banHang.tinhTong(), thamChieu);
+                            bin, taiKhoan, soTienCanChuyen, maHoaDon);
+
             lblQR.setText("");
-            lblQR.setIcon(new ImageIcon(com.petstation.util.TaoMaVietQR.taoAnh(noiDung, 240)));
+            lblQR.setIcon(
+                    new ImageIcon(
+                            com.petstation.util.TaoMaVietQR.taoAnh(
+                                    duLieuQR, 220)));
+
+            String tenCuaHang =
+                    com.petstation.service.CaiDatService.lay("STORE_NAME");
+
             lblThongTinQR.setText(
-                    "<html>"
-                            + com.petstation.service.CaiDatService.lay("STORE_NAME")
+                    "<html><div style='width:250px'>"
+                            + "<b>"
+                            + thoatHTML(tenCuaHang)
+                            + "</b><br>"
+                            + "Người nhận: "
+                            + thoatHTML(tenChuTaiKhoan)
                             + "<br>"
-                            + ten
-                            + " · "
-                            + tk
-                            + "<br>BIN "
-                            + bin
-                            + " · "
-                            + thamChieu
+                            + "Số tài khoản: "
+                            + thoatHTML(taiKhoan)
                             + "<br>"
-                            + TienTe.dinhDang(banHang.tinhTong())
-                            + "</html>");
+                            + "BIN ngân hàng: "
+                            + thoatHTML(bin)
+                            + "<br><br>"
+                            + "<font color='#15803D'><b>SỐ TIỀN CẦN CHUYỂN: "
+                            + thoatHTML(TienTe.dinhDang(soTienCanChuyen))
+                            + "</b></font><br>"
+                            + "</div></html>");
+
+            noiDungChuyenKhoanQR = maHoaDon;
+            lblNoiDungQR.setText(maHoaDon);
+            lblTrangThaiQR.setForeground(MauUngDung.CAM);
+            lblTrangThaiQR.setText(
+                    "<html><div style='width:250px'>"
+                            + "Đang chờ xác nhận. QR đã điền sẵn số tiền và mã hóa đơn; "
+                            + "thu ngân cần kiểm tra giao dịch thực tế trước khi xác nhận."
+                            + "</div></html>");
+
+            btnSaoChepNoiDungQR.setEnabled(true);
             qrHopLe = true;
-        } catch (IllegalArgumentException loi) {
+        } catch (RuntimeException loi) {
             lblQR.setIcon(null);
-            lblQR.setText(loi.getMessage());
-            lblThongTinQR.setText("Kiểm tra cấu hình ngân hàng trong Cài đặt.");
+            lblQR.setText("Không tạo được mã QR");
+            lblThongTinQR.setText(
+                    "<html><div style='width:250px'>"
+                            + thoatHTML(loi.getMessage())
+                            + "<br>Kiểm tra cấu hình ngân hàng trong Cài đặt."
+                            + "</div></html>");
+            lblNoiDungQR.setText("");
+            lblTrangThaiQR.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+            lblTrangThaiQR.setText("Chưa thể tạo QR thanh toán.");
+        }
+
+        pnlNoiDungRepaint();
+    }
+
+    private void saoChepNoiDungQR() {
+        if (noiDungChuyenKhoanQR == null || noiDungChuyenKhoanQR.isBlank()) {
+            HopThoai.hienThiCanhBao(this, "Chưa có nội dung chuyển khoản để sao chép.");
+            return;
+        }
+
+        try {
+            Toolkit.getDefaultToolkit()
+                    .getSystemClipboard()
+                    .setContents(new StringSelection(noiDungChuyenKhoanQR), null);
+
+            lblTrangThaiQR.setForeground(MauUngDung.XANH_LA);
+            lblTrangThaiQR.setText(
+                    "Đã sao chép nội dung chuyển khoản: " + noiDungChuyenKhoanQR);
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(
+                    this, "Không thể sao chép nội dung: " + loi.getMessage());
         }
     }
 
+    private static String thoatHTML(String giaTri) {
+        if (giaTri == null) return "";
+        return giaTri.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private void pnlNoiDungRepaint() {
+        pnlQRThanhToan.revalidate();
+        pnlQRThanhToan.repaint();
+        revalidate();
+        repaint();
+    }
+
     private void capNhatPhuongThuc() {
-        // Là tiền mặt.
-        boolean laTienMat = layPhuongThuc() == PhuongThuc.TIEN_MAT;
+        boolean laTienMat =
+                layPhuongThuc() == PhuongThuc.TIEN_MAT;
+
         txtDaNhan.setEnabled(laTienMat);
+
+        for (Component thanhPhan : pnlNhanhCacSoTien.getComponents()) {
+            thanhPhan.setEnabled(laTienMat);
+        }
+
         capNhatQR();
-        for (Component giaTriDangXet : pnlNhanhCacSoTien.getComponents())
-            giaTriDangXet.setEnabled(laTienMat);
         kiemTraDauVao();
     }
 
     private void kiemTraDauVao() {
         if (banHang.kiemTraTrong()) return;
+
         long giaTriTam = banHang.tinhTong();
-        if (layPhuongThuc() != PhuongThuc.TIEN_MAT) {
-            lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_XAM);
-            lblNhanThayDoi.setText(
-                    "Thu đúng "
-                            + TienTe.dinhDang(giaTriTam)
-                            + "qua "
-                            + (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN ? "chuyển khoản/QR" : "thẻ"));
+        PhuongThuc phuongThuc = layPhuongThuc();
+
+        if (phuongThuc != PhuongThuc.TIEN_MAT) {
+            boolean chuyenKhoan =
+                    phuongThuc == PhuongThuc.CHUYEN_KHOAN;
+
+            chkDaNhanTien.setEnabled(!chuyenKhoan || qrHopLe);
+
+            if (chuyenKhoan) {
+                lblTrangThaiQR.setForeground(
+                        chkDaNhanTien.isSelected()
+                                ? MauUngDung.XANH_LA
+                                : MauUngDung.CAM);
+                lblTrangThaiQR.setText(
+                        chkDaNhanTien.isSelected()
+                                ? "Thu ngân đã xác nhận thủ công đã nhận đúng tiền cho hóa đơn "
+                                        + banHang.layMaHoaDonDuKien()
+                                : "Đang chờ thu ngân kiểm tra giao dịch thực tế.");
+            }
+
             btnXacNhan.setEnabled(
                     !dangXuLy
                             && chkDaNhanTien.isSelected()
-                            && (layPhuongThuc() != PhuongThuc.CHUYEN_KHOAN || qrHopLe));
+                            && (!chuyenKhoan || qrHopLe));
             return;
         }
-        // Dòng dữ liệu.
-        long dongDuLieu = TienTe.doc(txtDaNhan.getText());
+
+        long tienKhachDua = TienTe.doc(txtDaNhan.getText());
+
         if (txtDaNhan.getText().isBlank()) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_XAM);
             lblNhanThayDoi.setText("Nhập số tiền khách đưa");
             btnXacNhan.setEnabled(false);
-        } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-        if (dongDuLieu < 0) {
+        } else if (tienKhachDua < 0) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
             lblNhanThayDoi.setText("Số tiền không hợp lệ");
             btnXacNhan.setEnabled(false);
-        } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
-        if (dongDuLieu < giaTriTam) {
+        } else if (tienKhachDua < giaTriTam) {
             lblNhanThayDoi.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-            lblNhanThayDoi.setText("Còn thiếu " + TienTe.dinhDang(giaTriTam - dongDuLieu));
+            lblNhanThayDoi.setText(
+                    "Còn thiếu "
+                            + TienTe.dinhDang(giaTriTam - tienKhachDua));
             btnXacNhan.setEnabled(false);
         } else {
             lblNhanThayDoi.setForeground(MauUngDung.XANH_LA);
             lblNhanThayDoi.setText(
-                    "Tiền thừa trả khách: " + TienTe.dinhDang(dongDuLieu - giaTriTam));
+                    "Tiền thừa trả khách: "
+                            + TienTe.dinhDang(tienKhachDua - giaTriTam));
             btnXacNhan.setEnabled(!dangXuLy);
         }
     }
 
-    private final java.util.Map<Component, Boolean> trangThaiNhap =
-            new java.util.IdentityHashMap<>();
-
-    private void khoaNhap(Container root) {
-        for (Component c : root.getComponents()) {
-            trangThaiNhap.put(c, c.isEnabled());
-            c.setEnabled(false);
-            if (c instanceof Container p) khoaNhap(p);
-        }
-    }
-
-    private void moNhap() {
-        trangThaiNhap.forEach(Component::setEnabled);
-        trangThaiNhap.clear();
-    }
-
     private void xacNhanThanhToan() {
         if (dangXuLy || banHang.kiemTraTrong()) return;
+
         if (!banHang.kiemTraDaNhanTien(layPhuongThuc())) {
-            HopThoai.hienThiCanhBao(this, "Hãy kiểm tra và xác nhận đã nhận đủ tiền.");
+            HopThoai.hienThiCanhBao(
+                    this,
+                    "Hãy kiểm tra và xác nhận đã nhận đủ tiền trước khi hoàn tất.");
             return;
         }
+
         long giaTriTam = banHang.tinhTong();
-        // Dòng dữ liệu.
-        long dongDuLieu =
-                layPhuongThuc() == PhuongThuc.TIEN_MAT ? TienTe.doc(txtDaNhan.getText()) : giaTriTam;
-        if (dongDuLieu < giaTriTam) return;
-        // Đồng ý.
+        long daNhan =
+                layPhuongThuc() == PhuongThuc.TIEN_MAT
+                        ? TienTe.doc(txtDaNhan.getText())
+                        : giaTriTam;
+
+        if (daNhan < giaTriTam) return;
+
+        String thongBao =
+                "Xác nhận thu "
+                        + TienTe.dinhDang(giaTriTam)
+                        + " cho hóa đơn "
+                        + banHang.layMaHoaDonDuKien()
+                        + "?";
+
+        if (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN) {
+            thongBao +=
+                    "\nChỉ tiếp tục sau khi đã kiểm tra giao dịch thực tế trên tài khoản ngân hàng.";
+        }
+
         int dongY =
                 HopThoai.hienThiXacNhanHopThoai(
                         this,
-                        "Xác nhận thu " + TienTe.dinhDang(giaTriTam) + "?",
+                        thongBao,
                         "Xác nhận thanh toán",
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
+
         if (dongY != JOptionPane.OK_OPTION) return;
+
         dangXuLy = true;
         btnXacNhan.setEnabled(false);
+
         try {
-            // Biên lai.
-            GioHang.BienLai bienLai = banHang.hoanTat(layPhuongThuc(), dongDuLieu, thuNgan);
+            GioHang.BienLai bienLai =
+                    banHang.hoanTat(layPhuongThuc(), daNhan, thuNgan);
             caLamViec.ghiNhanBanHang(layPhuongThuc(), bienLai.tong());
             banHang.xoa();
             boDieuHuong.accept(MaManHinh.IN_HOA_DON);
         } catch (RuntimeException ngoaiLe) {
             dangXuLy = false;
             kiemTraDauVao();
-            HopThoai.hienThiCanhBao(this, "Chưa thanh toán: " + ngoaiLe.getMessage());
+            HopThoai.hienThiCanhBao(
+                    this, "Chưa thanh toán: " + ngoaiLe.getMessage());
         }
     }
 
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
-        return new KhaNangThanhCongCu(false, false, false, false, false, true);
+        return new KhaNangThanhCongCu(
+                false, false, false, false, false, true);
     }
 
     @Override
@@ -644,9 +921,10 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chọn phương thức, nhập tiền khách đưa (nút gợi ý bên dưới ô nhập).\n"
-                + "Nút xác nhận chỉ bật khi số tiền đủ. Voucher được kiểm tra theo hạn dùng, số"
-                + " lượt và điều kiện trong SQL Server.";
+        return "Chọn phương thức thanh toán. Với tiền mặt, nhập số tiền khách đưa. "
+                + "Với QR, mã chứa sẵn số tiền phải trả và mã hóa đơn; thu ngân phải kiểm tra "
+                + "giao dịch thực tế trên tài khoản ngân hàng trước khi xác nhận. "
+                + "Ứng dụng hiện chưa tự nhận thông báo tiền vào từ ngân hàng.";
     }
 
     @Override

@@ -10,7 +10,19 @@ public interface HopDongLuuTruDAO {
 
     List<Object[]> timDatPhong(Object... cacThamSo);
 
-    long demDatPhong(Object... cacThamSo);
+    long demPhongDatTrung(long phongId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau);
+
+    long demThuCungDatTrung(long thuCungId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau);
+
+    long demPhongDatTrungBoQua(long phongId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau, long boQuaId);
+
+    long demThuCungDatTrungBoQua(long thuCungId, java.time.LocalDateTime ketThuc, java.time.LocalDateTime batDau, long boQuaId);
+
+    List<Object[]> layDatPhongSua(long id);
+
+    int capNhatDatPhong(Object... cacThamSo);
+
+    int huyDatPhong(Object... cacThamSo);
 
     long themDatPhong(Object... cacThamSo);
 

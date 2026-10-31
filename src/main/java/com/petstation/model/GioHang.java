@@ -326,6 +326,9 @@ public final class GioHang {
     private String khoaThanhToan =
             "PAY-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);
 
+    /** Mã hóa đơn dự kiến, dùng đồng nhất trên QR và hóa đơn được lưu. */
+    private String maHoaDonDuKien = com.petstation.util.DuLieu.taoMa("HD");
+
     /** Kiểu nguồn. */
     private String kieuNguon = "";
 
@@ -434,6 +437,10 @@ public final class GioHang {
 
     public String layKhoaThanhToan() {
         return khoaThanhToan;
+    }
+
+    public String layMaHoaDonDuKien() {
+        return maHoaDonDuKien;
     }
 
     public String layKieuNguon() {
@@ -696,6 +703,7 @@ public final class GioHang {
     public void xoa() {
         khoaThanhToan =
                 "PAY-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+        maHoaDonDuKien = com.petstation.util.DuLieu.taoMa("HD");
         kieuNguon = "";
         idNguon = 0;
         doiHang = null;

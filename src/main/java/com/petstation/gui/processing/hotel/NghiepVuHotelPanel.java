@@ -61,6 +61,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 moHinh.getValueAt(
                                         tblBang.convertRowIndexToModel(tblBang.getSelectedRow()),
                                         9));
+        boolean daChon = !trangThai.isEmpty();
         for (Component thanhPhan : pnlCacThaoTac.getComponents())
             if (thanhPhan instanceof JButton btn) {
                 switch (btn.getText()) {
@@ -69,10 +70,22 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                     case "Điều chỉnh cọc" -> btn.setEnabled(trangThai.equals("BOOKED"));
                     case "Nhận phòng" ->
                             btn.setEnabled(trangThai.equals("BOOKED") && cocConThieu() <= 0);
-                    case "Ghi chăm sóc", "Quyết toán" ->
-                            btn.setEnabled(trangThai.equals("CHECKED_IN"));
-                    case "Xem nhật ký" -> btn.setEnabled(!trangThai.isEmpty());
-                    default -> {}
+                    case "Phiếu chăm sóc" -> btn.setEnabled(trangThai.equals("CHECKED_IN"));
+                    case "Quyết toán" ->
+                            btn.setEnabled(trangThai.equals("CHECKED_IN")
+                                    && kieuNghiepVu != LoaiNghiepVu.NHAT_KY_LUU_TRU);
+                    case "Xem nhật ký" ->
+                            btn.setEnabled(trangThai.equals("CHECKED_IN")
+                                    || trangThai.equals("CHECKED_OUT"));
+                    case "Lịch sử cọc" -> btn.setEnabled(daChon);
+                    case "Sửa đặt phòng" -> btn.setEnabled(trangThai.equals("BOOKED"));
+                    case "Hủy đặt phòng" ->
+                            btn.setEnabled(trangThai.equals("BOOKED") && cocDaThu() == 0);
+                    default -> {
+                        if (btn.getText().startsWith("+ Đặt phòng"))
+                            btn.setEnabled(kieuNghiepVu != LoaiNghiepVu.TRA_PHONG_LUU_TRU
+                                    && kieuNghiepVu != LoaiNghiepVu.NHAT_KY_LUU_TRU);
+                    }
                 }
             }
     }
@@ -84,33 +97,42 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 - ((Number) moHinh.getValueAt(row, 7)).longValue();
     }
 
+    private long cocDaThu() {
+        if (tblBang.getSelectedRow() < 0 || moHinh.getColumnCount() < 8) return Long.MAX_VALUE;
+        int row = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
+        Object value = moHinh.getValueAt(row, 7);
+        return value instanceof Number n ? n.longValue() : 0;
+    }
+
     protected void datPhong() {
-        Map<String, String> giaTri =
-                BieuMauSQL.layYeuCauNhap(
-                        this,
-                        "Đặt phòng lưu trú",
-                        layThuCung(),
-                        layTruongPhongDaChon(),
-                        layTruongVanBan(
-                                "start", "Ngày vào (yyyy-MM-dd HH:mm)", layThoiGianHienTai()),
-                        layTruongVanBan(
-                                "end",
-                                "Ngày ra (yyyy-MM-dd HH:mm)",
-                                LocalDateTime.now()
-                                        .plusDays(1)
-                                        .withSecond(0)
-                                        .format(THOI_GIAN_NGAY)),
-                        layTruongVanBan("note", "Ghi chú", ""));
-        if (giaTri != null) {
-            long id =
-                    LuuTruService.giuPhong(
-                            giaTri.get("pet"),
-                            giaTri.get("room"),
-                            docThoiGian(giaTri, "start"),
-                            docThoiGian(giaTri, "end"),
-                            giaTri.get("note"));
-            banHang.layQuyTrinh().chonHotel(id);
-        }
+        String maPhong = banHang.layQuyTrinh().layMaPhongHotel();
+        Long id = DatPhongHotelDialog.mo(this, null, maPhong);
+        if (id != null) banHang.layQuyTrinh().chonHotel(id);
+    }
+
+    protected void suaDatPhong() {
+        long id = layDongChon();
+        Long result = DatPhongHotelDialog.mo(this, id, null);
+        if (result != null) banHang.layQuyTrinh().chonHotel(result);
+    }
+
+    protected void huyDatPhong() {
+        long id = layDongChon();
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Hủy hợp đồng đặt phòng #" + id + "?\n"
+                        + "Chỉ có thể hủy trực tiếp khi hợp đồng chưa thu cọc.",
+                "Xác nhận hủy đặt phòng",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        String reason = JOptionPane.showInputDialog(
+                this, "Lý do hủy đặt phòng:", "Hủy đặt phòng",
+                JOptionPane.PLAIN_MESSAGE);
+        if (reason == null) return;
+        LuuTruService.huyDatPhong(id, reason);
+        banHang.layQuyTrinh().chonHotel(0);
     }
 
     private void thuCoc() {
@@ -132,8 +154,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         long so = Long.parseLong(input.trim());
         if (so <= 0 || so > thieu)
             throw new IllegalArgumentException("Số thu vượt phần cọc còn thiếu.");
-        String khoa = "COC-" + UUID.randomUUID();
-        var dong = com.petstation.gui.components.common.ThuTienDialog.nhap(this, so, khoa);
+        // QR hiển thị mã hợp đồng để dễ đối chiếu khoản chuyển.
+        String maHopDong = layNoiDungDongChon(1);
+        // Mỗi lần thu vẫn có khóa riêng để cho phép thu cọc nhiều đợt trên cùng hợp đồng.
+        String khoa = "COC" + UUID.randomUUID().toString().replace("-", "").substring(0, 22);
+        var dong =
+                com.petstation.gui.components.common.ThuTienDialog.nhap(
+                        this, so, maHopDong);
         if (dong != null) LuuTruService.thuCoc(id, dong, khoa);
     }
 

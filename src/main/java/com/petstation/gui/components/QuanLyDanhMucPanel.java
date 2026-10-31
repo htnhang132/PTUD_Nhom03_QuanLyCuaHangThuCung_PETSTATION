@@ -42,6 +42,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.ScrollPaneConstants;
 
 /**
  * Cung cấp giao diện và xử lý tương tác cho thực thể vùng hiển thị.

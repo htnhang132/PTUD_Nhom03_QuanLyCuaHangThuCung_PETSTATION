@@ -95,7 +95,9 @@ public final class ChinhFrame extends JFrame {
         this.nguCanh = nguCanh;
         this.phienDangNhap = nguCanh.layNguCanhPhien().yeuCauHienTai();
         PhienDangNhapService.datPhienDangNhap(phienDangNhap);
-        this.manHinhBoDangKy = new DangKyManHinh(phienDangNhap, this::dieuHuong);
+        this.manHinhBoDangKy =
+                new DangKyManHinh(
+                        phienDangNhap, this::dieuHuong, this::quayLaiTuThanhToan);
 
         setTitle("Pet Station – " + phienDangNhap.docVaiTro().layTenHienThi());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -187,6 +189,41 @@ public final class ChinhFrame extends JFrame {
         } catch (RuntimeException loi) {
             HopThoai.hienThiCanhBao(this, loi.getMessage());
         }
+    }
+
+    /**
+     * Đường quay lại riêng của màn hình thanh toán.
+     *
+     * <p>Không gọi chuyenBuoc(): đây là thao tác hủy bước thanh toán để quay về nơi đã mở nó,
+     * không phải thao tác nhảy bước trên thanh tiến trình.
+     */
+    private void quayLaiTuThanhToan(MaManHinh dich) {
+        var gio = manHinhBoDangKy.layGioHang();
+        String nguon = gio.layKieuNguon();
+
+        boolean quayLaiHotel =
+                "HOTEL".equals(nguon) && dich == MaManHinh.TRA_PHONG_LUU_TRU;
+        boolean quayLaiSpa =
+                "SPA".equals(nguon) && dich == MaManHinh.HOAN_TAT_SPA;
+        boolean quayLaiBanHang =
+                !"HOTEL".equals(nguon)
+                        && !"SPA".equals(nguon)
+                        && dich == MaManHinh.LAP_HOA_DON;
+
+        if (hienTai != MaManHinh.THANH_TOAN
+                || !(quayLaiHotel || quayLaiSpa || quayLaiBanHang)) {
+            HopThoai.hienThiCanhBao(
+                    this, "Không thể quay lại màn hình này từ luồng thanh toán hiện tại.");
+            return;
+        }
+
+        // Đơn quyết toán Hotel/Spa là giỏ tạm được dựng từ hồ sơ nghiệp vụ.
+        // Xóa giỏ tạm để người dùng có thể mở lại bước quyết toán sau khi quay về.
+        // Không xóa NguCanhQuyTrinh nên hợp đồng/phiếu đang chọn vẫn được giữ nguyên.
+        if (quayLaiHotel || quayLaiSpa) gio.xoa();
+
+        // Gọi dieuHuong trực tiếp, không qua bộ kiểm tra chuyển bước của thanh tiến trình.
+        dieuHuong(dich);
     }
 
     public void dieuHuong(MaManHinh id) {

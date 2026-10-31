@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -95,38 +96,50 @@ public final class BoChonKhachHang extends JPanel {
                         BorderFactory.createLineBorder(new Color(0xBF, 0xD6, 0xF5)),
                         new EmptyBorder(6, 10, 6, 10)));
         pnlNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pnlNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 66));
+        pnlNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
         lblVanBanNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         // Xóa.
         JButton btnXoa = new JButton("Bỏ chọn");
         btnXoa.setFocusPainted(false);
         btnXoa.addActionListener(suKien -> xoa());
-        // Sử dụng điểm.
-        JPanel pnlSuDungDiem = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+     // Khu vực thông tin sử dụng điểm và đổi voucher.
+        JPanel pnlSuDungDiem = new JPanel();
         pnlSuDungDiem.setOpaque(false);
-        // Nhãn sử dụng.
-        JLabel lblNhanSuDung = new JLabel("Đổi 200 điểm → voucher Spa 150.000đ / 60 ngày");
-        lblNhanSuDung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        spnDiem.setPreferredSize(new Dimension(80, 26));
-        spnDiem.addChangeListener(
-                suKien -> {
-                    if (dangCapNhat) return;
-                    banHang.datDiemDaDung(((Number) spnDiem.getValue()).longValue());
-                    lamMoiDiemGoiY();
-                    khiThayDoi.run();
-                });
-        lblDiemGoiY.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-        lblDiemGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
-        pnlSuDungDiem.add(lblNhanSuDung);
-        JButton btnDoiVoucher = new JButton("Đổi voucher");
-        btnDoiVoucher.addActionListener(e -> doiVoucher());
-        pnlSuDungDiem.add(btnDoiVoucher);
+        pnlSuDungDiem.setLayout(
+                new BoxLayout(pnlSuDungDiem, BoxLayout.Y_AXIS));
 
-        // Văn bản.
-        JPanel pnlVanBan = new JPanel(new BorderLayout(0, 2));
+        // Nội dung đổi điểm.
+        JLabel lblNhanSuDung =
+                new JLabel("Đổi 200 điểm → voucher Spa 150.000đ / 60 ngày");
+        lblNhanSuDung.setFont(
+                MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        lblNhanSuDung.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        pnlSuDungDiem.add(lblNhanSuDung);
+        pnlSuDungDiem.add(Box.createVerticalStrut(4));
+
+        // Nút đổi voucher nằm riêng một hàng.
+        JButton btnDoiVoucher = new JButton("Đổi voucher");
+        btnDoiVoucher.setFocusPainted(false);
+        btnDoiVoucher.addActionListener(e -> doiVoucher());
+
+        JPanel pnlDongDoiVoucher =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        pnlDongDoiVoucher.setOpaque(false);
+        pnlDongDoiVoucher.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pnlDongDoiVoucher.add(btnDoiVoucher);
+
+        pnlSuDungDiem.add(pnlDongDoiVoucher);
+
+        // Khu vực thông tin khách hàng.
+        JPanel pnlVanBan = new JPanel();
         pnlVanBan.setOpaque(false);
-        pnlVanBan.add(lblVanBanNhan, BorderLayout.NORTH);
-        pnlVanBan.add(pnlSuDungDiem, BorderLayout.CENTER);
+        pnlVanBan.setLayout(
+                new BoxLayout(pnlVanBan, BoxLayout.Y_AXIS));
+
+        pnlVanBan.add(lblVanBanNhan);
+        pnlVanBan.add(Box.createVerticalStrut(5));
+        pnlVanBan.add(pnlSuDungDiem);
         pnlNhan.add(pnlVanBan, BorderLayout.CENTER);
         pnlNhan.add(btnXoa, BorderLayout.EAST);
         pnlNhan.setVisible(false);

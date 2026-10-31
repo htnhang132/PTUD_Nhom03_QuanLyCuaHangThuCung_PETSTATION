@@ -113,7 +113,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                     new KieuHienThi(
                             switch (cheDo) {
                                 case DAT_PHONG_LUU_TRU -> "Đặt phòng Pet Hotel";
-                                case NHAT_KY_LUU_TRU -> "Nhật ký lưu trú";
+                                case NHAT_KY_LUU_TRU -> "Nhật ký chăm sóc lưu trú";
                                 case TRA_PHONG_LUU_TRU -> "Trả phòng và quyết toán";
                                 default -> "Lưu trú Pet Hotel";
                             },
@@ -136,8 +136,17 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 + " END,COALESCE(h.gia_dem,r.gia_dem),h.trang_thai,COALESCE(h.coc_yeu_cau,h.tien_coc)"
                                 + " FROM hop_dong_luu_tru h JOIN khach_hang k ON"
                                 + " k.id=h.khach_hang_id JOIN thu_cung p ON p.id=h.thu_cung_id JOIN"
-                                + " phong_hotel r ON r.id=h.phong_id ORDER BY h.ngay_vao DESC,h.id"
-                                + " DESC");
+                                + " phong_hotel r ON r.id=h.phong_id"
+                                + (cheDo == LoaiNghiepVu.DAT_PHONG_LUU_TRU
+                                        ? " WHERE h.trang_thai='BOOKED'"
+                                        : cheDo == LoaiNghiepVu.NHAT_KY_LUU_TRU
+                                                ? " WHERE h.trang_thai IN ('CHECKED_IN','CHECKED_OUT')"
+                                                        + " AND EXISTS (SELECT 1 FROM nhat_ky_cham_soc j"
+                                                        + " WHERE j.hop_dong_id=h.id)"
+                                                : cheDo == LoaiNghiepVu.TRA_PHONG_LUU_TRU
+                                                        ? " WHERE h.trang_thai='CHECKED_IN'"
+                                                        : "")
+                                + " ORDER BY h.ngay_vao DESC,h.id DESC");
             case PHONG_LUU_TRU ->
                     new KieuHienThi(
                             "Sơ đồ phòng và lưu trú",

@@ -41,8 +41,16 @@ public final class NhatKyChamSocDialog {
                             i == 0
                                     ? "Chọn ảnh trước (JPEG/PNG ≤10 MB)"
                                     : "Chọn ảnh sau (JPEG/PNG ≤10 MB)");
+            b.setToolTipText(
+                    "Ảnh phải được lưu trên thư mục UNC dùng chung đã cấu hình trong Cài đặt.");
             b.addActionListener(
                     e -> {
+                        try {
+                            ChamSocService.kiemTraThuMucAnhDungChung();
+                        } catch (RuntimeException loi) {
+                            HopThoai.hienThiCanhBao(dialog, loi.getMessage());
+                            return;
+                        }
                         JFileChooser c = new JFileChooser();
                         c.setFileFilter(
                                 new FileNameExtensionFilter("Ảnh JPEG/PNG", "jpg", "jpeg", "png"));
@@ -53,6 +61,11 @@ public final class NhatKyChamSocDialog {
                     });
             form.add(b);
         }
+        JLabel sharedHint = new JLabel(
+                "<html><i>Ảnh được lưu trên thư mục mạng UNC dùng chung để các máy nhân viên "
+                        + "cùng xem được. Nếu chưa cấu hình hoặc mất kết nối mạng, hệ thống sẽ báo lỗi.</i></html>");
+        sharedHint.setForeground(new Color(90, 90, 90));
+        form.add(sharedHint);
         JButton save = new JButton("Lưu phiếu chăm sóc");
         form.add(save);
         JEditorPane preview = new JEditorPane("text/html", "");

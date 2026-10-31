@@ -79,9 +79,18 @@ public final class LuuTruService {
                     Object[] p = phong.get(0);
                     if ("Mèo".equals(p[3]) && !"CAT".equals(thu[2]))
                         throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
-                    if (luuTruDAO.demDatPhong(p[0], thu[0], ketThuc, batDau) > 0)
+                    if (luuTruDAO.demThuCungDatTrung(
+                                    layGiaTri(thu[0]), ketThuc, batDau)
+                            > 0)
                         throw new IllegalArgumentException(
-                                "Phòng hoặc thú cưng đã có đặt chỗ trùng thời gian.");
+                                "Thú cưng đã có hợp đồng lưu trú trùng thời gian.");
+                    long soChoDaDat =
+                            luuTruDAO.demPhongDatTrung(layGiaTri(p[0]), ketThuc, batDau);
+                    long sucChua = layGiaTri(p[4]);
+                    if (soChoDaDat >= sucChua)
+                        throw new IllegalArgumentException(
+                                "Phòng đã đủ sức chứa trong khoảng thời gian đã chọn. Hiện có "
+                                        + soChoDaDat + "/" + sucChua + " chỗ được đặt.");
                     long gia = layGiaTri(p[1]);
                     long yeuCau = (Math.multiplyExact(tinhSoNgay(batDau, ketThuc), gia) + 1) / 2;
                     long id =
@@ -122,7 +131,7 @@ public final class LuuTruService {
                 c -> {
                     var r = luuTruDAO.khoaHopDongThuCoc(id);
                     if (r.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hợp đồng.");
-                    if (luuTruDAO.demKhoaThuCoc(id, khoa + "-%") > 0) return null;
+                    if (luuTruDAO.demKhoaThuCoc(id, khoa) > 0) return null;
                     if (!"BOOKED".equals(r.get(0)[0]))
                         throw new IllegalArgumentException(
                                 "Chỉ nhận cọc khi hợp đồng đang chờ nhận phòng.");
@@ -180,6 +189,165 @@ public final class LuuTruService {
         if (phong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy phòng.");
         return (Math.multiplyExact(tinhSoNgay(batDau, ketThuc), layGiaTri(phong.get(0)[1])) + 1)
                 / 2;
+    }
+
+    /** Trả về thông tin dự kiến: số ngày, tổng tiền phòng, cọc 50%, giá mỗi ngày. */
+    public static long[] tinhTienPhongDuKien(
+            String maPhong, LocalDateTime batDau, LocalDateTime ketThuc) {
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        if (maPhong == null || maPhong.isBlank()
+                || batDau == null || ketThuc == null || !ketThuc.isAfter(batDau))
+            throw new IllegalArgumentException("Vui lòng chọn phòng và khoảng thời gian hợp lệ.");
+
+        var phong = luuTruDAO.timDatPhong(maPhong.trim());
+        if (phong.isEmpty())
+            throw new IllegalArgumentException("Không tìm thấy phòng đã chọn.");
+
+        long soNgay = tinhSoNgay(batDau, ketThuc);
+        long gia = layGiaTri(phong.get(0)[1]);
+        long tong = Math.multiplyExact(soNgay, gia);
+        long coc = Math.addExact(tong, 1) / 2;
+        return new long[] {soNgay, tong, coc, gia};
+    }
+
+    /** Thông tin để mở biểu mẫu sửa; chỉ hợp đồng BOOKED mới được sửa. */
+    public static Object[] layThongTinDatPhong(long id) {
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        var dong = luuTruDAO.layDatPhongSua(id);
+        if (dong.isEmpty())
+            throw new IllegalArgumentException("Không tìm thấy hợp đồng lưu trú.");
+        if (!"BOOKED".equals(chuyenThanhChuoi(dong.get(0)[0])))
+            throw new IllegalArgumentException("Chỉ sửa được hợp đồng đang chờ nhận phòng.");
+        return dong.get(0);
+    }
+
+    /** Sửa đặt phòng nhưng giữ nguyên số cọc đã thực thu và lịch sử thu cọc. */
+    public static void suaDatPhong(
+            long id,
+            String maThuCung,
+            String maPhong,
+            LocalDateTime batDau,
+            LocalDateTime ketThuc,
+            String ghiChu) {
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        if (id <= 0 || maThuCung == null || maThuCung.isBlank()
+                || maPhong == null || maPhong.isBlank()
+                || batDau == null || ketThuc == null || !ketThuc.isAfter(batDau)
+                || ghiChu == null || ghiChu.length() > 1000)
+            throw new IllegalArgumentException("Thông tin đặt phòng không hợp lệ.");
+
+        thucHienGiaoDich(
+                ketNoi -> {
+                    var hopDong = luuTruDAO.layDatPhongSua(id);
+                    if (hopDong.isEmpty()
+                            || !"BOOKED".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
+                        throw new IllegalArgumentException(
+                                "Hợp đồng không còn ở trạng thái chờ nhận phòng.");
+
+                    Object[] thu = layThuCung(maThuCung.trim());
+                    var cacPhong = luuTruDAO.timDatPhong(maPhong.trim());
+                    if (cacPhong.isEmpty())
+                        throw new IllegalArgumentException("Không tìm thấy phòng.");
+
+                    Object[] phong = cacPhong.get(0);
+                    String trangThaiPhong = chuyenThanhChuoi(phong[2]);
+                    if (!Set.of("AVAILABLE", "OCCUPIED").contains(trangThaiPhong))
+                        throw new IllegalArgumentException(
+                                "Phòng không nhận đặt chỗ do đang dọn, bảo trì hoặc ngừng hoạt động.");
+
+                    if ("Mèo".equals(chuyenThanhChuoi(phong[3]))
+                            && !"CAT".equals(chuyenThanhChuoi(thu[2])))
+                        throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
+
+                    long thuCungId = layGiaTri(thu[0]);
+                    long phongId = layGiaTri(phong[0]);
+
+                    if (luuTruDAO.demThuCungDatTrungBoQua(
+                                    thuCungId, ketThuc, batDau, id) > 0)
+                        throw new IllegalArgumentException(
+                                "Thú cưng đã có hợp đồng lưu trú trùng thời gian.");
+
+                    long soChoDaDat =
+                            luuTruDAO.demPhongDatTrungBoQua(
+                                    phongId, ketThuc, batDau, id);
+                    long sucChua = layGiaTri(phong[4]);
+                    if (soChoDaDat >= sucChua)
+                        throw new IllegalArgumentException(
+                                "Phòng đã đủ sức chứa trong khoảng thời gian đã chọn ("
+                                        + soChoDaDat + "/" + sucChua + ").");
+
+                    long soNgay = tinhSoNgay(batDau, ketThuc);
+                    long gia = layGiaTri(phong[1]);
+                    long tong = Math.multiplyExact(soNgay, gia);
+                    long cocMoi = Math.addExact(tong, 1) / 2;
+
+                    Object[] duLieuCu = hopDong.get(0);
+                    boolean daNhanCoc =
+                            duLieuCu[7] instanceof Boolean b
+                                    ? b
+                                    : layGiaTri(duLieuCu[7]) == 1;
+                    long cocDaThu = daNhanCoc ? layGiaTri(duLieuCu[6]) : 0;
+
+                    // Không làm mất tiền cọc đã thu nếu lịch/giá mới có cọc thấp hơn.
+                    long cocYeuCauMoi = Math.max(cocMoi, cocDaThu);
+
+                    if (luuTruDAO.capNhatDatPhong(
+                                    thu[1],
+                                    thuCungId,
+                                    phongId,
+                                    batDau,
+                                    ketThuc,
+                                    gia,
+                                    cocYeuCauMoi,
+                                    ghiChu.trim(),
+                                    id)
+                            != 1)
+                        throw new IllegalStateException(
+                                "Đặt phòng vừa thay đổi. Hãy tải lại danh sách.");
+
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Sửa đặt phòng Hotel",
+                            id + " / " + maThuCung + " / " + maPhong
+                                    + " / " + batDau + " - " + ketThuc
+                                    + " / cọc yêu cầu " + cocYeuCauMoi);
+                    return null;
+                });
+    }
+
+    /** Hủy hợp đồng chưa nhận phòng; hợp đồng đã thu cọc phải được hoàn/đối soát trước. */
+    public static void huyDatPhong(long id, String lyDo) {
+        yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        if (id <= 0 || lyDo == null || lyDo.isBlank() || lyDo.trim().length() > 1000)
+            throw new IllegalArgumentException("Cần nhập lý do hủy đặt phòng (tối đa 1.000 ký tự).");
+
+        thucHienGiaoDich(
+                ketNoi -> {
+                    var hopDong = luuTruDAO.layDatPhongSua(id);
+                    if (hopDong.isEmpty()
+                            || !"BOOKED".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
+                        throw new IllegalArgumentException(
+                                "Chỉ hủy được hợp đồng đang chờ nhận phòng.");
+
+                    Object[] duLieu = hopDong.get(0);
+                    boolean daNhanCoc =
+                            duLieu[7] instanceof Boolean b
+                                    ? b
+                                    : layGiaTri(duLieu[7]) == 1;
+                    if (daNhanCoc || layGiaTri(duLieu[6]) > 0)
+                        throw new IllegalArgumentException(
+                                "Hợp đồng đã thu cọc. Cần hoàn cọc và đối soát thủ quỹ trước "
+                                        + "khi hủy; hệ thống hiện chưa tự động thực hiện hoàn tiền.");
+
+                    if (luuTruDAO.huyDatPhong(
+                                    lyDo.trim(), layIdTaiKhoan(), id)
+                            != 1)
+                        throw new IllegalStateException(
+                                "Không thể hủy hợp đồng. Hãy tải lại dữ liệu.");
+
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Hủy đặt phòng Hotel", id + " / " + lyDo.trim());
+                    return null;
+                });
     }
 
     public static void kiemTraVao(long hopDongLuuTru) {

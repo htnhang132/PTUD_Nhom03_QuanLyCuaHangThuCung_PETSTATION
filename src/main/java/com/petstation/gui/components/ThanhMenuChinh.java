@@ -21,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /** Cung cấp giao diện và xử lý tương tác cho màn hình thanh menu. */
@@ -85,11 +86,7 @@ public final class ThanhMenuChinh extends JPanel {
                                 + "</u>"
                                 + nhan.substring(gachDuoi + 1)
                                 + "</html>") {
-                    /**
-                     * Vẽ thành phần trong lớp xử lý giao diện.
-                     *
-                     * @param doHoa đồ họa
-                     */
+                    /** Vẽ thành phần trong lớp xử lý giao diện. */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         if (getModel().isRollover()) {
@@ -101,11 +98,16 @@ public final class ThanhMenuChinh extends JPanel {
                 };
         btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         btnNut.setForeground(MauUngDung.VAN_BAN_TOI);
+        btnNut.setIcon(BieuTuongMenu.choNhom(phimTruyCap));
+        btnNut.setIconTextGap(8);
+        btnNut.setHorizontalAlignment(SwingConstants.LEFT);
+        btnNut.setVerticalAlignment(SwingConstants.CENTER);
         btnNut.setBorder(new EmptyBorder(5, 12, 5, 12));
         btnNut.setOpaque(false);
         btnNut.setContentAreaFilled(false);
         btnNut.setFocusPainted(false);
         btnNut.setRolloverEnabled(true);
+        btnNut.setToolTipText("Mở menu " + nhan + " (Alt + " + phimTruyCap + ")");
 
         // Menu bật lên.
         JPopupMenu pmnMenuBatLen = new JPopupMenu();

@@ -56,10 +56,16 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     public List<Object[]> timNhaCungCapCongNo(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " n.ma_ncc,n.ten,COALESCE(SUM(p.tong_tien),0),COALESCE(SUM(p.da_tra),0),COALESCE(SUM(p.tong_tien-p.da_tra),0)"
-                    + " FROM nha_cung_cap n LEFT JOIN phieu_nhap_kho p ON p.nha_cung_cap_id=n.id"
-                    + " AND p.trang_thai='POSTED' AND p.ngay_nhap>=? AND p.ngay_nhap<? GROUP BY"
-                    + " n.ma_ncc,n.ten ORDER BY n.ma_ncc",
+                    + " n.ma_ncc,n.ten,"
+                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
+                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
+                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
+                    + " FROM nha_cung_cap n"
+                    + " LEFT JOIN phieu_nhap_kho p ON p.nha_cung_cap_id=n.id"
+                    + " AND p.trang_thai='POSTED'"
+                    + " AND p.ngay_nhap>=? AND p.ngay_nhap<?"
+                    + " GROUP BY n.ma_ncc,n.ten"
+                    + " ORDER BY du_no DESC,n.ma_ncc",
                 cacThamSo);
     }
 
@@ -336,9 +342,15 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     public List<Object[]> layDuNoHienTai(Object... thamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " n.ma_ncc,n.ten,COALESCE(SUM(p.tong_tien),0),COALESCE(SUM(p.da_tra),0),COALESCE(SUM(p.tong_tien-p.da_tra),0)"
-                    + " FROM nha_cung_cap n LEFT JOIN phieu_nhap_kho p ON p.nha_cung_cap_id=n.id"
-                    + " AND p.trang_thai='POSTED' GROUP BY n.ma_ncc,n.ten ORDER BY n.ma_ncc",
+                    + " n.ma_ncc,n.ten,"
+                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
+                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
+                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
+                    + " FROM nha_cung_cap n"
+                    + " LEFT JOIN phieu_nhap_kho p ON p.nha_cung_cap_id=n.id"
+                    + " AND p.trang_thai='POSTED'"
+                    + " GROUP BY n.ma_ncc,n.ten"
+                    + " ORDER BY du_no DESC,n.ma_ncc",
                 thamSo);
     }
 

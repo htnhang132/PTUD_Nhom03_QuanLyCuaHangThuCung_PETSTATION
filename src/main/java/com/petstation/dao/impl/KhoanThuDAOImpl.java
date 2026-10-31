@@ -30,11 +30,26 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
             capNhat("UPDATE hoa_don SET chi_tiet_thanh_toan=? WHERE id=?", chiTiet, hoaDon);
         }
         if (hotel != null && !dong.isEmpty()) {
-            DongThuTien d = dong.get(0);
+            for (DongThuTien d : dong) {
+                capNhat(
+                        "INSERT INTO lich_su_thu_coc_hotel"
+                                + "(hop_dong_id,khoa_thu_coc,phuong_thuc,so_tien,khach_dua,tien_thua,"
+                                + "phien_lam_viec_id,nguoi_thu_id,tao_luc)"
+                                + " VALUES(?,?,?,?,?,?,?,?,SYSDATETIME())",
+                        hotel,
+                        khoa,
+                        d.phuongThuc().name(),
+                        d.soTien(),
+                        d.khachDua(),
+                        d.tienThua(),
+                        ca,
+                        nguoi);
+            }
+            String phuongThuc = dong.size() == 1 ? dong.get(0).phuongThuc().name() : "KET_HOP";
             capNhat(
                     "UPDATE hop_dong_luu_tru SET phuong_thuc_coc=?, khoa_thu_coc=? WHERE id=?",
-                    d.phuongThuc().name(),
-                    khoa + "-" + d.phuongThuc().name(),
+                    phuongThuc,
+                    khoa,
                     hotel);
         }
     }
