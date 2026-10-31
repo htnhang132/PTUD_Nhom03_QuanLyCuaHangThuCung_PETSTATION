@@ -75,7 +75,7 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                     return null;
                                 })
                         .themThaoTacBoSung(
-                                "Tài khoản / Reset Pass",
+                                "Đặt lại MK",
                                 dong -> {
                                     String maNv = String.valueOf(dong[0]);
                                     long idNv =

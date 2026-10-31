@@ -35,7 +35,7 @@ public final class AnhSanPhamPanel extends JPanel {
     public AnhSanPhamPanel(int kichThuoc) {
         setPreferredSize(new Dimension(kichThuoc, kichThuoc));
         setMinimumSize(new Dimension(80, 80));
-        setBackground(Color.WHITE);
+        setOpaque(false);
     }
 
     /** Đặt ảnh theo đường dẫn tương đối trong SQL; không chặn luồng giao diện. */
@@ -88,8 +88,8 @@ public final class AnhSanPhamPanel extends JPanel {
             }
             double tyLe =
                     Math.min(
-                            (getWidth() - 12d) / anh.getWidth(),
-                            (getHeight() - 12d) / anh.getHeight());
+                            (double) getWidth() / anh.getWidth(),
+                            (double) getHeight() / anh.getHeight());
             int rong = Math.max(1, (int) (anh.getWidth() * tyLe)),
                     cao = Math.max(1, (int) (anh.getHeight() * tyLe));
             g.setRenderingHint(

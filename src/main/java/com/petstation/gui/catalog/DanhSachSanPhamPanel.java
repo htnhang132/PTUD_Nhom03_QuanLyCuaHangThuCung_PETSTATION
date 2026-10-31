@@ -108,7 +108,7 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                     }
                                     return null;
                                 })
-                        .timKiem("Tìm theo mã, tên, mã vạch sản phẩm...")
+                        .timKiem("Tìm mã, tên, mã vạch...")
                         .datTrangThai(9, "Đang kinh doanh", "Ngừng kinh doanh");
         return cauHinh;
     }
@@ -123,7 +123,7 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
                 TruongDuLieu.tao("Mã SP", Kieu.VAN_BAN).chiDoc(),
-                TruongDuLieu.tao("Tên sản phẩm", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
+                TruongDuLieu.tao("Tên sản phẩm", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat().nhieuDong(),
                 TruongDuLieu.tao("Nhóm hàng", Kieu.HOP_CHON)
                         .batBuoc()
                         .datLuaChon(
@@ -144,6 +144,7 @@ public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                         .datLuaChon("Đang kinh doanh", "Ngừng kinh doanh"),
                 TruongDuLieu.tao("Ảnh sản phẩm", Kieu.TUY_CHINH)
                         .an()
+                        .anNhan()
                         .datBoSoanThao(com.petstation.gui.components.common.BoChonAnhSanPham::new),
                 TruongDuLieu.tao("Thương hiệu", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Quy cách", Kieu.VAN_BAN).an(),

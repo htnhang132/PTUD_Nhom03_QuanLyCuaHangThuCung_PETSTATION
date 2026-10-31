@@ -10,6 +10,7 @@ public final class DanhMucSanPhamPanel extends CoSoPanel {
 
     public DanhMucSanPhamPanel() {
         setLayout(new BorderLayout());
+        setBorder(null);
         add(pnlDanhSach, BorderLayout.CENTER);
     }
 }

@@ -161,7 +161,7 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlTron.add(tron, BorderLayout.CENTER);
 
         JSplitPane splitBieuDo = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pnlCot, pnlTron);
-        splitBieuDo.setResizeWeight(0.58);
+        splitBieuDo.setResizeWeight(0.68);
         splitBieuDo.setContinuousLayout(true);
         splitBieuDo.setBorder(null);
         splitBieuDo.setDividerSize(6);
@@ -172,7 +172,7 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 
         JSplitPane splitChinh =
                 new JSplitPane(JSplitPane.VERTICAL_SPLIT, splitBieuDo, scrBang);
-        splitChinh.setResizeWeight(0.62);
+        splitChinh.setResizeWeight(0.38);
         splitChinh.setContinuousLayout(true);
         splitChinh.setBorder(null);
         splitChinh.setDividerSize(6);

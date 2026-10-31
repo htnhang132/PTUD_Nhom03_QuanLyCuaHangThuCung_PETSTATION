@@ -85,8 +85,16 @@ public final class DinhDangBang {
                                             .format(
                                                     java.time.format.DateTimeFormatter.ofPattern(
                                                             "dd/MM/yyyy"));
-                        } else if (giaTri instanceof Number n && laTien(tenCot)) {
-                            vanBan = com.petstation.util.TienTe.dinhDang(n.longValue());
+                        } else if (laTien(tenCot)) {
+                            if (giaTri instanceof Number n) {
+                                vanBan = com.petstation.util.TienTe.dinhDang(Math.round(n.doubleValue()));
+                            } else if (vanBan != null && !vanBan.isEmpty()) {
+                                try {
+                                    double dVal = Double.parseDouble(vanBan.replace(",", "").trim());
+                                    vanBan = com.petstation.util.TienTe.dinhDang(Math.round(dVal));
+                                } catch (NumberFormatException ignored) {
+                                }
+                            }
                         } else if (kiemTraCotTrangThai(tblGiaTriTam, cot)
                                 || tenCot.contains("thanh toán")
                                 || tenCot.contains("phương thức")) {
@@ -200,6 +208,10 @@ public final class DinhDangBang {
                 cot.setMinWidth(70);
                 cot.setMaxWidth(110);
                 cot.setPreferredWidth(85);
+            } else if (ten.contains("sau trả") || ten.contains("số bán")) {
+                cot.setMinWidth(90);
+                cot.setMaxWidth(130);
+                cot.setPreferredWidth(110);
             } else if (ten.contains("thời gian")
                     || ten.contains("ngày")
                     || ten.contains("lúc")
@@ -255,7 +267,7 @@ public final class DinhDangBang {
     private static boolean laTien(String ten) {
         return ten.matches(
                 ".*(tiền|giá|doanh thu|chi tiêu|cọc|nợ|tổng nhập|đã trả|thực đếm|chênh lệch|thu hóa"
-                        + " đơn).*");
+                        + " đơn|chiết khấu|voucher|hoàn trả|lợi nhuận|thành tiền).*");
     }
 
     public static String tenTrangThai(String s) {

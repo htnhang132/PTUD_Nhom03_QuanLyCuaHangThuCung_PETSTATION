@@ -15,9 +15,9 @@ import javax.swing.JTextField;
 
 /** Thanh công cụ một hoặc nhiều hàng có tự động xuống dòng và căn chỉnh đồng bộ chiều cao các nút. */
 public final class ThanhDanhSach extends JPanel {
-    private static final int CAO_HANG = 36;
-    private static final int KHOANG_CACH_NGANG = 8;
-    private static final int KHOANG_CACH_DOC = 8;
+    private static final int CAO_HANG = 32;
+    private static final int KHOANG_CACH_NGANG = 5;
+    private static final int KHOANG_CACH_DOC = 6;
     private int chieuCaoDaTinh = -1;
 
     public ThanhDanhSach() {
@@ -41,10 +41,10 @@ public final class ThanhDanhSach extends JPanel {
     }
 
     public void themBoLoc(String nhan, JComponent c) {
-        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
         nhom.setOpaque(false);
         JLabel label = new JLabel(nhan);
-        label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         label.setForeground(MauUngDung.VAN_BAN_TOI);
         label.setLabelFor(c);
         c.setPreferredSize(new Dimension(c.getPreferredSize().width, CAO_HANG));
@@ -79,23 +79,51 @@ public final class ThanhDanhSach extends JPanel {
         }
         if (rong <= 0) rong = 960;
 
-        int x = 0;
-        int y = 0;
-
+        java.util.List<Component> cacPhanTu = new java.util.ArrayList<>();
         for (Component c : getComponents()) {
-            if (!c.isVisible()) continue;
+            if (c.isVisible()) cacPhanTu.add(c);
+        }
+
+        // Tính tổng bề rộng cơ bản để giữ tối đa trên 1 hàng
+        int tongRongCoBan = 0;
+        Component timKiemComp = null;
+        for (Component c : cacPhanTu) {
             Dimension d = c.getPreferredSize();
             int cw = (d != null) ? d.width : 0;
-            if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 200)) {
-                cw = Math.min(rong, Math.max(220, Math.min(280, cw)));
+            if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
+                timKiemComp = c;
+                cw = 180;
+            }
+            tongRongCoBan += cw;
+        }
+        int kc = KHOANG_CACH_NGANG;
+        tongRongCoBan += Math.max(0, cacPhanTu.size() - 1) * kc;
+
+        // Nếu thiếu chỗ trên 1 dòng, ưu tiên co nhẹ ô tìm kiếm (xuống 130px) để vừa 1 dòng
+        int rongTimKiem = 180;
+        if (tongRongCoBan > rong && timKiemComp != null) {
+            int canGiam = tongRongCoBan - rong;
+            rongTimKiem = Math.max(130, 180 - canGiam);
+            tongRongCoBan -= (180 - rongTimKiem);
+        }
+        if (tongRongCoBan > rong && cacPhanTu.size() > 1) {
+            kc = 3;
+        }
+
+        int x = 0;
+        int y = 0;
+        for (Component c : cacPhanTu) {
+            Dimension d = c.getPreferredSize();
+            int cw = (d != null) ? d.width : 0;
+            if (c == timKiemComp) {
+                cw = rongTimKiem;
             } else if (c instanceof AbstractButton) {
-                cw = Math.min(rong, Math.max(76, cw));
+                cw = Math.min(rong, Math.max(64, cw));
             } else {
                 cw = Math.min(rong, cw);
             }
 
             int ch = CAO_HANG;
-
             if (x > 0 && x + cw > rong) {
                 x = 0;
                 y += CAO_HANG + KHOANG_CACH_DOC;
@@ -104,7 +132,7 @@ public final class ThanhDanhSach extends JPanel {
             if (datViTri) {
                 c.setBounds(x, y, cw, ch);
             }
-            x += cw + KHOANG_CACH_NGANG;
+            x += cw + kc;
         }
 
         return y + CAO_HANG;

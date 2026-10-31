@@ -24,7 +24,7 @@ public final class BieuDoCot extends JComponent implements Scrollable {
     private IntConsumer chon = i -> {};
 
     public BieuDoCot() {
-        setPreferredSize(new Dimension(400, 380));
+        setPreferredSize(new Dimension(400, 240));
         setToolTipText("");
         addMouseListener(
                 new MouseAdapter() {
@@ -50,8 +50,14 @@ public final class BieuDoCot extends JComponent implements Scrollable {
         tienTe = money;
         donVi = unit == null ? "" : unit;
         int targetH =
-                getParent() != null && getParent().getHeight() > 0 ? getParent().getHeight() : 380;
-        setPreferredSize(new Dimension(Math.max(400, values.length * 96 + 60), targetH));
+                getParent() != null && getParent().getHeight() > 0 ? getParent().getHeight() : 240;
+        int vpWidth =
+                getParent() != null && getParent().getWidth() > 0 ? getParent().getWidth() : 500;
+        int targetW =
+                values.length <= 10
+                        ? Math.max(vpWidth - 10, values.length * 60 + 40)
+                        : Math.max(vpWidth, values.length * 80 + 40);
+        setPreferredSize(new Dimension(Math.max(380, targetW), targetH));
         revalidate();
         repaint();
     }
@@ -116,16 +122,18 @@ public final class BieuDoCot extends JComponent implements Scrollable {
             max = Math.max(max, v);
         }
         if (max == min) max = min + 1;
-        int top = 28, bottom = Math.max(top + 10, getHeight() - 64);
-        double scale = (bottom - top) / (max - min);
-        int zero = top + (int) Math.round(max * scale);
+        double maxCeil = max > 0 ? max * 1.25 : max;
+        if (maxCeil == min) maxCeil = min + 1;
+        int top = 22, bottom = Math.max(top + 10, getHeight() - 44);
+        double scale = (bottom - top) / (maxCeil - min);
+        int zero = top + (int) Math.round((maxCeil - Math.max(0, min)) * scale);
         g.setColor(MauUngDung.VIEN);
         g.drawLine(20, zero, getWidth() - 10, zero);
         double slot = (getWidth() - 40d) / giaTri.length;
-        int bw = (int) Math.min(54, slot * .6);
+        int bw = (int) Math.min(48, Math.max(16, slot * 0.55));
         for (int i = 0; i < giaTri.length; i++) {
             int x = 20 + (int) (i * slot + (slot - bw) / 2),
-                    y = top + (int) Math.round((max - giaTri[i]) * scale);
+                    y = top + (int) Math.round((maxCeil - giaTri[i]) * scale);
             Rectangle hit =
                     new Rectangle(
                             x - 5,
@@ -137,19 +145,19 @@ public final class BieuDoCot extends JComponent implements Scrollable {
             g.fillRoundRect(x, Math.min(y, zero), bw, Math.max(1, Math.abs(y - zero)), 5, 5);
             String value = format(giaTri[i]);
             g.setColor(MauUngDung.VAN_BAN_TOI);
-            if (g.getFontMetrics().stringWidth(value) < slot - 4)
+            if (g.getFontMetrics().stringWidth(value) < slot - 2)
                 g.drawString(
                         value,
                         x + (bw - g.getFontMetrics().stringWidth(value)) / 2,
                         giaTri[i] >= 0 ? y - 6 : y + 15);
             String label = i < nhan.length ? DinhDangBang.tenTrangThai(nhan[i]) : "";
-            while (label.length() > 1 && g.getFontMetrics().stringWidth(label) > slot - 8)
+            while (label.length() > 1 && g.getFontMetrics().stringWidth(label) > slot - 4)
                 label = label.substring(0, label.length() - 2) + "…";
             g.setColor(Color.DARK_GRAY);
             g.drawString(
                     label,
                     20 + (int) (i * slot + (slot - g.getFontMetrics().stringWidth(label)) / 2),
-                    bottom + 42);
+                    bottom + 22);
         }
         g.dispose();
     }

@@ -35,7 +35,7 @@ public class NutDinhDang extends JButton {
     private Color mauVien;
 
     /** Bán kính. */
-    private final int banKinh = 10;
+    private final int banKinh = 8;
 
     public NutDinhDang(String vanBan, KieuNut kieu) {
         super(vanBan);
@@ -45,8 +45,8 @@ public class NutDinhDang extends JButton {
         setFocusPainted(false);
         setContentAreaFilled(false);
         setRolloverEnabled(true);
-        setBorder(BorderFactory.createEmptyBorder(4, 14, 4, 14));
-        setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
+        setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(
                 new MouseAdapter() {
@@ -140,8 +140,7 @@ public class NutDinhDang extends JButton {
 
     @Override
     public Dimension getPreferredSize() {
-        // Ngày đang xét.
         Dimension ngayDangXet = super.getPreferredSize();
-        return new Dimension(ngayDangXet.width + 20, Math.max(ngayDangXet.height, 36));
+        return new Dimension(ngayDangXet.width + 12, Math.max(ngayDangXet.height, 32));
     }
 }

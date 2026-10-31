@@ -1,5 +1,6 @@
 package com.petstation.gui.components.common;
 
+import com.petstation.gui.components.MauUngDung;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
@@ -47,13 +48,19 @@ public final class BieuDoTron extends JPanel {
                         g.dispose();
                         return;
                     }
-                    int d = Math.max(10, Math.min(getWidth() - 20, getHeight() - 20));
+                    int d = Math.max(10, Math.min(getWidth() - 16, getHeight() - 16));
                     double angle = 90;
                     for (int i = 0; i < so.length; i++) {
                         double a = so[i] / tong * 360;
                         Arc2D arc =
                                 new Arc2D.Double(
-                                        (getWidth() - d) / 2d, 10, d, d, angle, -a, Arc2D.PIE);
+                                        (getWidth() - d) / 2d,
+                                        (getHeight() - d) / 2d,
+                                        d,
+                                        d,
+                                        angle,
+                                        -a,
+                                        Arc2D.PIE);
                         cung.add(arc);
                         g.setColor(mau[i % mau.length]);
                         g.fill(arc);
@@ -66,7 +73,8 @@ public final class BieuDoTron extends JPanel {
     public BieuDoTron() {
         super(new BorderLayout(8, 4));
         setBackground(Color.WHITE);
-        hinh.setPreferredSize(new Dimension(220, 180));
+        hinh.setPreferredSize(new Dimension(180, 180));
+        hinh.setMinimumSize(new Dimension(120, 120));
         hinh.addMouseListener(
                 new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
@@ -81,10 +89,13 @@ public final class BieuDoTron extends JPanel {
         chuGiai.setBackground(Color.WHITE);
         JScrollPane scroll = new JScrollPane(chuGiai);
         scroll.setBorder(null);
-        scroll.setPreferredSize(new Dimension(260, 112));
-        add(new JLabel("Cơ cấu trong phạm vi báo cáo"), BorderLayout.NORTH);
-        add(hinh);
-        add(scroll, BorderLayout.SOUTH);
+        scroll.setPreferredSize(new Dimension(180, 0));
+        JLabel lblTieuDe = new JLabel("Cơ cấu trong phạm vi báo cáo");
+        lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        lblTieuDe.setForeground(new Color(51, 65, 85));
+        add(lblTieuDe, BorderLayout.NORTH);
+        add(hinh, BorderLayout.CENTER);
+        add(scroll, BorderLayout.EAST);
     }
 
     public void khiChon(Consumer<int[]> c) {

@@ -395,7 +395,7 @@ public final class DangKyManHinh {
             case DANH_MUC_KHACH_HANG -> new DanhMucKhachHangPanel();
             case DANH_MUC_THU_CUNG -> new DanhMucThuCungPanel();
             case DANH_MUC_NHAN_VIEN -> new DanhMucNhanVienPanel();
-            case DANH_MUC_SAN_PHAM -> new DanhMucSanPhamPanel();
+            case DANH_MUC_SAN_PHAM -> new com.petstation.gui.catalog.DanhSachSanPhamPanel();
             case DANH_MUC_DICH_VU_SPA -> new DanhMucDichVuSpaPanel();
             case DANH_MUC_PHONG_LUU_TRU -> new DanhMucPhongHotelPanel();
             case DANH_MUC_NHA_CUNG_CAP -> new DanhMucNhaCungCapPanel();

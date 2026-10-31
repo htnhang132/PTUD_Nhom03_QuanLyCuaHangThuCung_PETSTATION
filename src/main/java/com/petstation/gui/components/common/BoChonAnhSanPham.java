@@ -3,14 +3,16 @@ package com.petstation.gui.components.common;
 import com.petstation.util.TaiAnhSanPham;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /** Ô ảnh trong form danh mục; chỉ lưu đường dẫn tương đối sau khi sao chép thành công. */
 public final class BoChonAnhSanPham implements BoSoanThaoTruong {
-    private final JPanel pnlAnh = new JPanel(new BorderLayout(0, 6));
-    private final AnhSanPhamPanel pnlXem = new AnhSanPhamPanel(260);
+    private final JPanel pnlAnh = new JPanel(new BorderLayout(0, 4));
+    private final AnhSanPhamPanel pnlXem = new AnhSanPhamPanel(100);
     private final JButton btnChon = new JButton("Chọn ảnh từ máy…");
     private String duongDan = "";
     private boolean duocSua;
@@ -18,8 +20,22 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
     private long phienBan;
 
     public BoChonAnhSanPham() {
-        pnlAnh.add(pnlXem, BorderLayout.CENTER);
-        pnlAnh.add(btnChon, BorderLayout.SOUTH);
+        pnlAnh.setOpaque(false);
+        pnlXem.setOpaque(false);
+        pnlXem.setBorder(null);
+
+        JPanel pnlXemBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        pnlXemBao.setOpaque(false);
+        pnlXemBao.add(pnlXem);
+
+        JPanel pnlNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));
+        pnlNutBao.setOpaque(false);
+        btnChon.setPreferredSize(new Dimension(120, 26));
+        btnChon.setFont(com.petstation.gui.components.MauUngDung.taoPhongChu(java.awt.Font.PLAIN, 11));
+        pnlNutBao.add(btnChon);
+
+        pnlAnh.add(pnlXemBao, BorderLayout.CENTER);
+        pnlAnh.add(pnlNutBao, BorderLayout.SOUTH);
         btnChon.addActionListener(
                 e -> {
                     JFileChooser chon = new JFileChooser();
