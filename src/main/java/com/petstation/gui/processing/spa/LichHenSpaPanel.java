@@ -20,22 +20,91 @@ import javax.swing.table.*;
 /** Lịch ngày/tuần và danh sách dùng chung selection, tìm kiếm và hành động. */
 public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private final JComboBox<String> cheDo =
-            new JComboBox<>(new String[] {"Danh sách", "Ngày", "Tuần"});
+        new JComboBox<>(new String[] {"Danh sách", "Ngày", "Tuần"});
     private final JComboBox<String> nhanVien = new JComboBox<>(),
-            trangThai =
-                    new JComboBox<>(
-                            new String[] {
-                                "Tất cả",
-                                "SCHEDULED",
-                                "RECEIVED",
-                                "COMPLETED",
-                                "CANCELLED",
-                                "NO_SHOW"
-                            });
+        trangThai =
+            new JComboBox<>(
+                new String[] {
+                    "Tất cả",
+                    "SCHEDULED",
+                    "RECEIVED",
+                    "COMPLETED",
+                    "CANCELLED",
+                    "NO_SHOW"
+                });
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();
     private final JPanel content = new JPanel(new CardLayout());
     private boolean dangNap, choNap;
+
+    private java.util.function.LongConsumer khiKhachDen;
+
+    public LichHenSpaPanel(GioHang gio, Consumer<MaManHinh> nav,
+                           java.util.function.LongConsumer khiKhachDen) {
+        this(gio, nav);
+        this.khiKhachDen = khiKhachDen;
+    }
+
+    @Override
+    protected void datLichHen() {
+        String[] luaChon = {"Khách đã có hồ sơ", "Thêm khách mới"};
+        int cach = JOptionPane.showOptionDialog(this, "Chọn khách đặt lịch", "Đặt lịch Spa",
+            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, luaChon, luaChon[0]);
+        if (cach < 0) return;
+        Object[] khach;
+        if (cach == 1) {
+            khach = com.petstation.gui.catalog.DanhMucKhachHangPanel.moThem(this, "");
+            if (khach == null) return;
+        } else {
+            var cacKhach = DanhMucService.layKhachHang().stream()
+                .filter(k -> "Đang hoạt động".equals(k[8]))
+                .map(k -> new Object[] {k[0], k[1] + " — " + k[2]}).toList();
+            var chon = BieuMauSQL.layYeuCauNhap(this, "Chọn khách đặt lịch",
+                BieuMauSQL.TruongDuLieu.layLuaChon("customer", "Khách hàng / SĐT", cacKhach));
+            if (chon == null) return;
+            khach = DanhMucService.layKhachHang().stream()
+                .filter(k -> String.valueOf(k[0]).equals(chon.get("customer")))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách."));
+        }
+        if (!"Đang hoạt động".equals(khach[8]))
+            throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
+        String maChu = String.valueOf(khach[0]);
+        var thu = thuCuaKhach(maChu);
+        if (thu.isEmpty()) {
+            if (!HopThoai.xacNhan(this, "Khách chưa có thú cưng. Mở hồ sơ để bổ sung?")) return;
+            HopThoai.hienThiThongTin(this, "Chọn chủ nuôi: " + khach[0] + " - " + khach[1]);
+            JDialog hoSo = new JDialog(SwingUtilities.getWindowAncestor(this), "Hồ sơ thú cưng",
+                Dialog.ModalityType.APPLICATION_MODAL);
+            hoSo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            hoSo.setContentPane(new com.petstation.gui.catalog.DanhMucThuCungPanel());
+            hoSo.setSize(1100, 720);
+            hoSo.setLocationRelativeTo(this);
+            hoSo.setVisible(true);
+            thu = thuCuaKhach(maChu);
+        }
+        var giaTri = BieuMauSQL.layYeuCauNhap(this, "Đặt lịch Spa — " + khach[1],
+            BieuMauSQL.TruongDuLieu.layLuaChon("pet", "Thú cưng của khách", thu),
+            layCacGoiDichVu(),
+            taoLuaChon("staff", "Thợ phụ trách", LuaChonNghiepVuService.layLuaChonNhanVien()),
+            layTruongVanBan("start", "Bắt đầu (yyyy-MM-dd HH:mm)", layThoiGianHienTai()));
+        if (giaTri == null) return;
+        long id = SpaService.datLichHen(giaTri.get("pet"), giaTri.get("package"),
+            giaTri.get("staff"), docThoiGian(giaTri, "start"));
+        banHang.layQuyTrinh().chonLichHen(id);
+    }
+
+    private java.util.List<Object[]> thuCuaKhach(String maKhach) {
+        return DanhMucService.layThuCung().stream()
+            .filter(t -> "Đang hoạt động".equals(t[13])
+                && maKhach.equals(DanhMucService.layMaTuLuaChon(t[8])))
+            .map(t -> new Object[] {t[0], t[0] + " - " + t[1]}).toList();
+    }
+
+    @Override
+    protected void tiepNhan() {
+        if (khiKhachDen != null) khiKhachDen.accept(layDongChon());
+        else super.tiepNhan();
+    }
 
     public LichHenSpaPanel(GioHang gio, Consumer<MaManHinh> nav) {
         super(LoaiNghiepVu.LICH_HEN, gio, nav);
@@ -54,43 +123,43 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         bar.themBoLoc("Trạng thái:", trangThai);
         themNut(bar, "+ Đặt lịch hẹn", this::datLichHen);
         themNut(bar, "Sửa lịch", this::suaLich);
-        themNut(bar, "Tiếp nhận", this::tiepNhan);
+        themNut(bar, "Khách đã đến", this::tiepNhan);
         themNut(bar, "Hủy lịch", this::huyLichHen);
         for (var l :
-                ((javax.swing.text.AbstractDocument) txtTimKiem.getDocument())
-                        .getDocumentListeners()) txtTimKiem.getDocument().removeDocumentListener(l);
+            ((javax.swing.text.AbstractDocument) txtTimKiem.getDocument())
+                .getDocumentListeners()) txtTimKiem.getDocument().removeDocumentListener(l);
         txtTimKiem
-                .getDocument()
-                .addDocumentListener(
-                        new javax.swing.event.DocumentListener() {
-                            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                                loc();
-                            }
+            .getDocument()
+            .addDocumentListener(
+                new javax.swing.event.DocumentListener() {
+                    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                        loc();
+                    }
 
-                            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                                loc();
-                            }
+                    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                        loc();
+                    }
 
-                            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                                loc();
-                            }
-                        });
-        trangThai.setRenderer(
-                new javax.swing.DefaultListCellRenderer() {
-                    public Component getListCellRendererComponent(
-                            JList<?> list,
-                            Object value,
-                            int index,
-                            boolean selected,
-                            boolean focus) {
-                        return super.getListCellRendererComponent(
-                                list,
-                                DinhDangBang.tenTrangThai(String.valueOf(value)),
-                                index,
-                                selected,
-                                focus);
+                    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                        loc();
                     }
                 });
+        trangThai.setRenderer(
+            new javax.swing.DefaultListCellRenderer() {
+                public Component getListCellRendererComponent(
+                    JList<?> list,
+                    Object value,
+                    int index,
+                    boolean selected,
+                    boolean focus) {
+                    return super.getListCellRendererComponent(
+                        list,
+                        DinhDangBang.tenTrangThai(String.valueOf(value)),
+                        index,
+                        selected,
+                        focus);
+                }
+            });
         cheDo.addActionListener(e -> loc());
         nhanVien.addActionListener(e -> loc());
         trangThai.addActionListener(e -> loc());
@@ -135,31 +204,31 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         LocalDate date = ngay.layNgayDuocChon();
         if (date == null) return;
         LocalDate start =
-                mode.equals("Tuần") ? date.minusDays(date.getDayOfWeek().getValue() - 1) : date;
+            mode.equals("Tuần") ? date.minusDays(date.getDayOfWeek().getValue() - 1) : date;
         LocalDate end = start.plusDays(mode.equals("Tuần") ? 7 : 1);
         String query = txtTimKiem.getText().trim().toLowerCase(Locale.ROOT);
         ((TableRowSorter<TableModel>) tblBang.getRowSorter())
-                .setRowFilter(
-                        new RowFilter<>() {
-                            public boolean include(
-                                    Entry<? extends TableModel, ? extends Integer> e) {
-                                StringBuilder text = new StringBuilder();
-                                for (int i = 0; i < e.getValueCount(); i++)
-                                    text.append(e.getStringValue(i)).append(' ');
-                                LocalDate d = time(e.getValue(6)).toLocalDate();
-                                return text.toString().toLowerCase(Locale.ROOT).contains(query)
-                                        && ("Tất cả".equals(nhanVien.getSelectedItem())
-                                                || e.getStringValue(5)
-                                                        .equals(nhanVien.getSelectedItem()))
-                                        && ("Tất cả".equals(trangThai.getSelectedItem())
-                                                || e.getStringValue(8)
-                                                        .equals(trangThai.getSelectedItem()))
-                                        && (mode.equals("Danh sách")
-                                                || !d.isBefore(start) && d.isBefore(end));
-                            }
-                        });
+            .setRowFilter(
+                new RowFilter<>() {
+                    public boolean include(
+                        Entry<? extends TableModel, ? extends Integer> e) {
+                        StringBuilder text = new StringBuilder();
+                        for (int i = 0; i < e.getValueCount(); i++)
+                            text.append(e.getStringValue(i)).append(' ');
+                        LocalDate d = time(e.getValue(6)).toLocalDate();
+                        return text.toString().toLowerCase(Locale.ROOT).contains(query)
+                            && ("Tất cả".equals(nhanVien.getSelectedItem())
+                            || e.getStringValue(5)
+                            .equals(nhanVien.getSelectedItem()))
+                            && ("Tất cả".equals(trangThai.getSelectedItem())
+                            || e.getStringValue(8)
+                            .equals(trangThai.getSelectedItem()))
+                            && (mode.equals("Danh sách")
+                            || !d.isBefore(start) && d.isBefore(end));
+                    }
+                });
         ((CardLayout) content.getLayout())
-                .show(content, mode.equals("Danh sách") ? "Danh sách" : "Lịch");
+            .show(content, mode.equals("Danh sách") ? "Danh sách" : "Lịch");
         lich.removeAll();
         lich.setLayout(new GridLayout(1, mode.equals("Tuần") ? 7 : 1, 8, 0));
         lich.setBackground(MauUngDung.NEN_KEM);
@@ -169,10 +238,10 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
             column.setBackground(Color.WHITE);
             column.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
             JLabel title =
-                    new JLabel(
-                            d.format(
-                                    DateTimeFormatter.ofPattern(
-                                            "EEE dd/MM", Locale.forLanguageTag("vi"))));
+                new JLabel(
+                    d.format(
+                        DateTimeFormatter.ofPattern(
+                            "EEE dd/MM", Locale.forLanguageTag("vi"))));
             column.add(title);
             column.add(Box.createVerticalStrut(8));
             java.util.List<Integer> rows = new ArrayList<>();
@@ -183,43 +252,43 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
             rows.sort(Comparator.comparing(r -> time(moHinh.getValueAt(r, 6))));
             for (int r : rows) {
                 String time =
-                        time(moHinh.getValueAt(r, 6)).toLocalTime()
-                                + "–"
-                                + time(moHinh.getValueAt(r, 7)).toLocalTime();
+                    time(moHinh.getValueAt(r, 6)).toLocalTime()
+                        + "–"
+                        + time(moHinh.getValueAt(r, 7)).toLocalTime();
                 String text =
-                        time
-                                + " · "
-                                + moHinh.getValueAt(r, 3)
-                                + " · "
-                                + moHinh.getValueAt(r, 4)
-                                + " · "
-                                + moHinh.getValueAt(r, 5)
-                                + " · "
-                                + moHinh.getValueAt(r, 8);
+                    time
+                        + " · "
+                        + moHinh.getValueAt(r, 3)
+                        + " · "
+                        + moHinh.getValueAt(r, 4)
+                        + " · "
+                        + moHinh.getValueAt(r, 5)
+                        + " · "
+                        + moHinh.getValueAt(r, 8);
                 JButton card =
-                        new JButton(
-                                "<html><b>"
-                                        + time
-                                        + "</b><br>"
-                                        + esc(moHinh.getValueAt(r, 3))
-                                        + "<br>"
-                                        + esc(moHinh.getValueAt(r, 4))
-                                        + "<br>"
-                                        + esc(moHinh.getValueAt(r, 5))
-                                        + "<br>"
-                                        + esc(moHinh.getValueAt(r, 8))
-                                        + "</html>");
+                    new JButton(
+                        "<html><b>"
+                            + time
+                            + "</b><br>"
+                            + esc(moHinh.getValueAt(r, 3))
+                            + "<br>"
+                            + esc(moHinh.getValueAt(r, 4))
+                            + "<br>"
+                            + esc(moHinh.getValueAt(r, 5))
+                            + "<br>"
+                            + esc(moHinh.getValueAt(r, 8))
+                            + "</html>");
                 card.setHorizontalAlignment(SwingConstants.LEFT);
                 card.setToolTipText(text);
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 135));
                 card.setPreferredSize(new Dimension(mode.equals("Tuần") ? 145 : 400, 125));
                 card.addActionListener(
-                        e -> {
-                            int view = tblBang.convertRowIndexToView(r);
-                            if (view >= 0) tblBang.setRowSelectionInterval(view, view);
-                            card.setBorder(
-                                    BorderFactory.createLineBorder(MauUngDung.DO_THUONG_HIEU, 2));
-                        });
+                    e -> {
+                        int view = tblBang.convertRowIndexToView(r);
+                        if (view >= 0) tblBang.setRowSelectionInterval(view, view);
+                        card.setBorder(
+                            BorderFactory.createLineBorder(MauUngDung.DO_THUONG_HIEU, 2));
+                    });
                 column.add(card);
                 column.add(Box.createVerticalStrut(6));
             }
@@ -236,35 +305,35 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
 
     private static BieuMauSQL.TruongDuLieu macDinh(BieuMauSQL.TruongDuLieu f, Object value) {
         return new BieuMauSQL.TruongDuLieu(
-                f.khoa(), f.nhan(), value == null ? "" : value.toString(), f.cacLuaChon());
+            f.khoa(), f.nhan(), value == null ? "" : value.toString(), f.cacLuaChon());
     }
 
     private void suaLich() {
         long id = layDongChon();
         Object[] old = SpaService.layChiTietLichHen(id);
         var values =
-                BieuMauSQL.layYeuCauNhap(
-                        this,
-                        "Sửa lịch Spa",
-                        macDinh(layThuCung(), old[0]),
-                        macDinh(layCacGoiDichVu(), old[1]),
-                        macDinh(
-                                taoLuaChon(
-                                        "staff",
-                                        "Nhân viên",
-                                        LuaChonNghiepVuService.layLuaChonNhanVien()),
-                                old[2]),
-                        layTruongVanBan(
-                                "start",
-                                "Bắt đầu (yyyy-MM-dd HH:mm)",
-                                time(old[3])
-                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+            BieuMauSQL.layYeuCauNhap(
+                this,
+                "Sửa lịch Spa",
+                macDinh(layThuCung(), old[0]),
+                macDinh(layCacGoiDichVu(), old[1]),
+                macDinh(
+                    taoLuaChon(
+                        "staff",
+                        "Nhân viên",
+                        LuaChonNghiepVuService.layLuaChonNhanVien()),
+                    old[2]),
+                layTruongVanBan(
+                    "start",
+                    "Bắt đầu (yyyy-MM-dd HH:mm)",
+                    time(old[3])
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
         if (values != null)
             SpaService.suaLichHen(
-                    id,
-                    values.get("pet"),
-                    values.get("package"),
-                    values.get("staff"),
-                    docThoiGian(values, "start"));
+                id,
+                values.get("pet"),
+                values.get("package"),
+                values.get("staff"),
+                docThoiGian(values, "start"));
     }
 }

@@ -195,6 +195,7 @@ public final class SpaService {
 
         yeuCau(Quyen.QUAN_LY_SPA);
 
+
         if ((tuNgay == null) != (denNgay == null)) {
             throw new IllegalArgumentException(
                 "Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.");

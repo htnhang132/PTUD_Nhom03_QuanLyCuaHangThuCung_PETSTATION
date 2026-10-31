@@ -29,6 +29,7 @@ import com.petstation.gui.processing.spa.DongPhieuSpaPanel;
 import com.petstation.gui.processing.spa.LichHenSpaPanel;
 import com.petstation.gui.processing.spa.TienDoSpaPanel;
 import com.petstation.gui.processing.spa.TiepNhanSpaPanel;
+import com.petstation.gui.processing.spa.QuanLySpaPanel;
 import com.petstation.gui.processing.staff.PhanLichNhanVienPanel;
 import com.petstation.gui.reports.ThongKeCongNoPanel;
 import com.petstation.gui.reports.ThongKeDoanhThuPanel;
@@ -422,12 +423,30 @@ public final class DangKyManHinh {
             case HOA_DON_CHO -> new DonHangTreoPanel(banHang, boDieuHuong);
             case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);
             // Xử lý: Spa
-            case QUAN_LY_SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
-            case DAT_LICH_HEN_SPA -> new LichHenSpaPanel(banHang, boDieuHuong);
-            case TIEP_NHAN_SPA -> new TiepNhanSpaPanel(banHang, boDieuHuong);
-            case CHON_GOI_SPA -> new ChonDichVuSpaPanel(banHang, boDieuHuong);
-            case CAP_NHAT_TIEN_DO_SPA -> new TienDoSpaPanel(banHang, boDieuHuong);
-            case HOAN_TAT_SPA -> new DongPhieuSpaPanel(banHang, boDieuHuong);
+            case QUAN_LY_SPA ->
+                new QuanLySpaPanel(
+                    banHang,
+                    boDieuHuong,
+                    0
+                );
+
+            case DAT_LICH_HEN_SPA ->
+                new QuanLySpaPanel(
+                    banHang,
+                    boDieuHuong,
+                    1
+                );
+
+            case TIEP_NHAN_SPA,
+                 CHON_GOI_SPA,
+                 CAP_NHAT_TIEN_DO_SPA,
+                 HOAN_TAT_SPA ->
+                new QuanLySpaPanel(
+                    banHang,
+                    boDieuHuong,
+                    2
+                );
+
             // Xử lý: ThuCung Hotel
             case QUAN_LY_LUU_TRU -> new LuuTruHotelPanel(banHang, boDieuHuong);
             case DAT_PHONG_LUU_TRU -> new DatPhongHotelPanel(banHang, boDieuHuong);

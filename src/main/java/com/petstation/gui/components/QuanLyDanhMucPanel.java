@@ -803,6 +803,14 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         return truongDangXet.giaTriMacDinh;
     }
 
+    /**
+     * Cho phép màn hình khác mở chế độ thêm,
+     * dùng lại toàn bộ cơ chế nhập và kiểm tra hiện có.
+     */
+    public final void moTaoMoi() {
+        batDauTaoMoi();
+    }
+
     private void batDauTaoMoi() {
         if (!coTheChinhSua()) return;
         if (cheDo != CheDo.HIEN_THI

@@ -22,6 +22,59 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
+    /**
+     * Mở biểu mẫu khách hàng hiện có.
+     * Trả về khách vừa lưu; trả null nếu đóng cửa sổ.
+     */
+    public static Object[] moThem(
+        java.awt.Component cha,
+        String soDienThoai
+    ) {
+        com.petstation.service.PhienDangNhapService.yeuCau(
+            com.petstation.model.Quyen.QUAN_LY_KHACH_HANG
+        );
+
+        javax.swing.JDialog hopThoai = new javax.swing.JDialog(
+            javax.swing.SwingUtilities.getWindowAncestor(cha),
+            "Thêm khách hàng",
+            java.awt.Dialog.ModalityType.APPLICATION_MODAL
+        );
+
+        Object[][] ketQua = new Object[1][];
+
+        var cacTruong = taoCacTruong();
+
+        // Trường số điện thoại nằm ở vị trí 2
+        // trong cấu hình danh mục khách hàng hiện tại.
+        cacTruong.get(2).datMacDinh(soDienThoai);
+
+        var cauHinh = taoCauHinh().xuLySauLuu(
+            (truoc, daLuu) -> {
+                ketQua[0] = daLuu.clone();
+                hopThoai.dispose();
+            }
+        );
+
+        var bieuMau = new QuanLyDanhMucPanel(
+            cauHinh,
+            cacTruong,
+            DanhMucService.layKhachHang()
+        );
+
+        hopThoai.setDefaultCloseOperation(
+            javax.swing.WindowConstants.DISPOSE_ON_CLOSE
+        );
+
+        hopThoai.setContentPane(bieuMau);
+        hopThoai.setSize(1000, 680);
+        hopThoai.setLocationRelativeTo(cha);
+
+        bieuMau.moTaoMoi();
+        hopThoai.setVisible(true);
+
+        return ketQua[0];
+    }
+
     private static CauHinh taoCauHinh() {
         // Cấu hình.
         CauHinh cauHinh =
