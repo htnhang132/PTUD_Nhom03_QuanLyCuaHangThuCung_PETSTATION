@@ -1,4 +1,4 @@
-package com.petstation.dao.impl;
+	package com.petstation.dao.impl;
 
 import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.util.DuLieu.*;
@@ -658,27 +658,50 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                         "Đang hoạt động".equals(giaTri2[5]) ? "ACTIVE" : "INACTIVE");
             }
             case PHONG_LUU_TRU -> {
-                String trangThai =
-                        switch (chuyenThanhChuoi(giaTri2[5])) {
-                            case "Trống" -> "AVAILABLE";
-                            case "Có thú" -> "OCCUPIED";
-                            case "Đang dọn" -> "CLEANING";
-                            case "Bảo trì" -> "MAINTENANCE";
-                            default -> "INACTIVE";
-                        };
+                String trangThai = switch (chuyenThanhChuoi(giaTri2[5])) {
+                    case "Trống" -> "AVAILABLE";
+                    case "Có thú" -> "OCCUPIED";
+                    case "Đang dọn" -> "CLEANING";
+                    case "Bảo trì" -> "MAINTENANCE";
+                    case "Ngừng hoạt động" -> "INACTIVE";
+                    default -> throw new IllegalArgumentException("Trạng thái phòng không hợp lệ.");
+                };
+                var hienTai = truyVan(
+                        "SELECT trang_thai FROM phong_hotel WITH(UPDLOCK,HOLDLOCK) WHERE ma_phong=?",
+                        khoa);
+                if (truoc == null) {
+                    if (!hienTai.isEmpty())
+                        throw new IllegalArgumentException("Mã phòng đã tồn tại. Hãy tải lại danh mục.");
+                    if (Set.of("OCCUPIED", "CLEANING").contains(trangThai))
+                        throw new IllegalArgumentException("Không tạo phòng mới ở trạng thái có thú/đang dọn.");
+                } else {
+                    if (hienTai.isEmpty())
+                        throw new IllegalArgumentException("Phòng không còn tồn tại. Hãy tải lại danh mục.");
+                    String trongDB = chuyenThanhChuoi(hienTai.get(0)[0]);
+                    String khiMo = switch (chuyenThanhChuoi(truoc[5])) {
+                        case "Trống" -> "AVAILABLE";
+                        case "Có thú" -> "OCCUPIED";
+                        case "Đang dọn" -> "CLEANING";
+                        case "Bảo trì" -> "MAINTENANCE";
+                        case "Ngừng hoạt động" -> "INACTIVE";
+                        default -> throw new IllegalArgumentException("Dữ liệu phòng cũ không hợp lệ.");
+                    };
+                    if (!trongDB.equals(khiMo))
+                        throw new IllegalStateException("Trạng thái phòng đã thay đổi. Hãy tải lại danh mục.");
+                    if (!trongDB.equals(trangThai)
+                            && (Set.of("OCCUPIED", "CLEANING").contains(trongDB)
+                                || Set.of("OCCUPIED", "CLEANING").contains(trangThai)))
+                        throw new IllegalArgumentException(
+                                "Hãy đổi trạng thái có thú/đang dọn qua nghiệp vụ lưu trú.");
+                }
                 layThemHoacCapNhat(
-                        "phong_hotel",
-                        "ma_phong",
-                        khoa,
+                        "phong_hotel", "ma_phong", khoa,
                         new String[] {
                             "ma_phong", "loai_phong", "suc_chua", "gia_dem", "ghi_chu", "trang_thai"
                         },
-                        giaTri2[0],
-                        giaTri2[1],
+                        giaTri2[0], giaTri2[1],
                         Integer.parseInt(chuyenThanhChuoi(giaTri2[2])),
-                        docSoThapPhan(giaTri2[3]),
-                        giaTri2[4],
-                        trangThai);
+                        docSoThapPhan(giaTri2[3]), giaTri2[4], trangThai);
             }
         }
     }
