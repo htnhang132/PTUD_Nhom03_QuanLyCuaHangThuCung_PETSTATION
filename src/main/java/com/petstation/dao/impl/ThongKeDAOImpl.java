@@ -143,7 +143,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
         return ThaoTacSQL.truyVan(
                 "WITH ledger AS (SELECT "
                         + nhom
-                        + " nhan,COALESCE(TRY_CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, 50) AS decimal(18,2)), h.tong_tien) so_tien,h.id hoa_don,CAST(h.thanh_toan_luc AS date) ngay"
+                        + " nhan,CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, CHARINDEX(':', sp.value + ':', CHARINDEX(':', sp.value) + 1) - CHARINDEX(':', sp.value) - 1) AS decimal(18,2)) so_tien,h.id hoa_don,CAST(h.thanh_toan_luc AS date) ngay"
                         + " FROM hoa_don h JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
                         + " JOIN tai_khoan tk ON tk.id=s.tai_khoan_id JOIN nhan_vien n ON"
                         + " n.id=tk.nhan_vien_id"

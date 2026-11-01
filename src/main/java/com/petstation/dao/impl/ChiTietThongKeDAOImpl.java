@@ -25,7 +25,7 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
             String select =
                     "SELECT h.so_hoa_don,h.thanh_toan_luc,"
                             + source
-                            + ",LEFT(sp.value, CHARINDEX(':', sp.value) - 1),n.ho_ten,s.ten_ca,COALESCE(TRY_CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, 50) AS decimal(18,2)), h.tong_tien)"
+                            + ",LEFT(sp.value, CHARINDEX(':', sp.value) - 1),n.ho_ten,s.ten_ca,CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, CHARINDEX(':', sp.value + ':', CHARINDEX(':', sp.value) + 1) - CHARINDEX(':', sp.value) - 1) AS decimal(18,2))"
                             + " FROM hoa_don h JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
                             + " JOIN tai_khoan a ON a.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=a.nhan_vien_id"
                             + " CROSS APPLY STRING_SPLIT(CASE WHEN h.chi_tiet_thanh_toan IS NOT NULL AND CHARINDEX(':', h.chi_tiet_thanh_toan) > 0 THEN h.chi_tiet_thanh_toan ELSE h.hinh_thuc_thanh_toan + ':' + CAST(h.tong_tien AS varchar(30)) END, ';') sp"
