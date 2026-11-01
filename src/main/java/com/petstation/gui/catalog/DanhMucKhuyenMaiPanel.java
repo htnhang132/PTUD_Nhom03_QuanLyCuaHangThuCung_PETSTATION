@@ -12,7 +12,9 @@ import com.petstation.util.TienTe;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho khuyến mãi danh mục vùng hiển thị. */
+/**
+ * Cung cấp giao diện và xử lý tương tác cho khuyến mãi danh mục vùng hiển thị.
+ */
 public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
     public DanhMucKhuyenMaiPanel() {
         super(
@@ -22,43 +24,44 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                         com.petstation.model.LoaiDanhMuc.KHUYEN_MAI,
                         !javax.swing.SwingUtilities.isEventDispatchThread()
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
+        ganHauToTheoTruong(2, 4, loai -> "Giảm %".equals(loai) ? "%" : "đ");
     }
 
     private static CauHinh taoCauHinh() {
         // Cấu hình.
-        CauHinh cauHinh =
-                CauHinh.tao("Danh mục khuyến mãi", "khuyến mãi")
-                        .themBoLoc("Loại giảm", d -> String.valueOf(d[2]))
-                        .themBoLoc("Phạm vi", d -> String.valueOf(d[3]))
-                        .themBoLoc(
-                                "Hiệu lực",
-                                d -> {
-                                    LocalDate tu = docNgay(d[6]), den = docNgay(d[7]);
-                                    if ("Ngừng áp dụng".equals(d[8])) return "Đã tắt";
-                                    if (den != null && den.isBefore(LocalDate.now()))
-                                        return "Hết hạn";
-                                    if (tu != null && tu.isAfter(LocalDate.now()))
-                                        return "Chưa đến ngày";
-                                    return "Trong thời gian áp dụng";
-                                })
-                        .datTienTo("KM")
-                        .timKiem("Tìm theo mã, tên chương trình...")
-                        .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
-                        .datBoKiemTra(
-                                dongDuLieu -> {
-                                    // Từ.
-                                    LocalDate tu = docNgay(dongDuLieu[6]);
-                                    // Đến.
-                                    LocalDate den = docNgay(dongDuLieu[7]);
-                                    if (tu != null && den != null && den.isBefore(tu))
-                                        return "Đến ngày phải sau hoặc bằng Từ ngày.";
-                                    if ("Giảm %".equals(dongDuLieu[2])) {
-                                        long giaTri = TienTe.doc(String.valueOf(dongDuLieu[4]));
-                                        if (giaTri < 1 || giaTri > 100)
-                                            return "Giá trị giảm % phải từ 1 đến 100.";
-                                    }
-                                    return null;
-                                });
+        CauHinh cauHinh = CauHinh.tao("Danh mục khuyến mãi", "khuyến mãi")
+                .themBoLoc("Loại giảm", d -> String.valueOf(d[2]))
+                .themBoLoc("Phạm vi", d -> String.valueOf(d[3]))
+                .themBoLoc(
+                        "Hiệu lực",
+                        d -> {
+                            LocalDate tu = docNgay(d[6]), den = docNgay(d[7]);
+                            if ("Ngừng áp dụng".equals(d[8]))
+                                return "Đã tắt";
+                            if (den != null && den.isBefore(LocalDate.now()))
+                                return "Hết hạn";
+                            if (tu != null && tu.isAfter(LocalDate.now()))
+                                return "Chưa đến ngày";
+                            return "Trong thời gian áp dụng";
+                        })
+                .datTienTo("KM")
+                .timKiem("Tìm theo mã, tên chương trình...")
+                .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
+                .datBoKiemTra(
+                        dongDuLieu -> {
+                            // Từ.
+                            LocalDate tu = docNgay(dongDuLieu[6]);
+                            // Đến.
+                            LocalDate den = docNgay(dongDuLieu[7]);
+                            if (tu != null && den != null && den.isBefore(tu))
+                                return "Đến ngày phải sau hoặc bằng Từ ngày.";
+                            if ("Giảm %".equals(dongDuLieu[2])) {
+                                long giaTri = TienTe.doc(String.valueOf(dongDuLieu[4]));
+                                if (giaTri < 1 || giaTri > 100)
+                                    return "Giá trị giảm % phải từ 1 đến 100.";
+                            }
+                            return null;
+                        });
         return cauHinh;
     }
 
@@ -69,7 +72,7 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Loại", Kieu.HOP_CHON).datLuaChon("Giảm %", "Giảm tiền"),
                 TruongDuLieu.tao("Phạm vi", Kieu.HOP_CHON)
                         .datLuaChon("Sản phẩm", "Dịch vụ", "Cả đơn"),
-                TruongDuLieu.tao("Giá trị (% hoặc ₫)", Kieu.SO_NGUYEN).batBuoc().an(),
+                TruongDuLieu.tao("Giá trị", Kieu.SO_NGUYEN).batBuoc().an(),
                 TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).an().datMacDinh("0"),
                 TruongDuLieu.tao("Từ ngày", Kieu.NGAY).batBuoc(),
                 TruongDuLieu.tao("Đến ngày", Kieu.NGAY).batBuoc(),

@@ -41,6 +41,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.ScrollPaneConstants;
 
@@ -889,6 +891,91 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     /**
+     * Gắn thành phần hậu tố (suffix) trực tiếp vào bên phải ô nhập văn bản dựa theo
+     * giá trị đang
+     * chọn của một trường nguồn (ví dụ: hiển thị "%" hoặc "đ" ở ô Giá trị theo Loại
+     * khuyến mãi).
+     */
+    protected final void ganHauToTheoTruong(
+            int chiSoTruongNguon,
+            int chiSoTruongDich,
+            Function<String, String> chuyenDoiHauTo) {
+        if (chiSoTruongNguon < 0
+                || chiSoTruongNguon >= cacDauVao.length
+                || chiSoTruongDich < 0
+                || chiSoTruongDich >= cacDauVao.length) {
+            return;
+        }
+        if (!(cacDauVao[chiSoTruongNguon] instanceof JComboBox<?> cboNguon)
+                || !(cacDauVao[chiSoTruongDich] instanceof JTextField txtDich)) {
+            return;
+        }
+
+        // Nhãn hậu tố không viền, không nền: nằm sát ngay sau số đang nhập, trông như
+        // "5%" / "5000đ".
+        JLabel lblHauTo = new JLabel("");
+        lblHauTo.setName("hauTo:" + chiSoTruongDich);
+        lblHauTo.setOpaque(false);
+        lblHauTo.setBorder(null);
+        lblHauTo.setFont(txtDich.getFont());
+
+        Runnable datViTri = () -> {
+            java.awt.FontMetrics fm = txtDich.getFontMetrics(txtDich.getFont());
+            Insets vao = txtDich.getInsets();
+            int rongChu = fm.stringWidth(txtDich.getText());
+            Dimension kt = lblHauTo.getPreferredSize();
+            int x = vao.left + rongChu + 1;
+            int y = Math.max(0, (txtDich.getHeight() - kt.height) / 2);
+            lblHauTo.setBounds(x, y, kt.width, kt.height);
+            txtDich.repaint();
+        };
+
+        txtDich.setLayout(null);
+        txtDich.add(lblHauTo);
+
+        Runnable capNhatHauTo = () -> {
+            Object chon = cboNguon.getSelectedItem();
+            String hauTo = chuyenDoiHauTo.apply(chon == null ? "" : chon.toString());
+            lblHauTo.setText(hauTo == null ? "" : hauTo);
+            lblHauTo.setFont(txtDich.getFont());
+            lblHauTo.setForeground(
+                    txtDich.isEnabled() ? txtDich.getForeground() : MauUngDung.VO_HIEU_HOA);
+            datViTri.run();
+        };
+
+        txtDich.getDocument()
+                .addDocumentListener(
+                        new DocumentListener() {
+                            @Override
+                            public void insertUpdate(DocumentEvent e) {
+                                SwingUtilities.invokeLater(datViTri);
+                            }
+
+                            @Override
+                            public void removeUpdate(DocumentEvent e) {
+                                SwingUtilities.invokeLater(datViTri);
+                            }
+
+                            @Override
+                            public void changedUpdate(DocumentEvent e) {
+                                SwingUtilities.invokeLater(datViTri);
+                            }
+                        });
+        txtDich.addComponentListener(
+                new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentResized(java.awt.event.ComponentEvent e) {
+                        datViTri.run();
+                    }
+                });
+        txtDich.addPropertyChangeListener("enabled", e -> capNhatHauTo.run());
+        txtDich.addPropertyChangeListener("foreground", e -> capNhatHauTo.run());
+
+        cboNguon.addActionListener(e -> capNhatHauTo.run());
+        capNhatHauTo.run();
+    }
+
+    /**
      * Cho phép màn hình khác mở chế độ thêm,
      * dùng lại toàn bộ cơ chế nhập và kiểm tra hiện có.
      */
@@ -972,9 +1059,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 giaTri = layDauVao(chiSo);
             } catch (IllegalArgumentException e) {
                 HopThoai.hienThiCanhBao(
-                    this,
-                    "Dữ liệu không hợp lệ:\n" + e.getMessage()
-                );
+                        this,
+                        "Dữ liệu không hợp lệ:\n" + e.getMessage());
                 return;
             }
             if (chiSo == 0 && truongDangXet.docChi)
