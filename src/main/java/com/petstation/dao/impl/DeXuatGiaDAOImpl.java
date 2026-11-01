@@ -21,6 +21,20 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     }
 
     public long them(long sanPham, long nguoi, long cu, long moi, String lyDo) {
+        var hienTai = truyVan(
+                "SELECT COALESCE(de_xuat_gia,N'') FROM san_pham"
+                        + " WITH(UPDLOCK,HOLDLOCK) WHERE id=?", sanPham);
+        if (hienTai.isEmpty())
+            throw new IllegalArgumentException("Không tìm thấy sản phẩm.");
+        boolean dangCho = String.valueOf(hienTai.get(0)[0]).startsWith("PENDING|");
+        long yeuCauMo = laySo(
+                "SELECT COUNT(*) FROM yeu_cau_phe_duyet"
+                        + " WHERE loai_doi_tuong='PRICE_CHANGE' AND ma_doi_tuong=?"
+                        + " AND trang_thai IN ('PENDING','NEEDS_INFO')",
+                String.valueOf(sanPham));
+        if (dangCho || yeuCauMo > 0)
+            throw new IllegalArgumentException(
+                    "Sản phẩm đã có đề xuất giá chưa xử lý. Hãy xử lý đề xuất đó trước.");
         String chuoi =
                 "PENDING|"
                         + nguoi
