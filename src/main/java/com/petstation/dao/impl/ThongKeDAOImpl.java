@@ -134,7 +134,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 };
         String nhomCoc =
                 switch (nhomTongHop) {
-                    case "method" -> "COALESCE(k.phuong_thuc_coc, 'CASH')";
+                	case "method" -> "k.phuong_thuc";
                     case "staff" -> "n.ho_ten";
                     case "shift" -> "s.ten_ca";
                     default -> "'Hotel'";
@@ -160,10 +160,10 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                         + loc
                         + " UNION ALL SELECT "
                         + nhomCoc
-                        + ",k.tien_coc,NULL,CAST(k.nhan_coc_luc AS date) FROM hop_dong_luu_tru k"
-                        + " JOIN phien_lam_viec s ON s.id=k.phien_nhan_coc_id JOIN tai_khoan tk ON"
-                        + " tk.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=tk.nhan_vien_id WHERE"
-                        + " k.da_nhan_coc=1 AND k.nhan_coc_luc IS NOT NULL"
+                        + ",k.so_tien,NULL,CAST(k.tao_luc AS date) FROM lich_su_thu_coc_hotel k"
+                        + " LEFT JOIN phien_lam_viec s ON s.id=k.phien_lam_viec_id"
+                        + " LEFT JOIN tai_khoan tk ON tk.id=k.nguoi_thu_id"
+                        + " LEFT JOIN nhan_vien n ON n.id=tk.nhan_vien_id WHERE 1=1"
                         + loc
                         + ") SELECT nhan,SUM(so_tien),COUNT(DISTINCT hoa_don) FROM ledger WHERE"
                         + " ngay>=? AND ngay<? GROUP BY nhan ORDER BY SUM(so_tien) DESC",
@@ -295,11 +295,16 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
 
     public List<Object[]> layCocTrongKy(Object... thamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT CAST(k.nhan_coc_luc AS date),SUM(k.tien_coc),COUNT(DISTINCT k.id)"
-                    + " FROM hop_dong_luu_tru k JOIN phien_lam_viec s ON s.id=k.phien_nhan_coc_id"
-                    + " WHERE k.da_nhan_coc=1 AND k.nhan_coc_luc>=? AND k.nhan_coc_luc<?"
-                    + " AND (? IS NULL OR s.tai_khoan_id=?)"
-                    + " GROUP BY CAST(k.nhan_coc_luc AS date) ORDER BY 1",
+                "WITH lan_thu AS ("
+                        + " SELECT l.hop_dong_id,l.khoa_thu_coc,"
+                        + " MIN(l.tao_luc) ngay_nhan,SUM(l.so_tien) so_tien"
+                        + " FROM lich_su_thu_coc_hotel l"
+                        + " LEFT JOIN phien_lam_viec s ON s.id=l.phien_lam_viec_id"
+                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
+                        + " AND (? IS NULL OR s.tai_khoan_id=?)"
+                        + " GROUP BY l.hop_dong_id,l.khoa_thu_coc)"
+                        + " SELECT CAST(ngay_nhan AS date),SUM(so_tien),COUNT(*)"
+                        + " FROM lan_thu GROUP BY CAST(ngay_nhan AS date) ORDER BY 1",
                 thamSo);
     }
 

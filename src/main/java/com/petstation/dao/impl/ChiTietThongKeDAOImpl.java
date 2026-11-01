@@ -52,13 +52,14 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                 rows = new ArrayList<>(truyVan(select, tu, den));
                 rows.addAll(
                         truyVan(
-                                "SELECT"
-                                    + " h.ma_hop_dong,h.nhan_coc_luc,'Hotel',COALESCE(h.phuong_thuc_coc,'CASH'),n.ho_ten,s.ten_ca,h.tien_coc"
-                                    + " FROM hop_dong_luu_tru h JOIN phien_lam_viec s ON"
-                                    + " s.id=h.phien_nhan_coc_id JOIN tai_khoan a ON"
-                                    + " a.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=a.nhan_vien_id"
-                                    + " WHERE h.da_nhan_coc=1 AND h.nhan_coc_luc>=? AND"
-                                    + " h.nhan_coc_luc<?"
+                        		 "SELECT h.ma_hop_dong,l.tao_luc,'Hotel',l.phuong_thuc,"
+                                         + " n.ho_ten,s.ten_ca,l.so_tien"
+                                         + " FROM lich_su_thu_coc_hotel l"
+                                         + " JOIN hop_dong_luu_tru h ON h.id=l.hop_dong_id"
+                                         + " LEFT JOIN phien_lam_viec s ON s.id=l.phien_lam_viec_id"
+                                         + " LEFT JOIN tai_khoan a ON a.id=l.nguoi_thu_id"
+                                         + " LEFT JOIN nhan_vien n ON n.id=a.nhan_vien_id"
+                                         + " WHERE l.tao_luc>=? AND l.tao_luc<?"
                                         + own,
                                 tu,
                                 den));
@@ -148,13 +149,14 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                             "Hợp đồng", "Ngày nhận", "Phương thức", "Tiền cọc", "Người nhận", "Ca"
                         },
                         truyVan(
-                                "SELECT"
-                                    + " h.ma_hop_dong,h.nhan_coc_luc,COALESCE(h.phuong_thuc_coc,'CASH'),h.tien_coc,n.ho_ten,s.ten_ca"
-                                    + " FROM hop_dong_luu_tru h JOIN phien_lam_viec s ON"
-                                    + " s.id=h.phien_nhan_coc_id JOIN tai_khoan a ON"
-                                    + " a.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=a.nhan_vien_id"
-                                    + " WHERE h.da_nhan_coc=1 AND h.nhan_coc_luc>=? AND"
-                                    + " h.nhan_coc_luc<?"
+                        		"SELECT h.ma_hop_dong,l.tao_luc,l.phuong_thuc,"
+                                        + " l.so_tien,n.ho_ten,s.ten_ca"
+                                        + " FROM lich_su_thu_coc_hotel l"
+                                        + " JOIN hop_dong_luu_tru h ON h.id=l.hop_dong_id"
+                                        + " LEFT JOIN phien_lam_viec s ON s.id=l.phien_lam_viec_id"
+                                        + " LEFT JOIN tai_khoan a ON a.id=l.nguoi_thu_id"
+                                        + " LEFT JOIN nhan_vien n ON n.id=a.nhan_vien_id"
+                                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
                                         + own,
                                 tu,
                                 den),

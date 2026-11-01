@@ -30,12 +30,13 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
             capNhat("UPDATE hoa_don SET chi_tiet_thanh_toan=? WHERE id=?", chiTiet, hoaDon);
         }
         if (hotel != null && !dong.isEmpty()) {
+            Object thoiDiemThu = layGiaTriDon("SELECT SYSDATETIME()");
             for (DongThuTien d : dong) {
                 capNhat(
                         "INSERT INTO lich_su_thu_coc_hotel"
                                 + "(hop_dong_id,khoa_thu_coc,phuong_thuc,so_tien,khach_dua,tien_thua,"
                                 + "phien_lam_viec_id,nguoi_thu_id,tao_luc)"
-                                + " VALUES(?,?,?,?,?,?,?,?,SYSDATETIME())",
+                                + " VALUES(?,?,?,?,?,?,?,?,?)",
                         hotel,
                         khoa,
                         d.phuongThuc().name(),
@@ -43,7 +44,8 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
                         d.khachDua(),
                         d.tienThua(),
                         ca,
-                        nguoi);
+                        nguoi,
+                        thoiDiemThu);
             }
             String phuongThuc = dong.size() == 1 ? dong.get(0).phuongThuc().name() : "KET_HOP";
             capNhat(
