@@ -73,7 +73,7 @@ public final class CauTrucMenu {
                                     layMuc("Hóa đơn", MaManHinh.TIM_KIEM_HOA_DON, "F3"),
                                     layMuc("Lịch sử khách hàng", MaManHinh.TRA_CUU_KHACH_HANG),
                                     layMuc("Tồn kho theo lô", MaManHinh.TRA_CUU_LO_HANG),
-                                    layMuc("Phiếu Spa trong ngày", MaManHinh.TRA_CUU_LICH_SPA),
+                                    layMuc("Phiếu Spa", MaManHinh.TRA_CUU_LICH_SPA),
                                     layMuc("Sơ đồ phòng lưu trú", MaManHinh.SO_DO_PHONG_LUU_TRU),
                                     PHAN_CACH,
                                     layMuc("Lịch làm việc", MaManHinh.TRA_CUU_LICH_LAM_VIEC),
