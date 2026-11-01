@@ -77,8 +77,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                             "TẤT CẢ",
                             "Tiền mặt (CASH)",
                             "Chuyển khoản (TRANSFER)",
-                            "Thẻ (CARD)",
-                            "Kết hợp (SPLIT)"
+                            "Thẻ (CARD)"
                         });
         pnlHangLoc.add(new JLabel("Phương thức:"));
         pnlHangLoc.add(cboPhuongThuc);

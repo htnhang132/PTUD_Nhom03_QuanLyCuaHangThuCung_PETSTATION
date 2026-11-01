@@ -21,11 +21,13 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
 
     public BoChonAnhSanPham() {
         pnlAnh.setOpaque(false);
+        pnlAnh.setBorder(null);
         pnlXem.setOpaque(false);
         pnlXem.setBorder(null);
 
         JPanel pnlXemBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         pnlXemBao.setOpaque(false);
+        pnlXemBao.setBorder(null);
         pnlXemBao.add(pnlXem);
 
         JPanel pnlNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));

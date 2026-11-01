@@ -429,7 +429,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         lienKetBoLoc(txtTimKiem, tblBang);
         txtTimKiemChung = txtTimKiem;
         txtTimKiem.setName("timKiemDanhMuc");
-        txtTimKiem.setPreferredSize(new Dimension(170, 32));
+        txtTimKiem.setPreferredSize(new Dimension(150, 32));
         tblBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
         // Thêm.
         NutDinhDang btnThem = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.CHINH);
@@ -607,7 +607,12 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
 
     private JComponent taoDauVao(int chiSo, TruongDuLieu truongDangXet) {
         if (truongDangXet.nhieuDong) {
-            JTextArea txt = new JTextArea(2, 20);
+            JTextArea txt = new JTextArea(2, 20) {
+                @Override
+                public boolean getScrollableTracksViewportWidth() {
+                    return true;
+                }
+            };
             txt.setLineWrap(true);
             txt.setWrapStyleWord(true);
             txt.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -617,8 +622,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             scr.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
-            scr.setPreferredSize(new Dimension(100, 52));
-            scr.setMinimumSize(new Dimension(100, 44));
+            scr.setPreferredSize(new Dimension(100, 56));
+            scr.setMinimumSize(new Dimension(100, 48));
             return scr;
         }
         switch (truongDangXet.kieu) {
@@ -633,7 +638,12 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             }
             case VUNG -> {
                 // Vùng.
-                JTextArea txtVung = new JTextArea(3, 20);
+                JTextArea txtVung = new JTextArea(3, 20) {
+                    @Override
+                    public boolean getScrollableTracksViewportWidth() {
+                        return true;
+                    }
+                };
                 txtVung.setLineWrap(true);
                 txtVung.setWrapStyleWord(true);
                 txtVung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -644,7 +654,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 scrChuoi.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
-                scrChuoi.setPreferredSize(new Dimension(100, 72));
+                scrChuoi.setPreferredSize(new Dimension(100, 76));
                 scrChuoi.setMinimumSize(new Dimension(100, 56));
                 return scrChuoi;
             }
@@ -771,8 +781,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             JTextArea txt = (JTextArea) ((JScrollPane) vao).getViewport().getView();
             txt.setEditable(duocBat);
             txt.setEnabled(duocBat);
-            txt.setForeground(duocBat ? MauUngDung.VAN_BAN_TOI : MauUngDung.VAN_BAN_XAM);
-            txt.setDisabledTextColor(MauUngDung.VAN_BAN_XAM);
+            txt.setForeground(duocBat ? MauUngDung.VAN_BAN_TOI : MauUngDung.VO_HIEU_HOA);
+            txt.setDisabledTextColor(MauUngDung.VO_HIEU_HOA);
             Color bg = duocBat ? Color.WHITE : new Color(245, 245, 245);
             txt.setBackground(bg);
             ((JScrollPane) vao).getViewport().setBackground(bg);
@@ -1396,7 +1406,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         for (BoLocDanhMuc bo : cauHinh.cacBoLoc) {
             JComboBox<String> chon = new JComboBox<>();
             chon.setName("loc:" + bo.nhan());
-            chon.setPreferredSize(new Dimension(85, 32));
+            chon.setPreferredSize(new Dimension(75, 32));
             chon.addItem("Tất cả");
             cacDong.stream()
                     .map(bo.giaTri())
@@ -1414,7 +1424,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
         if (cauHinh.chiSoTrangThai >= 0) {
             cboTrangThai.setName("loc:Trạng thái");
-            cboTrangThai.setPreferredSize(new Dimension(95, 32));
+            cboTrangThai.setPreferredSize(new Dimension(85, 32));
             cboTrangThai.addItem(layNhanTrangThaiMacDinh());
             cboTrangThai.addItem("Tất cả");
             cacDong.stream()

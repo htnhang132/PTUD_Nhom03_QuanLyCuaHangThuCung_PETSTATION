@@ -41,7 +41,7 @@ public final class ThanhDanhSach extends JPanel {
     }
 
     public void themBoLoc(String nhan, JComponent c) {
-        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
+        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
         nhom.setOpaque(false);
         JLabel label = new JLabel(nhan);
         label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
@@ -92,22 +92,29 @@ public final class ThanhDanhSach extends JPanel {
             int cw = (d != null) ? d.width : 0;
             if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
                 timKiemComp = c;
-                cw = 180;
+                cw = 150;
             }
             tongRongCoBan += cw;
         }
         int kc = KHOANG_CACH_NGANG;
         tongRongCoBan += Math.max(0, cacPhanTu.size() - 1) * kc;
 
-        // Nếu thiếu chỗ trên 1 dòng, ưu tiên co nhẹ ô tìm kiếm (xuống 130px) để vừa 1 dòng
-        int rongTimKiem = 180;
+        // Nếu thiếu chỗ trên 1 dòng, ưu tiên co nhẹ ô tìm kiếm (xuống 110px) và khoảng cách để vừa 1 dòng
+        int rongTimKiem = 150;
         if (tongRongCoBan > rong && timKiemComp != null) {
             int canGiam = tongRongCoBan - rong;
-            rongTimKiem = Math.max(130, 180 - canGiam);
-            tongRongCoBan -= (180 - rongTimKiem);
+            rongTimKiem = Math.max(110, 150 - canGiam);
+            tongRongCoBan -= (150 - rongTimKiem);
         }
         if (tongRongCoBan > rong && cacPhanTu.size() > 1) {
             kc = 3;
+            tongRongCoBan -= (cacPhanTu.size() - 1) * 2;
+        }
+
+        double tyLeCo = 1.0;
+        if (tongRongCoBan > rong && rong > 400) {
+            tyLeCo = (double) (rong - 4) / tongRongCoBan;
+            if (tyLeCo < 0.8) tyLeCo = 0.8;
         }
 
         int x = 0;
@@ -116,11 +123,11 @@ public final class ThanhDanhSach extends JPanel {
             Dimension d = c.getPreferredSize();
             int cw = (d != null) ? d.width : 0;
             if (c == timKiemComp) {
-                cw = rongTimKiem;
+                cw = (int) (rongTimKiem * tyLeCo);
             } else if (c instanceof AbstractButton) {
-                cw = Math.min(rong, Math.max(64, cw));
+                cw = (int) (Math.min(rong, Math.max(54, cw)) * tyLeCo);
             } else {
-                cw = Math.min(rong, cw);
+                cw = (int) (Math.min(rong, cw) * tyLeCo);
             }
 
             int ch = CAO_HANG;

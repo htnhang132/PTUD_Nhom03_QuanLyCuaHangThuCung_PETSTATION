@@ -593,6 +593,41 @@ public class LapHoaDonPanel extends CoSoPanel {
 		lamMoiGioHang();
 	}
 
+	private void datSoLuong(String ma, int soLuongMoi) {
+		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
+			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
+			if (!dongDangXet.ma().equals(ma)) continue;
+
+			int tonKho =
+					laySanPham().stream()
+					.filter(sanPham -> sanPham.ma().equals(ma))
+					.mapToInt(SanPham::tonKho)
+					.findFirst()
+					.orElse(Integer.MAX_VALUE);
+			if (soLuongMoi > tonKho) {
+				HopThoai.hienThiThongBaoHopThoai(
+						this,
+						"Chỉ còn " + tonKho + " " + dongDangXet.ten() + " trong kho.",
+						"Vượt tồn kho",
+						JOptionPane.WARNING_MESSAGE);
+				soLuongMoi = tonKho;
+			}
+			if (soLuongMoi <= 0) {
+				gioHang.remove(chiSo);
+			} else {
+				gioHang.set(
+						chiSo,
+						new GioHang.DongHang(
+								dongDangXet.ma(),
+								dongDangXet.ten(),
+								dongDangXet.donGia(),
+								soLuongMoi));
+			}
+			break;
+		}
+		lamMoiGioHang();
+	}
+
 	private void lamMoiGioHang() {
 		pnlGioHangCacDong.removeAll();
 		if (gioHang.isEmpty()) {
@@ -639,12 +674,33 @@ public class LapHoaDonPanel extends CoSoPanel {
 		JButton btnCong = layNutSoLuong("+", "Tăng số lượng " + dong.ten());
 		btnTru.addActionListener(suKien -> layThayDoiSoLuong(dong.ma(), -1));
 		btnCong.addActionListener(suKien -> layThayDoiSoLuong(dong.ma(), +1));
-		JLabel lblSoLuong =
-				new JLabel(String.valueOf(dong.soLuong()), SwingConstants.CENTER);
-		lblSoLuong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
-		lblSoLuong.setPreferredSize(new Dimension(24, 26));
+		JTextField txtSoLuong = new JTextField(String.valueOf(dong.soLuong()));
+		txtSoLuong.setHorizontalAlignment(SwingConstants.CENTER);
+		txtSoLuong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+		txtSoLuong.setPreferredSize(new Dimension(38, 26));
+		txtSoLuong.setBorder(
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(MauUngDung.VIEN),
+						new EmptyBorder(1, 2, 1, 2)));
+		Runnable capNhat = () -> {
+			try {
+				int sl = Integer.parseInt(txtSoLuong.getText().trim());
+				if (sl != dong.soLuong()) {
+					datSoLuong(dong.ma(), sl);
+				}
+			} catch (NumberFormatException ex) {
+				txtSoLuong.setText(String.valueOf(dong.soLuong()));
+			}
+		};
+		txtSoLuong.addActionListener(e -> capNhat.run());
+		txtSoLuong.addFocusListener(new java.awt.event.FocusAdapter() {
+			@Override
+			public void focusLost(java.awt.event.FocusEvent e) {
+				capNhat.run();
+			}
+		});
 		pnlSoLuong.add(btnTru);
-		pnlSoLuong.add(lblSoLuong);
+		pnlSoLuong.add(txtSoLuong);
 		pnlSoLuong.add(btnCong);
 
 		JLabel lblSoTien =

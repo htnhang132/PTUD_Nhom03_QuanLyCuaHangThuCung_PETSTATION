@@ -36,6 +36,7 @@ public final class AnhSanPhamPanel extends JPanel {
         setPreferredSize(new Dimension(kichThuoc, kichThuoc));
         setMinimumSize(new Dimension(80, 80));
         setOpaque(false);
+        setBorder(null);
     }
 
     /** Đặt ảnh theo đường dẫn tương đối trong SQL; không chặn luồng giao diện. */

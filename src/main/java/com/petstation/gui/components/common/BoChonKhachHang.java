@@ -200,13 +200,33 @@ public final class BoChonKhachHang extends JPanel {
                 cacKetQua.add(dongDuLieu);
         }
         if (cacKetQua.isEmpty()) {
-            HopThoai.hienThiThongTin(
+            if (HopThoai.xacNhan(
                     this,
-                    "Không tìm thấy khách \""
+                    "Không tìm thấy khách hàng \""
                             + tuKhoa
-                            + "\".\n"
-                            + "Thêm khách mới tại Danh mục ▸ Khách hàng, hoặc để trống để bán cho"
-                            + " khách lẻ.");
+                            + "\". Bạn có muốn thêm khách hàng mới không?")) {
+                try {
+                    String sdt = tuKhoa.replaceAll("[\\s.]", "");
+                    if (!sdt.matches("0\\d{9}")) sdt = "";
+                    Object[] moi = com.petstation.gui.catalog.DanhMucKhachHangPanel.moThem(this, sdt);
+                    if (moi != null) {
+                        if (!"Đang hoạt động".equals(moi[8])) {
+                            HopThoai.hienThiCanhBao(
+                                    this, "Khách vừa lưu đã ngừng hoạt động. Vui lòng chọn hồ sơ đang hoạt động.");
+                            return;
+                        }
+                        banHang.datKhachHang(
+                                String.valueOf(moi[0]),
+                                String.valueOf(moi[1]),
+                                TienTe.doc(String.valueOf(moi[7])));
+                        txtDauVao.setText("");
+                        dongBo();
+                        khiThayDoi.run();
+                    }
+                } catch (Exception loi) {
+                    HopThoai.hienThiCanhBao(this, "Không thể mở thêm khách hàng: " + loi.getMessage());
+                }
+            }
             return;
         }
         // Đã chọn.

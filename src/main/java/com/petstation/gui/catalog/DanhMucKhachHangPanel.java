@@ -67,7 +67,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
 
         hopThoai.setContentPane(bieuMau);
         hopThoai.setSize(1000, 680);
-        hopThoai.setLocationRelativeTo(cha);
+        hopThoai.setLocationRelativeTo(null);
 
         bieuMau.moTaoMoi();
         hopThoai.setVisible(true);

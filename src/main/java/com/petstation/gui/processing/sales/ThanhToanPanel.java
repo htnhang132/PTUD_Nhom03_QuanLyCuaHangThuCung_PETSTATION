@@ -134,6 +134,32 @@ public final class ThanhToanPanel extends CoSoPanel {
                         btnQuayLaiTrangThaiRong),
                 "empty");
         add(pnlGoc, BorderLayout.CENTER);
+
+        // Phím Space để xác nhận nhanh tiền chuyển khoản VietQR
+        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+        im.put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, 0), "xacNhanVietQRSpace");
+        am.put(
+                "xacNhanVietQRSpace",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        Component focusOwner =
+                                java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+                        if (focusOwner instanceof javax.swing.text.JTextComponent) {
+                            return;
+                        }
+                        if (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN
+                                && chkDaNhanTien.isVisible()
+                                && chkDaNhanTien.isEnabled()) {
+                            chkDaNhanTien.setSelected(!chkDaNhanTien.isSelected());
+                            banHang.xacNhanDaNhanTien(
+                                    layPhuongThuc(), chkDaNhanTien.isSelected());
+                            kiemTraDauVao();
+                        }
+                    }
+                });
+
         lamMoi();
     }
     /**
@@ -652,7 +678,7 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         chkDaNhanTien.setText(
                 chuyenKhoan
-                        ? "Tôi đã kiểm tra và nhận đủ tiền trên tài khoản ngân hàng"
+                        ? "Tôi đã kiểm tra và nhận đủ tiền trên tài khoản ngân hàng (Phím Space)"
                         : "Tôi đã xác nhận giao dịch thẻ thành công");
 
         // Mỗi lần số tiền/phương thức thay đổi phải xác nhận lại.
