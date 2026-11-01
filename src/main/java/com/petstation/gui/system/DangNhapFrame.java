@@ -68,10 +68,10 @@ public class DangNhapFrame extends JFrame {
     private final KhoiTaoUngDung nguCanh;
 
     /** Văn bản người dùng. */
-    private final JTextField txtVanBanNguoiDung = new JTextField();
+    private final JTextField txtVanBanNguoiDung = new JTextField("admin");
 
     /** Văn bản mật khẩu. */
-    private final JPasswordField txtVanBanMatKhau = new JPasswordField();
+    private final JPasswordField txtVanBanMatKhau = new JPasswordField("PetStation@123");
 
     /** Hiển thị mật khẩu. */
     private final JCheckBox btnHienThiMatKhau = new JCheckBox("Hiện mật khẩu");
