@@ -57,6 +57,19 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         yeuCau(com.petstation.model.Quyen.NHAP_KHO);
         // Id.
         long id = layDongChon();
+        int dong = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
+        long tongTien =
+                moHinh.getValueAt(dong, 4) instanceof Number n
+                        ? n.longValue()
+                        : com.petstation.util.TienTe.doc(String.valueOf(moHinh.getValueAt(dong, 4)));
+        long daTraHienTai =
+                moHinh.getValueAt(dong, 5) instanceof Number n
+                        ? n.longValue()
+                        : com.petstation.util.TienTe.doc(String.valueOf(moHinh.getValueAt(dong, 5)));
+        if (daTraHienTai >= tongTien || KhoService.layCongNoConLai(id) <= 0) {
+            HopThoai.hienThiCanhBao(this, "Không tồn tại công nợ");
+            return;
+        }
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,

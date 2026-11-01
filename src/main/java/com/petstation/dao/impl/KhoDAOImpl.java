@@ -172,6 +172,12 @@ public final class KhoDAOImpl implements KhoDAO {
                 cacThamSo);
     }
 
+    public long layCongNoConLai(Object... cacThamSo) {
+        return ThaoTacSQL.laySo(
+                "SELECT COALESCE(MAX(tong_tien - da_tra), 0) FROM phieu_nhap_kho WHERE id=?",
+                cacThamSo);
+    }
+
     public List<Object[]> layNhapKhoChiTiet(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT p.ten,c.so_lo,c.han_su_dung,c.so_luong,c.gia_nhap FROM"

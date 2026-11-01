@@ -173,8 +173,9 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái"
                             },
                             "SELECT"
-                                + " p.id,p.so_phieu,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,p.trang_thai"
-                                + " FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
+                                + " p.id,p.so_phieu,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,CASE"
+                                + " WHEN p.da_tra>=p.tong_tien THEN N'Đã thanh toán' ELSE N'Đã ghi"
+                                + " sổ' END FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
                                 + " n.id=p.nha_cung_cap_id ORDER BY p.id DESC");
             case PHIEU_XUAT_KHO ->
                     new KieuHienThi(
