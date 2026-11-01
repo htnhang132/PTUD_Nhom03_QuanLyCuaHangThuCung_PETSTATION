@@ -84,8 +84,10 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Còn hiệu lực", "Hết hạn", "Hết lượt", "Ngừng"),
-                TruongDuLieu.tao("Khách hàng sở hữu", Kieu.HOP_CHON)
-                        .layDong(DanhMucService::layLuaChonKhachHang),
+                TruongDuLieu.tao("Khách hàng sở hữu", Kieu.TUY_CHINH)
+                        .batBuoc()
+                        .datBoSoanThao(
+                                com.petstation.gui.components.common.BoChonNhieuKhachHang::new),
                 TruongDuLieu.tao("Phạm vi", Kieu.HOP_CHON).datLuaChon("Chỉ Spa", "Mọi hóa đơn"));
     }
 }

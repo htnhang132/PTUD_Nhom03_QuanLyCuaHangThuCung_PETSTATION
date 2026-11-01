@@ -113,6 +113,53 @@ public final class DanhMucService {
         return chuyenThanhChuoi(luaChon).split(" - ", 2)[0];
     }
 
+    public static List<String> tachDanhSachKhach(Object giaTri) {
+        String chuoi = chuyenThanhChuoi(giaTri);
+        if (chuoi.isBlank()) return List.of();
+        List<String> ketQua = new ArrayList<>();
+        for (String phan : chuoi.split(";")) {
+            String cat = phan.trim();
+            if (!cat.isEmpty() && !ketQua.contains(cat)) {
+                ketQua.add(cat);
+            }
+        }
+        return ketQua;
+    }
+
+    public static String taoMaVoucherTheoKhach(String maGoc, String maKhach) {
+        String goc = chuyenThanhChuoi(maGoc).trim().replaceFirst("(?i)-KH\\d+$", "");
+        String khach = chuyenThanhChuoi(maKhach).trim();
+        if (khach.isEmpty()) return goc;
+        String hauTo = "-" + khach;
+        if (goc.toUpperCase(Locale.ROOT).endsWith(hauTo.toUpperCase(Locale.ROOT))) {
+            return goc;
+        }
+        int toiDaGoc = Math.max(1, 40 - hauTo.length());
+        if (goc.length() > toiDaGoc) {
+            goc = goc.substring(0, toiDaGoc);
+        }
+        return goc + hauTo;
+    }
+
+    public static void luuNhieu(
+            List<Object[]> cacDong,
+            Object[] truoc,
+            Object[] giaTriCapNhat,
+            List<Object[]> cacGiaTriMoi) {
+        thucHienGiaoDich(
+                ketNoi -> {
+                    if (giaTriCapNhat != null) {
+                        luu(cacDong, truoc, giaTriCapNhat, false);
+                    }
+                    if (cacGiaTriMoi != null) {
+                        for (Object[] dongMoi : cacGiaTriMoi) {
+                            luu(cacDong, null, dongMoi, false);
+                        }
+                    }
+                    return null;
+                });
+    }
+
     public static void themBoLangNgheGia(Runnable boLangNghe) {
         GIA_CAC_BO_LANG_NGHE.add(boLangNghe);
     }

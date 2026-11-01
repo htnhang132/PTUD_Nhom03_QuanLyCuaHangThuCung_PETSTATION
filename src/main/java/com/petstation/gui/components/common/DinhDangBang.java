@@ -26,6 +26,8 @@ public final class DinhDangBang {
     private DinhDangBang() {}
 
     public static void apDung(JTable tblBang) {
+        javax.swing.ToolTipManager.sharedInstance().setInitialDelay(250);
+        javax.swing.ToolTipManager.sharedInstance().setDismissDelay(10000);
         tblBang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         tblBang.setRowHeight(38);
         tblBang.setGridColor(MauUngDung.VIEN);
@@ -101,7 +103,17 @@ public final class DinhDangBang {
                             vanBan = tenTrangThai(vanBan);
                         }
                         setText(vanBan);
-                        setToolTipText(vanBan != null && vanBan.length() > 20 ? vanBan : null);
+                        boolean biChe = false;
+                        if (vanBan != null && !vanBan.isEmpty()) {
+                            int rongCot =
+                                    cot >= 0 && cot < tblGiaTriTam.getColumnModel().getColumnCount()
+                                            ? tblGiaTriTam.getColumnModel().getColumn(cot).getWidth()
+                                            : 0;
+                            int rongChu =
+                                    getFontMetrics(getFont()).stringWidth(vanBan) + 24;
+                            biChe = (rongCot > 0 && rongChu > rongCot) || vanBan.length() > 20;
+                        }
+                        setToolTipText(biChe ? vanBan : null);
                         return this;
                     }
                 });
@@ -114,6 +126,29 @@ public final class DinhDangBang {
         tieuDeBang.setPreferredSize(new Dimension(tieuDeBang.getWidth(), 38));
         tieuDeBang.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN));
         tieuDeBang.setReorderingAllowed(false);
+        if (tieuDeBang.getClientProperty("hoverHeaderTooltip") == null) {
+            tieuDeBang.putClientProperty("hoverHeaderTooltip", true);
+            tieuDeBang.addMouseMotionListener(
+                    new java.awt.event.MouseMotionAdapter() {
+                        @Override
+                        public void mouseMoved(java.awt.event.MouseEvent e) {
+                            int cot = tieuDeBang.columnAtPoint(e.getPoint());
+                            if (cot < 0 || cot >= tblBang.getColumnModel().getColumnCount()) {
+                                tieuDeBang.setToolTipText(null);
+                                return;
+                            }
+                            TableColumn tc = tblBang.getColumnModel().getColumn(cot);
+                            String tieuDe = String.valueOf(tc.getHeaderValue());
+                            int rongCot = tc.getWidth();
+                            int rongChu =
+                                    tieuDeBang
+                                                    .getFontMetrics(tieuDeBang.getFont())
+                                                    .stringWidth(tieuDe)
+                                            + 20;
+                            tieuDeBang.setToolTipText(rongChu > rongCot ? tieuDe : null);
+                        }
+                    });
+        }
 
         // Định dạng bề rộng các cột thông minh
         canChinhDoRongCot(tblBang);
@@ -204,7 +239,11 @@ public final class DinhDangBang {
                 cot.setMinWidth(65);
                 cot.setMaxWidth(95);
                 cot.setPreferredWidth(80);
-            } else if (ten.equals("số lượng") || ten.equals("sl") || ten.contains("cân nặng")) {
+            } else if (ten.equals("số lượng")
+                    || ten.equals("sl")
+                    || ten.contains("cân nặng")
+                    || ten.contains("số lượt")
+                    || ten.equals("đã dùng")) {
                 cot.setMinWidth(70);
                 cot.setMaxWidth(110);
                 cot.setPreferredWidth(85);
@@ -265,6 +304,13 @@ public final class DinhDangBang {
     }
 
     private static boolean laTien(String ten) {
+        if (ten.contains("lượt")
+                || ten.contains("lần")
+                || ten.contains("số lượng")
+                || ten.contains("đã dùng")
+                || ten.startsWith("mã ")) {
+            return false;
+        }
         return ten.matches(
                 ".*(tiền|giá|doanh thu|chi tiêu|cọc|nợ|tổng nhập|đã trả|thực đếm|chênh lệch|thu hóa"
                         + " đơn|chiết khấu|voucher|hoàn trả|lợi nhuận|thành tiền).*");
@@ -315,6 +361,8 @@ public final class DinhDangBang {
                         .replace("%", "")
                         .replace("-", "")
                         .replace("kg", "")
+                        .replace("lần", "")
+                        .replace("lượt", "")
                         .trim();
         return !giaTriTam.isEmpty() && giaTriTam.chars().allMatch(Character::isDigit);
     }
