@@ -4,6 +4,13 @@ import java.util.List;
 
 /** Thao tác dữ liệu cho DoiHang; service gọi qua hợp đồng này. */
 public interface DoiHangDAO {
+
+    List<Object[]> timHoaDon(String tuKhoa);
+
+    List<Object[]> layDongHoaDon(long hoaDon);
+
+    List<Object[]> timPhuKien(String tuKhoa);
+
     List<Object[]> timDongGoc(long id);
 
     List<Object[]> timThayThe(String ma);

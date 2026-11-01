@@ -280,6 +280,7 @@ public final class BanHangService {
 
     public static long treo(GioHang banHang) {
         yeuCau(Quyen.BAN_HANG);
+        if ("EXCHANGE".equals(banHang.layKieuNguon())) return DonDoiTreoService.treo(banHang);
         if (banHang.kiemTraTrong()) throw new IllegalArgumentException("Giỏ hàng trống.");
         if (!banHang.layKieuNguon().isBlank())
             throw new IllegalArgumentException(
@@ -306,10 +307,14 @@ public final class BanHangService {
 
     public static void moLai(long id, GioHang banHang) {
         yeuCau(Quyen.BAN_HANG);
+        if (!banHang.kiemTraTrong())
+            throw new IllegalArgumentException("Hãy treo hoặc thanh toán giỏ hiện tại trước.");
         thucHienGiaoDich(
                 ketNoi -> {
                     if (banHangDAO.demGioTreoCuaTaiKhoan(id, layIdTaiKhoan()) == 0)
                         throw new IllegalArgumentException("Không tìm thấy đơn treo.");
+                    if (DonDoiTreoService.lay(id) != null)
+                        throw new IllegalArgumentException("Hãy mở đơn đổi tại màn Đơn đang treo để tiếp tục chọn phụ kiện.");
                     List<GioHang.DongHang> cacDong = new ArrayList<>();
                     for (Object[] dongDuLieu : banHangDAO.timMoLai(id))
                         cacDong.add(

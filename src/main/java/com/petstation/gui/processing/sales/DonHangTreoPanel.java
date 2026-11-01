@@ -8,6 +8,7 @@ import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
 import com.petstation.model.MaManHinh;
 import com.petstation.service.BanHangService;
+import com.petstation.service.DonDoiTreoService;
 
 import java.awt.*;
 import java.time.*;
@@ -28,7 +29,13 @@ public final class DonHangTreoPanel extends BangNghiepVuPanel {
                     if (!banHang.kiemTraTrong())
                         throw new IllegalArgumentException(
                                 "Hãy treo hoặc thanh toán giỏ hiện tại trước.");
-                    BanHangService.moLai(layDongChon(), banHang);
+                    long id = layDongChon();
+                    var donDoi = DonDoiTreoService.lay(id);
+                    if (donDoi != null) {
+                        new DoiPhuKienDialog(this, banHang, dieuHuong, id, donDoi).setVisible(true);
+                        return;
+                    }
+                    BanHangService.moLai(id, banHang);
                     dieuHuong.accept(MaManHinh.LAP_HOA_DON);
                 });
         themNut(

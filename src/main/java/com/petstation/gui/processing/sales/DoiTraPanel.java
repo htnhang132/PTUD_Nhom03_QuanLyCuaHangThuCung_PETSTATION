@@ -18,5 +18,20 @@ public final class DoiTraPanel extends NghiepVuBanHangPanel {
     public DoiTraPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.DOI_TRA, banHang, dieuHuong);
         themNut(pnlCacThaoTac, "+ Đổi phụ kiện", this::traHang);
+
+    }
+
+    @Override
+    protected void traHang() {
+        if (!banHang.kiemTraTrong()) {
+            throw new IllegalArgumentException(
+                "Hãy thanh toán hoặc treo giỏ hiện tại trước.");
+        }
+
+        new DoiPhuKienDialog(
+            this,
+            banHang,
+            dieuHuong
+        ).setVisible(true);
     }
 }

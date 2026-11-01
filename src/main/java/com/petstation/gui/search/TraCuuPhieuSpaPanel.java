@@ -1,6 +1,7 @@
 package com.petstation.gui.search;
 
 import com.petstation.gui.components.common.BoChonKhoangNgay;
+import com.petstation.gui.components.ThanhDanhSach;
 import com.petstation.gui.processing.spa.NghiepVuSpaPanel;
 import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
@@ -8,16 +9,19 @@ import com.petstation.model.MaManHinh;
 import com.petstation.service.SpaService;
 
 import java.time.LocalDate;
+import java.awt.BorderLayout;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.BorderFactory;
 
 public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
 
     private final JCheckBox chkTheoNgay =
-        new JCheckBox("Lọc theo ngày");
+        new JCheckBox("Lọc theo ngày", true);
 
     private final BoChonKhoangNgay khoangNgay =
         new BoChonKhoangNgay();
@@ -25,10 +29,10 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     private final JComboBox<String> cboTrangThai =
         new JComboBox<>(new String[] {
             "Tất cả trạng thái",
-            "Chờ tiếp nhận",
+            "Đã tiếp nhận",
             "Đang thực hiện",
             "Hoàn thành",
-            "Đã đóng"
+            "Đã thanh toán"
         });
 
     private static final String[] MA_TRANG_THAI = {
@@ -52,7 +56,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
             "Lọc nhanh mã phiếu, tên khách, thú cưng trong kết quả");
 
         chkTheoNgay.setOpaque(false);
-        khoangNgay.setVisible(false);
+        khoangNgay.setVisible(true);
 
         chkTheoNgay.addActionListener(e -> {
             khoangNgay.setVisible(chkTheoNgay.isSelected());
@@ -66,17 +70,28 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
 
         themNut(pnlCacThaoTac, "Tìm kiếm", this::ghiNhanBoLoc);
 
+        // Giữ các thao tác trên hàng riêng như màn hình tra cứu mẫu.
+        JPanel pnlThaoTacPhieu = new ThanhDanhSach();
+        pnlThaoTacPhieu.setBorder(BorderFactory.createEmptyBorder());
+        JPanel pnlDauTrang = (JPanel) pnlCacThaoTac.getParent();
+        JPanel pnlHaiHang = new JPanel(new BorderLayout(0, 8));
+        pnlHaiHang.setOpaque(false);
+        pnlDauTrang.remove(pnlCacThaoTac);
+        pnlHaiHang.add(pnlCacThaoTac, BorderLayout.CENTER);
+        pnlHaiHang.add(pnlThaoTacPhieu, BorderLayout.SOUTH);
+        pnlDauTrang.add(pnlHaiHang, BorderLayout.CENTER);
+
         themNut(
-            pnlCacThaoTac,
+            pnlThaoTacPhieu,
             "Chi tiết dịch vụ",
             this::laySpaChiTiet);
 
-        themNut(pnlCacThaoTac, "Mở xử lý", () -> {
+        themNut(pnlThaoTacPhieu, "Mở xử lý", () -> {
             gio.layQuyTrinh().chonSpa(layDongChon());
             dieuHuong.accept(MaManHinh.CAP_NHAT_TIEN_DO_SPA);
         });
 
-        themNut(pnlCacThaoTac, "In danh sách", () -> {
+        themNut(pnlThaoTacPhieu, "In danh sách", () -> {
             try {
                 tblBang.print();
             } catch (java.awt.print.PrinterException ex) {
@@ -115,9 +130,10 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     protected List<Object[]> layDuLieu() {
         BoLoc loc = boLoc;
 
-        // Chưa áp dụng bộ lọc: lấy toàn bộ lịch sử.
+        // Lần mở đầu tiên mặc định tra cứu phiếu trong ngày.
         if (loc == null) {
-            return SpaService.timKiem(null, null, "");
+            LocalDate homNay = LocalDate.now();
+            return SpaService.timKiem(homNay, homNay, "");
         }
 
         return SpaService.timKiem(
@@ -130,9 +146,9 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     protected void datLaiBoLoc() {
         txtTimKiem.setText("");
 
-        chkTheoNgay.setSelected(false);
+        chkTheoNgay.setSelected(true);
         khoangNgay.datLai();
-        khoangNgay.setVisible(false);
+        khoangNgay.setVisible(true);
 
         cboTrangThai.setSelectedIndex(0);
         boLoc = null;

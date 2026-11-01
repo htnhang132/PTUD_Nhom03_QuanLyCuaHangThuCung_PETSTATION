@@ -10,6 +10,7 @@ import com.petstation.model.GioHang;
 import com.petstation.model.MaManHinh;
 import com.petstation.model.PhuongThuc;
 import com.petstation.service.CaThuNganService;
+import com.petstation.service.DonDoiTreoService;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
@@ -45,6 +46,8 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final JLabel lblTong = new JLabel();
 
     private final JTextField txtTruongVoucher = BieuMauPanel.layTruongVanBan("");
+    private final java.util.List<JComponent> dieuKhienVoucher =
+        new java.util.ArrayList<>();
     private final JLabel lblVoucherThongBao = new JLabel("");
 
     private final JRadioButton btnTienMat = new JRadioButton("Tiền mặt", true);
@@ -66,6 +69,8 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private final NutDinhDang btnHuy =
             new NutDinhDang("Quay lại sửa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
+    private final NutDinhDang btnTreoDoi =
+            new NutDinhDang("Treo đơn đổi", NutDinhDang.KieuNut.TRONG_SUOT);
 
     private final JPanel pnlQRThanhToan = new JPanel();
     private final JLabel lblQR = new JLabel();
@@ -184,8 +189,39 @@ public final class ThanhToanPanel extends CoSoPanel {
      * Không sử dụng callback chuyển bước của thanh quy trình.
      */
     private void quayLaiManHinhNguon() {
+        if ("EXCHANGE".equals(banHang.layKieuNguon())) {
+            treoDonDoi(true);
+            return;
+        }
         MaManHinh manHinhDich = layManHinhQuayLaiTheoNguon();
         quayLaiTuThanhToan.accept(manHinhDich);
+    }
+
+    private void treoDonDoi(boolean suaLai) {
+        if (dangXuLy || banHang.dangGhiThanhToan()) return;
+        dangXuLy = true;
+        btnTreoDoi.setEnabled(false);
+        btnHuy.setEnabled(false);
+        btnXacNhan.setEnabled(false);
+        try {
+            long id = DonDoiTreoService.treo(banHang);
+            var nhap = suaLai ? DonDoiTreoService.lay(id) : null;
+            // Chỉ giải phóng giỏ sau khi lưu SQL Server thành công.
+            banHang.xoa();
+            boDieuHuong.accept(suaLai ? MaManHinh.DOI_TRA_HANG_HOA : MaManHinh.LAP_HOA_DON);
+            if (suaLai) {
+                new DoiPhuKienDialog(this, banHang, boDieuHuong, id, nhap).setVisible(true);
+            } else {
+                HopThoai.hienThiThanhCong(this, "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
+            }
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, "Chưa treo được đơn đổi: " + loi.getMessage());
+        } finally {
+            dangXuLy = false;
+            btnTreoDoi.setEnabled(true);
+            btnHuy.setEnabled(true);
+            kiemTraDauVao();
+        }
     }
 
     /**
@@ -193,6 +229,7 @@ public final class ThanhToanPanel extends CoSoPanel {
      */
     private void capNhatNhanNutQuayLai() {
         String nguon = banHang.layKieuNguon();
+        btnTreoDoi.setVisible("EXCHANGE".equals(nguon));
 
         if ("HOTEL".equals(nguon)) {
             btnQuayLaiTrangThaiRong.setText("Về trả phòng Hotel");
@@ -200,6 +237,9 @@ public final class ThanhToanPanel extends CoSoPanel {
         } else if ("SPA".equals(nguon)) {
             btnQuayLaiTrangThaiRong.setText("Về đóng phiếu Spa");
             btnHuy.setText("Quay lại đóng phiếu");
+        } else if ("EXCHANGE".equals(nguon)) {
+            btnHuy.setText("Sửa đơn đổi");
+            btnQuayLaiTrangThaiRong.setText("Về đổi phụ kiện");
         } else {
             btnQuayLaiTrangThaiRong.setText("Về lập đơn hàng");
             btnHuy.setText("Quay lại sửa đơn");
@@ -308,6 +348,13 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlNoiDung.add(pnlVoucherKhach);
         pnlNoiDung.add(Box.createVerticalStrut(12));
 
+
+        dieuKhienVoucher.addAll(
+            java.util.List.of(
+                txtTruongVoucher,
+                btnApDung,
+                btnChonVoucher));
+
         // Khu vực tiền mặt.
         pnlNhapTienMat.setOpaque(false);
         pnlNhapTienMat.setLayout(new BoxLayout(pnlNhapTienMat, BoxLayout.Y_AXIS));
@@ -385,10 +432,15 @@ public final class ThanhToanPanel extends CoSoPanel {
         btnHuy.addActionListener(
                 suKien -> quayLaiManHinhNguon());
 
-        JPanel pnlCacThaoTac = new JPanel(new GridLayout(1, 2, 8, 0));
+        btnTreoDoi.addActionListener(e -> treoDonDoi(false));
+        JPanel pnlCacThaoTac = new JPanel(new BorderLayout(0, 8));
         pnlCacThaoTac.setOpaque(false);
-        pnlCacThaoTac.add(btnHuy);
-        pnlCacThaoTac.add(btnXacNhan);
+        JPanel pnlThaoTacPhu = new JPanel(new GridLayout(1, 2, 8, 0));
+        pnlThaoTacPhu.setOpaque(false);
+        pnlThaoTacPhu.add(btnHuy);
+        pnlThaoTacPhu.add(btnTreoDoi);
+        pnlCacThaoTac.add(pnlThaoTacPhu, BorderLayout.NORTH);
+        pnlCacThaoTac.add(btnXacNhan, BorderLayout.SOUTH);
         pnlPhai.add(pnlCacThaoTac, BorderLayout.SOUTH);
 
         pnlBieuMau.add(pnlTrai);
@@ -606,7 +658,29 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         txtTruongVoucher.setText(banHang.layMaVoucher());
         lblVoucherThongBao.setText("");
-        txtDaNhan.setText("");
+
+        boolean doiHang =
+            "EXCHANGE".equals(banHang.layKieuNguon());
+
+        // Đổi hàng thì khóa toàn bộ điều khiển voucher.
+        dieuKhienVoucher.forEach(
+            c -> c.setEnabled(!doiHang));
+
+        // Với giao dịch khác, nút chọn voucher vẫn cần có khách hàng.
+        if (!doiHang) {
+            capNhatTrangThaiVoucherKhach();
+        }
+
+        if (doiHang) {
+            lblVoucherThongBao.setForeground(MauUngDung.VAN_BAN_XAM);
+            lblVoucherThongBao.setText(
+                "Voucher Spa không áp dụng cho đổi phụ kiện.");
+        }
+
+        // Đổi ngang giá: không thu thêm tiền.
+        txtDaNhan.setText(
+            doiHang && banHang.tinhTong() == 0 ? "0" : "");
+
         dangXuLy = false;
         btnTienMat.setSelected(true);
         capNhatPhuongThuc();

@@ -63,7 +63,7 @@ public class BoChonKhoangNgay extends JPanel {
 
         // Bố cục
         // Trên vùng hiển thị.
-        JPanel pnlTrenVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel pnlTrenVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         pnlTrenVungHienThi.setOpaque(false);
         pnlTrenVungHienThi.add(new JLabel("Khoảng thời gian:"));
         pnlTrenVungHienThi.add(cboGiaTriCoSanHopChon);

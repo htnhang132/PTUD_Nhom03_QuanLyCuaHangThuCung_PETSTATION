@@ -224,11 +224,15 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Người lập",
                                 "Ngày tạo",
                                 "Số dòng",
-                                "Tạm tính"
+                                "Tạm tính",
+                                "Loại đơn"
                             },
                             "SELECT g.id,g.so_hoa_don,COALESCE(k.ho_ten,N'Khách"
                                 + " lẻ'),COALESCE(n.ho_ten,N'Thu ngân'),g.tao_luc,(SELECT COUNT(*)"
-                                + " FROM chi_tiet_hoa_don c WHERE c.hoa_don_id=g.id),g.tam_tinh"
+                                + " FROM chi_tiet_hoa_don c WHERE c.hoa_don_id=g.id),g.tam_tinh,"
+                                + " CASE WHEN JSON_VALUE(CASE WHEN ISJSON(g.ghi_chu)=1 THEN g.ghi_chu"
+                                + " ELSE N'{}' END,'$.loai')='DOI_PHU_KIEN'"
+                                + " THEN N'Đổi phụ kiện' ELSE N'Bán hàng' END"
                                 + " FROM hoa_don g LEFT JOIN tai_khoan t ON t.id=g.tai_khoan_id"
                                 + " LEFT JOIN nhan_vien n ON n.id=t.nhan_vien_id LEFT JOIN"
                                 + " khach_hang k ON k.id=g.khach_hang_id WHERE"
