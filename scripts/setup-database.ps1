@@ -27,7 +27,12 @@ Invoke-Query "IF DB_ID(N'$Database') IS NULL CREATE DATABASE [$Database] COLLATE
 $tableCount = ((Invoke-Query "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0 AND name<>'sysdiagrams';" $Database | Out-String).Trim())
 if ([int]$tableCount -gt 0 -and -not $Reset) {
     $ready = ((Invoke-Query "SET NOCOUNT ON; IF OBJECT_ID('dbo.cai_dat') IS NOT NULL SELECT COUNT(*) FROM dbo.cai_dat WHERE khoa='APP_SCHEMA_VERSION' AND gia_tri='20261026'; ELSE SELECT 0;" $Database | Out-String).Trim())
-    if ($ready -eq '1') { Write-Output "$Database is already initialized. Data was not changed."; exit 0 }
+    if ($ready -eq '1') {
+        & sqlcmd @sqlArgs -d $Database -i (Join-Path $projectRoot 'database/003_hotel_management_improvements.sql')
+        if ($LASTEXITCODE -ne 0) { throw 'Hotel migration failed.' }
+        Write-Output "$Database is initialized and hotel migration is applied."
+        exit 0
+    }
     throw 'An older database exists. Use -Reset only after reviewing the reset and backup instructions in SETUP.md.'
 }
 
@@ -36,7 +41,7 @@ if ([int]$tableCount -gt 0) {
     $schemaPath = Join-Path $projectRoot 'database/001_schema.sql'
     $tableNames = [regex]::Matches([IO.File]::ReadAllText($schemaPath), 'CREATE TABLE dbo\.\[([^\]]+)\]') |
         ForEach-Object { $_.Groups[1].Value }
-    $allowed = @($tableNames) + @('doi_chieu_ma_du_lieu', 'doi_chieu_unicode', 'phien_ban_du_lieu')
+    $allowed = @($tableNames) + @('doi_chieu_ma_du_lieu', 'doi_chieu_unicode', 'phien_ban_du_lieu', 'lich_su_thu_coc_hotel')
     $allowedSql = ($allowed | ForEach-Object { "N'$_'" }) -join ','
     $unknown = ((Invoke-Query "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id WHERE t.is_ms_shipped=0 AND t.name<>'sysdiagrams' AND (s.name<>'dbo' OR t.name NOT IN ($allowedSql));" $Database | Out-String).Trim())
     if ([int]$unknown -gt 0) { throw 'Unknown tables exist. Reset was stopped to protect unrelated data.' }
@@ -71,7 +76,7 @@ COMMIT;
 "@ $Database | Out-Null
 }
 
-foreach ($file in @('001_schema.sql', '002_sample_data.sql')) {
+foreach ($file in @('001_schema.sql', '002_sample_data.sql', '003_hotel_management_improvements.sql')) {
     & sqlcmd @sqlArgs -d $Database -i (Join-Path $projectRoot "database/$file")
     if ($LASTEXITCODE -ne 0) { throw "Setup failed at $file. If this was a reset, the verified backup is listed under target/database-backups." }
 }
