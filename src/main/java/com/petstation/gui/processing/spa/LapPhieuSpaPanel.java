@@ -5,6 +5,8 @@ import com.petstation.gui.catalog.DanhMucThuCungPanel;
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.common.BieuMauSQL.LuaChon;
 import com.petstation.model.Quyen;
+import com.petstation.model.PhieuSpaTreo;
+import com.petstation.service.PhieuSpaTreoService;
 import com.petstation.service.DanhMucService;
 import com.petstation.service.PhienDangNhapService;
 import com.petstation.service.LapPhieuSpaService;
@@ -36,10 +38,17 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private final JLabel lblNguon = new JLabel("Khách đến trực tiếp");
     private final JTextArea txtYeuCau = new JTextArea(2, 28);
     private final LongConsumer khiLuu;
+    private final Runnable khiTreo;
+    private long idPhieuTreo;
     private String maHen = "";
 
     public LapPhieuSpaPanel(LongConsumer khiLuu, Runnable chonLich) {
+        this(khiLuu, chonLich, () -> {});
+    }
+
+    public LapPhieuSpaPanel(LongConsumer khiLuu, Runnable chonLich, Runnable khiTreo) {
         this.khiLuu = khiLuu;
+        this.khiTreo = khiTreo;
         JPanel bieuMau = new JPanel(new GridBagLayout());
         bieuMau.setOpaque(false);
         lblNguon.setForeground(MauUngDung.NAU);
@@ -94,6 +103,8 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         });
         JPanel thaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         thaoTac.setOpaque(false);
+        thaoTac.add(nut("Phiếu đang treo", this::moDanhSachPhieuTreo));
+        thaoTac.add(nut("Treo phiếu", this::treoPhieu));
         thaoTac.add(nut("Lập phiếu mới", this::xoaForm));
         thaoTac.add(nut("Tạo phiếu tiếp nhận", this::luu));
         JScrollPane cuon = new JScrollPane(bieuMau);
@@ -122,7 +133,12 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     public void xoaForm() {
-        if (khachHang != null && !HopThoai.xacNhan(this, "Bỏ nội dung đang nhập để lập phiếu mới?")) return;
+        if (chupNhap().coNoiDung() && !HopThoai.xacNhan(this, "Bỏ nội dung đang nhập để lập phiếu mới? Phiếu đã treo vẫn được giữ.")) return;
+        datLaiForm();
+    }
+
+    private void datLaiForm() {
+        idPhieuTreo = 0;
         maHen = "";
         cboDichVu.setEnabled(true);
         cboThuCung.setEnabled(true);
@@ -134,6 +150,121 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         txtYeuCau.setText("");
         cboDichVu.setSelectedIndex(-1);
         chkSucKhoe.setSelected(false);
+    }
+
+    private PhieuSpaTreo chupNhap() {
+        LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
+        LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
+        return new PhieuSpaTreo(khachHang == null ? "" : String.valueOf(khachHang[0]),
+            txtSoDienThoai.getText(), thu == null ? "" : thu.giaTri(), goi == null ? "" : goi.giaTri(),
+            maHen, txtCanNang.getText(), txtGhiChu.getText(), txtYeuCau.getText());
+    }
+
+    private void treoPhieu() {
+        PhieuSpaTreoService.treo(idPhieuTreo, chupNhap());
+        // Chỉ xóa màn nhập sau khi SQL Server đã lưu thành công.
+        datLaiForm();
+        HopThoai.hienThiThanhCong(this, "Đã treo phiếu Spa. Chọn Phiếu đang treo để tiếp tục sau.");
+        khiTreo.run();
+    }
+
+    /** Dùng khi đóng hộp thoại tiếp nhận để tránh mất nội dung nhập dở. */
+    public boolean xacNhanDong() {
+        if (!chupNhap().coNoiDung()) return true;
+        String[] luaChon = {"Treo phiếu", "Bỏ thay đổi", "Tiếp tục nhập"};
+        int chon = JOptionPane.showOptionDialog(this, "Bạn muốn lưu phiếu đang nhập để tiếp tục sau?",
+            "Đóng phiếu Spa", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+            null, luaChon, luaChon[0]);
+        if (chon == 0) { treoPhieu(); return true; }
+        return chon == 1;
+    }
+
+    public void moDanhSachPhieuTreo() {
+        var cacPhieu = PhieuSpaTreoService.danhSach();
+        if (cacPhieu.isEmpty()) {
+            HopThoai.hienThiThongTin(this, "Chưa có phiếu Spa đang treo.");
+            return;
+        }
+        var moHinh = new javax.swing.table.DefaultTableModel(
+            new String[] {"ID", "Mã phiếu treo", "Khách hàng", "Số điện thoại", "Thú cưng", "Dịch vụ", "Cập nhật lúc"}, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        cacPhieu.forEach(moHinh::addRow);
+        JScrollPane cuon = taoBangDinhDang(moHinh);
+        JTable bang = layBang(cuon);
+        bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        bang.removeColumn(bang.getColumnModel().getColumn(0));
+        JDialog ds = new JDialog(SwingUtilities.getWindowAncestor(this), "Phiếu Spa đang treo",
+            Dialog.ModalityType.APPLICATION_MODAL);
+        JPanel noiDung = new JPanel(new BorderLayout(0, 12));
+        noiDung.setBackground(MauUngDung.NEN_KEM);
+        noiDung.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
+        noiDung.add(cuon, BorderLayout.CENTER);
+        java.util.function.LongSupplier chonId = () -> {
+            if (bang.getSelectedRow() < 0) throw new IllegalArgumentException("Chọn một phiếu đang treo.");
+            return ((Number) moHinh.getValueAt(bang.convertRowIndexToModel(bang.getSelectedRow()), 0)).longValue();
+        };
+        JPanel nutDong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        nutDong.setOpaque(false);
+        nutDong.add(nut("Xóa phiếu treo", () -> {
+            long id = chonId.getAsLong();
+            if (!HopThoai.xacNhan(ds, "Xóa phiếu Spa đang treo đã chọn?")) return;
+            PhieuSpaTreoService.xoa(id);
+            if (idPhieuTreo == id) idPhieuTreo = 0;
+            moHinh.setRowCount(0);
+            PhieuSpaTreoService.danhSach().forEach(moHinh::addRow);
+        }));
+        nutDong.add(nut("Đóng", ds::dispose));
+        nutDong.add(nut("Mở lại phiếu", () -> {
+            long id = chonId.getAsLong();
+            if (chupNhap().coNoiDung() && !HopThoai.xacNhan(ds,
+                "Thay nội dung trên biểu mẫu bằng phiếu treo đã chọn? Nội dung chưa treo sẽ bị bỏ.")) return;
+            khoiPhucPhieu(id);
+            ds.dispose();
+        }));
+        noiDung.add(nutDong, BorderLayout.SOUTH);
+        ds.setContentPane(noiDung);
+        ds.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        ds.setSize(1000, 480);
+        ds.setLocationRelativeTo(this);
+        ds.setVisible(true);
+    }
+
+    private void khoiPhucPhieu(long id) {
+        PhieuSpaTreo p = PhieuSpaTreoService.lay(id);
+        // Nạp hồ sơ hiện tại trước khi thay biểu mẫu để lỗi không làm mất nội dung đang nhập.
+        Object[] khach = p.maKhach().isBlank() ? null : DanhMucService.layKhachHang().stream()
+            .filter(k -> p.maKhach().equals(String.valueOf(k[0])) && "Đang hoạt động".equals(k[8]))
+            .findFirst().orElseThrow(() -> new IllegalArgumentException("Khách của phiếu treo không còn hoạt động."));
+        if (!p.maThu().isBlank() && DanhMucService.layThuCung().stream().noneMatch(t ->
+            p.maThu().equals(String.valueOf(t[0])) && "Đang hoạt động".equals(t[13])
+                && p.maKhach().equals(DanhMucService.layMaTuLuaChon(t[8]))))
+            throw new IllegalArgumentException("Thú cưng của phiếu treo không còn thuộc hồ sơ khách đang hoạt động.");
+        if (!p.maGoi().isBlank()) {
+            boolean coGoi = false;
+            for (int i = 0; i < cboDichVu.getItemCount(); i++)
+                if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri())) coGoi = true;
+            if (!coGoi) throw new IllegalArgumentException("Dịch vụ của phiếu treo không còn hoạt động.");
+        }
+        datLaiForm();
+        chonKhach(khach);
+        cboThuCung.setSelectedIndex(-1);
+        for (int i = 0; i < cboThuCung.getItemCount(); i++)
+            if (p.maThu().equals(cboThuCung.getItemAt(i).giaTri())) cboThuCung.setSelectedIndex(i);
+        for (int i = 0; i < cboDichVu.getItemCount(); i++)
+            if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri())) cboDichVu.setSelectedIndex(i);
+        maHen = p.maHen();
+        cboThuCung.setEnabled(maHen.isBlank());
+        cboDichVu.setEnabled(maHen.isBlank());
+        lblNguon.setText(maHen.isBlank() ? "Khách đến trực tiếp — đang sửa phiếu treo"
+            : "Từ lịch hẹn: " + maHen + " — đang sửa phiếu treo");
+        txtSoDienThoai.setText(p.soDienThoai());
+        txtCanNang.setText(p.canNang());
+        txtGhiChu.setText(p.tinhTrang());
+        txtYeuCau.setText(p.yeuCau());
+        chkSucKhoe.setSelected(false);
+        lblGia.setText("Kiểm tra lại sức khỏe thực tế và nhấn Xem giá trước khi tạo phiếu");
+        idPhieuTreo = id;
     }
 
     public void nhanLichHen(long id) {
@@ -285,11 +416,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             throw new IllegalArgumentException("Cần kiểm tra sức khỏe thực tế trước khi nhận.");
         LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
         if (goi == null) throw new IllegalArgumentException("Cần chọn dịch vụ.");
-        long id = LapPhieuSpaService.luu(thuCung.giaTri(), goi.giaTri(), maHen,
+        long id = PhieuSpaTreoService.taoPhieu(idPhieuTreo, thuCung.giaTri(), goi.giaTri(), maHen,
             canNang(), txtGhiChu.getText(), txtYeuCau.getText());
         // Xóa sau khi lưu thành công để không tạo trùng khi nhấn lại.
         khachHang = null;
-        xoaForm();
+        datLaiForm();
         HopThoai.hienThiThanhCong(this, "Đã lập phiếu Spa. Có thể xem tại tab Đang phục vụ.");
         khiLuu.accept(id);
     }

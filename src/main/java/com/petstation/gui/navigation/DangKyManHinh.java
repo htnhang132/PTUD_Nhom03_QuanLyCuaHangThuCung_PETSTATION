@@ -208,7 +208,7 @@ public final class DangKyManHinh {
                 Quyen.QUAN_LY_SAN_PHAM);
         dangKy(
                 MaManHinh.TRA_CUU_LICH_SPA,
-                "Phiếu Spa trong ngày",
+                "Phiếu Spa",
                 "Lọc theo ngày và trạng thái. Mở phiếu để sang Xử lý.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
@@ -446,10 +446,15 @@ public final class DangKyManHinh {
             case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);
             // Xử lý: Spa
             case QUAN_LY_SPA ->
-                new QuanLySpaPanel(
+                new TiepNhanSpaPanel(
                     banHang,
-                    boDieuHuong,
-                    0
+                    boDieuHuong
+                );
+
+            case TIEP_NHAN_SPA ->
+                new TiepNhanSpaPanel(
+                    banHang,
+                    boDieuHuong
                 );
 
             case DAT_LICH_HEN_SPA ->
@@ -459,8 +464,8 @@ public final class DangKyManHinh {
                     1
                 );
 
-            case TIEP_NHAN_SPA,
-                 CHON_GOI_SPA,
+
+            case CHON_GOI_SPA,
                  CAP_NHAT_TIEN_DO_SPA,
                  HOAN_TAT_SPA ->
                 new QuanLySpaPanel(

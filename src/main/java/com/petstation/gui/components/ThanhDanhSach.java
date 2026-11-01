@@ -84,67 +84,39 @@ public final class ThanhDanhSach extends JPanel {
             if (c.isVisible()) cacPhanTu.add(c);
         }
 
-        // Tính tổng bề rộng cơ bản để giữ tối đa trên 1 hàng
-        int tongRongCoBan = 0;
-        Component timKiemComp = null;
+        // Giữ nguyên bề rộng nhóm lọc để FlowLayout bên trong không tự ngắt
+        // nhãn và ô nhập xuống dòng rồi bị cắt bởi chiều cao thanh công cụ.
+        java.awt.Insets le = getInsets();
+        int rongNoiDung = Math.max(1, rong - le.left - le.right);
+        int caoHang = CAO_HANG;
+        for (Component c : cacPhanTu) {
+            caoHang = Math.max(caoHang, c.getPreferredSize().height);
+        }
+
+        int x = le.left;
+        int y = le.top;
         for (Component c : cacPhanTu) {
             Dimension d = c.getPreferredSize();
-            int cw = (d != null) ? d.width : 0;
+            int cw = d.width;
             if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
-                timKiemComp = c;
                 cw = 150;
-            }
-            tongRongCoBan += cw;
-        }
-        int kc = KHOANG_CACH_NGANG;
-        tongRongCoBan += Math.max(0, cacPhanTu.size() - 1) * kc;
-
-        // Nếu thiếu chỗ trên 1 dòng, ưu tiên co nhẹ ô tìm kiếm (xuống 110px) và khoảng cách để vừa 1 dòng
-        int rongTimKiem = 150;
-        if (tongRongCoBan > rong && timKiemComp != null) {
-            int canGiam = tongRongCoBan - rong;
-            rongTimKiem = Math.max(110, 150 - canGiam);
-            tongRongCoBan -= (150 - rongTimKiem);
-        }
-        if (tongRongCoBan > rong && cacPhanTu.size() > 1) {
-            kc = 3;
-            tongRongCoBan -= (cacPhanTu.size() - 1) * 2;
-        }
-
-        double tyLeCo = 1.0;
-        if (tongRongCoBan > rong && rong > 400) {
-            tyLeCo = (double) (rong - 4) / tongRongCoBan;
-            if (tyLeCo < 0.8) tyLeCo = 0.8;
-        }
-
-        int x = 0;
-        int y = 0;
-        for (Component c : cacPhanTu) {
-            Dimension d = c.getPreferredSize();
-            int cw = (d != null) ? d.width : 0;
-            if (c == timKiemComp) {
-                cw = (int) (rongTimKiem * tyLeCo);
             } else if (c instanceof AbstractButton) {
-                cw = (int) (Math.min(rong, Math.max(54, cw)) * tyLeCo);
-            } else {
-                cw = (int) (Math.min(rong, cw) * tyLeCo);
+                cw = Math.max(54, cw);
             }
-
-            int ch = CAO_HANG;
-            if (x > 0 && x + cw > rong) {
-                x = 0;
-                y += CAO_HANG + KHOANG_CACH_DOC;
+            cw = Math.min(rongNoiDung, cw);
+            int ch = Math.max(CAO_HANG, d.height);
+            if (x > le.left && x + cw > rong - le.right) {
+                x = le.left;
+                y += caoHang + KHOANG_CACH_DOC;
             }
-
             if (datViTri) {
-                c.setBounds(x, y, cw, ch);
+                c.setBounds(x, y + (caoHang - ch) / 2, cw, ch);
             }
-            x += cw + kc;
+            x += cw + KHOANG_CACH_NGANG;
         }
 
-        return y + CAO_HANG;
+        return y + caoHang + le.bottom;
     }
-
     public static JPanel tieuDe(JLabel title, JLabel count) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         p.setOpaque(false);
