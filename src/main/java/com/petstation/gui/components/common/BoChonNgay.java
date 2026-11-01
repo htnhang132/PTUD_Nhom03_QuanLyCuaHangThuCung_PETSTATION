@@ -95,8 +95,12 @@ public class BoChonNgay extends JPanel {
         // Vị trí.
         Point viTri = txtTruongVanBan.getLocationOnScreen();
         lichHopThoai.pack();
-        Rectangle manHinh = getGraphicsConfiguration().getBounds();
-        Insets le = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
+        GraphicsConfiguration cauHinhDoHoa = txtTruongVanBan.getGraphicsConfiguration();
+        if (cauHinhDoHoa == null) {
+            cauHinhDoHoa = getGraphicsConfiguration();
+        }
+        Rectangle manHinh = cauHinhDoHoa.getBounds();
+        Insets le = Toolkit.getDefaultToolkit().getScreenInsets(cauHinhDoHoa);
         manHinh =
                 new Rectangle(
                         manHinh.x + le.left,
@@ -116,7 +120,8 @@ public class BoChonNgay extends JPanel {
 
     private void taoLichHopThoai() {
         // Cửa sổ.
-        Window cuaSo = SwingUtilities.getWindowAncestor(this);
+        Window cuaSo =
+                SwingUtilities.getWindowAncestor(txtTruongVanBan != null ? txtTruongVanBan : this);
         if (cuaSo instanceof Frame) {
             lichHopThoai = new JDialog((Frame) cuaSo, "Chọn ngày", true);
         } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
@@ -353,5 +358,55 @@ public class BoChonNgay extends JPanel {
         super.setEnabled(duocBat);
         txtTruongVanBan.setEnabled(duocBat);
         btnNutLich.setEnabled(duocBat);
+    }
+
+    /**
+     * Tạo nút mở lịch gắn với một {@link JTextField} có sẵn (cho phép vừa nhập tay vừa chọn ngày
+     * trong lịch).
+     */
+    public static JButton taoNutLich(
+            JTextField txtTruong, java.time.format.DateTimeFormatter dinhDang) {
+        BoChonNgay boChon = new BoChonNgay((LocalDate) null);
+        boChon.txtTruongVanBan = txtTruong;
+        JButton btn = boChon.btnNutLich;
+        for (ActionListener al : btn.getActionListeners()) {
+            btn.removeActionListener(al);
+        }
+        btn.addActionListener(
+                suKien -> {
+                    String vanBan = txtTruong.getText().trim();
+                    LocalDate ngay = docNgayLinhHoat(vanBan, dinhDang);
+                    boChon.ngayDuocChon = ngay;
+                    LocalDate moc = ngay != null ? ngay : LocalDate.now();
+                    boChon.hienTaiThang = moc.getMonthValue();
+                    boChon.hienTaiNam = moc.getYear();
+                    boChon.hienThiLich();
+                });
+        return btn;
+    }
+
+    public static LocalDate docNgayLinhHoat(
+            String vanBan, java.time.format.DateTimeFormatter dinhDang) {
+        if (vanBan == null || vanBan.isBlank()) {
+            return null;
+        }
+        String chuoi = vanBan.trim();
+        for (java.time.format.DateTimeFormatter fmt :
+                new java.time.format.DateTimeFormatter[] {
+                    dinhDang,
+                    java.time.format.DateTimeFormatter.ofPattern("dd/MM/uuuu")
+                            .withResolverStyle(java.time.format.ResolverStyle.STRICT),
+                    java.time.format.DateTimeFormatter.ofPattern("uuuu/MM/dd")
+                            .withResolverStyle(java.time.format.ResolverStyle.STRICT),
+                    java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                            .withResolverStyle(java.time.format.ResolverStyle.STRICT)
+                }) {
+            if (fmt == null) continue;
+            try {
+                return LocalDate.parse(chuoi, fmt);
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
     }
 }

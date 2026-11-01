@@ -687,6 +687,21 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 pnlVungDangXet.putClientProperty("text", txtGiaTriTam);
                 return pnlVungDangXet;
             }
+            case NGAY -> {
+                JPanel pnlVungDangXet = new JPanel(new BorderLayout(6, 0));
+                pnlVungDangXet.setOpaque(false);
+                JTextField txtGiaTriTam = layVanBanDauVao(truongDangXet);
+                JButton btnChonNgay =
+                        com.petstation.gui.components.common.BoChonNgay.taoNutLich(
+                                txtGiaTriTam, NGAY);
+                btnChonNgay.setName("chonNgay:" + truongDangXet.nhan);
+                btnChonNgay.setPreferredSize(new Dimension(36, 30));
+                pnlVungDangXet.add(txtGiaTriTam, BorderLayout.CENTER);
+                pnlVungDangXet.add(btnChonNgay, BorderLayout.EAST);
+                pnlVungDangXet.putClientProperty("text", txtGiaTriTam);
+                pnlVungDangXet.putClientProperty("button", btnChonNgay);
+                return pnlVungDangXet;
+            }
             default -> {
                 return layVanBanDauVao(truongDangXet);
             }
@@ -702,7 +717,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         BorderFactory.createLineBorder(MauUngDung.VIEN),
                         new EmptyBorder(5, 8, 5, 8)));
         if (truongDangXet.kieu == Kieu.NGAY)
-            txtGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy");
+            txtGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy hoặc chọn từ lịch");
         return txtGiaTriTam;
     }
 
@@ -727,6 +742,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             }
             case TUY_CHINH -> cacBoSoanThao[chiSo].lay();
             case TEP -> ((JTextField) vao.getClientProperty("text")).getText().trim();
+            case NGAY -> {
+                String vanBan = ((JTextField) vao.getClientProperty("text")).getText().trim();
+                LocalDate ngay =
+                        com.petstation.gui.components.common.BoChonNgay.docNgayLinhHoat(
+                                vanBan, NGAY);
+                yield ngay != null ? NGAY.format(ngay) : vanBan;
+            }
             case TIEN_TE -> {
                 // Mô hình đang xét.
                 long moHinhDangXet = TienTe.doc(((JTextField) vao).getText());
@@ -767,7 +789,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                 }
             }
             case TUY_CHINH -> cacBoSoanThao[chiSo].dat(giaTri2);
-            case TEP -> ((JTextField) vao.getClientProperty("text")).setText(giaTri2);
+            case TEP, NGAY -> ((JTextField) vao.getClientProperty("text")).setText(giaTri2);
             case TIEN_TE ->
                 ((JTextField) vao)
                         .setText(giaTri2.isEmpty() ? "" : TienTe.dinhDang(TienTe.doc(giaTri2)));
@@ -791,7 +813,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             vao.setBackground(bg);
         } else if (truongDangXet.kieu == Kieu.TUY_CHINH) {
             cacBoSoanThao[chiSo].datDuocBat(duocBat);
-        } else if (truongDangXet.kieu == Kieu.TEP) {
+        } else if (truongDangXet.kieu == Kieu.TEP || truongDangXet.kieu == Kieu.NGAY) {
+            vao.setEnabled(duocBat);
             for (java.awt.Component khoaDangXet : ((JPanel) vao).getComponents())
                 khoaDangXet.setEnabled(duocBat);
         } else {
@@ -1034,6 +1057,12 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         if (cacDauVao[chiSo].isEnabled()
                                 && cacTruong.get(chiSo).kieu != Kieu.TUY_CHINH
                                 && cacTruong.get(chiSo).kieu != Kieu.TEP) {
+                            if (cacDauVao[chiSo].getClientProperty("text")
+                                    instanceof JTextField txt) {
+                                txt.requestFocusInWindow();
+                                txt.selectAll();
+                                return;
+                            }
                             cacDauVao[chiSo].requestFocusInWindow();
                             if (cacDauVao[chiSo] instanceof JTextField txtGiaTriTam)
                                 txtGiaTriTam.selectAll();
@@ -1086,8 +1115,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
         if (!cacLoi.isEmpty()) {
             HopThoai.hienThiCanhBao(this, "Chưa thể lưu:\n• " + String.join("\n• ", cacLoi));
-            if (dauTienKhongHopLe >= 0)
-                cacDauVao[dauTienKhongHopLe].requestFocusInWindow();
+            if (dauTienKhongHopLe >= 0) {
+                JComponent dauVaoLoi = cacDauVao[dauTienKhongHopLe];
+                if (dauVaoLoi.getClientProperty("text") instanceof JTextField txt)
+                    txt.requestFocusInWindow();
+                else
+                    dauVaoLoi.requestFocusInWindow();
+            }
             return;
         }
         if (cauHinh.boChuanHoa != null)
