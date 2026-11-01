@@ -9,14 +9,20 @@ import java.util.List;
 
 /** Thực hiện truy vấn JDBC cho JDBC ca thu ngân DAO. */
 public final class CaLamViecDAOImpl implements CaLamViecDAO {
-    public long layCocHotel(long ca, String phuongThuc) {
+	public long layCocHotel(long ca, String phuongThuc) {
         PhuongThuc pt = PhuongThuc.docTuCSDL(phuongThuc);
+        String maCu = switch (pt) {
+            case TIEN_MAT -> "CASH";
+            case CHUYEN_KHOAN -> "TRANSFER";
+            case THE_NGAN_HANG -> "CARD";
+            case DIEM_TICH_LUY -> "POINTS";
+            case KET_HOP -> "MIXED";
+        };
         return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(tien_coc),0) FROM hop_dong_luu_tru WHERE"
-                        + " phien_nhan_coc_id=? AND da_nhan_coc=1 AND"
-                        + " COALESCE(phuong_thuc_coc,'TIEN_MAT')=?",
-                ca,
-                pt.name());
+                "SELECT COALESCE(SUM(so_tien),0) FROM lich_su_thu_coc_hotel"
+                        + " WHERE phien_lam_viec_id=?"
+                        + " AND UPPER(LTRIM(RTRIM(phuong_thuc))) IN (?,?)",
+                ca, pt.name(), maCu);
     }
 
     public CaLamViecDAOImpl() {}
@@ -47,11 +53,7 @@ public final class CaLamViecDAOImpl implements CaLamViecDAO {
     }
 
     public long layTongCocDaNhan(long phien) {
-        return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(tien_coc),0) FROM hop_dong_luu_tru WHERE"
-                        + " phien_nhan_coc_id=? AND da_nhan_coc=1 AND"
-                        + " COALESCE(phuong_thuc_coc,'TIEN_MAT') IN ('TIEN_MAT','CASH')",
-                phien);
+        return layCocHotel(phien, PhuongThuc.TIEN_MAT.name());
     }
 
     public long demDong(Object... cacThamSo) {
