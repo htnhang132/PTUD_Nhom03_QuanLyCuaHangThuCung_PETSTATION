@@ -25,7 +25,7 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
 
     private static CauHinh cauHinh() {
         return CauHinh.tao("Danh mục dịch vụ Spa", "dịch vụ Spa")
-                .datTienTo("DV")
+                .datTienTo("SPA")
                 .timKiem("Tìm theo mã, tên dịch vụ...")
                 .datTrangThai(5, "Đang hoạt động", "Ngừng hoạt động")
                 .datBoKiemTra(
