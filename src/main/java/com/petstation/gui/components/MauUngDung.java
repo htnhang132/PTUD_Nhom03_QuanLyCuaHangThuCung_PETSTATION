@@ -157,9 +157,11 @@ public final class MauUngDung {
         if (layChuaBatKy(
                 giaTriTam, "chờ", "sắp hết", "đang xử lý", "tạm tính", "cần", "nghỉ phép", "chưa"))
             return CAM;
+        if (giaTriTam.contains("đã ghi sổ")) return VAN_BAN_TOI;
         if (layChuaBatKy(
                 giaTriTam,
                 "hoàn thành",
+                "đã thanh toán",
                 "đã nhập",
                 "đủ hàng",
                 "đã duyệt",

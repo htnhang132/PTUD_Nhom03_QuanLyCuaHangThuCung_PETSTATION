@@ -275,8 +275,15 @@ public final class KhoService {
         khoDAO.danhDauKiemKeDaDuyet(soLuong);
     }
 
+    public static long layCongNoConLai(long id) {
+        yeuCau(Quyen.NHAP_KHO);
+        return khoDAO.layCongNoConLai(id);
+    }
+
     public static void thanhToanNhaCungCap(long id, long daTra) {
         yeuCau(Quyen.NHAP_KHO);
+        if (khoDAO.layCongNoConLai(id) <= 0)
+            throw new IllegalArgumentException("Không tồn tại công nợ");
         if (daTra <= 0) throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
         thucHienGiaoDich(
                 ketNoi -> {

@@ -1,20 +1,28 @@
 /*
-  Pet Station - 001_schema.sql
-  Purpose: create the database schema only; this file does not insert business data.
-
-  Run in a dedicated, empty Pet Station database created in SSMS.
-  Safety checks:
-    - refuse to run in a SQL Server system database;
-    - refuse to run if user tables already exist;
-    - execute schema DDL in a single transaction and roll back on failure.
-
-  Security-course mapping:
-    - C01: data integrity and secure-by-default design (constraints/indexes);
-    - C03: T-SQL error handling with TRY/CATCH and THROW;
-    - C05: transaction atomicity and rollback;
-    - C02: schema objects are the resources whose permissions should be least-privilege.
-  The existing table, key, constraint, and index definitions below are preserved.
+    Pet Station - 001_schema.sql
+    Mục đích: Khởi tạo database PetStationDemo1, cấu trúc toàn bộ 33 bảng,
+              khóa chính, ràng buộc toàn vẹn (CHECK, UNIQUE, DEFAULT),
+              khóa ngoại và các chỉ mục (INDEX) phục vụ tra cứu.
+    
+    Hướng dẫn chạy:
+      - Mở SQL Server Management Studio (SSMS).
+      - Mở file 001_schema.sql và nhấn Execute (F5).
+      - File tự động tạo database PetStationDemo1 (nếu chưa có), chuyển ngữ cảnh vào database
+        và xóa sạch các ràng buộc / bảng cũ nếu có (an toàn chạy lại nhiều lần).
 */
+
+USE [master];
+GO
+
+IF DB_ID(N'PetStationDemo1') IS NULL
+BEGIN
+    CREATE DATABASE [PetStationDemo1]
+        COLLATE Vietnamese_CI_AS;
+END;
+GO
+
+USE [PetStationDemo1];
+GO
 
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
@@ -25,21 +33,28 @@ SET ANSI_WARNINGS ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET ARITHABORT ON;
 SET NUMERIC_ROUNDABORT OFF;
+GO
 
-IF DB_NAME() IN (N'master', N'model', N'msdb', N'tempdb')
-BEGIN
-    ;THROW 51000, 'Run 001_schema.sql only inside a dedicated application database.', 1;
-END;
+-- 1. Dọn dẹp ràng buộc khóa ngoại và bảng cũ nếu đã tồn tại (idempotent khi chạy lại)
+DECLARE @dropFkSql NVARCHAR(MAX) = N'';
+SELECT @dropFkSql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) 
+                   + N' DROP CONSTRAINT ' + QUOTENAME(f.name) + N';' + CHAR(13)
+FROM sys.foreign_keys f
+JOIN sys.tables t ON f.parent_object_id = t.object_id
+JOIN sys.schemas s ON t.schema_id = s.schema_id;
 
-IF EXISTS (
-    SELECT 1
-    FROM sys.tables
-    WHERE is_ms_shipped = 0
-      AND name <> N'sysdiagrams'
-)
-BEGIN
-    ;THROW 51001, '001_schema.sql requires an empty database. No existing objects were dropped.', 1;
-END;
+IF LEN(@dropFkSql) > 0
+    EXEC sp_executesql @dropFkSql;
+
+DECLARE @dropTableSql NVARCHAR(MAX) = N'';
+SELECT @dropTableSql += N'DROP TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N';' + CHAR(13)
+FROM sys.tables t
+JOIN sys.schemas s ON t.schema_id = s.schema_id
+WHERE t.name <> N'sysdiagrams';
+
+IF LEN(@dropTableSql) > 0
+    EXEC sp_executesql @dropTableSql;
+GO
 
 BEGIN TRY
     BEGIN TRANSACTION;
@@ -621,6 +636,44 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
 );
 
 
+CREATE TABLE dbo.[lich_su_thu_coc_hotel] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [hop_dong_id] BIGINT NOT NULL,
+    [khoa_thu_coc] VARCHAR(90) NOT NULL,
+    [phuong_thuc] VARCHAR(30) NOT NULL,
+    [so_tien] DECIMAL(18,2) NOT NULL,
+    [khach_dua] DECIMAL(18,2) NOT NULL,
+    [tien_thua] DECIMAL(18,2) NOT NULL CONSTRAINT [DF_lich_su_thu_coc_tien_thua] DEFAULT ((0)),
+    [phien_lam_viec_id] BIGINT NULL,
+    [nguoi_thu_id] BIGINT NULL,
+    [tao_luc] DATETIME2(7) NOT NULL CONSTRAINT [DF_lich_su_thu_coc_tao_luc] DEFAULT (sysdatetime()),
+    CONSTRAINT [PK_lich_su_thu_coc_hotel] PRIMARY KEY CLUSTERED ([id]),
+    CONSTRAINT [CK_lich_su_thu_coc_hotel_so_tien] CHECK ([so_tien]>=(0)),
+    CONSTRAINT [CK_lich_su_thu_coc_hotel_khach_dua] CHECK ([khach_dua]>=[so_tien]),
+    CONSTRAINT [CK_lich_su_thu_coc_hotel_tien_thua] CHECK ([tien_thua]>=(0)),
+    CONSTRAINT [UQ_lich_su_thu_coc_hotel_khoa] UNIQUE NONCLUSTERED ([hop_dong_id], [khoa_thu_coc], [phuong_thuc])
+);
+
+
+
+CREATE TABLE dbo.[phieu_spa_treo] (
+    [id] BIGINT IDENTITY(1,1) NOT NULL,
+    [ma_phieu] VARCHAR(30) NOT NULL,
+    [nguoi_lap_id] BIGINT NOT NULL,
+    [ma_khach] VARCHAR(30) NOT NULL,
+    [so_dien_thoai] NVARCHAR(100) NOT NULL,
+    [ma_thu] VARCHAR(30) NOT NULL,
+    [ma_goi] VARCHAR(30) NOT NULL,
+    [ma_hen] VARCHAR(30) NOT NULL,
+    [can_nang] NVARCHAR(100) NOT NULL,
+    [tinh_trang] NVARCHAR(MAX) NOT NULL,
+    [yeu_cau] NVARCHAR(MAX) NOT NULL,
+    [cap_nhat_luc] DATETIME2(7) NOT NULL CONSTRAINT [DF_phieu_spa_treo_cap_nhat_luc] DEFAULT (sysdatetime()),
+    CONSTRAINT [PK_phieu_spa_treo] PRIMARY KEY CLUSTERED ([id]),
+    CONSTRAINT [UQ_phieu_spa_treo_ma_phieu] UNIQUE NONCLUSTERED ([ma_phieu])
+);
+
+
 -- Khóa ngoại: tạo sau khi đã có đủ bảng.
 ALTER TABLE dbo.[bien_ban_kiem_ke] ADD CONSTRAINT [FK_bien_ban_kiem_ke_nguoi_lap_id] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
 
@@ -728,6 +781,10 @@ ALTER TABLE dbo.[yeu_cau_phe_duyet] ADD CONSTRAINT [FK_yeu_cau_phe_duyet_nguoi_g
 
 ALTER TABLE dbo.[yeu_cau_phe_duyet] ADD CONSTRAINT [FK_yeu_cau_phe_duyet_nguoi_xu_ly_id] FOREIGN KEY ([nguoi_xu_ly_id]) REFERENCES dbo.[tai_khoan] ([id]);
 
+ALTER TABLE dbo.[lich_su_thu_coc_hotel] ADD CONSTRAINT [FK_lich_su_thu_coc_hotel_hop_dong] FOREIGN KEY ([hop_dong_id]) REFERENCES dbo.[hop_dong_luu_tru] ([id]);
+ALTER TABLE dbo.[lich_su_thu_coc_hotel] ADD CONSTRAINT [FK_lich_su_thu_coc_hotel_phien] FOREIGN KEY ([phien_lam_viec_id]) REFERENCES dbo.[phien_lam_viec] ([id]);
+ALTER TABLE dbo.[lich_su_thu_coc_hotel] ADD CONSTRAINT [FK_lich_su_thu_coc_hotel_nguoi_thu] FOREIGN KEY ([nguoi_thu_id]) REFERENCES dbo.[tai_khoan] ([id]);
+ALTER TABLE dbo.[phieu_spa_treo] ADD CONSTRAINT [FK_phieu_spa_treo_nguoi_lap] FOREIGN KEY ([nguoi_lap_id]) REFERENCES dbo.[tai_khoan] ([id]);
 
 -- Chỉ mục phục vụ tra cứu.
 CREATE INDEX [IX_hoa_don_phien_trang_thai] ON dbo.[hoa_don] ([phien_lam_viec_id], [trang_thai]);
@@ -764,6 +821,8 @@ CREATE UNIQUE INDEX [UX_voucher_doi_diem] ON dbo.[voucher] ([khoa_doi_diem]) WHE
 
 CREATE INDEX [IX_approval_status] ON dbo.[yeu_cau_phe_duyet] ([trang_thai], [gui_luc]);
 
+CREATE INDEX [IX_lich_su_thu_coc_hotel_hop_dong] ON dbo.[lich_su_thu_coc_hotel] ([hop_dong_id], [tao_luc] DESC);
+
 
     COMMIT TRANSACTION;
 END TRY
@@ -772,3 +831,4 @@ BEGIN CATCH
         ROLLBACK TRANSACTION;
     THROW;
 END CATCH;
+GO

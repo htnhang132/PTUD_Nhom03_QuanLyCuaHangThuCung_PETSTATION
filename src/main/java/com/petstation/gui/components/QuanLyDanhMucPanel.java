@@ -634,8 +634,27 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             }
             case HOP_CHON -> {
                 // Hộp.
-                JComboBox<String> cboHop = new JComboBox<>(layCacLuaChonCua(truongDangXet));
+                JComboBox<String> cboHop =
+                        new JComboBox<>(layCacLuaChonCua(truongDangXet)) {
+                            @Override
+                            public String getToolTipText(MouseEvent event) {
+                                Object chon = getSelectedItem();
+                                if (chon != null) {
+                                    String vanBan = chon.toString();
+                                    if (!vanBan.isEmpty()) {
+                                        int rongKhaDung = getWidth() - 32;
+                                        int rongChu =
+                                                getFontMetrics(getFont()).stringWidth(vanBan);
+                                        if (rongKhaDung > 0 && rongChu > rongKhaDung) {
+                                            return vanBan;
+                                        }
+                                    }
+                                }
+                                return super.getToolTipText(event);
+                            }
+                        };
                 cboHop.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+                javax.swing.ToolTipManager.sharedInstance().registerComponent(cboHop);
                 return cboHop;
             }
             case VUNG -> {
@@ -710,7 +729,22 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     private JTextField layVanBanDauVao(TruongDuLieu truongDangXet) {
-        JTextField txtGiaTriTam = new JTextField();
+        JTextField txtGiaTriTam =
+                new JTextField() {
+                    @Override
+                    public String getToolTipText(MouseEvent event) {
+                        String vanBan = getText();
+                        if (vanBan != null && !vanBan.isEmpty()) {
+                            Insets le = getInsets();
+                            int rongKhaDung = getWidth() - le.left - le.right;
+                            int rongChu = getFontMetrics(getFont()).stringWidth(vanBan);
+                            if (rongKhaDung > 0 && rongChu > rongKhaDung) {
+                                return vanBan;
+                            }
+                        }
+                        return super.getToolTipText(event);
+                    }
+                };
         txtGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtGiaTriTam.setBorder(
                 BorderFactory.createCompoundBorder(
@@ -718,6 +752,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                         new EmptyBorder(5, 8, 5, 8)));
         if (truongDangXet.kieu == Kieu.NGAY)
             txtGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy hoặc chọn từ lịch");
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(txtGiaTriTam);
         return txtGiaTriTam;
     }
 
@@ -1099,6 +1134,40 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             cacGiaTri[chiSo] = giaTri;
             if (truongDangXet.docChi && !(chiSo == 0))
                 cacGiaTri[chiSo] = cheDo == CheDo.MOI ? layMacDinhCua(chiSo) : hienTai[chiSo];
+        }
+
+        boolean laVoucher =
+                cacDong instanceof com.petstation.service.DanhMucService.CacDong dmVoucher
+                        && dmVoucher.loai == com.petstation.model.LoaiDanhMuc.VOUCHER;
+        List<String> dsKhachVoucher =
+                laVoucher && cacGiaTri.length > 7
+                        ? com.petstation.service.DanhMucService.tachDanhSachKhach(cacGiaTri[7])
+                        : List.of();
+        if (laVoucher && dsKhachVoucher.size() == 1) {
+            String khachDuyNhat = dsKhachVoucher.get(0);
+            cacGiaTri[7] = khachDuyNhat;
+            String maNhap = String.valueOf(cacGiaTri[0]).trim();
+            if (cheDo == CheDo.MOI && !maNhap.isEmpty()) {
+                for (Object[] d : cacDong) {
+                    if (String.valueOf(d[0]).equalsIgnoreCase(maNhap)
+                            && !String.valueOf(d[7]).equalsIgnoreCase(khachDuyNhat)) {
+                        String maKhach =
+                                com.petstation.service.DanhMucService.layMaTuLuaChon(khachDuyNhat);
+                        cacGiaTri[0] =
+                                com.petstation.service.DanhMucService.taoMaVoucherTheoKhach(
+                                        maNhap, maKhach);
+                        break;
+                    }
+                }
+            }
+        }
+        boolean phatHanhNhieuKhach = laVoucher && dsKhachVoucher.size() > 1;
+
+        for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
+            TruongDuLieu truongDangXet = cacTruong.get(chiSo);
+            if (phatHanhNhieuKhach && chiSo == 0 && !String.valueOf(cacGiaTri[0]).isBlank()) {
+                continue;
+            }
             // Lỗi.
             String loi = kiemTraTruong(chiSo, truongDangXet, String.valueOf(cacGiaTri[chiSo]));
             if (loi != null) {
@@ -1128,6 +1197,72 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             cauHinh.boChuanHoa.accept(cacGiaTri);
         // Trước.
         Object[] truoc = cheDo == CheDo.SUA ? hienTai.clone() : null;
+
+        if (phatHanhNhieuKhach) {
+            String maGoc = String.valueOf(cacGiaTri[0]).trim();
+            Object[] dongCapNhat = null;
+            List<Object[]> cacDongMoi = new ArrayList<>();
+            String khachChinh = null;
+            if (cheDo == CheDo.SUA && hienTai != null) {
+                String khachCu = String.valueOf(hienTai[7]);
+                khachChinh =
+                        dsKhachVoucher.contains(khachCu) ? khachCu : dsKhachVoucher.get(0);
+                dongCapNhat = cacGiaTri.clone();
+                dongCapNhat[7] = khachChinh;
+                if (cauHinh.boChuanHoa != null) cauHinh.boChuanHoa.accept(dongCapNhat);
+                String loiMa = kiemTraTruong(0, cacTruong.get(0), String.valueOf(dongCapNhat[0]));
+                if (loiMa != null) {
+                    HopThoai.hienThiCanhBao(this, "Chưa thể lưu:\n• " + loiMa);
+                    return;
+                }
+            }
+            for (String khach : dsKhachVoucher) {
+                if (khachChinh != null && khach.equals(khachChinh)) continue;
+                Object[] dongMoi = cacGiaTri.clone();
+                String maKhach = com.petstation.service.DanhMucService.layMaTuLuaChon(khach);
+                String maMoi =
+                        com.petstation.service.DanhMucService.taoMaVoucherTheoKhach(
+                                maGoc, maKhach);
+                dongMoi[0] = maMoi;
+                dongMoi[7] = khach;
+                if (cauHinh.boChuanHoa != null) cauHinh.boChuanHoa.accept(dongMoi);
+                for (Object[] d : cacDong) {
+                    if (String.valueOf(d[0]).equalsIgnoreCase(maMoi)) {
+                        HopThoai.hienThiCanhBao(
+                                this,
+                                "Chưa thể lưu:\n• Mã voucher \""
+                                        + maMoi
+                                        + "\" đã tồn tại ("
+                                        + d[7]
+                                        + ").");
+                        return;
+                    }
+                }
+                cacDongMoi.add(dongMoi);
+            }
+            try {
+                com.petstation.service.DanhMucService.luuNhieu(
+                        cacDong, truoc, dongCapNhat, cacDongMoi);
+            } catch (RuntimeException ngoaiLe) {
+                HopThoai.hienThiCanhBao(this, "Không thể lưu: " + ngoaiLe.getMessage());
+                return;
+            }
+            Object[] daLuuCuoi = null;
+            if (dongCapNhat != null && hienTai != null) {
+                System.arraycopy(dongCapNhat, 0, hienTai, 0, dongCapNhat.length);
+                daLuuCuoi = hienTai;
+                if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(truoc, hienTai);
+            }
+            for (Object[] dongMoi : cacDongMoi) {
+                cacDong.add(dongMoi);
+                daLuuCuoi = dongMoi;
+                if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(null, dongMoi);
+            }
+            lamMoiLuaChonLoc();
+            taiLai(daLuuCuoi);
+            nhay("Đã lưu " + dsKhachVoucher.size() + " " + cauHinh.tenThucThe + ".");
+            return;
+        }
 
         boolean laNcc = cacDong instanceof com.petstation.service.DanhMucService.CacDong dm
                 && dm.loai == com.petstation.model.LoaiDanhMuc.NHA_CUNG_CAP;
@@ -1183,6 +1318,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
         if (cauHinh.khiDaLuu != null)
             cauHinh.khiDaLuu.accept(truoc, daLuu);
+        lamMoiLuaChonLoc();
         taiLai(daLuu);
         nhay("Đã lưu " + cauHinh.tenThucThe + " " + daLuu[0] + ".");
     }
@@ -1522,6 +1658,34 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         lblSoKetQua.setText(ThanhDanhSach.soKetQua(tblBang.getRowCount(), cacDong.size()));
     }
 
+    private static void ganTooltipKhiBiChe(JComboBox<String> cbo) {
+        Runnable capNhat =
+                () -> {
+                    Object chon = cbo.getSelectedItem();
+                    String vanBan = chon == null ? "" : chon.toString();
+                    if (vanBan.isEmpty()) {
+                        cbo.setToolTipText(null);
+                        return;
+                    }
+                    int rongKhaDung =
+                            (cbo.getWidth() > 0
+                                            ? cbo.getWidth()
+                                            : cbo.getPreferredSize().width)
+                                    - 28;
+                    int rongChu = cbo.getFontMetrics(cbo.getFont()).stringWidth(vanBan);
+                    cbo.setToolTipText(rongChu > rongKhaDung ? vanBan : null);
+                };
+        cbo.addActionListener(e -> capNhat.run());
+        cbo.addComponentListener(
+                new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentResized(java.awt.event.ComponentEvent e) {
+                        capNhat.run();
+                    }
+                });
+        capNhat.run();
+    }
+
     private void taoThanhBoLoc(ThanhDanhSach thanh) {
         for (BoLocDanhMuc bo : cauHinh.cacBoLoc) {
             JComboBox<String> chon = new JComboBox<>();
@@ -1534,6 +1698,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     .distinct()
                     .sorted()
                     .forEach(chon::addItem);
+            ganTooltipKhiBiChe(chon);
             cboCacBoLoc.add(chon);
             thanh.themBoLoc(bo.nhan() + ":", chon);
             chon.addActionListener(
@@ -1552,6 +1717,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     .distinct()
                     .sorted()
                     .forEach(cboTrangThai::addItem);
+            ganTooltipKhiBiChe(cboTrangThai);
             thanh.themBoLoc(layNhanBoLocTrangThai() + ":", cboTrangThai);
             cboTrangThai.addActionListener(
                     e -> {
