@@ -225,7 +225,7 @@ public final class DinhDangBang {
             if (tblBang.getTableHeader() != null) {
                 FontMetrics fm = tblBang.getTableHeader().getFontMetrics(tblBang.getTableHeader().getFont());
                 if (fm != null) {
-                    rongTieuDe = fm.stringWidth(tieuDe) + 24;
+                    rongTieuDe = fm.stringWidth(tieuDe) + 36;
                 }
             }
 
@@ -323,9 +323,6 @@ public final class DinhDangBang {
             // Giữ độ rộng gợi ý nhưng không giới hạn thao tác kéo của người dùng.
             cot.setMaxWidth(Integer.MAX_VALUE);
             cot.setResizable(true);
-            int rongTieuDe = tblBang.getTableHeader()
-                    .getFontMetrics(tblBang.getTableHeader().getFont())
-                    .stringWidth(String.valueOf(cot.getHeaderValue())) + 36;
             cot.setPreferredWidth(Math.max(cot.getPreferredWidth(), rongTieuDe));
         }
     }
