@@ -42,10 +42,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private long idPhieuTreo;
     private String maHen = "";
 
-    public LapPhieuSpaPanel(LongConsumer khiLuu, Runnable chonLich) {
-        this(khiLuu, chonLich, () -> {});
-    }
-
     public LapPhieuSpaPanel(LongConsumer khiLuu, Runnable chonLich, Runnable khiTreo) {
         this.khiLuu = khiLuu;
         this.khiTreo = khiTreo;
@@ -421,7 +417,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         // Xóa sau khi lưu thành công để không tạo trùng khi nhấn lại.
         khachHang = null;
         datLaiForm();
-        HopThoai.hienThiThanhCong(this, "Đã lập phiếu Spa. Có thể xem tại tab Đang phục vụ.");
+        HopThoai.hienThiThanhCong(this, "Đã lập phiếu Spa. Có thể xem trong danh sách phiếu Spa.");
         khiLuu.accept(id);
     }
 }

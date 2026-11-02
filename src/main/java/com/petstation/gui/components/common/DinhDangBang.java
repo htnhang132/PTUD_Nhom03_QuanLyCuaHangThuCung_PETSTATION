@@ -127,6 +127,7 @@ public final class DinhDangBang {
         tieuDeBang.setPreferredSize(new Dimension(tieuDeBang.getWidth(), 38));
         tieuDeBang.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN));
         tieuDeBang.setReorderingAllowed(false);
+        tieuDeBang.setResizingAllowed(true);
         if (tieuDeBang.getClientProperty("hoverHeaderTooltip") == null) {
             tieuDeBang.putClientProperty("hoverHeaderTooltip", true);
             tieuDeBang.addMouseMotionListener(
@@ -149,6 +150,15 @@ public final class DinhDangBang {
                         }
                     });
         }
+
+        // Khi kéo rộng cột, cho phép cuộn ngang thay vì ép các cột còn lại.
+        tieuDeBang.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                if (tieuDeBang.getResizingColumn() != null)
+                    tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            }
+        });
 
         // Định dạng bề rộng các cột thông minh
         canChinhDoRongCot(tblBang);
@@ -310,6 +320,13 @@ public final class DinhDangBang {
                 cot.setMinWidth(Math.max(90, rongTieuDe));
                 cot.setPreferredWidth(Math.max(150, rongTieuDe + 20));
             }
+            // Giữ độ rộng gợi ý nhưng không giới hạn thao tác kéo của người dùng.
+            cot.setMaxWidth(Integer.MAX_VALUE);
+            cot.setResizable(true);
+            int rongTieuDe = tblBang.getTableHeader()
+                    .getFontMetrics(tblBang.getTableHeader().getFont())
+                    .stringWidth(String.valueOf(cot.getHeaderValue())) + 36;
+            cot.setPreferredWidth(Math.max(cot.getPreferredWidth(), rongTieuDe));
         }
     }
 

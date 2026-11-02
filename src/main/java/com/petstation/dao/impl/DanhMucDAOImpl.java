@@ -178,12 +178,22 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         return cacDong;
     }
 
-    private static String chuyenBangGiaSpaSangUI(String bangGiaCSDL) {
+    static String chuyenBangGiaSpaSangUI(String bangGiaCSDL) {
         if (bangGiaCSDL == null || bangGiaCSDL.isBlank()) return "";
-        if (bangGiaCSDL.contains("|")) return bangGiaCSDL;
         List<String> cacGia = new ArrayList<>();
         for (String muc : bangGiaCSDL.split(";")) {
             if (muc.isBlank()) continue;
+            if (muc.contains("|")) {
+                String[] p = muc.split("\\|", -1);
+                if (p.length == 5) {
+                    String loai = "DOG".equalsIgnoreCase(p[0].trim()) ? "Chó" : "Mèo";
+                    String gia = new BigDecimal(p[4].trim()).toBigIntegerExact().toString();
+                    cacGia.add(loai + "|" + p[1].trim() + "|" + gia);
+                } else if (p.length == 3) {
+                    cacGia.add(muc);
+                }
+                continue;
+            }
             String[] p = muc.split(":");
             if (p.length < 3) continue;
             String loai = "DOG".equalsIgnoreCase(p[0].trim()) ? "Chó" : "Mèo";
@@ -205,12 +215,17 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         return String.join(";", cacGia);
     }
 
-    private static String chuyenBangGiaSpaSangCSDL(String bangGiaUI) {
+    static String chuyenBangGiaSpaSangCSDL(String bangGiaUI) {
         if (bangGiaUI == null || bangGiaUI.isBlank()) return "";
         List<String> ketQua = new ArrayList<>();
         for (String dong : bangGiaUI.split(";")) {
             if (dong.isBlank()) continue;
-            String[] vungDangXet = dong.split("\\|");
+            String[] vungDangXet = dong.split("\\|", -1);
+            if (vungDangXet.length == 5) {
+                // Chuẩn hóa cả dữ liệu SQL truyền trực tiếp qua đường lưu.
+                ketQua.add(chuyenBangGiaSpaSangCSDL(chuyenBangGiaSpaSangUI(dong)));
+                continue;
+            }
             if (vungDangXet.length != 3)
                 throw new IllegalArgumentException("Bảng giá không hợp lệ.");
             List<BigDecimal> cacCanNang = new ArrayList<>();
@@ -229,17 +244,22 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             ? cacCanNang.get(1)
                             : vungDangXet[1].contains("<") && !cacCanNang.isEmpty()
                                     ? cacCanNang.get(0)
-                                    : new BigDecimal(999);
-            String loai = "Chó".equals(vungDangXet[0].trim()) ? "DOG" : "CAT";
-            long donGia = new BigDecimal(vungDangXet[2].trim()).longValue();
+                                    : null;
+            String tenLoai = vungDangXet[0].trim();
+            String loai;
+            if ("Chó".equalsIgnoreCase(tenLoai) || "DOG".equalsIgnoreCase(tenLoai)) loai = "DOG";
+            else if ("Mèo".equalsIgnoreCase(tenLoai) || "CAT".equalsIgnoreCase(tenLoai)) loai = "CAT";
+            else throw new IllegalArgumentException("Loài trong bảng giá phải là Chó hoặc Mèo.");
+            BigDecimal donGia = new BigDecimal(vungDangXet[2].trim());
+            if (thap.signum() < 0 || (cao != null && cao.compareTo(thap) <= 0)
+                    || donGia.signum() <= 0)
+                throw new IllegalArgumentException("Khoảng cân nặng hoặc giá không hợp lệ.");
             ketQua.add(
                     loai
-                            + ":"
-                            + thap.stripTrailingZeros().toPlainString()
-                            + "-"
-                            + cao.stripTrailingZeros().toPlainString()
-                            + ":"
-                            + donGia);
+                            + "|" + vungDangXet[1].trim()
+                            + "|" + thap.setScale(2, java.math.RoundingMode.UNNECESSARY).toPlainString()
+                            + "|" + (cao == null ? "NULL" : cao.setScale(2, java.math.RoundingMode.UNNECESSARY).toPlainString())
+                            + "|" + donGia.setScale(2, java.math.RoundingMode.UNNECESSARY).toPlainString());
         }
         return String.join(";", ketQua);
     }

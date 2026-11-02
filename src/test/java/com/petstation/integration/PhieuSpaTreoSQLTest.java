@@ -98,7 +98,7 @@ class PhieuSpaTreoSQLTest {
     void moLaiFormGiuLuaChonVaNoiDungNhungYeuCauKiemTraSucKhoeLai() throws Exception {
         javax.swing.SwingUtilities.invokeAndWait(() -> tinhHuong(() -> {
             long id = PhieuSpaTreoService.treo(0, nhap());
-            var form = new com.petstation.gui.processing.spa.LapPhieuSpaPanel(p -> {}, () -> {});
+            var form = new com.petstation.gui.processing.spa.LapPhieuSpaPanel(p -> {}, () -> {}, () -> {});
             try {
                 var sucKhoe = form.getClass().getDeclaredField("chkSucKhoe");
                 sucKhoe.setAccessible(true);
