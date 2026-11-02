@@ -53,21 +53,6 @@ public final class QuyTrinhManHinh {
                             List.of(MaManHinh.LAP_HOA_DON, MaManHinh.THANH_TOAN, MaManHinh.IN_HOA_DON),
                             List.of("Lập hóa đơn", "Thanh toán", "Xem hóa đơn"),
                             false),
-//                    new QuyTrinh(
-//                            "Lập phiếu Spa",
-//                            List.of(
-//                                    MaManHinh.DAT_LICH_HEN_SPA,
-//                                    MaManHinh.TIEP_NHAN_SPA,
-//                                    MaManHinh.CHON_GOI_SPA,
-//                                    MaManHinh.CAP_NHAT_TIEN_DO_SPA,
-//                                    MaManHinh.HOAN_TAT_SPA),
-//                            List.of(
-//                                    "Lịch hẹn",
-//                                    "Tiếp nhận",
-//                                    "Chọn dịch vụ",
-//                                    "Tiến độ",
-//                                    "Đóng phiếu"),
-//                            true),
                     new QuyTrinh(
                             "Quản lý lưu trú",
                             List.of(

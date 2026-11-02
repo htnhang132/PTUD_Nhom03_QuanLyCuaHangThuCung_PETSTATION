@@ -24,12 +24,8 @@ import com.petstation.gui.processing.sales.DonHangTreoPanel;
 import com.petstation.gui.processing.sales.InHoaDonPanel;
 import com.petstation.gui.processing.sales.LapHoaDonPanel;
 import com.petstation.gui.processing.sales.ThanhToanPanel;
-import com.petstation.gui.processing.spa.ChonDichVuSpaPanel;
-import com.petstation.gui.processing.spa.DongPhieuSpaPanel;
 import com.petstation.gui.processing.spa.LichHenSpaPanel;
-import com.petstation.gui.processing.spa.TienDoSpaPanel;
 import com.petstation.gui.processing.spa.TiepNhanSpaPanel;
-import com.petstation.gui.processing.spa.QuanLySpaPanel;
 import com.petstation.gui.processing.staff.PhanLichNhanVienPanel;
 import com.petstation.gui.reports.ThongKeCongNoPanel;
 import com.petstation.gui.reports.ThongKeDoanhThuPanel;
@@ -445,34 +441,15 @@ public final class DangKyManHinh {
             case HOA_DON_CHO -> new DonHangTreoPanel(banHang, boDieuHuong);
             case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);
             // Xử lý: Spa
-            case QUAN_LY_SPA ->
-                new TiepNhanSpaPanel(
-                    banHang,
-                    boDieuHuong
-                );
-
-            case TIEP_NHAN_SPA ->
-                new TiepNhanSpaPanel(
-                    banHang,
-                    boDieuHuong
-                );
-
-            case DAT_LICH_HEN_SPA ->
-                new QuanLySpaPanel(
-                    banHang,
-                    boDieuHuong,
-                    1
-                );
-
-
-            case CHON_GOI_SPA,
+            // Các bước xử lý và quay lại từ thanh toán dùng cùng giao diện danh sách.
+            case QUAN_LY_SPA,
+                 TIEP_NHAN_SPA,
+                 CHON_GOI_SPA,
                  CAP_NHAT_TIEN_DO_SPA,
                  HOAN_TAT_SPA ->
-                new QuanLySpaPanel(
-                    banHang,
-                    boDieuHuong,
-                    2
-                );
+                new TiepNhanSpaPanel(banHang, boDieuHuong);
+
+            case DAT_LICH_HEN_SPA -> new LichHenSpaPanel(banHang, boDieuHuong);
 
             // Xử lý: ThuCung Hotel
             case QUAN_LY_LUU_TRU -> new LuuTruHotelPanel(banHang, boDieuHuong);
