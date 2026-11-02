@@ -113,27 +113,39 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         String bangGia = String.valueOf(goi[2]).trim();
         if (bangGia.isEmpty()) return List.of();
 
+        long donGiaChon = timGiaTheoCanNang(bangGia, loaiThuCung, canNang);
+        if (donGiaChon < 0) return List.of();
+        return List.<Object[]>of(new Object[] {goiId, donGiaChon, tenGoi});
+    }
+
+    static long timGiaTheoCanNang(String bangGia, String loaiThuCung, double canNang) {
+        if ("Chó".equalsIgnoreCase(loaiThuCung)) loaiThuCung = "DOG";
+        else if ("Mèo".equalsIgnoreCase(loaiThuCung)) loaiThuCung = "CAT";
         long donGiaChon = -1;
         double maxTu = -1;
         for (String muc : bangGia.split(";")) {
             if (muc.isBlank()) continue;
-            String[] p = muc.split(":");
-            if (p.length < 3) continue;
+            boolean namPhan = muc.contains("|");
+            String[] p = muc.split(namPhan ? "\\|" : ":", -1);
+            if (p.length != (namPhan ? 5 : 3)) continue;
             if (!p[0].trim().equalsIgnoreCase(loaiThuCung)) continue;
-            String[] khoang = p[1].trim().split("-");
+            String[] khoang = namPhan ? new String[]{p[2], p[3]} : p[1].trim().split("-", -1);
             double tu = Double.parseDouble(khoang[0].trim());
-            double den =
-                    khoang.length > 1 && !khoang[1].isBlank()
-                            ? Double.parseDouble(khoang[1].trim())
-                            : Double.MAX_VALUE;
-            long gia = Long.parseLong(p[2].trim());
-            if (canNang >= tu && (canNang <= den || den >= 999) && tu >= maxTu) {
+            double den = khoang.length < 2 || khoang[1].isBlank()
+                    || "NULL".equalsIgnoreCase(khoang[1].trim())
+                    ? Double.POSITIVE_INFINITY : Double.parseDouble(khoang[1].trim());
+            long gia = new java.math.BigDecimal(p[namPhan ? 4 : 2].trim()).longValueExact();
+            String nhan = namPhan ? p[1].trim() : "";
+            boolean datTu = nhan.startsWith(">") && !nhan.startsWith(">=")
+                    ? canNang > tu : canNang >= tu;
+            boolean datDen = nhan.startsWith("<") && !nhan.startsWith("<=")
+                    ? canNang < den : canNang <= den;
+            if (datTu && datDen && tu >= maxTu) {
                 maxTu = tu;
                 donGiaChon = gia;
             }
         }
-        if (donGiaChon < 0) return List.of();
-        return List.<Object[]>of(new Object[] {goiId, donGiaChon, tenGoi});
+        return donGiaChon;
     }
 
     public int capNhatThemDichVuSpa(Object... cacThamSo) {

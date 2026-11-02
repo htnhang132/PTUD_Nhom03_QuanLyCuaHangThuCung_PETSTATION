@@ -31,7 +31,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         nhap.setOpaque(false);
         nhap.add(hangNhap("Loài", loai));
         nhap.add(hangNhap("Từ cân nặng (kg)", tuKg));
-        nhap.add(hangNhap("Đến cân nặng (kg)", denKg));
+        nhap.add(hangNhap("Đến cân nặng (kg, để trống nếu không giới hạn)", denKg));
         nhap.add(hangNhap("Giá dịch vụ (VNĐ)", gia));
         gia.putClientProperty("JTextField.placeholderText", "Nhập giá rồi thêm mức giá");
         // Xếp dọc để các nút không bị cắt trong form dùng chung rộng 380 px.
@@ -56,8 +56,9 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             if (e.getValueIsAdjusting() || bang.getSelectedRow() < 0) return;
             int r = bang.convertRowIndexToModel(bang.getSelectedRow());
             loai.setSelectedItem(model.getValueAt(r, 0));
-            String[] khoang = String.valueOf(model.getValueAt(r, 1)).replace("kg", "").split("-", 2);
-            if (khoang.length == 2) { tuKg.setText(khoang[0]); denKg.setText(khoang[1]); }
+            double[] khoang = docKhoang(String.valueOf(model.getValueAt(r, 1)));
+            tuKg.setText(soCan(khoang[0]));
+            denKg.setText(Double.isInfinite(khoang[1]) ? "" : soCan(khoang[1]));
             gia.setText(String.valueOf(TienTe.doc(String.valueOf(model.getValueAt(r, 2)))));
         });
     }
@@ -77,20 +78,28 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private void capNhat(boolean laSua) {
         try {
             double tu = Double.parseDouble(tuKg.getText().trim().replace(',', '.'));
-            double den = Double.parseDouble(denKg.getText().trim().replace(',', '.'));
+            double den = denKg.getText().isBlank() ? Double.POSITIVE_INFINITY
+                    : Double.parseDouble(denKg.getText().trim().replace(',', '.'));
             long soTien = TienTe.doc(gia.getText());
-            if (!Double.isFinite(tu) || !Double.isFinite(den) || tu < 0 || den <= tu)
+            if (!Double.isFinite(tu) || Double.isNaN(den)
+                    || (!denKg.getText().isBlank() && !Double.isFinite(den)) || tu < 0 || den <= tu)
                 throw new IllegalArgumentException("Cân nặng phải thỏa 0 ≤ từ kg < đến kg.");
             if (soTien <= 0) throw new IllegalArgumentException("Giá phải lớn hơn 0.");
             int dong = laSua && bang.getSelectedRow() >= 0
                 ? bang.convertRowIndexToModel(bang.getSelectedRow()) : -1;
             if (laSua && dong < 0) throw new IllegalArgumentException("Hãy chọn mức giá cần sửa.");
-            String khoang = tuKg.getText().trim().replace(',', '.') + "-"
-                + denKg.getText().trim().replace(',', '.') + "kg";
+            String khoang = Double.isInfinite(den) ? ">= " + soCan(tu) + "kg"
+                    : tu == 0 ? "< " + soCan(den) + "kg"
+                    : soCan(tu) + " - " + soCan(den) + "kg";
+            if (dong >= 0) {
+                String cu = String.valueOf(model.getValueAt(dong, 1));
+                double[] canCu = docKhoang(cu);
+                if (tu == canCu[0] && den == canCu[1]) khoang = cu;
+            }
             for (int i = 0; i < model.getRowCount(); i++) {
                 if (i == dong || !loai.getSelectedItem().equals(model.getValueAt(i, 0))) continue;
-                String[] p = String.valueOf(model.getValueAt(i, 1)).replace("kg", "").split("-", 2);
-                if (p.length == 2 && tu <= Double.parseDouble(p[1]) && den >= Double.parseDouble(p[0]))
+                double[] p = docKhoang(String.valueOf(model.getValueAt(i, 1)));
+                if (tu < p[1] && den > p[0])
                     throw new IllegalArgumentException("Khoảng cân trùng với mức giá khác của cùng loài.");
             }
             Object[] duLieu = {loai.getSelectedItem(), khoang, TienTe.dinhDang(soTien)};
@@ -104,6 +113,22 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     }
 
     @Override public JComponent layThanhPhan() { return panel; }
+
+    private static String soCan(double kg) {
+        return java.math.BigDecimal.valueOf(kg).stripTrailingZeros().toPlainString();
+    }
+
+    private static double[] docKhoang(String nhan) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)?").matcher(nhan);
+        java.util.List<Double> so = new java.util.ArrayList<>();
+        while (m.find()) so.add(Double.parseDouble(m.group().replace(',', '.')));
+        if (so.size() == 2) return new double[]{so.get(0), so.get(1)};
+        if (so.size() == 1 && nhan.contains("<")) return new double[]{0, so.get(0)};
+        if (so.size() == 1 && nhan.contains(">")) return new double[]{so.get(0), Double.POSITIVE_INFINITY};
+        if (nhan.toLowerCase(java.util.Locale.ROOT).contains("mọi"))
+            return new double[]{0, Double.POSITIVE_INFINITY};
+        throw new IllegalArgumentException("Khoảng cân nặng không hợp lệ: " + nhan);
+    }
 
     @Override public String lay() {
         StringBuilder kq = new StringBuilder();

@@ -51,36 +51,80 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
                 cacThamSo);
     }
 
+    @Override
     public List<Object[]> layLichSuDiem(Object... cacThamSo) {
         List<Object[]> dong =
                 ThaoTacSQL.truyVan(
-                        "SELECT COALESCE(lich_su_diem, N'') FROM khach_hang WHERE id=?",
+                        "SELECT COALESCE(lich_su_diem, N'') "
+                                + "FROM khach_hang WHERE id=?",
                         cacThamSo);
-        if (dong.isEmpty()) return List.of();
+
+        if (dong.isEmpty()) {
+            return List.of();
+        }
+
         String chuoi = String.valueOf(dong.get(0)[0]).trim();
-        if (chuoi.isEmpty()) return List.of();
+        if (chuoi.isEmpty()) {
+            return List.of();
+        }
+
         List<Object[]> kq = new ArrayList<>();
+        int soBanGhi = 0;
+
         for (String phan : chuoi.split(";")) {
-            if (phan.isBlank()) continue;
-            String[] c = phan.split("\\|");
-            if (c.length >= 5) {
-                Timestamp ts;
-                try {
-                    String s = c[0].trim();
-                    ts =
-                            Timestamp.valueOf(
-                                    LocalDateTime.parse(
-                                            s.length() > 19 ? s.substring(0, 19) : s,
-                                            DINH_DANG_ISO));
-                } catch (Exception e) {
-                    ts = Timestamp.valueOf(LocalDateTime.now());
-                }
-                long thayDoi = Long.parseLong(c[2].trim());
-                long soDuSau = Long.parseLong(c[3].trim());
-                String lyDo = c[4].trim();
-                kq.add(new Object[] {ts, thayDoi, soDuSau, lyDo});
+            if (phan.isBlank()) {
+                continue;
+            }
+
+            soBanGhi++;
+
+            // Giữ cả trường rỗng, ví dụ ID hóa đơn khi đổi voucher.
+            String[] c = phan.split("\\|", -1);
+
+            if (c.length != 5) {
+                throw new IllegalStateException(
+                        "Lịch sử điểm sai định dạng tại bản ghi " + soBanGhi);
+            }
+
+            try {    
+                boolean ngayODau =
+                        c[0].trim().matches("\\d{4}-\\d{2}-\\d{2} .*");
+
+                String ngay = c[ngayODau ? 0 : 4].trim();
+
+                Timestamp thoiGian =
+                        Timestamp.valueOf(
+                                LocalDateTime.parse(
+                                        ngay.length() > 19
+                                                ? ngay.substring(0, 19)
+                                                : ngay,
+                                        DINH_DANG_ISO));
+
+                long thayDoi =
+                        Long.parseLong(c[ngayODau ? 2 : 1].trim());
+
+                long soDuSau =
+                        Long.parseLong(c[ngayODau ? 3 : 2].trim());
+
+                String lyDo = c[ngayODau ? 4 : 3].trim();
+
+                kq.add(new Object[] {
+                    thoiGian,
+                    thayDoi,
+                    soDuSau,
+                    lyDo
+                });
+            } catch (RuntimeException e) {
+                throw new IllegalStateException(
+                        "Không đọc được lịch sử điểm tại bản ghi "
+                                + soBanGhi
+                                + ": "
+                                + e.getMessage(),
+                        e);
             }
         }
+
+        // Giữ cách hiển thị đảo thứ tự bản ghi như code hiện tại.
         Collections.reverse(kq);
         return kq;
     }
