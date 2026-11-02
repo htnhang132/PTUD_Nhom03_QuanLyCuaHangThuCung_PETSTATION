@@ -26,11 +26,11 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
             new JComboBox<>(
                 new String[] {
                     "Tất cả",
-                    "SCHEDULED",
-                    "RECEIVED",
-                    "COMPLETED",
-                    "CANCELLED",
-                    "NO_SHOW"
+                    "Đã hẹn",
+                    "Đã tiếp nhận",
+                    "Hoàn thành",
+                    "Đã hủy",
+                    "Không đến"
                 });
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();
@@ -216,13 +216,15 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                         for (int i = 0; i < e.getValueCount(); i++)
                             text.append(e.getStringValue(i)).append(' ');
                         LocalDate d = time(e.getValue(6)).toLocalDate();
+                        String ttChon = String.valueOf(trangThai.getSelectedItem());
+                        boolean khopTrangThai = "Tất cả".equals(ttChon)
+                                || ttChon.equalsIgnoreCase(e.getStringValue(8))
+                                || ttChon.equalsIgnoreCase(DinhDangBang.tenTrangThai(e.getStringValue(8)));
                         return text.toString().toLowerCase(Locale.ROOT).contains(query)
                             && ("Tất cả".equals(nhanVien.getSelectedItem())
                             || e.getStringValue(5)
                             .equals(nhanVien.getSelectedItem()))
-                            && ("Tất cả".equals(trangThai.getSelectedItem())
-                            || e.getStringValue(8)
-                            .equals(trangThai.getSelectedItem()))
+                            && khopTrangThai
                             && (mode.equals("Danh sách")
                             || !d.isBefore(start) && d.isBefore(end));
                     }

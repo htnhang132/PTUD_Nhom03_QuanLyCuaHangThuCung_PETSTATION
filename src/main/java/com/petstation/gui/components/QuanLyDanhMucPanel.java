@@ -94,6 +94,21 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         boolean trongBieuMau = true;
         boolean hienNhan = true;
         boolean nhieuDong = false;
+        int doRongToiThieu = -1;
+        int doRongUuTien = -1;
+        int doRongToiDa = -1;
+
+        public TruongDuLieu datDoRong(int uuTien) {
+            this.doRongUuTien = uuTien;
+            return this;
+        }
+
+        public TruongDuLieu datDoRong(int toiThieu, int uuTien, int toiDa) {
+            this.doRongToiThieu = toiThieu;
+            this.doRongUuTien = uuTien;
+            this.doRongToiDa = toiDa;
+            return this;
+        }
 
         public TruongDuLieu nhieuDong() {
             this.nhieuDong = true;
@@ -423,6 +438,20 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         // Cuộn.
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
+        for (int colIdx = 0; colIdx < danhSachCacTruong.size(); colIdx++) {
+            int truongIdx = danhSachCacTruong.get(colIdx);
+            TruongDuLieu truong = cacTruong.get(truongIdx);
+            if (colIdx < tblBang.getColumnModel().getColumnCount()) {
+                javax.swing.table.TableColumn col = tblBang.getColumnModel().getColumn(colIdx);
+                if (truong.doRongToiThieu > 0) col.setMinWidth(truong.doRongToiThieu);
+                if (truong.doRongToiDa > 0) {
+                    col.setMaxWidth(truong.doRongToiDa);
+                } else if (truong.doRongUuTien > 0) {
+                    col.setMaxWidth(Integer.MAX_VALUE);
+                }
+                if (truong.doRongUuTien > 0) col.setPreferredWidth(truong.doRongUuTien);
+            }
+        }
         tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // ── Thanh trên: tiêu đề, tìm kiếm, thao tác

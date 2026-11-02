@@ -35,7 +35,9 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                             },
                             "SELECT h.id,h.so_hoa_don,COALESCE(k.ho_ten,N'Khách"
                                 + " lẻ'),COALESCE(n.ho_ten,N'Thu"
-                                + " ngân'),h.thanh_toan_luc,h.tong_tien,h.hinh_thuc_thanh_toan,h.trang_thai"
+                                + " ngân'),h.thanh_toan_luc,h.tong_tien,"
+                                + " CASE h.hinh_thuc_thanh_toan WHEN 'TIEN_MAT' THEN N'Tiền mặt' WHEN 'CASH' THEN N'Tiền mặt' WHEN 'CHUYEN_KHOAN' THEN N'Chuyển khoản' WHEN 'TRANSFER' THEN N'Chuyển khoản' WHEN 'THE' THEN N'Thẻ' WHEN 'CARD' THEN N'Thẻ' WHEN 'QUET_THE' THEN N'Thẻ' WHEN 'KET_HOP' THEN N'Kết hợp' WHEN 'MIXED' THEN N'Kết hợp' ELSE COALESCE(h.hinh_thuc_thanh_toan,N'Tiền mặt') END,"
+                                + " CASE h.trang_thai WHEN 'PAID' THEN N'Đã thanh toán' WHEN 'DA_THANH_TOAN' THEN N'Đã thanh toán' WHEN 'CANCELLED' THEN N'Đã hủy' WHEN 'VOIDED' THEN N'Đã hủy' WHEN 'DA_HUY' THEN N'Đã hủy' WHEN 'REFUNDED' THEN N'Đã hoàn' WHEN 'DA_HOAN' THEN N'Đã hoàn' ELSE COALESCE(h.trang_thai,N'Đã thanh toán') END"
                                 + " FROM hoa_don h LEFT JOIN phien_lam_viec s ON"
                                 + " s.id=h.phien_lam_viec_id LEFT JOIN tai_khoan a ON"
                                 + " a.id=COALESCE(h.tai_khoan_id,s.tai_khoan_id) LEFT JOIN"

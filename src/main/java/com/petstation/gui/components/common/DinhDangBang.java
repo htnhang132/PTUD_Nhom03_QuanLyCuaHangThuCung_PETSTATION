@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
@@ -18,12 +19,17 @@ import javax.swing.table.TableColumn;
 /**
  * Cung cấp giao diện và xử lý tương tác cho bảng định dạng.
  *
- * <p>Kiểu bảng dùng chung cho mọi màn danh sách: dòng chọn màu hồng nhạt (không dùng xanh dương mặc
- * định), dòng xen kẽ, chữ số căn phải, cột trạng thái tô màu, tiêu đề đồng nhất.
- * Cột ngắn có độ rộng giới hạn, cột dài (tên, mô tả, địa chỉ) tự động dãn để không che dữ liệu.
+ * <p>
+ * Kiểu bảng dùng chung cho mọi màn danh sách: dòng chọn màu hồng nhạt (không
+ * dùng xanh dương mặc
+ * định), dòng xen kẽ, chữ số căn phải, cột trạng thái tô màu, tiêu đề đồng
+ * nhất.
+ * Cột ngắn có độ rộng giới hạn, cột dài (tên, mô tả, địa chỉ) tự động dãn để
+ * không che dữ liệu.
  */
 public final class DinhDangBang {
-    private DinhDangBang() {}
+    private DinhDangBang() {
+    }
 
     public static void apDung(JTable tblBang) {
         javax.swing.ToolTipManager.sharedInstance().setInitialDelay(250);
@@ -73,20 +79,17 @@ public final class DinhDangBang {
                         } else if (layCoDangDangSo(vanBan)) {
                             setHorizontalAlignment(SwingConstants.RIGHT);
                         }
-                        String tenCot =
-                                tblGiaTriTam.getColumnName(cot).toLowerCase(java.util.Locale.ROOT);
+                        String tenCot = tblGiaTriTam.getColumnName(cot).toLowerCase(java.util.Locale.ROOT);
                         if (giaTri instanceof java.sql.Timestamp t) {
-                            vanBan =
-                                    t.toLocalDateTime()
-                                            .format(
-                                                    java.time.format.DateTimeFormatter.ofPattern(
-                                                            "dd/MM/yyyy HH:mm"));
+                            vanBan = t.toLocalDateTime()
+                                    .format(
+                                            java.time.format.DateTimeFormatter.ofPattern(
+                                                    "dd/MM/yyyy HH:mm"));
                         } else if (giaTri instanceof java.sql.Date d) {
-                            vanBan =
-                                    d.toLocalDate()
-                                            .format(
-                                                    java.time.format.DateTimeFormatter.ofPattern(
-                                                            "dd/MM/yyyy"));
+                            vanBan = d.toLocalDate()
+                                    .format(
+                                            java.time.format.DateTimeFormatter.ofPattern(
+                                                    "dd/MM/yyyy"));
                         } else if (laTien(tenCot)) {
                             if (giaTri instanceof Number n) {
                                 vanBan = com.petstation.util.TienTe.dinhDang(Math.round(n.doubleValue()));
@@ -105,12 +108,10 @@ public final class DinhDangBang {
                         setText(vanBan);
                         boolean biChe = false;
                         if (vanBan != null && !vanBan.isEmpty()) {
-                            int rongCot =
-                                    cot >= 0 && cot < tblGiaTriTam.getColumnModel().getColumnCount()
-                                            ? tblGiaTriTam.getColumnModel().getColumn(cot).getWidth()
-                                            : 0;
-                            int rongChu =
-                                    getFontMetrics(getFont()).stringWidth(vanBan) + 24;
+                            int rongCot = cot >= 0 && cot < tblGiaTriTam.getColumnModel().getColumnCount()
+                                    ? tblGiaTriTam.getColumnModel().getColumn(cot).getWidth()
+                                    : 0;
+                            int rongChu = getFontMetrics(getFont()).stringWidth(vanBan) + 24;
                             biChe = (rongCot > 0 && rongChu > rongCot) || vanBan.length() > 20;
                         }
                         setToolTipText(biChe ? vanBan : null);
@@ -140,11 +141,10 @@ public final class DinhDangBang {
                             TableColumn tc = tblBang.getColumnModel().getColumn(cot);
                             String tieuDe = String.valueOf(tc.getHeaderValue());
                             int rongCot = tc.getWidth();
-                            int rongChu =
-                                    tieuDeBang
-                                                    .getFontMetrics(tieuDeBang.getFont())
-                                                    .stringWidth(tieuDe)
-                                            + 20;
+                            int rongChu = tieuDeBang
+                                    .getFontMetrics(tieuDeBang.getFont())
+                                    .stringWidth(tieuDe)
+                                    + 20;
                             tieuDeBang.setToolTipText(rongChu > rongCot ? tieuDe : null);
                         }
                     });
@@ -153,22 +153,22 @@ public final class DinhDangBang {
         // Định dạng bề rộng các cột thông minh
         canChinhDoRongCot(tblBang);
 
-        Runnable resize =
-                () -> {
-                    if (tblBang.getParent() instanceof javax.swing.JViewport vp) {
-                        int vpWidth = vp.getWidth();
-                        if (vpWidth <= 0) return;
-                        int tongUuTien = 0;
-                        for (int i = 0; i < tblBang.getColumnCount(); i++) {
-                            tongUuTien += tblBang.getColumnModel().getColumn(i).getPreferredWidth();
-                        }
-                        if (vpWidth >= tongUuTien) {
-                            tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                        } else {
-                            tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                        }
-                    }
-                };
+        Runnable resize = () -> {
+            if (tblBang.getParent() instanceof javax.swing.JViewport vp) {
+                int vpWidth = vp.getWidth();
+                if (vpWidth <= 0)
+                    return;
+                int tongUuTien = 0;
+                for (int i = 0; i < tblBang.getColumnCount(); i++) {
+                    tongUuTien += tblBang.getColumnModel().getColumn(i).getPreferredWidth();
+                }
+                if (vpWidth >= tongUuTien) {
+                    tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                } else {
+                    tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                }
+            }
+        };
 
         if (tblBang.getClientProperty("resizeColumns") == null) {
             tblBang.putClientProperty("resizeColumns", true);
@@ -176,8 +176,7 @@ public final class DinhDangBang {
                     e -> {
                         if (tblBang.getParent() instanceof javax.swing.JViewport vp
                                 && vp.getClientProperty(
-                                                "resize:" + System.identityHashCode(tblBang))
-                                         == null) {
+                                        "resize:" + System.identityHashCode(tblBang)) == null) {
                             vp.putClientProperty(
                                     "resize:" + System.identityHashCode(tblBang), true);
                             vp.addComponentListener(
@@ -197,17 +196,28 @@ public final class DinhDangBang {
 
     /**
      * Căn chỉnh độ rộng các cột dựa trên tên và kiểu dữ liệu:
-     * - Cột dữ liệu ngắn (STT, Mã, SĐT, Giới tính, ĐVT, Ngày, Trạng thái, Giá): giới hạn maxWidth
-     *   để không bị dãn quá rộng vô lý.
-     * - Cột dữ liệu dài (Tên sản phẩm, Tên khách, Địa chỉ, Mô tả, Ghi chú): không đặt maxWidth,
-     *   tự do dãn chiếm toàn bộ không gian còn lại để không bị cắt chữ (...).
+     * - Cột dữ liệu ngắn (STT, Mã, SĐT, Giới tính, ĐVT, Ngày, Trạng thái, Giá):
+     * giới hạn maxWidth
+     * để không bị dãn quá rộng vô lý.
+     * - Cột dữ liệu dài (Tên sản phẩm, Tên khách, Địa chỉ, Mô tả, Ghi chú): không
+     * đặt maxWidth,
+     * tự do dãn chiếm toàn bộ không gian còn lại để không bị cắt chữ (...).
      */
     public static void canChinhDoRongCot(JTable tblBang) {
-        if (tblBang == null || tblBang.getColumnCount() == 0) return;
+        if (tblBang == null || tblBang.getColumnCount() == 0)
+            return;
 
         for (int chiSo = 0; chiSo < tblBang.getColumnCount(); chiSo++) {
             TableColumn cot = tblBang.getColumnModel().getColumn(chiSo);
-            String ten = String.valueOf(cot.getHeaderValue()).trim().toLowerCase(java.util.Locale.ROOT);
+            String tieuDe = String.valueOf(cot.getHeaderValue()).trim();
+            String ten = tieuDe.toLowerCase(java.util.Locale.ROOT);
+            int rongTieuDe = 100;
+            if (tblBang.getTableHeader() != null) {
+                FontMetrics fm = tblBang.getTableHeader().getFontMetrics(tblBang.getTableHeader().getFont());
+                if (fm != null) {
+                    rongTieuDe = fm.stringWidth(tieuDe) + 24;
+                }
+            }
 
             if (ten.equals("stt") || ten.equals("#")) {
                 cot.setMinWidth(45);
@@ -245,33 +255,33 @@ public final class DinhDangBang {
                     || ten.contains("số lượt")
                     || ten.equals("đã dùng")) {
                 cot.setMinWidth(70);
-                cot.setMaxWidth(110);
-                cot.setPreferredWidth(85);
+                cot.setMaxWidth(Math.max(110, rongTieuDe));
+                cot.setPreferredWidth(Math.max(85, rongTieuDe));
             } else if (ten.contains("sau trả") || ten.contains("số bán")) {
                 cot.setMinWidth(90);
-                cot.setMaxWidth(130);
-                cot.setPreferredWidth(110);
+                cot.setMaxWidth(Math.max(130, rongTieuDe));
+                cot.setPreferredWidth(Math.max(110, rongTieuDe));
             } else if (ten.contains("thời gian")
                     || ten.contains("ngày")
                     || ten.contains("lúc")
                     || ten.contains("hạn dùng")
                     || ten.contains("bắt đầu")
                     || ten.contains("kết thúc")) {
-                cot.setMinWidth(100);
-                cot.setMaxWidth(145);
-                cot.setPreferredWidth(125);
+                cot.setMinWidth(Math.max(100, rongTieuDe));
+                cot.setMaxWidth(Math.max(145, rongTieuDe + 40));
+                cot.setPreferredWidth(Math.max(125, rongTieuDe + 10));
             } else if (ten.contains("trạng thái") || ten.equals("tiến độ")) {
                 cot.setMinWidth(110);
-                cot.setMaxWidth(155);
-                cot.setPreferredWidth(135);
+                cot.setMaxWidth(Math.max(155, rongTieuDe));
+                cot.setPreferredWidth(Math.max(135, rongTieuDe));
             } else if (laTien(ten)) {
                 cot.setMinWidth(100);
-                cot.setMaxWidth(150);
-                cot.setPreferredWidth(125);
+                cot.setMaxWidth(Math.max(150, rongTieuDe));
+                cot.setPreferredWidth(Math.max(125, rongTieuDe));
             } else if (ten.contains("phương thức") || ten.contains("hình thức")) {
                 cot.setMinWidth(100);
-                cot.setMaxWidth(150);
-                cot.setPreferredWidth(125);
+                cot.setMaxWidth(Math.max(150, rongTieuDe));
+                cot.setPreferredWidth(Math.max(125, rongTieuDe));
             } else if (ten.contains("email")) {
                 cot.setMinWidth(130);
                 cot.setPreferredWidth(180);
@@ -297,8 +307,8 @@ public final class DinhDangBang {
                 cot.setMinWidth(160);
                 cot.setPreferredWidth(260);
             } else {
-                cot.setMinWidth(90);
-                cot.setPreferredWidth(150);
+                cot.setMinWidth(Math.max(90, rongTieuDe));
+                cot.setPreferredWidth(Math.max(150, rongTieuDe + 20));
             }
         }
     }
@@ -308,6 +318,7 @@ public final class DinhDangBang {
                 || ten.contains("lần")
                 || ten.contains("số lượng")
                 || ten.contains("đã dùng")
+                || ten.contains("bảng giá")
                 || ten.startsWith("mã ")) {
             return false;
         }
@@ -317,32 +328,35 @@ public final class DinhDangBang {
     }
 
     public static String tenTrangThai(String s) {
-        return switch (s) {
-            case "PAID" -> "Đã thanh toán";
-            case "SCHEDULED" -> "Đã hẹn";
-            case "RECEIVED" -> "Đã tiếp nhận";
-            case "IN_PROGRESS" -> "Đang thực hiện";
-            case "COMPLETED" -> "Hoàn thành";
-            case "CANCELLED" -> "Đã hủy";
-            case "NO_SHOW" -> "Không đến";
-            case "BOOKED" -> "Đã đặt";
-            case "CHECKED_IN" -> "Đã nhận";
-            case "CHECKED_OUT" -> "Đã trả phòng";
-            case "CASH" -> "Tiền mặt";
-            case "TRANSFER" -> "Chuyển khoản / QR";
-            case "CARD" -> "Thẻ";
-            case "MIXED" -> "Kết hợp";
-            case "AVAILABLE" -> "Khả dụng";
-            case "OCCUPIED" -> "Có thú";
-            case "CLEANING" -> "Đang dọn";
-            case "MAINTENANCE" -> "Bảo trì";
-            case "ACTIVE" -> "Đang hoạt động";
-            case "INACTIVE" -> "Ngừng hoạt động";
-            case "SELLING" -> "Đang bán";
-            case "OPEN" -> "Đang mở";
-            case "LOCKED" -> "Đã khóa";
-            case "PENDING" -> "Chờ xử lý";
-            case "POSTED" -> "Đã ghi sổ";
+        if (s == null)
+            return "";
+        return switch (s.trim().toUpperCase()) {
+            case "PAID", "DA_THANH_TOAN" -> "Đã thanh toán";
+            case "SCHEDULED", "DA_HEN" -> "Đã hẹn";
+            case "RECEIVED", "DA_TIEP_NHAN" -> "Đã tiếp nhận";
+            case "IN_PROGRESS", "DANG_THUC_HIEN" -> "Đang thực hiện";
+            case "COMPLETED", "HOAN_THANH" -> "Hoàn thành";
+            case "CANCELLED", "VOIDED", "DA_HUY" -> "Đã hủy";
+            case "NO_SHOW", "KHONG_DEN" -> "Không đến";
+            case "BOOKED", "DA_DAT" -> "Đã đặt";
+            case "CHECKED_IN", "DA_NHAN" -> "Đã nhận";
+            case "CHECKED_OUT", "DA_TRA_PHONG" -> "Đã trả phòng";
+            case "CASH", "TIEN_MAT" -> "Tiền mặt";
+            case "TRANSFER", "CHUYEN_KHOAN" -> "Chuyển khoản";
+            case "CARD", "THE", "QUET_THE" -> "Thẻ";
+            case "MIXED", "SPLIT", "KET_HOP" -> "Kết hợp";
+            case "AVAILABLE", "KHA_DUNG" -> "Khả dụng";
+            case "OCCUPIED", "CO_THU" -> "Có thú";
+            case "CLEANING", "DANG_DON" -> "Đang dọn";
+            case "MAINTENANCE", "BAO_TRI" -> "Bảo trì";
+            case "ACTIVE", "DANG_HOAT_DONG" -> "Đang hoạt động";
+            case "INACTIVE", "NGUNG_HOAT_DONG" -> "Ngừng hoạt động";
+            case "SELLING", "DANG_BAN" -> "Đang bán";
+            case "OPEN", "DANG_MO" -> "Đang mở";
+            case "LOCKED", "DA_KHOA" -> "Đã khóa";
+            case "PENDING", "CHO_XU_LY" -> "Chờ xử lý";
+            case "POSTED", "DA_GHI_SO" -> "Đã ghi sổ";
+            case "REFUNDED", "RETURNED", "DA_HOAN" -> "Đã hoàn";
             default -> s;
         };
     }
@@ -353,17 +367,17 @@ public final class DinhDangBang {
     }
 
     private static boolean layCoDangDangSo(String vanBan) {
-        if (vanBan.isEmpty() || vanBan.length() > 20) return false;
-        String giaTriTam =
-                vanBan.replace("₫", "")
-                        .replace(".", "")
-                        .replace(",", "")
-                        .replace("%", "")
-                        .replace("-", "")
-                        .replace("kg", "")
-                        .replace("lần", "")
-                        .replace("lượt", "")
-                        .trim();
+        if (vanBan.isEmpty() || vanBan.length() > 20)
+            return false;
+        String giaTriTam = vanBan.replace("₫", "")
+                .replace(".", "")
+                .replace(",", "")
+                .replace("%", "")
+                .replace("-", "")
+                .replace("kg", "")
+                .replace("lần", "")
+                .replace("lượt", "")
+                .trim();
         return !giaTriTam.isEmpty() && giaTriTam.chars().allMatch(Character::isDigit);
     }
 }
