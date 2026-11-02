@@ -1,3 +1,20 @@
+/*
+    Pet Station - 002_sample_data.sql
+    Mục đích: Nạp dữ liệu mẫu hoàn chỉnh cho toàn bộ hệ thống Pet Station.
+              - Đã loại bỏ hoàn toàn các dữ liệu mẫu rác, thiếu thông tin hoặc không có ảnh.
+              - Toàn bộ 60 sản phẩm đều có ảnh chuẩn, thương hiệu, quy cách, danh mục đầy đủ.
+              - Đồng bộ hóa các bảng liên kết: hóa đơn, phiếu nhập, lô hàng, thú cưng, lịch sử cọc hotel.
+    
+    Hướng dẫn chạy:
+      - Chạy sau khi đã chạy xong database/001_schema.sql.
+      - Mở SQL Server Management Studio (SSMS).
+      - Mở file 002_sample_data.sql và nhấn Execute (F5).
+      - File tự động USE [PetStationDemo1] và dọn dẹp dữ liệu cũ theo đúng thứ tự ràng buộc khóa ngoại (idempotent).
+*/
+
+USE [PetStationDemo1];
+GO
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 SET ANSI_NULLS ON;
@@ -7,9 +24,47 @@ SET ARITHABORT ON;
 SET ANSI_PADDING ON;
 SET CONCAT_NULL_YIELDS_NULL ON;
 SET NUMERIC_ROUNDABORT OFF;
-DECLARE @homNay date=CAST(GETDATE() AS date);
+GO
+
+DECLARE @homNay date = CAST(GETDATE() AS date);
+
 BEGIN TRY
 BEGIN TRANSACTION;
+
+-- Xóa dữ liệu cũ theo đúng thứ tự ràng buộc khóa ngoại (idempotent khi chạy lại nhiều lần)
+DELETE FROM dbo.[lich_su_thu_coc_hotel];
+DELETE FROM dbo.[phieu_spa_treo];
+DELETE FROM dbo.[yeu_cau_phe_duyet];
+DELETE FROM dbo.[voucher];
+DELETE FROM dbo.[phieu_tiep_nhan_spa];
+DELETE FROM dbo.[nhat_ky_cham_soc];
+DELETE FROM dbo.[lich_hen];
+DELETE FROM dbo.[hop_dong_luu_tru];
+DELETE FROM dbo.[thu_cung];
+DELETE FROM dbo.[chi_tiet_phieu_xuat];
+DELETE FROM dbo.[phieu_xuat_kho];
+DELETE FROM dbo.[chi_tiet_phieu_nhap];
+DELETE FROM dbo.[phieu_nhap_kho];
+DELETE FROM dbo.[chi_tiet_doi_tra];
+DELETE FROM dbo.[phieu_doi_tra];
+DELETE FROM dbo.[chi_tiet_hoa_don];
+DELETE FROM dbo.[hoa_don];
+DELETE FROM dbo.[phien_lam_viec];
+DELETE FROM dbo.[chi_tiet_kiem_ke];
+DELETE FROM dbo.[cai_dat];
+DELETE FROM dbo.[bien_ban_kiem_ke];
+DELETE FROM dbo.[tai_khoan];
+DELETE FROM dbo.[nhat_ky_he_thong];
+DELETE FROM dbo.[lo_hang];
+DELETE FROM dbo.[san_pham];
+DELETE FROM dbo.[phong_hotel];
+DELETE FROM dbo.[lich_lam_viec];
+DELETE FROM dbo.[nhan_vien];
+DELETE FROM dbo.[nha_cung_cap];
+DELETE FROM dbo.[khach_hang];
+DELETE FROM dbo.[goi_dich_vu_spa];
+DELETE FROM dbo.[chuong_trinh_khuyen_mai];
+DELETE FROM dbo.[ca_lam_viec];
 
 -- ca_lam_viec (2 dòng)
 DBCC CHECKIDENT ('dbo.ca_lam_viec', RESEED, 0) WITH NO_INFOMSGS;
@@ -184,20 +239,6 @@ DBCC CHECKIDENT ('dbo.san_pham', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[san_pham] ON;
 INSERT INTO dbo.[san_pham] ([id], [ma_san_pham], [barcode], [ten], [nhom_hang], [don_vi_tinh], [gia_ban], [gia_nhap_gan_nhat], [ton_toi_thieu], [theo_doi_hsd], [anh], [trang_thai], [thuong_hieu], [quy_cach], [doi_tuong_su_dung], [mo_ta], [nguon_url], [ngay_thu_thap], [lich_su_gia], [de_xuat_gia])
 VALUES
-    (3, N'SP000001', N'8938505000015', N'Royal Canin Adult 2kg', N'Thức ăn', N'Túi', 285000.00, 240000.00, 10, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (4, N'SP000002', N'8938505000022', N'Pate Whiskas 400g', N'Thức ăn', N'Lon', 45000.00, 36000.00, 30, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (5, N'SP000003', N'8938505000039', N'Vòng cổ da size M', N'Phụ kiện', N'Cái', 120000.00, 80000.00, 5, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (6, N'SP000004', N'8938505000046', N'Sữa tắm Spa Dogs 500ml', N'Grooming', N'Chai', 89000.00, 62000.00, 10, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (7, N'SP000005', N'8938505000053', N'Lồng vận chuyển size L', N'Phụ kiện', N'Cái', 450000.00, 330000.00, 3, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (8, N'SP000006', N'8938505000060', N'Đồ chơi bóng cao su', N'Phụ kiện', N'Cái', 35000.00, 20000.00, 10, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (9, N'SP000007', N'8938505000077', N'Thức ăn hạt Orijen 1.8kg', N'Thức ăn', N'Túi', 520000.00, 430000.00, 5, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (10, N'SP000008', N'8938505000084', N'Cát vệ sinh mèo 5L', N'Vệ sinh', N'Túi', 75000.00, 55000.00, 15, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (11, N'SP000009', N'8938505000091', N'Bàn chải lông chó', N'Grooming', N'Cái', 55000.00, 40000.00, 5, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (12, N'SP000010', N'8938505000107', N'Thuốc nhỏ gáy Frontline', N'Thuốc', N'Hộp', 180000.00, 130000.00, 5, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (13, N'SP000011', N'8938505000114', N'Snack xương gặm răng', N'Thức ăn', N'Gói', 42000.00, 30000.00, 10, 1, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (14, N'SP000012', N'8938505000121', N'Áo mưa chó size S', N'Phụ kiện', N'Cái', 95000.00, 65000.00, 5, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (15, N'SP000013', N'8938505000138', N'Vòng cổ cỡ S', N'Phụ kiện', N'Cái', 100000.00, 50000.00, 5, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-    (16, N'SP000014', N'8938505000145', N'Vòng cổ cỡ M', N'Phụ kiện', N'Cái', 150000.00, 50000.00, 5, 0, NULL, N'SELLING', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
     (17, N'SP000015', N'8938505000152', N'Cát vệ sinh cho mèo siêu vón IRIS OHYAMA KFAG-100 — Dung tích: 10 lít; Đóng gói: 1 túi', N'Vệ sinh', N'Túi', 160000.00, 104000.00, 5, 0, N'images/products/SP-VS-001.jpg', N'SELLING', N'IRIS OHYAMA', N'Dung tích: 10 lít; Đóng gói: 1 túi', N'Mèo', N'Vệ sinh thương hiệu IRIS OHYAMA, dành cho mèo. Quy cách: Dung tích: 10 lít; Đóng gói: 1 túi.', N'https://www.petmart.vn/cat-ve-sinh-cho-meo-sieu-von-iris-ohyama-kfag-100', CONVERT(date,'2026-10-19',23), N'0.00|160000.00|2|2026-09-15 08:00:00', NULL),
     (18, N'SP000016', N'8938505000169', N'Xương cho chó gặm sạch răng VEGEBRAND 360 Bone Prevent Tartar — Đóng gói: 1 gói', N'Thức ăn', N'Gói', 10000.00, 6500.00, 5, 1, N'images/products/SP-TA-001.jpg', N'SELLING', N'VEGEBRAND', N'Đóng gói: 1 gói', N'Chó', N'Thức ăn thương hiệu VEGEBRAND, dành cho chó. Quy cách: Đóng gói: 1 gói.', N'https://www.petmart.vn/xuong-cho-cho-gam-sach-rang-vegebrand-360-bone-prevent-tartar', CONVERT(date,'2026-10-19',23), N'0.00|10000.00|2|2026-09-15 08:00:00', NULL),
     (19, N'SP000017', N'8938505000176', N'Thức ăn cho chó con cỡ nhỏ ROYAL CANIN Mini Puppy — Trọng lượng: 800g', N'Thức ăn', N'Gói', 225000.00, 146250.00, 5, 1, N'images/products/SP-TA-002.jpg', N'SELLING', N'ROYAL CANIN', N'Trọng lượng: 800g', N'Chó', N'Thức ăn thương hiệu ROYAL CANIN, dành cho chó. Quy cách: Trọng lượng: 800g.', N'https://www.petmart.vn/thuc-an-cho-cho-con-co-nho-royal-canin-mini-puppy', CONVERT(date,'2026-10-19',23), N'0.00|225000.00|2|2026-09-15 08:00:00', NULL),
@@ -257,29 +298,13 @@ VALUES
     (73, N'SP000071', N'8938505000718', N'Vòng cổ chó mèo kèm dây dắt cỡ bé HAND IN HAND', N'Phụ kiện', N'Cái', 80000.00, 52000.00, 5, 0, N'images/products/SP-PK-013.jpg', N'SELLING', N'HAND IN HAND', N'', N'Chó và mèo', N'Phụ kiện thương hiệu HAND IN HAND, dành cho chó và mèo.', N'https://www.petmart.vn/vong-co-cho-meo-kem-day-dat-co-be-hand-in-hand', CONVERT(date,'2026-10-19',23), N'0.00|80000.00|2|2026-09-15 08:00:00', NULL),
     (74, N'SP000072', N'8938505000725', N'Bát ăn đôi cho chó mèo bằng nhựa SAWYER PET', N'Phụ kiện', N'Cái', 60000.00, 39000.00, 5, 0, N'images/products/SP-PK-014.jpg', N'SELLING', N'SAWYER PET', N'', N'Chó và mèo', N'Phụ kiện thương hiệu SAWYER PET, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-doi-cho-cho-meo-bang-nhua-sawyer-pet', CONVERT(date,'2026-10-19',23), N'0.00|60000.00|2|2026-09-15 08:00:00', NULL),
     (75, N'SP000073', N'8938505000732', N'Đồ chơi dây thừng cho chó mèo PAW loại dài', N'Phụ kiện', N'Cái', 50000.00, 32500.00, 5, 0, N'images/products/SP-PK-015.jpg', N'SELLING', N'PAW', N'', N'Chó và mèo', N'Phụ kiện thương hiệu PAW, dành cho chó và mèo.', N'https://www.petmart.vn/do-choi-day-thung-cho-cho-meo-paw-loai-dai', CONVERT(date,'2026-10-19',23), N'0.00|50000.00|2|2026-09-15 08:00:00', NULL),
-    (76, N'SP000074', N'8938505000749', N'Bát ăn cho chó mèo bằng nhựa BOBO Plastic Bowl 3038', N'Phụ kiện', N'Cái', 35000.00, 22750.00, 5, 0, N'images/products/SP-PK-016.jpg', N'SELLING', N'BOBO', N'', N'Chó và mèo', N'Phụ kiện thương hiệu BOBO, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-cho-cho-meo-bang-nhua-bobo-plastic-bowl-3038', CONVERT(date,'2026-10-19',23), N'0.00|35000.00|2|2026-09-15 08:00:00', NULL);
-SET IDENTITY_INSERT dbo.[san_pham] OFF;
+    (76, N'SP000074', N'8938505000749', N'Bát ăn cho chó mèo bằng nhựa BOBO Plastic Bowl 3038', N'Phụ kiện', N'Cái', 35000.00, 22750.00, 5, 0, N'images/products/SP-PK-016.jpg', N'SELLING', N'BOBO', N'', N'Chó và mèo', N'Phụ kiện thương hiệu BOBO, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-cho-cho-meo-bang-nhua-bobo-plastic-bowl-3038', CONVERT(date,'2026-10-19',23), N'0.00|35000.00|2|2026-09-15 08:00:00', NULL);SET IDENTITY_INSERT dbo.[san_pham] OFF;
 
 -- lo_hang (75 dòng)
 DBCC CHECKIDENT ('dbo.lo_hang', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[lo_hang] ON;
 INSERT INTO dbo.[lo_hang] ([id], [ma_lo], [san_pham_id], [so_lo], [ngay_san_xuat], [ngay_nhap], [han_su_dung], [gia_nhap], [so_luong_nhap], [so_luong_ton], [ngay_kiem_ke], [trang_thai])
 VALUES
-    (2, N'LO00000001', 3, N'LO00000001', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 240000.00, 47, 47, @homNay, N'AVAILABLE'),
-    (3, N'LO00000002', 4, N'LO00000002', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 36000.00, 82, 82, @homNay, N'AVAILABLE'),
-    (4, N'LO00000003', 5, N'LO00000003', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 80000.00, 10, 3, @homNay, N'AVAILABLE'),
-    (5, N'LO00000004', 6, N'LO00000004', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 62000.00, 28, 28, @homNay, N'AVAILABLE'),
-    (6, N'LO00000005', 7, N'LO00000005', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 330000.00, 10, 7, @homNay, N'AVAILABLE'),
-    (7, N'LO00000006', 8, N'LO00000006', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 20000.00, 15, 15, @homNay, N'AVAILABLE'),
-    (8, N'LO00000007', 9, N'LO00000007', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 430000.00, 10, 2, @homNay, N'AVAILABLE'),
-    (9, N'LO00000008', 10, N'LO00000008', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 55000.00, 31, 31, @homNay, N'AVAILABLE'),
-    (10, N'LO00000009', 11, N'LO00000009', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 40000.00, 12, 12, @homNay, N'AVAILABLE'),
-    (11, N'LO00000010', 12, N'LO00000010', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 130000.00, 10, 0, @homNay, N'AVAILABLE'),
-    (12, N'LO00000011', 13, N'LO00000011', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 30000.00, 40, 40, @homNay, N'AVAILABLE'),
-    (13, N'LO00000012', 14, N'LO00000012', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 65000.00, 10, 9, @homNay, N'AVAILABLE'),
-    (14, N'LO00000013', 3, N'LO00000013', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 240000.00, 10, 2, @homNay, N'AVAILABLE'),
-    (15, N'LO00000014', 15, N'LO00000014', DATEADD(day,-30,@homNay), @homNay, NULL, 50000.00, 20, 20, @homNay, N'AVAILABLE'),
-    (16, N'LO00000015', 16, N'LO00000015', DATEADD(day,-30,@homNay), @homNay, NULL, 50000.00, 20, 20, @homNay, N'AVAILABLE'),
     (17, N'LO00000016', 17, N'LO00000016', DATEADD(day,-30,@homNay), @homNay, NULL, 104000.00, 10, 9, @homNay, N'AVAILABLE'),
     (18, N'LO00000017', 18, N'LO00000017', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 6500.00, 10, 9, @homNay, N'AVAILABLE'),
     (19, N'LO00000018', 19, N'LO00000018', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,173,@homNay), 146250.00, 12, 12, @homNay, N'AVAILABLE'),
@@ -339,8 +364,7 @@ VALUES
     (73, N'LO00000072', 73, N'LO00000072', DATEADD(day,-30,@homNay), @homNay, NULL, 52000.00, 25, 25, @homNay, N'AVAILABLE'),
     (74, N'LO00000073', 74, N'LO00000073', DATEADD(day,-30,@homNay), @homNay, NULL, 39000.00, 26, 26, @homNay, N'AVAILABLE'),
     (75, N'LO00000074', 75, N'LO00000074', DATEADD(day,-30,@homNay), @homNay, NULL, 32500.00, 27, 27, @homNay, N'AVAILABLE'),
-    (76, N'LO00000075', 76, N'LO00000075', DATEADD(day,-30,@homNay), @homNay, NULL, 22750.00, 28, 28, @homNay, N'AVAILABLE');
-SET IDENTITY_INSERT dbo.[lo_hang] OFF;
+    (76, N'LO00000075', 76, N'LO00000075', DATEADD(day,-30,@homNay), @homNay, NULL, 22750.00, 28, 28, @homNay, N'AVAILABLE');SET IDENTITY_INSERT dbo.[lo_hang] OFF;
 
 -- tai_khoan (5 dòng)
 DBCC CHECKIDENT ('dbo.tai_khoan', RESEED, 0) WITH NO_INFOMSGS;
@@ -456,7 +480,7 @@ DBCC CHECKIDENT ('dbo.hoa_don', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[hoa_don] ON;
 INSERT INTO dbo.[hoa_don] ([id], [so_hoa_don], [phien_lam_viec_id], [tai_khoan_id], [khach_hang_id], [tong_tien], [hinh_thuc_thanh_toan], [tien_khach_dua], [tien_thoi], [diem_cong], [trang_thai], [tao_luc], [thanh_toan_luc], [idempotency_key], [tam_tinh], [giam_gia], [diem_dung], [ma_voucher], [ghi_chu], [chi_tiet_thanh_toan])
 VALUES
-    (1, N'HD2610190001', 2, 2, 7, 285000.00, N'TIEN_MAT', 285000.00, 0.00, 28, N'PAID', DATEADD(second,-553572,CAST(@homNay AS datetime2)), DATEADD(second,-553572,CAST(@homNay AS datetime2)), N'SEED-HD-SAMPLE-001', 285000.00, 0.00, 0, NULL, NULL, NULL),
+    (1, N'HD2610190001', 2, 2, 7, 225000.00, N'TIEN_MAT', 225000.00, 0.00, 22, N'PAID', DATEADD(second,-553572,CAST(@homNay AS datetime2)), DATEADD(second,-553572,CAST(@homNay AS datetime2)), N'SEED-HD-SAMPLE-001', 225000.00, 0.00, 0, NULL, NULL, NULL),
     (2, N'HD2610190002', 3, 3, 16, 320000.00, N'TIEN_MAT', 320000.00, 0.00, 32, N'PAID', DATEADD(second,-3070800,CAST(@homNay AS datetime2)), DATEADD(second,-3070800,CAST(@homNay AS datetime2)), N'REAL_DATA_V1_INVOICE_1', 320000.00, 0.00, 0, NULL, N'Đã kiểm tra thông tin thanh toán.', NULL),
     (3, N'HD2610190003', 4, 3, 17, 30000.00, N'TIEN_MAT', 30000.00, 0.00, 3, N'PAID', DATEADD(second,-2980800,CAST(@homNay AS datetime2)), DATEADD(second,-2980800,CAST(@homNay AS datetime2)), N'REAL_DATA_V1_INVOICE_2', 30000.00, 0.00, 0, NULL, N'Đã kiểm tra thông tin thanh toán.', NULL),
     (4, N'HD2610190004', 5, 3, 18, 225000.00, N'TIEN_MAT', 225000.00, 0.00, 22, N'PAID', DATEADD(second,-2890800,CAST(@homNay AS datetime2)), DATEADD(second,-2890800,CAST(@homNay AS datetime2)), N'REAL_DATA_V1_INVOICE_3', 225000.00, 0.00, 0, NULL, N'Đã kiểm tra thông tin thanh toán.', NULL),
@@ -489,7 +513,7 @@ VALUES
     (31, N'HD2610190031', 31, 3, 33, 5000.00, N'TIEN_MAT', 5000.00, 0.00, 0, N'PAID', DATEADD(second,-633600,CAST(@homNay AS datetime2)), DATEADD(second,-633600,CAST(@homNay AS datetime2)), N'REAL_DATA_V1_INVOICE_30', 35000.00, 30000.00, 0, NULL, N'Đã kiểm tra thông tin thanh toán.', NULL),
     (32, N'HD2610190032', 1, 1, NULL, 180000.00, N'TIEN_MAT', 180000.00, 0.00, 0, N'PAID', DATEADD(second,-523756,CAST(@homNay AS datetime2)), DATEADD(second,-523756,CAST(@homNay AS datetime2)), N'PAY-e788e605e1f84d8c87c8', 200000.00, 20000.00, 0, N'', NULL, NULL),
     (33, N'HD2610190033', 33, 1, NULL, 90000.00, N'TIEN_MAT', 90000.00, 0.00, 0, N'PAID', DATEADD(second,-484351,CAST(@homNay AS datetime2)), DATEADD(second,-484351,CAST(@homNay AS datetime2)), N'PAY-a554c66e3ee0419e844b', 100000.00, 10000.00, 0, N'', NULL, NULL),
-    (34, N'HD2610190034', 33, 1, NULL, 531000.00, N'TIEN_MAT', 531000.00, 0.00, 0, N'PAID', DATEADD(second,-122380,CAST(@homNay AS datetime2)), DATEADD(second,-122380,CAST(@homNay AS datetime2)), N'PAY-bd9b970ee60541f4b1d2', 590000.00, 59000.00, 0, N'', NULL, NULL),
+    (34, N'HD2610190034', 33, 1, NULL, 351000.00, N'TIEN_MAT', 351000.00, 0.00, 0, N'PAID', DATEADD(second,-122380,CAST(@homNay AS datetime2)), DATEADD(second,-122380,CAST(@homNay AS datetime2)), N'PAY-bd9b970ee60541f4b1d2', 390000.00, 39000.00, 0, N'', NULL, NULL),
     (35, N'TREO000001', NULL, 3, 16, 160000.00, N'TIEN_MAT', NULL, NULL, 0, N'GIO_TREO', DATEADD(second,-524678,CAST(@homNay AS datetime2)), DATEADD(second,-524678,CAST(@homNay AS datetime2)), NULL, 160000.00, 0.00, 0, NULL, NULL, NULL),
     (36, N'TREO000002', NULL, 3, 17, 10000.00, N'TIEN_MAT', NULL, NULL, 0, N'GIO_TREO', DATEADD(second,-524678,CAST(@homNay AS datetime2)), DATEADD(second,-524678,CAST(@homNay AS datetime2)), NULL, 10000.00, 0.00, 0, NULL, NULL, NULL),
     (37, N'TREO000003', NULL, 1, NULL, 355000.00, N'TIEN_MAT', NULL, NULL, 0, N'GIO_TREO', DATEADD(second,-516600,CAST(@homNay AS datetime2)), DATEADD(second,-516600,CAST(@homNay AS datetime2)), NULL, 355000.00, 0.00, 0, NULL, NULL, NULL);
@@ -500,7 +524,7 @@ DBCC CHECKIDENT ('dbo.chi_tiet_hoa_don', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[chi_tiet_hoa_don] ON;
 INSERT INTO dbo.[chi_tiet_hoa_don] ([id], [hoa_don_id], [san_pham_id], [lo_hang_id], [so_luong], [don_gia], [giam_gia], [thue_gtgt], [ma_dich_vu], [ten_hang])
 VALUES
-    (1, 1, 3, 14, 1, 285000.00, 0.00, 0.00, NULL, N'Royal Canin Adult 2kg'),
+    (1, 1, 19, 19, 1, 225000.00, 0.00, 0.00, NULL, N'Thức ăn cho chó con cỡ nhỏ ROYAL CANIN Mini Puppy — Trọng lượng: 800g'),
     (2, 2, 17, 17, 2, 160000.00, 0.00, 0.00, NULL, N'Cát vệ sinh cho mèo siêu vón IRIS OHYAMA KFAG-100 — Dung tích: 10 lít; Đóng gói: 1 túi'),
     (3, 3, 18, 18, 3, 10000.00, 0.00, 0.00, NULL, N'Xương cho chó gặm sạch răng VEGEBRAND 360 Bone Prevent Tartar — Đóng gói: 1 gói'),
     (4, 4, 19, 19, 1, 225000.00, 0.00, 0.00, NULL, N'Thức ăn cho chó con cỡ nhỏ ROYAL CANIN Mini Puppy — Trọng lượng: 800g'),
@@ -534,7 +558,7 @@ VALUES
     (32, 32, 51, 51, 2, 85000.00, 0.00, 0.00, NULL, N'Lược chải lông chó mèo đầu lưỡi mềm BOBO Pet Comb'),
     (33, 32, 58, 58, 1, 30000.00, 0.00, 0.00, NULL, N'Bàn chải tắm cho chó mèo BOBO Pet Washing Brush'),
     (34, 33, 46, 46, 2, 50000.00, 0.00, 0.00, NULL, N'Xương gặm cho chó Poodle VEGEBRAND 360 For Poodles Bone'),
-    (35, 34, 7, 6, 1, 450000.00, 0.00, 0.00, NULL, N'Lồng vận chuyển size L'),
+    (35, 34, 48, 48, 1, 250000.00, 0.00, 0.00, NULL, N'Khay vệ sinh cho mèo MAKAR Cat Litter Station'),
     (36, 34, 36, 36, 1, 140000.00, 0.00, 0.00, NULL, N'Cát vệ sinh hữu cơ cho mèo CATS BEST Original — Trọng lượng: 2.1kg'),
     (37, 35, 17, NULL, 1, 160000.00, 0.00, 0.00, N'SP000015', N'Cát vệ sinh cho mèo siêu vón IRIS OHYAMA KFAG-100 — Dung tích: 10 (lít); Đóng gói: 1 túi'),
     (38, 36, 18, NULL, 1, 10000.00, 0.00, 0.00, N'SP000016', N'Xương cho chó gặm sạch răng VEGEBRAND 360 Bone Prevent Tartar — Đóng gói: 1 gói'),
@@ -566,7 +590,6 @@ DBCC CHECKIDENT ('dbo.phieu_nhap_kho', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[phieu_nhap_kho] ON;
 INSERT INTO dbo.[phieu_nhap_kho] ([id], [so_phieu], [nha_cung_cap_id], [nguoi_lap_id], [ngay_nhap], [tong_tien], [trang_thai], [ghi_chu], [da_tra])
 VALUES
-    (1, N'PN00000001', 1, 2, DATEADD(day,-7,@homNay), 720000.00, N'POSTED', NULL, 240000.00),
     (2, N'PN00000002', 5, 4, DATEADD(day,-36,@homNay), 1144000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 572000.00),
     (3, N'PN00000003', 6, 4, DATEADD(day,-36,@homNay), 78000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 39000.00),
     (4, N'PN00000004', 7, 4, DATEADD(day,-36,@homNay), 1901250.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 1901250.00),
@@ -626,16 +649,13 @@ VALUES
     (58, N'PN00000058', 7, 4, DATEADD(day,-36,@homNay), 1300000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 1300000.00),
     (59, N'PN00000059', 8, 4, DATEADD(day,-36,@homNay), 1014000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 507000.00),
     (60, N'PN00000060', 9, 4, DATEADD(day,-36,@homNay), 877500.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 438750.00),
-    (61, N'PN00000061', 10, 4, DATEADD(day,-36,@homNay), 637000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 637000.00),
-    (62, N'PN00000062', 1, 2, DATEADD(day,-60,@homNay), 25978000, N'POSTED', NULL, 25978000);
-SET IDENTITY_INSERT dbo.[phieu_nhap_kho] OFF;
+    (61, N'PN00000061', 10, 4, DATEADD(day,-36,@homNay), 637000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 637000.00),SET IDENTITY_INSERT dbo.[phieu_nhap_kho] OFF;
 
 -- chi_tiet_phieu_nhap (74 dòng)
 DBCC CHECKIDENT ('dbo.chi_tiet_phieu_nhap', RESEED, 0) WITH NO_INFOMSGS;
 SET IDENTITY_INSERT dbo.[chi_tiet_phieu_nhap] ON;
 INSERT INTO dbo.[chi_tiet_phieu_nhap] ([id], [phieu_nhap_id], [san_pham_id], [so_lo], [han_su_dung], [so_luong], [gia_nhap])
 VALUES
-    (1, 1, 3, N'LO00000013', DATEADD(day,173,@homNay), 3, 240000.00),
     (2, 2, 17, N'LO00000016', NULL, 11, 104000.00),
     (3, 3, 18, N'LO00000017', DATEADD(day,173,@homNay), 12, 6500.00),
     (4, 4, 19, N'LO00000018', DATEADD(day,173,@homNay), 13, 146250.00),
@@ -695,21 +715,7 @@ VALUES
     (58, 58, 73, N'LO00000072', NULL, 25, 52000.00),
     (59, 59, 74, N'LO00000073', NULL, 26, 39000.00),
     (60, 60, 75, N'LO00000074', NULL, 27, 32500.00),
-    (61, 61, 76, N'LO00000075', NULL, 28, 22750.00),
-    (62, 62, 3, N'LO00000001', DATEADD(day,173,@homNay), 47, 240000),
-    (63, 62, 4, N'LO00000002', DATEADD(day,173,@homNay), 82, 36000),
-    (64, 62, 5, N'LO00000003', DATEADD(day,173,@homNay), 3, 80000),
-    (65, 62, 6, N'LO00000004', DATEADD(day,173,@homNay), 28, 62000),
-    (66, 62, 7, N'LO00000005', DATEADD(day,173,@homNay), 8, 330000),
-    (67, 62, 8, N'LO00000006', DATEADD(day,173,@homNay), 15, 20000),
-    (68, 62, 9, N'LO00000007', DATEADD(day,173,@homNay), 2, 430000),
-    (69, 62, 10, N'LO00000008', DATEADD(day,173,@homNay), 31, 55000),
-    (70, 62, 11, N'LO00000009', DATEADD(day,173,@homNay), 12, 40000),
-    (71, 62, 13, N'LO00000011', DATEADD(day,173,@homNay), 40, 30000),
-    (72, 62, 14, N'LO00000012', DATEADD(day,173,@homNay), 9, 65000),
-    (73, 62, 15, N'LO00000014', NULL, 20, 50000),
-    (74, 62, 16, N'LO00000015', NULL, 20, 50000);
-SET IDENTITY_INSERT dbo.[chi_tiet_phieu_nhap] OFF;
+    (61, 61, 76, N'LO00000075', NULL, 28, 22750.00),SET IDENTITY_INSERT dbo.[chi_tiet_phieu_nhap] OFF;
 
 -- phieu_xuat_kho (1 dòng)
 DBCC CHECKIDENT ('dbo.phieu_xuat_kho', RESEED, 0) WITH NO_INFOMSGS;
@@ -737,8 +743,8 @@ VALUES
     (8, N'TC000003', 9, N'Lucky', N'DOG', N'Golden Retriever', N'Đực', N'Vàng', 29.50, NULL, N'', NULL, 1, CONVERT(date,'2020-11-20',23), N'Năng động, thân thiện', N'Dại, 7 bệnh (12/2025)', 2, DATEADD(day,-60,@homNay)),
     (9, N'TC000004', 10, N'Miu', N'CAT', N'Ba Tư', N'Cái', N'Kem', 3.80, NULL, N'Hen suyễn nhẹ', NULL, 1, CONVERT(date,'2023-02-02',23), N'Hay cào khi bị bế', N'', 0, NULL),
     (10, N'TC000005', 12, N'Coco', N'DOG', N'Corgi', N'Cái', N'Nâu trắng', 11.00, NULL, N'', NULL, 1, CONVERT(date,'2021-09-14',23), N'Ham ăn', N'Dại (06/2026)', 2, DATEADD(day,-60,@homNay)),
-    (11, N'TC000006', 14, N'Bông', N'DOG', NULL, NULL, NULL, 4.00, NULL, NULL, NULL, 1, CONVERT(date,'2026-04-19',23), N'', N'Mũi 1|2026-09-01||tiêm phòng;Mũi 2|2026-09-01||tiêm phòng', 2, DATEADD(day,-72,@homNay)),
-    (12, N'TC000007', 14, N'Mun', N'DOG', NULL, NULL, NULL, 4.00, NULL, NULL, NULL, 1, CONVERT(date,'2026-04-19',23), N'', N'', 0, NULL),
+    (11, N'TC000006', 14, N'Bông', N'DOG', N'Poodle', N'Cái', N'Trắng', 4.00, NULL, NULL, NULL, 1, CONVERT(date,'2026-04-19',23), N'Hiền lành, quấn chủ', N'Mũi 1|2026-09-01||tiêm phòng;Mũi 2|2026-09-01||tiêm phòng', 2, DATEADD(day,-72,@homNay)),
+    (12, N'TC000007', 14, N'Mun', N'DOG', N'Phốc sóc', N'Đực', N'Đen', 4.00, NULL, NULL, NULL, 1, CONVERT(date,'2026-04-19',23), N'Nhanh nhẹn, thân thiện', N'', 0, NULL),
     (13, N'TC000008', 16, N'Mochi', N'DOG', N'Poodle', N'Duc', N'Trắng / vàng', 3.50, N'Theo dõi sức khỏe định kỳ.', NULL, NULL, 1, CONVERT(date,'2025-09-19',23), N'Hồ sơ : hiền, cần làm quen', N'Mũi cơ bản 1 ()|2026-07-04|2027-12-31|để kiểm tra điều kiện tiếp nhận;Mũi cơ bản 2 ()|2026-08-08|2027-12-31|để kiểm tra điều kiện tiếp nhận', 2, DATEADD(day,-72,@homNay)),
     (14, N'TC000009', 17, N'Milo', N'CAT', N'Anh lông ngắn', N'Duc', N'Trắng / vàng', 3.50, N'Theo dõi sức khỏe định kỳ.', NULL, NULL, 1, CONVERT(date,'2025-08-19',23), N'Hồ sơ : hiền, cần làm quen', N'Mũi cơ bản 1 ()|2026-07-04|2027-12-31|để kiểm tra điều kiện tiếp nhận;Mũi cơ bản 2 ()|2026-08-08|2027-12-31|để kiểm tra điều kiện tiếp nhận', 2, DATEADD(day,-72,@homNay)),
     (15, N'TC000010', 18, N'Bông', N'DOG', N'Poodle', N'Cai', N'Trắng / vàng', 3.50, N'Theo dõi sức khỏe định kỳ.', NULL, NULL, 1, CONVERT(date,'2025-07-19',23), N'Hồ sơ : hiền, cần làm quen', N'Mũi cơ bản 1 ()|2026-07-04|2027-12-31|để kiểm tra điều kiện tiếp nhận;Mũi cơ bản 2 ()|2026-08-08|2027-12-31|để kiểm tra điều kiện tiếp nhận', 2, DATEADD(day,-72,@homNay)),
@@ -862,9 +868,32 @@ VALUES
     (4, N'YC00000004', N'NGHI_PHEP', 5, N'LEAVE', N'17', N'xin nghỉ phép', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Đang phân công', N'Nghỉ một ngày', CONVERT(NVARCHAR(10), DATEADD(day, 1, @homNay), 23));
 SET IDENTITY_INSERT dbo.[yeu_cau_phe_duyet] OFF;
 
-COMMIT;
+-- lich_su_thu_coc_hotel (đồng bộ lịch sử thu cọc từ các hợp đồng lưu trú đã thu cọc)
+INSERT INTO dbo.lich_su_thu_coc_hotel
+    (hop_dong_id, khoa_thu_coc, phuong_thuc, so_tien, khach_dua,
+     tien_thua, phien_lam_viec_id, nguoi_thu_id, tao_luc)
+SELECT
+    h.id,
+    COALESCE(NULLIF(h.khoa_thu_coc, ''), CONCAT('LEGACY-', h.id)),
+    COALESCE(NULLIF(h.phuong_thuc_coc, ''), 'TIEN_MAT'),
+    h.tien_coc,
+    h.tien_coc,
+    0,
+    h.phien_nhan_coc_id,
+    h.nhan_coc_boi,
+    COALESCE(h.nhan_coc_luc, SYSDATETIME())
+FROM dbo.hop_dong_luu_tru h
+WHERE h.da_nhan_coc = 1
+  AND NOT EXISTS (
+      SELECT 1 FROM dbo.lich_su_thu_coc_hotel l WHERE l.hop_dong_id = h.id
+  );
+
+
+COMMIT TRANSACTION;
 END TRY
 BEGIN CATCH
-    IF @@TRANCOUNT>0 ROLLBACK;
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
     THROW;
 END CATCH;
+GO
