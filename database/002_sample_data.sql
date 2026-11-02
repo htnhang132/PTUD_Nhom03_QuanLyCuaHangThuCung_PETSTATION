@@ -298,7 +298,8 @@ VALUES
     (73, N'SP000071', N'8938505000718', N'Vòng cổ chó mèo kèm dây dắt cỡ bé HAND IN HAND', N'Phụ kiện', N'Cái', 80000.00, 52000.00, 5, 0, N'images/products/SP-PK-013.jpg', N'SELLING', N'HAND IN HAND', N'', N'Chó và mèo', N'Phụ kiện thương hiệu HAND IN HAND, dành cho chó và mèo.', N'https://www.petmart.vn/vong-co-cho-meo-kem-day-dat-co-be-hand-in-hand', CONVERT(date,'2026-10-19',23), N'0.00|80000.00|2|2026-09-15 08:00:00', NULL),
     (74, N'SP000072', N'8938505000725', N'Bát ăn đôi cho chó mèo bằng nhựa SAWYER PET', N'Phụ kiện', N'Cái', 60000.00, 39000.00, 5, 0, N'images/products/SP-PK-014.jpg', N'SELLING', N'SAWYER PET', N'', N'Chó và mèo', N'Phụ kiện thương hiệu SAWYER PET, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-doi-cho-cho-meo-bang-nhua-sawyer-pet', CONVERT(date,'2026-10-19',23), N'0.00|60000.00|2|2026-09-15 08:00:00', NULL),
     (75, N'SP000073', N'8938505000732', N'Đồ chơi dây thừng cho chó mèo PAW loại dài', N'Phụ kiện', N'Cái', 50000.00, 32500.00, 5, 0, N'images/products/SP-PK-015.jpg', N'SELLING', N'PAW', N'', N'Chó và mèo', N'Phụ kiện thương hiệu PAW, dành cho chó và mèo.', N'https://www.petmart.vn/do-choi-day-thung-cho-cho-meo-paw-loai-dai', CONVERT(date,'2026-10-19',23), N'0.00|50000.00|2|2026-09-15 08:00:00', NULL),
-    (76, N'SP000074', N'8938505000749', N'Bát ăn cho chó mèo bằng nhựa BOBO Plastic Bowl 3038', N'Phụ kiện', N'Cái', 35000.00, 22750.00, 5, 0, N'images/products/SP-PK-016.jpg', N'SELLING', N'BOBO', N'', N'Chó và mèo', N'Phụ kiện thương hiệu BOBO, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-cho-cho-meo-bang-nhua-bobo-plastic-bowl-3038', CONVERT(date,'2026-10-19',23), N'0.00|35000.00|2|2026-09-15 08:00:00', NULL);SET IDENTITY_INSERT dbo.[san_pham] OFF;
+    (76, N'SP000074', N'8938505000749', N'Bát ăn cho chó mèo bằng nhựa BOBO Plastic Bowl 3038', N'Phụ kiện', N'Cái', 35000.00, 22750.00, 5, 0, N'images/products/SP-PK-016.jpg', N'SELLING', N'BOBO', N'', N'Chó và mèo', N'Phụ kiện thương hiệu BOBO, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-cho-cho-meo-bang-nhua-bobo-plastic-bowl-3038', CONVERT(date,'2026-10-19',23), N'0.00|35000.00|2|2026-09-15 08:00:00', NULL);
+SET IDENTITY_INSERT dbo.[san_pham] OFF;
 
 -- lo_hang (75 dòng)
 DBCC CHECKIDENT ('dbo.lo_hang', RESEED, 0) WITH NO_INFOMSGS;
@@ -364,7 +365,8 @@ VALUES
     (73, N'LO00000072', 73, N'LO00000072', DATEADD(day,-30,@homNay), @homNay, NULL, 52000.00, 25, 25, @homNay, N'AVAILABLE'),
     (74, N'LO00000073', 74, N'LO00000073', DATEADD(day,-30,@homNay), @homNay, NULL, 39000.00, 26, 26, @homNay, N'AVAILABLE'),
     (75, N'LO00000074', 75, N'LO00000074', DATEADD(day,-30,@homNay), @homNay, NULL, 32500.00, 27, 27, @homNay, N'AVAILABLE'),
-    (76, N'LO00000075', 76, N'LO00000075', DATEADD(day,-30,@homNay), @homNay, NULL, 22750.00, 28, 28, @homNay, N'AVAILABLE');SET IDENTITY_INSERT dbo.[lo_hang] OFF;
+    (76, N'LO00000075', 76, N'LO00000075', DATEADD(day,-30,@homNay), @homNay, NULL, 22750.00, 28, 28, @homNay, N'AVAILABLE');
+SET IDENTITY_INSERT dbo.[lo_hang] OFF;
 
 -- tai_khoan (5 dòng)
 DBCC CHECKIDENT ('dbo.tai_khoan', RESEED, 0) WITH NO_INFOMSGS;
@@ -649,7 +651,8 @@ VALUES
     (58, N'PN00000058', 7, 4, DATEADD(day,-36,@homNay), 1300000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 1300000.00),
     (59, N'PN00000059', 8, 4, DATEADD(day,-36,@homNay), 1014000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 507000.00),
     (60, N'PN00000060', 9, 4, DATEADD(day,-36,@homNay), 877500.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 438750.00),
-    (61, N'PN00000061', 10, 4, DATEADD(day,-36,@homNay), 637000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 637000.00),SET IDENTITY_INSERT dbo.[phieu_nhap_kho] OFF;
+    (61, N'PN00000061', 10, 4, DATEADD(day,-36,@homNay), 637000.00, N'POSTED', N'Nhập bổ sung hàng hóa.', 637000.00);
+SET IDENTITY_INSERT dbo.[phieu_nhap_kho] OFF;
 
 -- chi_tiet_phieu_nhap (74 dòng)
 DBCC CHECKIDENT ('dbo.chi_tiet_phieu_nhap', RESEED, 0) WITH NO_INFOMSGS;
@@ -715,7 +718,8 @@ VALUES
     (58, 58, 73, N'LO00000072', NULL, 25, 52000.00),
     (59, 59, 74, N'LO00000073', NULL, 26, 39000.00),
     (60, 60, 75, N'LO00000074', NULL, 27, 32500.00),
-    (61, 61, 76, N'LO00000075', NULL, 28, 22750.00),SET IDENTITY_INSERT dbo.[chi_tiet_phieu_nhap] OFF;
+    (61, 61, 76, N'LO00000075', NULL, 28, 22750.00);
+SET IDENTITY_INSERT dbo.[chi_tiet_phieu_nhap] OFF;
 
 -- phieu_xuat_kho (1 dòng)
 DBCC CHECKIDENT ('dbo.phieu_xuat_kho', RESEED, 0) WITH NO_INFOMSGS;
@@ -867,6 +871,26 @@ VALUES
     (3, N'YC00000003', N'GIA_BAN', 4, N'PRICE_CHANGE', N'53', N'thử duyệt hoặc từ chối', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'70000', N'75000', N''),
     (4, N'YC00000004', N'NGHI_PHEP', 5, N'LEAVE', N'17', N'xin nghỉ phép', N'PENDING', NULL, NULL, DATEADD(second,-549878,CAST(@homNay AS datetime2)), NULL, N'Đang phân công', N'Nghỉ một ngày', CONVERT(NVARCHAR(10), DATEADD(day, 1, @homNay), 23));
 SET IDENTITY_INSERT dbo.[yeu_cau_phe_duyet] OFF;
+
+-- lich_su_thu_coc_hotel (đồng bộ lịch sử thu cọc từ các hợp đồng lưu trú đã thu cọc)
+INSERT INTO dbo.lich_su_thu_coc_hotel
+    (hop_dong_id, khoa_thu_coc, phuong_thuc, so_tien, khach_dua,
+     tien_thua, phien_lam_viec_id, nguoi_thu_id, tao_luc)
+SELECT
+    h.id,
+    COALESCE(NULLIF(h.khoa_thu_coc, ''), CONCAT('LEGACY-', h.id)),
+    COALESCE(NULLIF(h.phuong_thuc_coc, ''), 'TIEN_MAT'),
+    h.tien_coc,
+    h.tien_coc,
+    0,
+    h.phien_nhan_coc_id,
+    h.nhan_coc_boi,
+    COALESCE(h.nhan_coc_luc, SYSDATETIME())
+FROM dbo.hop_dong_luu_tru h
+WHERE h.da_nhan_coc = 1
+  AND NOT EXISTS (
+      SELECT 1 FROM dbo.lich_su_thu_coc_hotel l WHERE l.hop_dong_id = h.id
+  );
 
 -- lich_su_thu_coc_hotel (đồng bộ lịch sử thu cọc từ các hợp đồng lưu trú đã thu cọc)
 INSERT INTO dbo.lich_su_thu_coc_hotel
