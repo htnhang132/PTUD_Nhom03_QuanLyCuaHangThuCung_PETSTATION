@@ -56,43 +56,43 @@ public final class DanhMucService {
     }
 
     public static CacDong layKhachHang() {
-        return new CacDong(LoaiDanhMuc.CUSTOMERS);
+        return new CacDong(LoaiDanhMuc.KHACH_HANG);
     }
 
     public static CacDong layThuCung() {
-        return new CacDong(LoaiDanhMuc.PETS);
+        return new CacDong(LoaiDanhMuc.THU_CUNG);
     }
 
     public static CacDong layNhanVien() {
-        return new CacDong(LoaiDanhMuc.STAFF);
+        return new CacDong(LoaiDanhMuc.NHAN_VIEN);
     }
 
     public static CacDong layTaiKhoan() {
-        return new CacDong(LoaiDanhMuc.ACCOUNTS);
+        return new CacDong(LoaiDanhMuc.TAI_KHOAN);
     }
 
     public static CacDong laySanPham() {
-        return new CacDong(LoaiDanhMuc.PRODUCTS);
+        return new CacDong(LoaiDanhMuc.SAN_PHAM);
     }
 
     public static CacDong layNhaCungCap() {
-        return new CacDong(LoaiDanhMuc.SUPPLIERS);
+        return new CacDong(LoaiDanhMuc.NHA_CUNG_CAP);
     }
 
     public static CacDong layKhuyenMai() {
-        return new CacDong(LoaiDanhMuc.PROMOTIONS);
+        return new CacDong(LoaiDanhMuc.KHUYEN_MAI);
     }
 
     public static CacDong layVoucher() {
-        return new CacDong(LoaiDanhMuc.VOUCHERS);
+        return new CacDong(LoaiDanhMuc.VOUCHER);
     }
 
     public static CacDong layDichVuSpa() {
-        return new CacDong(LoaiDanhMuc.SPA);
+        return new CacDong(LoaiDanhMuc.DICH_VU_SPA);
     }
 
     public static CacDong layPhong() {
-        return new CacDong(LoaiDanhMuc.ROOMS);
+        return new CacDong(LoaiDanhMuc.PHONG_LUU_TRU);
     }
 
     public static List<String> layLuaChonKhachHang() {
@@ -113,31 +113,92 @@ public final class DanhMucService {
         return chuyenThanhChuoi(luaChon).split(" - ", 2)[0];
     }
 
+    public static List<String> tachDanhSachKhach(Object giaTri) {
+        String chuoi = chuyenThanhChuoi(giaTri);
+        if (chuoi.isBlank()) return List.of();
+        List<String> ketQua = new ArrayList<>();
+        for (String phan : chuoi.split(";")) {
+            String cat = phan.trim();
+            if (!cat.isEmpty() && !ketQua.contains(cat)) {
+                ketQua.add(cat);
+            }
+        }
+        return ketQua;
+    }
+
+    public static String taoMaVoucherTheoKhach(String maGoc, String maKhach) {
+        String goc = chuyenThanhChuoi(maGoc).trim().replaceFirst("(?i)-KH\\d+$", "");
+        String khach = chuyenThanhChuoi(maKhach).trim();
+        if (khach.isEmpty()) return goc;
+        String hauTo = "-" + khach;
+        if (goc.toUpperCase(Locale.ROOT).endsWith(hauTo.toUpperCase(Locale.ROOT))) {
+            return goc;
+        }
+        int toiDaGoc = Math.max(1, 40 - hauTo.length());
+        if (goc.length() > toiDaGoc) {
+            goc = goc.substring(0, toiDaGoc);
+        }
+        return goc + hauTo;
+    }
+
+    public static void luuNhieu(
+            List<Object[]> cacDong,
+            Object[] truoc,
+            Object[] giaTriCapNhat,
+            List<Object[]> cacGiaTriMoi) {
+        thucHienGiaoDich(
+                ketNoi -> {
+                    if (giaTriCapNhat != null) {
+                        luu(cacDong, truoc, giaTriCapNhat, false);
+                    }
+                    if (cacGiaTriMoi != null) {
+                        for (Object[] dongMoi : cacGiaTriMoi) {
+                            luu(cacDong, null, dongMoi, false);
+                        }
+                    }
+                    return null;
+                });
+    }
+
     public static void themBoLangNgheGia(Runnable boLangNghe) {
         GIA_CAC_BO_LANG_NGHE.add(boLangNghe);
     }
 
-    public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri) {
+    public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri){
+        luu(cacDong, truoc, giaTri, false);
+    } 
+    public static final class TrungSoDienThoaiException
+    extends IllegalArgumentException {
+
+	public TrungSoDienThoaiException(String thongBao) {
+	    super(thongBao);
+		}
+    }
+    public static void luu(
+            List<Object[]> cacDong,
+            Object[] truoc,
+            Object[] giaTri,
+            boolean xacNhanTrungSdt){
         if (!(cacDong instanceof CacDong danhMuc))
             throw new IllegalArgumentException("Danh mục chưa nối SQL Server.");
         // Quyền.
         Quyen quyen =
                 switch (danhMuc.loai) {
-                    case CUSTOMERS, VOUCHERS -> Quyen.CUSTOMER_MANAGE;
-                    case PETS -> Quyen.PET_MANAGE;
-                    case STAFF, ACCOUNTS -> Quyen.ACCOUNT_MANAGE;
-                    case PRODUCTS -> Quyen.PRODUCT_MANAGE;
-                    case SUPPLIERS -> Quyen.SUPPLIER_MANAGE;
-                    case PROMOTIONS -> Quyen.PROMOTION_MANAGE;
-                    case SPA -> Quyen.SPA_MANAGE;
-                    case ROOMS -> Quyen.HOTEL_MANAGE;
+                    case KHACH_HANG, VOUCHER -> Quyen.QUAN_LY_KHACH_HANG;
+                    case THU_CUNG -> Quyen.QUAN_LY_THU_CUNG;
+                    case NHAN_VIEN, TAI_KHOAN -> Quyen.QUAN_LY_TAI_KHOAN;
+                    case SAN_PHAM -> Quyen.QUAN_LY_SAN_PHAM;
+                    case NHA_CUNG_CAP -> Quyen.QUAN_LY_NHA_CUNG_CAP;
+                    case KHUYEN_MAI -> Quyen.QUAN_LY_KHUYEN_MAI;
+                    case DICH_VU_SPA -> Quyen.QUAN_LY_SPA;
+                    case PHONG_LUU_TRU -> Quyen.QUAN_LY_LUU_TRU;
                 };
         yeuCau(quyen);
 
         thucHienGiaoDich(
                 ketNoi -> {
-                    if (danhMuc.loai == LoaiDanhMuc.VOUCHERS) {
-                        yeuCau(Quyen.PROMOTION_MANAGE);
+                    if (danhMuc.loai == LoaiDanhMuc.VOUCHER) {
+                        yeuCau(Quyen.QUAN_LY_KHUYEN_MAI);
                         String ma = String.valueOf(truoc == null ? giaTri[0] : truoc[0]);
                         var rangBuoc = tichDiemDAO.layRangBuocVoucher(ma);
                         if (!rangBuoc.isEmpty() && rangBuoc.get(0)[1] != null)
@@ -158,7 +219,50 @@ public final class DanhMucService {
                                     "Voucher đã dùng chỉ được tra cứu, không sửa hoặc phát hành"
                                             + " lại.");
                     }
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS && giaTri.length >= 17) {
+                    if (danhMuc.loai == LoaiDanhMuc.NHA_CUNG_CAP) {
+                        String maLoaiTru = truoc == null
+                                ? ""
+                                : String.valueOf(truoc[0]);
+
+                        String ten = String.valueOf(giaTri[1]).trim();
+                        String sdt = String.valueOf(giaTri[3])
+                                .replaceAll("[\\s.]", "");
+
+                        if (ten.isBlank()) {
+                            throw new IllegalArgumentException(
+                                    "Tên nhà cung cấp không được để trống.");
+                        }
+
+                        if (!sdt.matches("0\\d{9}")) {
+                            throw new IllegalArgumentException(
+                                    "Số điện thoại phải gồm 10 chữ số, bắt đầu bằng 0.");
+                        }
+
+                        if (danhMucDAO.tonTaiTenNcc(ten, maLoaiTru)) {
+                            throw new IllegalArgumentException(
+                                    "Tên nhà cung cấp đã tồn tại.");
+                        }
+
+                     // Chuẩn hóa số điện thoại cũ giống cách chuẩn hóa số mới.
+                        String sdtCu = truoc == null
+                                ? ""
+                                : String.valueOf(truoc[3]).replaceAll("[\\s.]", "");
+
+                        // Chỉ kiểm tra trùng khi thêm mới hoặc thực sự đổi số điện thoại.
+                        boolean canKiemTraTrungSdt =
+                                truoc == null || !sdt.equals(sdtCu);
+
+                        if (canKiemTraTrungSdt
+                                && !xacNhanTrungSdt
+                                && danhMucDAO.tonTaiSdtNcc(sdt, maLoaiTru)) {
+                            throw new TrungSoDienThoaiException(
+                                    "Số điện thoại đã được nhà cung cấp khác sử dụng.");
+                        }
+
+                        giaTri[1] = ten;
+                        giaTri[3] = sdt;
+                    }
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM && giaTri.length >= 17) {
                         String anh = String.valueOf(giaTri[10]);
                         if (!anh.isBlank()
                                 && !com.petstation.util.TaiAnhSanPham.kiemTraDuongDan(anh))
@@ -171,12 +275,12 @@ public final class DanhMucService {
                                 throw new IllegalArgumentException(
                                         "Thông tin chi tiết sản phẩm quá dài.");
                     }
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
-                            && layPhien().docVaiTro() == com.petstation.model.VaiTro.STORE_MANAGER)
-                        yeuCau(Quyen.PRICE_APPROVE);
-                    if (danhMuc.loai == LoaiDanhMuc.PRODUCTS
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM
+                            && layPhien().docVaiTro() == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG)
+                        yeuCau(Quyen.DUYET_GIA);
+                    if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM
                             && layPhien().docVaiTro()
-                                    != com.petstation.model.VaiTro.STORE_MANAGER) {
+                                    != com.petstation.model.VaiTro.QUAN_LY_CUA_HANG) {
                         var sp = deXuatGiaDAO.timSanPham(String.valueOf(giaTri[0]));
                         long giaCu = sp.isEmpty() ? 0 : ((Number) sp.get(0)[1]).longValue();
                         if (com.petstation.util.TienTe.doc(String.valueOf(giaTri[4])) != giaCu)
@@ -185,17 +289,37 @@ public final class DanhMucService {
                                             + " giá bán.");
                         if (sp.isEmpty()) giaTri[9] = "Ngừng kinh doanh";
                     }
+                    boolean laNcc = danhMuc.loai == LoaiDanhMuc.NHA_CUNG_CAP;
+
+                    String maCu = String.valueOf(
+                            truoc == null ? giaTri[0] : truoc[0]);
+
+                    String duLieuCu = laNcc
+                            ? danhMucDAO.layAnhChupNcc(maCu)
+                            : null;
+
                     danhMucDAO.luu(
-                            danhMuc.loai,
-                            truoc,
-                            giaTri,
-                            layIdTaiKhoan(),
-                            layPhien().docVaiTro().name());
-                    NhatKyHeThongService.ghiNhatKy(
-                            truoc == null ? "Thêm" : "Sửa", danhMuc.loai + " " + giaTri[0]);
+                            danhMuc.loai, truoc, giaTri,
+                            layIdTaiKhoan(), layPhien().docVaiTro().name());
+
+                    if (laNcc) {
+                        String maMoi = String.valueOf(giaTri[0]);
+
+                        NhatKyHeThongService.ghiThayDoi(
+                                ketNoi,
+                                truoc == null ? "Thêm NCC" : "Sửa NCC",
+                                "NHA_CUNG_CAP",
+                                maMoi,
+                                duLieuCu,
+                                danhMucDAO.layAnhChupNcc(maMoi));
+                    } else {
+                        NhatKyHeThongService.ghiNhatKy(
+                                truoc == null ? "Thêm" : "Sửa",
+                                danhMuc.loai + " " + giaTri[0]);
+                    }
                     return null;
                 });
-        if (danhMuc.loai == LoaiDanhMuc.PRODUCTS)
+        if (danhMuc.loai == LoaiDanhMuc.SAN_PHAM)
             for (Runnable boLangNghe : List.copyOf(GIA_CAC_BO_LANG_NGHE)) boLangNghe.run();
     }
 
@@ -208,17 +332,17 @@ public final class DanhMucService {
     }
 
     public static int khoaCacTaiKhoanCua(String maNhanVien) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         return danhMucDAO.khoaCacTaiKhoanCua(maNhanVien);
     }
 
     public static void datLaiMatKhau(String tenDangNhap, String matKhau) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         danhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
     }
 
     public static void capNhatBarcode(long sanPhamId, String barcode) {
-        yeuCau(Quyen.PRODUCT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SAN_PHAM);
         danhMucDAO.capNhatBarcode(sanPhamId, barcode);
     }
 
@@ -227,18 +351,18 @@ public final class DanhMucService {
     }
 
     public static void ngungKinhDoanhSanPham(long sanPhamId) {
-        yeuCau(Quyen.PRODUCT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_SAN_PHAM);
         danhMucDAO.ngungKinhDoanhSanPham(sanPhamId);
     }
 
     public static String layTenDangNhapTheoNhanVien(long nhanVienId) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         return danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
     }
 
     public static void capNhatHoacTaoTaiKhoan(
             long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         String daCo = danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
         if (daCo == null) {
             danhMucDAO.taoTaiKhoanNhanVien(nhanVienId, tenDangNhap, matKhauHash, vaiTro);

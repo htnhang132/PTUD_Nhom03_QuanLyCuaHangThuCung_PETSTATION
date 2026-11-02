@@ -35,4 +35,8 @@ public interface DanhMucDAO {
 
     void taoTaiKhoanNhanVien(
             long nhanVienId, String tenDangNhap, String matKhauHash, String vaiTro);
+    boolean tonTaiTenNcc(String ten, String maLoaiTru);
+
+    boolean tonTaiSdtNcc(String soDienThoai, String maLoaiTru);
+    String layAnhChupNcc(String maNcc);
 }

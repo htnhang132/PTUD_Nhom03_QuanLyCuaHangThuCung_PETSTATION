@@ -12,24 +12,27 @@ public final class TaiKhoanService {
     private TaiKhoanService() {}
 
     public static void layThayDoiMatKhau(String hienTai, String tiepTheo) {
-        if (hienTai == null || tiepTheo == null || tiepTheo.length() < 8)
+        if (hienTai == null || hienTai.isEmpty())
+            throw new IllegalArgumentException("Cần nhập mật khẩu hiện tại.");
+        if (tiepTheo == null || tiepTheo.length() < 8)
             throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 8 ký tự.");
-        com.petstation.database.ThaoTacSQL.thucHienGiaoDich(
-                ketNoi -> {
-                    // Tài khoản.
-                    long taiKhoan = PhienDangNhapService.layIdTaiKhoan();
-                    // Mã băm.
-                    String maBam =
-                            com.petstation.util.DuLieu.chuyenThanhChuoi(
-                                    taiKhoanDAO.layMaBamMatKhau(taiKhoan));
-                    if (!org.mindrot.jbcrypt.BCrypt.checkpw(hienTai, maBam))
-                        throw new IllegalArgumentException("Mật khẩu hiện tại không đúng.");
-                    taiKhoanDAO.capNhatMatKhau(
-                            org.mindrot.jbcrypt.BCrypt.hashpw(
-                                    tiepTheo, org.mindrot.jbcrypt.BCrypt.gensalt()),
-                            taiKhoan);
-                    NhatKyHeThongService.ghiNhatKy("Đổi mật khẩu", "Tài khoản hiện tại");
-                    return null;
-                });
+        if (hienTai.equals(tiepTheo))
+            throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại.");
+        com.petstation.database.ThaoTacSQL.thucHienGiaoDich(ketNoi -> {
+            long taiKhoan = PhienDangNhapService.layIdTaiKhoan();
+            Object giaTri = taiKhoanDAO.layMaBamMatKhau(taiKhoan);
+            if (giaTri == null)
+                throw new IllegalStateException("Tài khoản không còn tồn tại.");
+            String maBam = String.valueOf(giaTri);
+            if (!org.mindrot.jbcrypt.BCrypt.checkpw(hienTai, maBam))
+                throw new IllegalArgumentException("Mật khẩu hiện tại không đúng.");
+            int soDong = taiKhoanDAO.capNhatMatKhau(
+                    org.mindrot.jbcrypt.BCrypt.hashpw(
+                            tiepTheo, org.mindrot.jbcrypt.BCrypt.gensalt()), taiKhoan);
+            if (soDong != 1)
+                throw new IllegalStateException("Không cập nhật được mật khẩu.");
+            NhatKyHeThongService.ghiNhatKy("Đổi mật khẩu", "Tài khoản hiện tại");
+            return null;
+        });
     }
 }

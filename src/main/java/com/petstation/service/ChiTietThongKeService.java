@@ -21,8 +21,8 @@ public final class ChiTietThongKeService {
     }
 
     static ChiTietBaoCao lay(ChiTietThongKeDAO dao, String baoCao, String goc, KhoangNgay ky) {
-        boolean tatCa = layPhien().kiemTraCo(Quyen.REPORT_VIEW_ALL);
-        if (!tatCa) yeuCau(Quyen.REPORT_VIEW_OWN_SHIFT);
+        boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
+        if (!tatCa) yeuCau(Quyen.XEM_BAO_CAO_CA);
         boolean baoCaoToanCuaHang =
                 baoCao.contains("Công nợ")
                         || baoCao.contains("khách hàng")
@@ -30,7 +30,7 @@ public final class ChiTietThongKeService {
                         || baoCao.contains("hàng hóa")
                                 && !Set.of("Sản phẩm bán chạy", "Tồn kho hiện tại", "Sắp hết hạn")
                                         .contains(goc);
-        if (baoCaoToanCuaHang) yeuCau(Quyen.REPORT_VIEW_ALL);
+        if (baoCaoToanCuaHang) yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
         return dao.lay(
                 baoCao, goc, ky, tatCa ? null : layIdTaiKhoan(), tatCa ? null : layIdNhanVien());
     }

@@ -73,7 +73,7 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
                 "INSERT INTO"
                         + " lich_lam_viec(nhan_vien_id,ngay_lam,ca_lam_viec_id,loai)"
                         + " SELECT ?,?,id,'LEAVE' FROM ca_lam_viec WHERE"
-                        + " ma_ca='CA_SANG'",
+                        + " ma_ca='CA01'",
                 cacThamSo);
     }
 

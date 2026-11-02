@@ -115,8 +115,8 @@ class TichHopSQLServerTest {
                                 nhanVien,
                                 maNhanVien,
                                 "hash",
-                                VaiTro.STORE_MANAGER,
-                                TrangThaiTaiKhoan.ACTIVE,
+                                VaiTro.QUAN_LY_CUA_HANG,
+                                TrangThaiTaiKhoan.HOAT_DONG,
                                 0,
                                 null,
                                 false),
@@ -278,9 +278,9 @@ class TichHopSQLServerTest {
                     // Tổng.
                     long tong = banHang.tinhTong();
                     // Đầu tiên.
-                    GioHang.BienLai dauTien = banHang.hoanTat(PhuongThuc.CASH, 500000, "Manager");
+                    GioHang.BienLai dauTien = banHang.hoanTat(PhuongThuc.TIEN_MAT, 500000, "Manager");
                     // Thứ hai.
-                    GioHang.BienLai thuHai = banHang.hoanTat(PhuongThuc.CASH, 500000, "Manager");
+                    GioHang.BienLai thuHai = banHang.hoanTat(PhuongThuc.TIEN_MAT, 500000, "Manager");
                     assertThat(thuHai.soHoaDon()).isEqualTo(dauTien.soHoaDon());
                     assertThat(dauTien.tong()).isEqualTo(tong);
                     assertThat(dauTien.thayDoi()).isEqualTo(500000 - tong);
@@ -312,7 +312,7 @@ class TichHopSQLServerTest {
                     // Các hóa đơn.
                     long cacHoaDon = laySo("SELECT COUNT(*) FROM hoa_don"),
                             cacDonHang = laySo("SELECT COUNT(*) FROM don_hang");
-                    assertThatThrownBy(() -> banHang.hoanTat(PhuongThuc.CASH, 1000000, "Manager"))
+                    assertThatThrownBy(() -> banHang.hoanTat(PhuongThuc.TIEN_MAT, 1000000, "Manager"))
                             .hasMessageContaining("Không đủ tồn");
                     assertThat(laySo("SELECT COUNT(*) FROM hoa_don")).isEqualTo(cacHoaDon);
                     assertThat(laySo("SELECT COUNT(*) FROM don_hang")).isEqualTo(cacDonHang);
@@ -410,7 +410,7 @@ class TichHopSQLServerTest {
                     // Yêu cầu.
                     var yeuCau =
                             PheDuyetService.guiThaoTac(
-                                    PheDuyetService.Loai.LEAVE,
+                                    PheDuyetService.Loai.NGHI_PHEP,
                                     "Integration leave",
                                     "WORK",
                                     "LEAVE",
@@ -467,8 +467,8 @@ class TichHopSQLServerTest {
                     // Hóa đơn.
                     GioHang hoaDon = com.petstation.service.GioHangService.tao();
                     BanHangService.quyetToan("SPA", phieuSpa, hoaDon);
-                    hoaDon.xacNhanDaNhanTien(PhuongThuc.TRANSFER, true);
-                    hoaDon.hoanTat(PhuongThuc.TRANSFER, hoaDon.tinhTong(), "Manager");
+                    hoaDon.xacNhanDaNhanTien(PhuongThuc.CHUYEN_KHOAN, true);
+                    hoaDon.hoanTat(PhuongThuc.CHUYEN_KHOAN, hoaDon.tinhTong(), "Manager");
                     assertThat(
                                     chuyenThanhChuoi(
                                             layGiaTriDon(
@@ -515,8 +515,8 @@ class TichHopSQLServerTest {
                     // Hóa đơn.
                     GioHang hoaDon = com.petstation.service.GioHangService.tao();
                     BanHangService.quyetToan("HOTEL", hopDongLuuTru, hoaDon);
-                    hoaDon.xacNhanDaNhanTien(PhuongThuc.CARD, true);
-                    hoaDon.hoanTat(PhuongThuc.CARD, hoaDon.tinhTong(), "Manager");
+                    hoaDon.xacNhanDaNhanTien(PhuongThuc.THE_NGAN_HANG, true);
+                    hoaDon.hoanTat(PhuongThuc.THE_NGAN_HANG, hoaDon.tinhTong(), "Manager");
                     assertThat(
                                     chuyenThanhChuoi(
                                             layGiaTriDon(
@@ -566,7 +566,7 @@ class TichHopSQLServerTest {
                     // Bán hàng.
                     GioHang banHang = layGioHang(2);
                     // Hóa đơn.
-                    var hoaDon = banHang.hoanTat(PhuongThuc.CASH, 500000, "Manager");
+                    var hoaDon = banHang.hoanTat(PhuongThuc.TIEN_MAT, 500000, "Manager");
                     // Mục.
                     long muc =
                             laySo(
@@ -575,7 +575,7 @@ class TichHopSQLServerTest {
                                     hoaDon.soHoaDon());
                     GioHang doiHang = com.petstation.service.GioHangService.tao();
                     DoiTraService.lapDoiHang(doiHang, muc, 1, maSanPham, 1, "Đổi phụ kiện");
-                    doiHang.hoanTat(PhuongThuc.CASH, doiHang.tinhTong(), "Manager");
+                    doiHang.hoanTat(PhuongThuc.TIEN_MAT, doiHang.tinhTong(), "Manager");
                     assertThat(
                                     laySo(
                                             "SELECT SUM(so_luong_ton) FROM lo_hang WHERE"
@@ -628,9 +628,9 @@ class TichHopSQLServerTest {
                                     quanLy.taiKhoan(),
                                     quanLy.nhanVien(),
                                     Set.of(
-                                            Quyen.REPORT_VIEW_OWN_SHIFT,
-                                            Quyen.PAYMENT_PROCESS,
-                                            Quyen.CASH_SHIFT_MANAGE));
+                                            Quyen.XEM_BAO_CAO_CA,
+                                            Quyen.THANH_TOAN,
+                                            Quyen.QUAN_LY_CA_THU_NGAN));
                     datPhienDangNhap(caNhan);
                     assertThat(ThongKeService.layDoanhThuTheoNgay(7)).isEmpty();
                     mo();
@@ -638,7 +638,7 @@ class TichHopSQLServerTest {
                     GioHang banHang = layGioHang(1);
                     // Tổng.
                     long tong = banHang.tinhTong();
-                    banHang.hoanTat(PhuongThuc.CASH, 200000, "Manager");
+                    banHang.hoanTat(PhuongThuc.TIEN_MAT, 200000, "Manager");
                     assertThat(ThongKeService.layDoanhThuTheoNgay(7)).hasSize(1);
                     assertThat(
                                     ((Number) ThongKeService.layDoanhThuTheoNgay(7).get(0)[1])
@@ -683,7 +683,7 @@ class TichHopSQLServerTest {
                                                     .as(manHinh.name())
                                                     .isNotNull();
                                             assertThat(
-                                                            (manHinh == MaManHinh.SPA_INTAKE
+                                                            (manHinh == MaManHinh.TIEP_NHAN_SPA
                                                                     || vungHienThiCacKieu.add(
                                                                             pnlVungHienThi
                                                                                     .getClass())))
@@ -695,9 +695,9 @@ class TichHopSQLServerTest {
                                                 hoTro.xuLyHienThi();
                                             // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp
                                             // ứng.
-                                            if (manHinh == MaManHinh.INVENTORY
-                                                    || manHinh == MaManHinh.LOYALTY_VOUCHER
-                                                    || manHinh == MaManHinh.ACCOUNT_PERMISSION) {
+                                            if (manHinh == MaManHinh.KIEM_KE_TON_KHO
+                                                    || manHinh == MaManHinh.TICH_DIEM_VOUCHER
+                                                    || manHinh == MaManHinh.TAI_KHOAN_PHAN_QUYEN) {
                                                 // Các tab.
                                                 var tabCacTab =
                                                         layCacThanhPhanCon(pnlVungHienThi)
@@ -719,13 +719,13 @@ class TichHopSQLServerTest {
                                             // Thao tác.
                                             String thaoTac =
                                                     switch (manHinh) {
-                                                        case SPA_SCHEDULE -> "+ Đặt lịch hẹn";
-                                                        case SPA_CLOSE -> "Thanh toán";
-                                                        case HOTEL_BOOKING -> "+ Đặt phòng";
-                                                        case CHECKOUT -> "Quyết toán";
-                                                        case PURCHASE -> "Trả công nợ";
-                                                        case PENDING_INVOICES -> "Mở lại đơn";
-                                                        case ORDERS -> "Xem / In lại";
+                                                        case DAT_LICH_HEN_SPA -> "+ Đặt lịch hẹn";
+                                                        case HOAN_TAT_SPA -> "Thanh toán";
+                                                        case DAT_PHONG_LUU_TRU -> "+ Đặt phòng";
+                                                        case TRA_PHONG_LUU_TRU -> "Quyết toán";
+                                                        case NHAP_KHO -> "Trả công nợ";
+                                                        case HOA_DON_CHO -> "Mở lại đơn";
+                                                        case LAP_HOA_DON -> "Xem / In lại";
                                                         default -> null;
                                                     };
                                             if (thaoTac != null)
@@ -823,7 +823,7 @@ class TichHopSQLServerTest {
                     GioHang hoaDon = com.petstation.service.GioHangService.tao();
                     BanHangService.quyetToan("HOTEL", hopDongLuuTru, hoaDon);
                     assertThat(hoaDon.tinhTong()).isZero();
-                    assertThat(hoaDon.hoanTat(PhuongThuc.CASH, 0, "Manager").tong()).isZero();
+                    assertThat(hoaDon.hoanTat(PhuongThuc.TIEN_MAT, 0, "Manager").tong()).isZero();
                     assertThat(
                                     chuyenThanhChuoi(
                                             layGiaTriDon(
@@ -844,7 +844,7 @@ class TichHopSQLServerTest {
                                     + " san_pham_id=?",
                             sanPham);
                     assertThatThrownBy(
-                                    () -> layGioHang(1).hoanTat(PhuongThuc.CASH, 200000, "Manager"))
+                                    () -> layGioHang(1).hoanTat(PhuongThuc.TIEN_MAT, 200000, "Manager"))
                             .hasMessageContaining("Không đủ tồn");
                     capNhat(
                             "UPDATE lo_hang SET han_su_dung=DATEADD(day,30,GETDATE()) WHERE"
@@ -853,7 +853,7 @@ class TichHopSQLServerTest {
                     // Đã cũ.
                     GioHang daCu = layGioHang(1);
                     capNhat("UPDATE san_pham SET gia_ban=110000 WHERE id=?", sanPham);
-                    assertThatThrownBy(() -> daCu.hoanTat(PhuongThuc.CASH, 200000, "Manager"))
+                    assertThatThrownBy(() -> daCu.hoanTat(PhuongThuc.TIEN_MAT, 200000, "Manager"))
                             .hasMessageContaining("đã đổi");
                     assertThat(
                                     laySo(
@@ -886,7 +886,7 @@ class TichHopSQLServerTest {
                     for (DanhMucService.CacDong danhMuc : cacDanhMuc) {
                         // Ban đầu.
                         Object[] banDau = danhMuc.get(0).clone();
-                        if (danhMuc.loai == LoaiDanhMuc.ACCOUNTS
+                        if (danhMuc.loai == LoaiDanhMuc.TAI_KHOAN
                                 && "Hoạt động".equals(banDau[3])
                                 && !maNhanVien.equals(banDau[0])) continue;
                         DanhMucService.luu(danhMuc, banDau, banDau.clone());
@@ -999,8 +999,8 @@ class TichHopSQLServerTest {
                     BanHangService.quyetToan("SPA", spa, gio);
                     assertThat(gio.apDungVoucher(ma)).isNull();
                     assertThat(gio.tinhTong()).isZero();
-                    String hd = gio.hoanTat(PhuongThuc.CASH, 0, "Test").soHoaDon();
-                    assertThat(gio.hoanTat(PhuongThuc.CASH, 0, "Test").soHoaDon()).isEqualTo(hd);
+                    String hd = gio.hoanTat(PhuongThuc.TIEN_MAT, 0, "Test").soHoaDon();
+                    assertThat(gio.hoanTat(PhuongThuc.TIEN_MAT, 0, "Test").soHoaDon()).isEqualTo(hd);
                     assertThat(laySo("SELECT da_dung FROM voucher WHERE ma_voucher=?", ma))
                             .isEqualTo(1);
                     assertThatThrownBy(
@@ -1077,7 +1077,7 @@ class TichHopSQLServerTest {
                             .hasMessageContaining("không còn");
                     GioHang gio = com.petstation.service.GioHangService.tao();
                     BanHangService.quyetToan("HOTEL", id, gio);
-                    gio.hoanTat(PhuongThuc.CASH, 75000, "Test");
+                    gio.hoanTat(PhuongThuc.TIEN_MAT, 75000, "Test");
                     assertThatThrownBy(
                                     () ->
                                             BanHangService.quyetToan(
@@ -1095,7 +1095,7 @@ class TichHopSQLServerTest {
     void giaChiDoiSauQuanLyDuyetVaKhongDuyetLap() {
         layTinhHuong(
                 () -> {
-                    doiVaiTro(VaiTro.WAREHOUSE_STAFF);
+                    doiVaiTro(VaiTro.NHAN_VIEN_KHO);
                     var yc =
                             com.petstation.service.DeXuatGiaService.gui(
                                     maSanPham, 120000, "Điều chỉnh theo giá nhập");
@@ -1126,7 +1126,7 @@ class TichHopSQLServerTest {
     void tuChoiGiaKhongDoiGiaVaKhoKhongSuaGiaQuaDanhMuc() {
         layTinhHuong(
                 () -> {
-                    doiVaiTro(VaiTro.WAREHOUSE_STAFF);
+                    doiVaiTro(VaiTro.NHAN_VIEN_KHO);
                     var cacDong = DanhMucService.laySanPham();
                     Object[] cu =
                             cacDong.stream()
@@ -1166,7 +1166,7 @@ class TichHopSQLServerTest {
                             ThongKeService.layDoanhThuTheoNgay(1).stream()
                                     .mapToLong(d -> ((Number) d[1]).longValue())
                                     .sum();
-                    var bienLai = gio.hoanTat(PhuongThuc.CASH, 200000, "Test");
+                    var bienLai = gio.hoanTat(PhuongThuc.TIEN_MAT, 200000, "Test");
                     long dong =
                             laySo(
                                     "SELECT i.id FROM chi_tiet_don_hang i JOIN hoa_don h ON"
@@ -1175,8 +1175,8 @@ class TichHopSQLServerTest {
                     GioHang doi = com.petstation.service.GioHangService.tao();
                     DoiTraService.lapDoiHang(doi, dong, 1, maSanPham, 1, "Đổi kích cỡ");
                     assertThat(doi.tinhTong()).isEqualTo(5000);
-                    var thu = doi.hoanTat(PhuongThuc.CASH, 5000, "Test");
-                    assertThat(doi.hoanTat(PhuongThuc.CASH, 5000, "Test").soHoaDon())
+                    var thu = doi.hoanTat(PhuongThuc.TIEN_MAT, 5000, "Test");
+                    assertThat(doi.hoanTat(PhuongThuc.TIEN_MAT, 5000, "Test").soHoaDon())
                             .isEqualTo(thu.soHoaDon());
                     assertThat(
                                     laySo(
@@ -1209,7 +1209,7 @@ class TichHopSQLServerTest {
                 () -> {
                     mo();
                     GioHang gio = layGioHang(2);
-                    var hd = gio.hoanTat(PhuongThuc.CASH, 200000, "Test");
+                    var hd = gio.hoanTat(PhuongThuc.TIEN_MAT, 200000, "Test");
                     long dong =
                             laySo(
                                     "SELECT i.id FROM chi_tiet_don_hang i JOIN hoa_don h ON"
@@ -1258,7 +1258,7 @@ class TichHopSQLServerTest {
                     DoiTraService.lapDoiHang(doi, dong, 1, maSanPham, 6, "Đổi");
                     long diem = laySo("SELECT diem_tich_luy FROM khach_hang WHERE id=?", khachHang),
                             soPhieu = laySo("SELECT COUNT(*) FROM phieu_doi_tra");
-                    assertThatThrownBy(() -> doi.hoanTat(PhuongThuc.CASH, 1000000, "Test"))
+                    assertThatThrownBy(() -> doi.hoanTat(PhuongThuc.TIEN_MAT, 1000000, "Test"))
                             .hasMessageContaining("Không đủ tồn");
                     assertThat(
                                     laySo(
@@ -1279,17 +1279,17 @@ class TichHopSQLServerTest {
                     mo();
                     GioHang gio = layGioHang(1);
                     assertThatThrownBy(
-                                    () -> gio.hoanTat(PhuongThuc.TRANSFER, gio.tinhTong(), "Test"))
+                                    () -> gio.hoanTat(PhuongThuc.CHUYEN_KHOAN, gio.tinhTong(), "Test"))
                             .hasMessageContaining("xác nhận");
-                    gio.xacNhanDaNhanTien(PhuongThuc.TRANSFER, true);
+                    gio.xacNhanDaNhanTien(PhuongThuc.CHUYEN_KHOAN, true);
                     assertThat(gio.apDungVoucher(voucher)).isNull();
                     assertThatThrownBy(
-                                    () -> gio.hoanTat(PhuongThuc.TRANSFER, gio.tinhTong(), "Test"))
+                                    () -> gio.hoanTat(PhuongThuc.CHUYEN_KHOAN, gio.tinhTong(), "Test"))
                             .hasMessageContaining("xác nhận");
                     assertThat(laySo("SELECT da_dung FROM voucher WHERE ma_voucher=?", voucher))
                             .isZero();
-                    gio.xacNhanDaNhanTien(PhuongThuc.TRANSFER, true);
-                    assertThat(gio.hoanTat(PhuongThuc.TRANSFER, gio.tinhTong(), "Test").tong())
+                    gio.xacNhanDaNhanTien(PhuongThuc.CHUYEN_KHOAN, true);
+                    assertThat(gio.hoanTat(PhuongThuc.CHUYEN_KHOAN, gio.tinhTong(), "Test").tong())
                             .isEqualTo(gio.tinhTong());
                 });
     }
@@ -1323,7 +1323,7 @@ class TichHopSQLServerTest {
                     com.petstation.service.QuyTrinhService.chuyenBuoc("SPA_CLOSE", "PAYMENT", gio);
                     assertThat(gio.layIdNguon()).isEqualTo(spa);
                     assertThat(gio.tinhTamTinh()).isEqualTo(150000);
-                    gio.hoanTat(PhuongThuc.CASH, 150000, "Test");
+                    gio.hoanTat(PhuongThuc.TIEN_MAT, 150000, "Test");
                     assertThat(gio.layQuyTrinh().layPhieuSpa()).isZero();
                     assertThatThrownBy(() -> SpaService.layTrangThaiSpa(spa, "COMPLETED"))
                             .hasMessageContaining("trạng thái");
@@ -1335,15 +1335,15 @@ class TichHopSQLServerTest {
         layTinhHuong(
                 () -> {
                     long spa = SpaService.tiepNhan(maThuCung, null, 4, "");
-                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.SPA_TICKETS))
+                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.PHIEU_SPA))
                             .anyMatch(d -> ((Number) d[0]).longValue() == spa);
                     capNhat(
                             "UPDATE phieu_tiep_nhan_spa SET tao_luc=DATEADD(day,-1,SYSDATETIME())"
                                     + " WHERE id=?",
                             spa);
-                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.SPA_TICKETS))
+                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.PHIEU_SPA))
                             .noneMatch(d -> ((Number) d[0]).longValue() == spa);
-                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.SPA_PROGRESS))
+                    assertThat(NghiepVuService.layCacDong(LoaiNghiepVu.TIEN_DO_SPA))
                             .anyMatch(d -> ((Number) d[0]).longValue() == spa);
                 });
     }
@@ -1456,7 +1456,7 @@ class TichHopSQLServerTest {
                     var dich = new java.util.concurrent.atomic.AtomicReference<MaManHinh>();
                     var dangKy = new DangKyManHinh(quanLy, dich::set);
                     GioHang gio = dangKy.layGioHang();
-                    var lich = dangKy.tao(MaManHinh.SPA_SCHEDULE);
+                    var lich = dangKy.tao(MaManHinh.DAT_LICH_HEN_SPA);
                     nhapHopThoai(
                             "Đặt lịch Spa",
                             hop -> {
@@ -1466,29 +1466,29 @@ class TichHopSQLServerTest {
                             },
                             () -> bam(lich, "+ Đặt lịch hẹn"));
                     assertThat(gio.layQuyTrinh().layLichHen()).isPositive();
-                    var tiepNhan = dangKy.tao(MaManHinh.SPA_INTAKE);
+                    var tiepNhan = dangKy.tao(MaManHinh.TIEP_NHAN_SPA);
                     nhapHopThoai(
                             "Tiếp nhận Spa",
                             hop -> chonMa(hop, "weight", "4"),
                             () -> bam(tiepNhan, "+ Tiếp nhận"));
                     long id = gio.layQuyTrinh().layPhieuSpa();
                     assertThat(id).isPositive();
-                    assertThat(dich.get()).isEqualTo(MaManHinh.SPA_SERVICE_SELECTION);
-                    var chon = dangKy.tao(MaManHinh.SPA_SERVICE_SELECTION);
+                    assertThat(dich.get()).isEqualTo(MaManHinh.CHON_GOI_SPA);
+                    var chon = dangKy.tao(MaManHinh.CHON_GOI_SPA);
                     bam(chon, "Bắt đầu làm");
-                    var tienDo = dangKy.tao(MaManHinh.SPA_PROGRESS);
+                    var tienDo = dangKy.tao(MaManHinh.CAP_NHAT_TIEN_DO_SPA);
                     bam(tienDo, "Hoàn thành");
-                    var dong = dangKy.tao(MaManHinh.SPA_CLOSE);
+                    var dong = dangKy.tao(MaManHinh.HOAN_TAT_SPA);
                     bam(dong, "Thanh toán");
                     assertThat(gio.layIdNguon()).isEqualTo(id);
-                    assertThat(dich.get()).isEqualTo(MaManHinh.PAYMENT);
-                    var thanhToan = dangKy.tao(MaManHinh.PAYMENT);
+                    assertThat(dich.get()).isEqualTo(MaManHinh.THANH_TOAN);
+                    var thanhToan = dangKy.tao(MaManHinh.THANH_TOAN);
                     bam(thanhToan, "Đủ tiền");
                     nhapHopThoai(
                             "Xác nhận thanh toán",
                             hop -> {},
                             () -> bam(thanhToan, "Xác nhận thanh toán (F9)"));
-                    assertThat(dich.get()).isEqualTo(MaManHinh.PRINT_INVOICE);
+                    assertThat(dich.get()).isEqualTo(MaManHinh.IN_HOA_DON);
                     assertThat(
                                     layGiaTriDon(
                                             "SELECT trang_thai FROM phieu_tiep_nhan_spa WHERE id=?",
@@ -1550,7 +1550,7 @@ class TichHopSQLServerTest {
                     var dich = new java.util.concurrent.atomic.AtomicReference<MaManHinh>();
                     var dk = new DangKyManHinh(quanLy, dich::set);
                     GioHang gio = dk.layGioHang();
-                    var datPhong = dk.tao(MaManHinh.HOTEL_BOOKING);
+                    var datPhong = dk.tao(MaManHinh.DAT_PHONG_LUU_TRU);
                     nhapHopThoai(
                             "Đặt phòng lưu trú|Xác nhận nhận cọc",
                             hop -> {
@@ -1569,13 +1569,13 @@ class TichHopSQLServerTest {
                             id,
                             java.util.List.of(
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.CASH, 75000, 75000, true)),
+                                            PhuongThuc.TIEN_MAT, 75000, 75000, true)),
                             "TEST-COC-" + id);
                     assertThat(new CaThuNganService().layTienCocHotel()).isEqualTo(75000);
                     assertThat(new CaThuNganService().layTienMatDuKien()).isEqualTo(1075000);
                     ((HoTroThanhCongCu) datPhong).xuLyHienThi();
                     bam(datPhong, "Nhận phòng");
-                    var nhatKy = dk.tao(MaManHinh.HOTEL_JOURNAL);
+                    var nhatKy = dk.tao(MaManHinh.NHAT_KY_CHAM_SOC);
                     nhapHopThoai(
                             "Nhật ký chăm sóc",
                             hop -> {
@@ -1584,11 +1584,11 @@ class TichHopSQLServerTest {
                             },
                             () -> bam(nhatKy, "Ghi chăm sóc"));
                     assertThat(LuuTruService.layNhatKyChiTiet(id)).hasSize(1);
-                    var traPhong = dk.tao(MaManHinh.CHECKOUT);
+                    var traPhong = dk.tao(MaManHinh.THANH_TOAN);
                     bam(traPhong, "Quyết toán");
                     assertThat(gio.layIdNguon()).isEqualTo(id);
                     assertThat(gio.tinhTong()).isEqualTo(75000);
-                    var thanhToan = dk.tao(MaManHinh.PAYMENT);
+                    var thanhToan = dk.tao(MaManHinh.THANH_TOAN);
                     bam(thanhToan, "Đủ tiền");
                     nhapHopThoai(
                             "Xác nhận thanh toán",
@@ -1730,7 +1730,7 @@ class TichHopSQLServerTest {
                                             "SELECT khach_hang_id FROM voucher WHERE ma_voucher=?",
                                             taoMoi[0]))
                             .isEqualTo(khachHang);
-                    doiVaiTro(VaiTro.SALES_STAFF);
+                    doiVaiTro(VaiTro.NHAN_VIEN_BAN_HANG);
                     assertThatThrownBy(() -> DanhMucService.luu(ds, null, taoMoi))
                             .isInstanceOf(com.petstation.service.PhanQuyenException.class);
                 });
@@ -1989,7 +1989,7 @@ class TichHopSQLServerTest {
                     mo();
                     var daLuu =
                             BanHangService.thanhToan(
-                                    layGioHang(1), PhuongThuc.CASH, 100000, "Thu ngân");
+                                    layGioHang(1), PhuongThuc.TIEN_MAT, 100000, "Thu ngân");
                     String ten =
                             "Thức ăn chăm sóc thú cưng loại đặc biệt với tên rất dài & <chăm sóc>"
                                     + " 800g";
@@ -2001,7 +2001,7 @@ class TichHopSQLServerTest {
                                     300000,
                                     0,
                                     300000,
-                                    PhuongThuc.CASH,
+                                    PhuongThuc.TIEN_MAT,
                                     500000,
                                     200000,
                                     "Khách lẻ",
@@ -2115,7 +2115,7 @@ class TichHopSQLServerTest {
                     mo();
                     var daLuu =
                             BanHangService.thanhToan(
-                                    layGioHang(1), PhuongThuc.CASH, 100000, "Thu ngân");
+                                    layGioHang(1), PhuongThuc.TIEN_MAT, 100000, "Thu ngân");
                     var truoc = BanHangService.layChiTietBienLai(daLuu.soHoaDon());
                     assertThat(truoc.soDuDiemSau()).isNotNull();
                     capNhat(
@@ -2152,22 +2152,22 @@ class TichHopSQLServerTest {
                     var gio = com.petstation.service.GioHangService.tao();
                     var map = new com.petstation.gui.search.TraCuuPhongHotelPanel(gio, chuyen::add);
                     var phong =
-                            com.petstation.service.QuyTrinhService.layThongTinPhong().stream()
+                            com.petstation.service.QuyTrinhService.layPhongHotel().stream()
                                     .filter(p -> p.ma().equals(maPhong))
                                     .findFirst()
                                     .orElseThrow();
                     map.moPhong(phong);
-                    assertThat(chuyen.get(chuyen.size() - 1)).isEqualTo(MaManHinh.HOTEL_BOOKING);
+                    assertThat(chuyen.get(chuyen.size() - 1)).isEqualTo(MaManHinh.DAT_PHONG_LUU_TRU);
                     assertThat(gio.layQuyTrinh().layPhongHotel()).isEqualTo(phong.id());
                     assertThat(gio.layQuyTrinh().layMaPhongHotel()).isEqualTo(maPhong);
                     LuuTruService.kiemTraVao(id);
                     phong =
-                            com.petstation.service.QuyTrinhService.layThongTinPhong().stream()
+                            com.petstation.service.QuyTrinhService.layPhongHotel().stream()
                                     .filter(p -> p.ma().equals(maPhong))
                                     .findFirst()
                                     .orElseThrow();
                     map.moPhong(phong);
-                    assertThat(chuyen.get(chuyen.size() - 1)).isEqualTo(MaManHinh.HOTEL_JOURNAL);
+                    assertThat(chuyen.get(chuyen.size() - 1)).isEqualTo(MaManHinh.NHAT_KY_CHAM_SOC);
                     assertThat(gio.layQuyTrinh().layHopDongHotel()).isEqualTo(id);
                     assertThat(com.petstation.gui.search.TraCuuPhongHotelPanel.layChiTiet(phong))
                             .contains("Đang lưu trú")
@@ -2270,7 +2270,7 @@ class TichHopSQLServerTest {
                                         com.petstation.gui.components.ThanhDanhSach.soKetQua(
                                                 0, bang.getModel().getRowCount()));
                         truyVan.verify(
-                                () -> NghiepVuService.layCacDong(LoaiNghiepVu.BATCHES),
+                                () -> NghiepVuService.layCacDong(LoaiNghiepVu.LO_HANG),
                                 org.mockito.Mockito.times(2));
                     }
                 });
@@ -2290,13 +2290,13 @@ class TichHopSQLServerTest {
                     var rows =
                             List.of(
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.CASH, 30000, 50000, true),
+                                            PhuongThuc.TIEN_MAT, 30000, 50000, true),
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.TRANSFER, 40000, 40000, true),
+                                            PhuongThuc.CHUYEN_KHOAN, 40000, 40000, true),
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.CARD, 30000, 30000, true));
+                                            PhuongThuc.THE_NGAN_HANG, 30000, 30000, true));
                     var receipt = BanHangService.thanhToan(gio, rows, "Integration Manager");
-                    assertThat(receipt.phuongThuc()).isEqualTo(PhuongThuc.MIXED);
+                    assertThat(receipt.phuongThuc()).isEqualTo(PhuongThuc.KET_HOP);
                     assertThat(receipt.thayDoi()).isEqualTo(20000);
                     assertThat(receipt.cacKhoanThu()).hasSize(3);
                     var ca = new CaThuNganService();
@@ -2345,7 +2345,7 @@ class TichHopSQLServerTest {
                                                     gio,
                                                     List.of(
                                                             new com.petstation.model.DongThuTien(
-                                                                    PhuongThuc.CASH, 1, 1, true)),
+                                                                    PhuongThuc.TIEN_MAT, 1, 1, true)),
                                                     "Integration Manager"))
                             .isInstanceOf(IllegalArgumentException.class);
                     assertThat(laySo("SELECT COUNT(*) FROM hoa_don")).isEqualTo(hd);
@@ -2374,7 +2374,7 @@ class TichHopSQLServerTest {
                     var cash =
                             List.of(
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.CASH, 25000, 50000, true));
+                                            PhuongThuc.TIEN_MAT, 25000, 50000, true));
                     LuuTruService.thuCoc(id, cash, "COC-A");
                     LuuTruService.thuCoc(id, cash, "COC-A");
                     assertThat(LuuTruService.layMucCoc(id)).containsExactly(75000, 25000);
@@ -2385,7 +2385,7 @@ class TichHopSQLServerTest {
                             id,
                             List.of(
                                     new com.petstation.model.DongThuTien(
-                                            PhuongThuc.TRANSFER, 50000, 50000, true)),
+                                            PhuongThuc.CHUYEN_KHOAN, 50000, 50000, true)),
                             "COC-B");
                     assertThat(new CaThuNganService().layTienCocHotel()).isEqualTo(25000);
                     assertThatThrownBy(() -> LuuTruService.dieuChinhCoc(id, 0, "Lý do"))
@@ -2530,7 +2530,7 @@ class TichHopSQLServerTest {
                     long first = ca.layId();
                     LuuTruService.thuCoc(
                             id,
-                            List.of(new DongThuTien(PhuongThuc.CASH, 25000, 25000, true)),
+                            List.of(new DongThuTien(PhuongThuc.TIEN_MAT, 25000, 25000, true)),
                             "LAN-1");
                     ca.dong(1025000, "");
                     ca.mo("Integration second", 0);
@@ -2538,8 +2538,8 @@ class TichHopSQLServerTest {
                     LuuTruService.thuCoc(
                             id,
                             List.of(
-                                    new DongThuTien(PhuongThuc.TRANSFER, 25000, 25000, true),
-                                    new DongThuTien(PhuongThuc.CARD, 25000, 25000, true)),
+                                    new DongThuTien(PhuongThuc.CHUYEN_KHOAN, 25000, 25000, true),
+                                    new DongThuTien(PhuongThuc.THE_NGAN_HANG, 25000, 25000, true)),
                             "LAN-2");
                     assertThat(ca.layTienMatDuKien()).isZero();
                     assertThat(ca.layTongCocHotel()).isEqualTo(50000);
@@ -2584,13 +2584,13 @@ class TichHopSQLServerTest {
                                             nhanVien,
                                             maNhanVien,
                                             "hash",
-                                            VaiTro.SPA_HOTEL_STAFF,
-                                            TrangThaiTaiKhoan.ACTIVE,
+                                            VaiTro.NHAN_VIEN_SPA_HOTEL,
+                                            TrangThaiTaiKhoan.HOAT_DONG,
                                             0,
                                             null,
                                             false),
                                     quanLy.nhanVien(),
-                                    Set.of(Quyen.HOTEL_MANAGE)));
+                                    Set.of(Quyen.QUAN_LY_LUU_TRU)));
                     assertThatThrownBy(() -> LuuTruService.dieuChinhCoc(id, 0, "Tự giảm"))
                             .hasMessageContaining("Chỉ quản lý");
                     datPhienDangNhap(quanLy);

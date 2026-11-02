@@ -1,0 +1,6 @@
+#!/bin/sh
+branch=$(git symbolic-ref --quiet --short HEAD) || exit 1
+case "$branch" in
+  feature/*) exit 0 ;;
+  *) echo 'Commit on feature/<name>; integrate into develop and main through reviewed PRs.' >&2; exit 1 ;;
+esac

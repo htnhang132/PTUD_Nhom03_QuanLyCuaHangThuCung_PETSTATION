@@ -4,27 +4,27 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.service.PhienDangNhapService.*;
 
 import com.petstation.dao.DoiHangDAO;
-import com.petstation.dao.DoiTraDAO;
+import com.petstation.dao.PhieuDoiTraDAO;
 import com.petstation.dao.impl.DoiHangDAOImpl;
-import com.petstation.dao.impl.DoiTraDAOImpl;
+import com.petstation.dao.impl.PhieuDoiTraDAOImpl;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /** Đổi phụ kiện trong ba ngày, thu phần chênh lệch; không phát sinh hoàn tiền. */
 public final class DoiTraService {
     private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
-    private static final DoiTraDAO doiTraDAO = new DoiTraDAOImpl();
+    private static final PhieuDoiTraDAO doiTraDAO = new PhieuDoiTraDAOImpl();
 
     private DoiTraService() {}
 
     /** API hoàn tiền cũ chỉ còn để báo rõ quy định khi gặp lời gọi cũ. */
     public static long traHang(long muc, int soLuong, String lyDo) {
-        yeuCau(Quyen.POS_SELL);
+        yeuCau(Quyen.BAN_HANG);
         throw new IllegalArgumentException(
                 "Cần chọn hàng thay thế để đổi phụ kiện; không hoàn tiền.");
     }
@@ -32,6 +32,19 @@ public final class DoiTraService {
     static void apDungDoiTra(long id) {
         throw new IllegalArgumentException(
                 "Phiếu hoàn tiền lịch sử chỉ được tra cứu; không áp dụng thành giao dịch mới.");
+    }
+
+    static void kiemTraHanDoi(
+        LocalDateTime ngayLap,
+        LocalDateTime hienTai) {
+
+        if (ngayLap == null
+            || hienTai.isBefore(ngayLap)
+            || hienTai.isAfter(ngayLap.plusHours(72))) {
+
+            throw new IllegalArgumentException(
+                "Chỉ được đổi trong 72 giờ kể từ ngày lập hóa đơn.");
+        }
     }
 
     private record DuLieu(Object[] goc, long giaTri, long daDoi) {}
@@ -60,10 +73,10 @@ public final class DoiTraService {
             throw new IllegalArgumentException("Chỉ được đổi hàng thuộc nhóm Phụ kiện.");
         if (doiHangDAO.laHoaDonThayThe(so(goc[0])))
             throw new IllegalArgumentException("Hàng thay thế đã đổi không được đổi tiếp.");
-        LocalDate ngay = ((java.sql.Timestamp) goc[3]).toLocalDateTime().toLocalDate();
-        if (ngay.isAfter(LocalDate.now()) || ngay.plusDays(3).isBefore(LocalDate.now()))
-            throw new IllegalArgumentException(
-                    "Chỉ được đổi phụ kiện trong ba ngày kể từ ngày mua.");
+        LocalDateTime ngayLap =
+            ((java.sql.Timestamp) goc[3]).toLocalDateTime();
+
+        kiemTraHanDoi(ngayLap, LocalDateTime.now());
         long daDoi = doiTraDAO.demDoiTraMuc(dong);
         if (daDoi + soLuong > so(goc[5]))
             throw new IllegalArgumentException("Số lượng đổi vượt số đã mua chưa đổi.");
@@ -71,9 +84,43 @@ public final class DoiTraService {
     }
 
     /** Nạp hàng thay thế và tín dụng đổi hàng vào màn thanh toán chung. */
+
+    public static List<Object[]> timHoaDon(String tuKhoa) {
+        yeuCau(Quyen.BAN_HANG);
+
+        if (tuKhoa == null || tuKhoa.isBlank()) {
+            throw new IllegalArgumentException(
+                "Nhập mã hóa đơn hoặc SĐT.");
+        }
+
+        return doiHangDAO.timHoaDon(tuKhoa.trim());
+    }
+
+    public static List<Object[]> layDongHoaDon(long hoaDon) {
+        yeuCau(Quyen.BAN_HANG);
+        return doiHangDAO.layDongHoaDon(hoaDon);
+    }
+
+    public static List<Object[]> timPhuKien(String tuKhoa) {
+        yeuCau(Quyen.BAN_HANG);
+
+        return doiHangDAO.timPhuKien(
+            tuKhoa == null ? "" : tuKhoa.trim());
+    }
+
+    public static long layGiaTriDuocDoi(
+        long dong,
+        int soLuong) {
+
+        yeuCau(Quyen.BAN_HANG);
+
+        return thucHienGiaoDich(
+            c -> kiemTra(dong, soLuong).giaTri());
+    }
+
     public static void lapDoiHang(
             GioHang gio, long dong, int soLuong, String maThayThe, int soLuongMoi, String lyDo) {
-        yeuCau(Quyen.POS_SELL);
+        yeuCau(Quyen.BAN_HANG);
         if (!gio.kiemTraTrong())
             throw new IllegalArgumentException("Hãy thanh toán hoặc treo giỏ hiện tại trước.");
         if (soLuongMoi <= 0 || lyDo == null || lyDo.isBlank())
@@ -146,10 +193,16 @@ public final class DoiTraService {
         return phieu;
     }
 
+    static long tinhDiemChenhLech(long tienThucTra) {
+        if (tienThucTra < 0) {
+            throw new IllegalArgumentException(
+                "Tiền chênh lệch không được âm.");
+        }
+
+        return tienThucTra / 10_000;
+    }
     static long tinhDiemCong(GioHang gio) {
-        var goc = doiHangDAO.timDongGoc(gio.layDoiHang().dongGoc()).get(0);
-        long cu = Math.addExact(so(goc[1]), doiHangDAO.layChenhLechTruoc(so(goc[0])));
-        return Math.addExact(cu, gio.tinhTong()) / 10000 - cu / 10000;
+        return tinhDiemChenhLech(gio.tinhTong());
     }
 
     static void hoanTat(long phieu, long hoaDon) {

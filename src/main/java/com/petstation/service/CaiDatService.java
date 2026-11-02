@@ -1,7 +1,6 @@
 package com.petstation.service;
 
 import static com.petstation.database.ThaoTacSQL.thucHienGiaoDich;
-import static com.petstation.service.PhienDangNhapService.*;
 import static com.petstation.service.PhienDangNhapService.layIdTaiKhoan;
 import static com.petstation.service.PhienDangNhapService.yeuCau;
 import static com.petstation.util.DuLieu.chuyenThanhChuoi;
@@ -16,38 +15,74 @@ import java.util.Arrays;
 public final class CaiDatService {
     private static final CaiDatDAO caiDatDAO = new CaiDatDAOImpl();
 
+    private static String chuanHoaKhoa(String khoa) {
+        if (khoa == null) return "";
+        return switch (khoa.trim()) {
+            case "STORE_NAME" -> "TEN_CUA_HANG";
+            case "STORE_ADDRESS" -> "DIA_CHI_CUA_HANG";
+            case "STORE_PHONE" -> "SO_DIEN_THOAI_CUA_HANG";
+            case "STORE_EMAIL" -> "EMAIL_CUA_HANG";
+            case "STORE_WEBSITE" -> "WEBSITE_CUA_HANG";
+            case "STORE_TAX_CODE" -> "MA_SO_THUE";
+            case "VAT_PERCENT" -> "THUE_VAT_PHAN_TRAM";
+            case "PRINTER" -> "MAY_IN";
+            case "BANK_BIN" -> "MA_BIN_NGAN_HANG";
+            case "BANK_ACCOUNT" -> "SO_TAI_KHOAN_NGAN_HANG";
+            case "BANK_ACCOUNT_NAME" -> "TEN_CHU_TAI_KHOAN";
+            case "LOW_STOCK_THRESHOLD" -> "NGUONG_TON_KHO_THAP";
+            case "EXPIRY_WARN_DAYS" -> "SO_NGAY_CANH_BAO_HET_HAN";
+            case "DEAD_STOCK_DAYS" -> "SO_NGAY_TON_DONG";
+            case "WRITEOFF_APPROVAL_LIMIT" -> "HAN_MUC_XUAT_HUY_CAN_DUYET";
+            case "BLIND_COUNT_DEFAULT" -> "MAC_DINH_KIEM_KE_MU";
+            case "MAX_WEEKLY_HOURS" -> "SO_GIO_TOI_DA_MOI_TUAN";
+            case "SHIFT_SWAP_HOURS_AHEAD" -> "SO_GIO_BAO_TRUOC_DOI_CA";
+            case "LATE_CHECKOUT_FEE" -> "PHI_TRA_PHONG_TRE";
+            case "RETURN_WINDOW_DAYS" -> "SO_NGAY_DOI_TRA";
+            case "CARE_DATA_DIR" -> "THU_MUC_ANH_CHAM_SOC";
+            case "TIER_SPEND" -> "MUC_CHI_TIEU_HANG";
+            case "VND_PER_EARNED_POINT" -> "SO_TIEN_MOI_DIEM_TICH";
+            case "VND_PER_REDEEMED_POINT" -> "SO_TIEN_MOI_DIEM_DOI";
+            default -> khoa.trim();
+        };
+    }
+
     /** Lưu toàn bộ biểu mẫu trong một transaction, tránh lưu dở tham số/ngân hàng/máy in. */
     public static void luuTatCa(java.util.Map<String, String> giaTri, String mayIn) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
-        if (giaTri.getOrDefault("STORE_NAME", "").isBlank())
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+        java.util.Map<String, String> chuanHoa = new java.util.LinkedHashMap<>();
+        for (var muc : giaTri.entrySet()) {
+            chuanHoa.put(chuanHoaKhoa(muc.getKey()), muc.getValue());
+        }
+        if (chuanHoa.getOrDefault("TEN_CUA_HANG", "").isBlank())
             throw new IllegalArgumentException("Cần tên cửa hàng.");
         thucHienGiaoDich(
                 c -> {
                     capNhat(
-                            Integer.parseInt(giaTri.get("VAT_PERCENT")),
-                            Integer.parseInt(giaTri.get("LOW_STOCK_THRESHOLD")),
-                            Integer.parseInt(giaTri.get("EXPIRY_WARN_DAYS")),
-                            Long.parseLong(giaTri.get("LATE_CHECKOUT_FEE")),
-                            Integer.parseInt(giaTri.get("RETURN_WINDOW_DAYS")),
-                            Long.parseLong(giaTri.get("WRITEOFF_APPROVAL_LIMIT")));
+                            Integer.parseInt(chuanHoa.get("THUE_VAT_PHAN_TRAM")),
+                            Integer.parseInt(chuanHoa.get("NGUONG_TON_KHO_THAP")),
+                            Integer.parseInt(chuanHoa.get("SO_NGAY_CANH_BAO_HET_HAN")),
+                            Long.parseLong(chuanHoa.get("PHI_TRA_PHONG_TRE")),
+                            Integer.parseInt(chuanHoa.get("SO_NGAY_DOI_TRA")),
+                            Long.parseLong(chuanHoa.get("HAN_MUC_XUAT_HUY_CAN_DUYET")));
                     capNhatNganHang(
-                            giaTri.get("BANK_BIN").trim(),
-                            giaTri.get("BANK_ACCOUNT").trim(),
-                            giaTri.get("BANK_ACCOUNT_NAME")
+                            chuanHoa.getOrDefault("MA_BIN_NGAN_HANG", "").trim(),
+                            chuanHoa.getOrDefault("SO_TAI_KHOAN_NGAN_HANG", "").trim(),
+                            chuanHoa.getOrDefault("TEN_CHU_TAI_KHOAN", "")
                                     .trim()
                                     .toUpperCase(java.util.Locale.ROOT));
-                    for (var muc : giaTri.entrySet()) {
+                    for (var muc : chuanHoa.entrySet()) {
                         String k = muc.getKey();
-                        if (k.startsWith("STORE_")
-                                || k.equals("CARE_DATA_DIR")
-                                || k.equals("DEAD_STOCK_DAYS")
-                                || k.equals("BLIND_COUNT_DEFAULT")
-                                || k.equals("MAX_WEEKLY_HOURS")
-                                || k.equals("SHIFT_SWAP_HOURS_AHEAD")) {
+                        if (k.endsWith("_CUA_HANG")
+                                || k.equals("MA_SO_THUE")
+                                || k.equals("THU_MUC_ANH_CHAM_SOC")
+                                || k.equals("SO_NGAY_TON_DONG")
+                                || k.equals("MAC_DINH_KIEM_KE_MU")
+                                || k.equals("SO_GIO_TOI_DA_MOI_TUAN")
+                                || k.equals("SO_GIO_BAO_TRUOC_DOI_CA")) {
                             ghi(k, muc.getValue().trim());
                         }
                     }
-                    ghi("PRINTER", mayIn);
+                    ghi("MAY_IN", mayIn);
                     NhatKyHeThongService.ghiNhatKy("Sửa", "Cài đặt hệ thống");
                     thongBaoThayDoi("ALL");
                     return null;
@@ -79,7 +114,7 @@ public final class CaiDatService {
     }
 
     public static String layTuyChonHoacMacDinh(String khoa, String macDinh) {
-        Object giaTri = caiDatDAO.timGiaTri(khoa);
+        Object giaTri = caiDatDAO.timGiaTri(chuanHoaKhoa(khoa));
         if (giaTri == null || giaTri.toString().isBlank()) {
             return macDinh;
         }
@@ -87,37 +122,39 @@ public final class CaiDatService {
     }
 
     public static String layTuyChon(String khoa) {
-        Object giaTri = caiDatDAO.timGiaTri(khoa);
+        Object giaTri = caiDatDAO.timGiaTri(chuanHoaKhoa(khoa));
         return giaTri == null ? "" : chuyenThanhChuoi(giaTri);
     }
 
     public static void capNhatNganHang(String bin, String taiKhoan, String chuTaiKhoan) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         if (!(bin.isBlank() && taiKhoan.isBlank() && chuTaiKhoan.isBlank()))
             com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(bin, taiKhoan, chuTaiKhoan);
         thucHienGiaoDich(
                 c -> {
-                    ghi("BANK_BIN", bin);
-                    ghi("BANK_ACCOUNT", taiKhoan);
-                    ghi("BANK_ACCOUNT_NAME", chuTaiKhoan);
+                    ghi("MA_BIN_NGAN_HANG", bin);
+                    ghi("SO_TAI_KHOAN_NGAN_HANG", taiKhoan);
+                    ghi("TEN_CHU_TAI_KHOAN", chuTaiKhoan);
                     return null;
                 });
     }
 
     public static String lay(String khoa) {
-        Object giaTri = caiDatDAO.timGiaTri(khoa);
+        String khoaChuan = chuanHoaKhoa(khoa);
+        Object giaTri = caiDatDAO.timGiaTri(khoaChuan);
         if (giaTri == null)
             throw new IllegalStateException(
-                    "Thiếu cài đặt " + khoa + ". Chạy database/002_sample_data.sql.");
+                    "Thiếu cài đặt " + khoaChuan + ". Chạy database/002_sample_data.sql.");
         return chuyenThanhChuoi(giaTri);
     }
 
     public static void ghi(String khoa, String giaTri) {
-        yeuCau(Quyen.ACCOUNT_MANAGE);
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+        String khoaChuan = chuanHoaKhoa(khoa);
         thucHienGiaoDich(
                 ketNoi -> {
-                    if (caiDatDAO.capNhatGiaTri(giaTri, layIdTaiKhoan(), khoa) == 0)
-                        caiDatDAO.themGiaTri(khoa, giaTri, layIdTaiKhoan());
+                    if (caiDatDAO.capNhatGiaTri(giaTri, layIdTaiKhoan(), khoaChuan) == 0)
+                        caiDatDAO.themGiaTri(khoaChuan, giaTri, layIdTaiKhoan());
                     return null;
                 });
     }
@@ -139,31 +176,31 @@ public final class CaiDatService {
     }
 
     public static long[] layHangChiTieu() {
-        return Arrays.stream(lay("TIER_SPEND").split(",")).mapToLong(Long::parseLong).toArray();
+        return Arrays.stream(lay("MUC_CHI_TIEU_HANG").split(",")).mapToLong(Long::parseLong).toArray();
     }
 
     public static int layVATPhanTram() {
-        return laySoNguyen("VAT_PERCENT");
+        return laySoNguyen("THUE_VAT_PHAN_TRAM");
     }
 
     public static int layNguongThapTonKho() {
-        return laySoNguyen("LOW_STOCK_THRESHOLD");
+        return laySoNguyen("NGUONG_TON_KHO_THAP");
     }
 
     public static int layHanSuDungCanhBaoSoNgay() {
-        return laySoNguyen("EXPIRY_WARN_DAYS");
+        return laySoNguyen("SO_NGAY_CANH_BAO_HET_HAN");
     }
 
     public static long layPhiTraPhongTreMoiNgay() {
-        return docSoTien("LATE_CHECKOUT_FEE");
+        return docSoTien("PHI_TRA_PHONG_TRE");
     }
 
     public static int laySoNgayDuocDoiTra() {
-        return 3;
+        return Integer.parseInt(layTuyChonHoacMacDinh("SO_NGAY_DOI_TRA", "3"));
     }
 
     public static long ghiGioiHanHuyPheDuyet() {
-        return docSoTien("WRITEOFF_APPROVAL_LIMIT");
+        return docSoTien("HAN_MUC_XUAT_HUY_CAN_DUYET");
     }
 
     public static void capNhatTichLuy(long tichDiem, long doiDiem, long[] cacHang) {
@@ -174,10 +211,10 @@ public final class CaiDatService {
                 throw new IllegalArgumentException("Ngưỡng hạng phải tăng dần.");
         thucHienGiaoDich(
                 ketNoi -> {
-                    ghi("VND_PER_EARNED_POINT", "" + tichDiem);
-                    ghi("VND_PER_REDEEMED_POINT", "" + doiDiem);
+                    ghi("SO_TIEN_MOI_DIEM_TICH", "" + tichDiem);
+                    ghi("SO_TIEN_MOI_DIEM_DOI", "" + doiDiem);
                     ghi(
-                            "TIER_SPEND",
+                            "MUC_CHI_TIEU_HANG",
                             String.join(
                                     ",", Arrays.stream(cacHang).mapToObj(Long::toString).toList()));
                     return null;
@@ -189,12 +226,12 @@ public final class CaiDatService {
             throw new IllegalArgumentException("Cài đặt không hợp lệ.");
         thucHienGiaoDich(
                 ketNoi -> {
-                    ghi("VAT_PERCENT", "" + vat);
-                    ghi("LOW_STOCK_THRESHOLD", "" + thap);
-                    ghi("EXPIRY_WARN_DAYS", "" + soNgay);
-                    ghi("LATE_CHECKOUT_FEE", "" + tre);
-                    ghi("RETURN_WINDOW_DAYS", "" + doiTra);
-                    ghi("WRITEOFF_APPROVAL_LIMIT", "" + gioiHan);
+                    ghi("THUE_VAT_PHAN_TRAM", "" + vat);
+                    ghi("NGUONG_TON_KHO_THAP", "" + thap);
+                    ghi("SO_NGAY_CANH_BAO_HET_HAN", "" + soNgay);
+                    ghi("PHI_TRA_PHONG_TRE", "" + tre);
+                    ghi("SO_NGAY_DOI_TRA", "" + doiTra);
+                    ghi("HAN_MUC_XUAT_HUY_CAN_DUYET", "" + gioiHan);
                     return null;
                 });
     }

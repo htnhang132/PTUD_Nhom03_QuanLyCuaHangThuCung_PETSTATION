@@ -52,6 +52,28 @@ public final class NhatKyHeThongService {
     public static String layNguoiDung() {
         return layPhienHienTai() == null ? nguoiDung : layPhien().layTenHienThi();
     }
+    
+    public static void ghiThayDoi(
+            java.sql.Connection ketNoi,
+            String thaoTac,
+            String loaiDoiTuong,
+            String maDoiTuong,
+            String giaTriCu,
+            String giaTriMoi) throws Exception {
+
+        nhatKyHeThongDAO.them(
+                ketNoi,
+                new com.petstation.model.NhatKyHeThong(
+                        0,
+                        layIdTaiKhoan(),
+                        thaoTac,
+                        loaiDoiTuong,
+                        maDoiTuong,
+                        giaTriCu,
+                        giaTriMoi,
+                        "Thay đổi dữ liệu danh mục",
+                        java.time.LocalDateTime.now()));
+    }
 
     public static void ghiNhatKy(String thaoTac, String doiTuong) {
         ghiNhatKy(layKieuCua(thaoTac), thaoTac, doiTuong, "Thành công");

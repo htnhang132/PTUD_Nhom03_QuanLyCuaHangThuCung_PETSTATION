@@ -12,32 +12,32 @@ public final class LichSuKhachHangService {
     private LichSuKhachHangService() {}
 
     public static List<Object[]> layThuCung(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layThuCung(khachHang);
     }
 
     public static List<Object[]> layCacHoaDon(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layCacHoaDon(khachHang);
     }
 
     public static List<Object[]> layLichSuSpa(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layLichSuSpa(khachHang);
     }
 
     public static List<Object[]> layLichSuLuuTru(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layLichSuLuuTru(khachHang);
     }
 
     public static List<Object[]> layLichSuDiem(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layLichSuDiem(khachHang);
     }
 
     public static List<Object[]> layVoucher(long khachHang) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.CUSTOMER_MANAGE);
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.QUAN_LY_KHACH_HANG);
         return lichSuKhachHangDAO.layVoucher(khachHang);
     }
 }

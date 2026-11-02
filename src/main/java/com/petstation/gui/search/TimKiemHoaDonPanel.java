@@ -1,9 +1,9 @@
 package com.petstation.gui.search;
 
-import static com.petstation.util.DuLieu.*;
-
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.NutDinhDang;
+import com.petstation.gui.components.common.BoChonNgay;
+import com.petstation.gui.components.common.DinhDangBang;
 import com.petstation.gui.components.common.HoaDonDocPanel;
 import com.petstation.gui.processing.sales.InHoaDonPanel;
 import com.petstation.gui.processing.sales.NghiepVuBanHangPanel;
@@ -12,7 +12,6 @@ import com.petstation.model.GioHang;
 import com.petstation.model.LoaiNghiepVu;
 import com.petstation.model.MaManHinh;
 import com.petstation.service.BanHangService;
-import com.petstation.service.PheDuyetService;
 
 import java.awt.*;
 import java.awt.print.PrinterException;
@@ -32,78 +31,103 @@ import javax.swing.table.TableRowSorter;
 
 /**
  * Cung cấp giao diện Master-Detail Split-Pane cho tra cứu và tìm kiếm hóa đơn. Hỗ trợ bộ lọc đa
- * tiêu chí (ngày tháng, trạng thái, phương thức thanh toán, khoảng tiền) và xem trước chi tiết hóa
- * đơn chuẩn máy in nhiệt K80 (80mm) ngay bên cạnh.
+ * tiêu chí (ngày tháng, trạng thái, phương thức thanh toán) và xem trước chi tiết hóa đơn chuẩn máy
+ * in nhiệt K80 (80mm) ngay bên cạnh.
  */
 public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     private final HoaDonDocPanel pnlHoaDon = new HoaDonDocPanel();
     private final JLabel lblBillStatus = new JLabel("Chọn hóa đơn bên trái để xem trước");
     private final NutDinhDang btnInLai;
     private final NutDinhDang btnXuatHtml;
-    private final NutDinhDang btnYeuCauSuaHuy;
 
     // Bộ lọc đa tiêu chí
-    private final JTextField txtTuNgay;
-    private final JTextField txtDenNgay;
+    private final BoChonNgay txtTuNgay;
+    private final BoChonNgay txtDenNgay;
     private final JComboBox<String> cboPhuongThuc;
     private final JComboBox<String> cboTrangThai;
-    private final JTextField txtGiaMin;
-    private final JTextField txtGiaMax;
 
     private GioHang.BienLai bienLaiDangChon = null;
 
     public TimKiemHoaDonPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.INVOICES, banHang, dieuHuong);
+        super(LoaiNghiepVu.HOA_DON, banHang, dieuHuong);
 
-        // 1. Tạo thanh bộ lọc đa tiêu chí
-        JPanel pnlBoLocNangCao = new JPanel();
-        pnlBoLocNangCao.setLayout(new BoxLayout(pnlBoLocNangCao, BoxLayout.Y_AXIS));
-        pnlBoLocNangCao.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(226, 232, 240)),
-                        new EmptyBorder(6, 4, 8, 4)));
-
-        JPanel pnlHangLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-
-        LocalDate dauThang = LocalDate.now().withDayOfMonth(1);
+        // 1. Tạo thanh bộ lọc đa tiêu chí gom chung trên cùng 1 hàng
+        LocalDate macDinhTuNgay = LocalDate.now().minusDays(60);
         LocalDate homNay = LocalDate.now();
 
-        txtTuNgay = new JTextField(dauThang.toString(), 8);
-        txtDenNgay = new JTextField(homNay.toString(), 8);
-
-        pnlHangLoc.add(new JLabel("Từ ngày:"));
-        pnlHangLoc.add(txtTuNgay);
-        pnlHangLoc.add(new JLabel("Đến ngày:"));
-        pnlHangLoc.add(txtDenNgay);
+        txtTuNgay = new BoChonNgay(macDinhTuNgay);
+        txtDenNgay = new BoChonNgay(homNay);
 
         cboPhuongThuc =
-                new JComboBox<>(new String[] {"TẤT CẢ", "CASH", "TRANSFER", "CARD", "MIXED"});
-        pnlHangLoc.add(new JLabel("Phương thức:"));
-        pnlHangLoc.add(cboPhuongThuc);
+                new JComboBox<>(
+                        new String[] {
+                            "TẤT CẢ",
+                            "Tiền mặt",
+                            "Chuyển khoản",
+                            "Thẻ"
+                        });
 
-        cboTrangThai = new JComboBox<>(new String[] {"TẤT CẢ", "PAID", "CANCELLED", "RETURNED"});
-        pnlHangLoc.add(new JLabel("Trạng thái:"));
-        pnlHangLoc.add(cboTrangThai);
+        cboTrangThai =
+                new JComboBox<>(
+                        new String[] {
+                            "TẤT CẢ",
+                            "Đã thanh toán",
+                            "Đã hủy",
+                            "Đã hoàn"
+                        });
 
-        txtGiaMin = new JTextField(6);
-        txtGiaMax = new JTextField(6);
-        pnlHangLoc.add(new JLabel("Giá từ:"));
-        pnlHangLoc.add(txtGiaMin);
-        pnlHangLoc.add(new JLabel("Đến:"));
-        pnlHangLoc.add(txtGiaMax);
-
-        NutDinhDang btnLoc = new NutDinhDang("Lọc nâng cao", NutDinhDang.KieuNut.CHINH);
-        NutDinhDang btnDatLai = new NutDinhDang("Đặt lại", NutDinhDang.KieuNut.TRONG_SUOT);
-        pnlHangLoc.add(btnLoc);
-        pnlHangLoc.add(btnDatLai);
-
-        pnlBoLocNangCao.add(pnlHangLoc);
-
-        // Chèn thanh bộ lọc lên trên bảng
         BorderLayout rootLayout = (BorderLayout) getLayout();
         Component northComp = rootLayout.getLayoutComponent(BorderLayout.NORTH);
         if (northComp instanceof JPanel pnlNorth) {
-            pnlNorth.add(pnlBoLocNangCao, BorderLayout.SOUTH);
+            Component btnLamMoi = null;
+            Component btnXuat = null;
+            for (Component c : pnlCacThaoTac.getComponents()) {
+                if (c instanceof JButton b) {
+                    if ("Làm mới".equals(b.getText())) btnLamMoi = b;
+                    else if ("Xuất Excel".equals(b.getText())) btnXuat = b;
+                }
+            }
+            pnlCacThaoTac.removeAll();
+            pnlNorth.remove(pnlCacThaoTac);
+
+            JPanel pnlThanhCongCu = new JPanel(new BorderLayout(8, 0));
+            pnlThanhCongCu.setOpaque(false);
+            pnlThanhCongCu.setBorder(
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(226, 232, 240)),
+                            new EmptyBorder(4, 2, 6, 2)));
+
+            JPanel pnlBoLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+            pnlBoLoc.setOpaque(false);
+
+            txtTimKiem.setPreferredSize(new Dimension(170, 32));
+            pnlBoLoc.add(txtTimKiem);
+
+            pnlBoLoc.add(new JLabel("Từ ngày:"));
+            txtTuNgay.setPreferredSize(new Dimension(120, 32));
+            pnlBoLoc.add(txtTuNgay);
+
+            pnlBoLoc.add(new JLabel("Đến ngày:"));
+            txtDenNgay.setPreferredSize(new Dimension(120, 32));
+            pnlBoLoc.add(txtDenNgay);
+
+            pnlBoLoc.add(new JLabel("Phương thức:"));
+            cboPhuongThuc.setPreferredSize(new Dimension(115, 32));
+            pnlBoLoc.add(cboPhuongThuc);
+
+            pnlBoLoc.add(new JLabel("Trạng thái:"));
+            cboTrangThai.setPreferredSize(new Dimension(130, 32));
+            pnlBoLoc.add(cboTrangThai);
+
+            JPanel pnlNutPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
+            pnlNutPhai.setOpaque(false);
+            if (btnLamMoi != null) pnlNutPhai.add(btnLamMoi);
+            if (btnXuat != null) pnlNutPhai.add(btnXuat);
+
+            pnlThanhCongCu.add(pnlBoLoc, BorderLayout.CENTER);
+            pnlThanhCongCu.add(pnlNutPhai, BorderLayout.EAST);
+
+            pnlNorth.add(pnlThanhCongCu, BorderLayout.CENTER);
         }
 
         // 2. Tạo Preview Panel biên nhận K80 bên phải
@@ -129,31 +153,20 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         pnlRightDetail.add(scrHoaDon, BorderLayout.CENTER);
 
         // Các nút thao tác trên hóa đơn bên phải
-        JPanel pnlActionBill = new JPanel(new GridLayout(3, 1, 0, 6));
+        JPanel pnlActionBill = new JPanel(new GridLayout(2, 1, 0, 6));
         pnlActionBill.setBorder(new EmptyBorder(6, 0, 4, 0));
 
         btnInLai = new NutDinhDang("In lại hóa đơn (K80 / A5)", NutDinhDang.KieuNut.CHINH);
         btnXuatHtml = new NutDinhDang("Xuất file HTML / PDF", NutDinhDang.KieuNut.PHU);
-        btnYeuCauSuaHuy =
-                new NutDinhDang("Yêu cầu sửa / hủy hóa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
 
         btnInLai.setEnabled(false);
         btnXuatHtml.setEnabled(false);
-        btnYeuCauSuaHuy.setEnabled(false);
 
         btnInLai.addActionListener(e -> xuLyInHoaDon());
         btnXuatHtml.addActionListener(e -> xuLyXuatHoaDon());
-        btnYeuCauSuaHuy.addActionListener(
-                e -> {
-                    if (bienLaiDangChon != null) {
-                        PheDuyetService.daChonHoaDon = bienLaiDangChon.soHoaDon();
-                        dieuHuong.accept(MaManHinh.INVOICE_EDIT_REQUEST);
-                    }
-                });
 
         pnlActionBill.add(btnInLai);
         pnlActionBill.add(btnXuatHtml);
-        pnlActionBill.add(btnYeuCauSuaHuy);
         pnlRightDetail.add(pnlActionBill, BorderLayout.SOUTH);
 
         // 3. Tái cấu trúc Center thành JSplitPane
@@ -162,7 +175,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             remove(centerComp);
             JSplitPane splitPane =
                     new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, centerComp, pnlRightDetail);
-            splitPane.setResizeWeight(0.68);
+            splitPane.setResizeWeight(1.0);
             splitPane.setContinuousLayout(true);
             splitPane.setBorder(null);
             add(splitPane, BorderLayout.CENTER);
@@ -176,19 +189,48 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                             capNhatXemTruocHoaDon();
                         });
 
-        // 5. Gắn sự kiện lọc nâng cao
-        btnLoc.addActionListener(e -> apDungBoLocNangCao());
-        btnDatLai.addActionListener(
-                e -> {
-                    txtTuNgay.setText("");
-                    txtDenNgay.setText("");
-                    cboPhuongThuc.setSelectedIndex(0);
-                    cboTrangThai.setSelectedIndex(0);
-                    txtGiaMin.setText("");
-                    txtGiaMax.setText("");
-                    txtTimKiem.setText("");
-                    apDungBoLocNangCao();
-                });
+        txtTuNgay.addPropertyChangeListener("date", e -> apDungBoLocNangCao());
+        txtDenNgay.addPropertyChangeListener("date", e -> apDungBoLocNangCao());
+        cboPhuongThuc.addActionListener(e -> apDungBoLocNangCao());
+        cboTrangThai.addActionListener(e -> apDungBoLocNangCao());
+        lienKetBoLoc(txtTimKiem, tblBang);
+        apDungBoLocNangCao();
+    }
+
+    @Override
+    protected void lienKetBoLoc(JTextField timKiem, JTable bang) {
+        if (Boolean.TRUE.equals(timKiem.getClientProperty("locHoaDon"))) return;
+        timKiem.putClientProperty("locHoaDon", true);
+        timKiem.getDocument()
+                .addDocumentListener(
+                        new javax.swing.event.DocumentListener() {
+                            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLocNangCao();
+                            }
+
+                            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLocNangCao();
+                            }
+
+                            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                                apDungBoLocNangCao();
+                            }
+                        });
+    }
+
+    @Override
+    protected void datLaiBoLoc() {
+        txtTuNgay.datNgayDuocChon(LocalDate.now().minusDays(60));
+        txtDenNgay.datNgayDuocChon(LocalDate.now());
+        cboPhuongThuc.setSelectedIndex(0);
+        cboTrangThai.setSelectedIndex(0);
+        txtTimKiem.setText("");
+        apDungBoLocNangCao();
+    }
+
+    @Override
+    protected void sauKhiTaiLai() {
+        if (txtTuNgay != null) apDungBoLocNangCao();
     }
 
     private void capNhatXemTruocHoaDon() {
@@ -196,13 +238,11 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         if (row < 0) {
             btnInLai.setEnabled(false);
             btnXuatHtml.setEnabled(false);
-            btnYeuCauSuaHuy.setEnabled(false);
             lblBillStatus.setText("Chưa chọn hóa đơn");
             return;
         }
 
         try {
-            // View col 0 là số hóa đơn, col 6 là trạng thái
             String soHoaDon = tblBang.getValueAt(row, 0).toString();
             String trangThai =
                     tblBang.getValueAt(row, 6) == null ? "" : tblBang.getValueAt(row, 6).toString();
@@ -210,17 +250,18 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             ChiTietBienLai chiTiet = BanHangService.layChiTietBienLai(soHoaDon);
 
             pnlHoaDon.datDuLieu(chiTiet);
-            lblBillStatus.setText("Hóa đơn: " + soHoaDon + " (" + trangThai + ")");
+            lblBillStatus.setText("Hóa đơn: " + soHoaDon + " (" + DinhDangBang.tenTrangThai(trangThai) + ")");
 
             btnInLai.setEnabled(true);
             btnXuatHtml.setEnabled(true);
-            btnYeuCauSuaHuy.setEnabled(true);
         } catch (Exception ex) {
             lblBillStatus.setText("Lỗi nạp hóa đơn: " + ex.getMessage());
         }
     }
 
     private void apDungBoLocNangCao() {
+        if (txtTuNgay == null || cboTrangThai == null) return;
+        @SuppressWarnings("unchecked")
         TableRowSorter<DefaultTableModel> sorter =
                 (TableRowSorter<DefaultTableModel>) tblBang.getRowSorter();
         if (sorter == null) return;
@@ -230,24 +271,39 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         // 1. Lọc từ khóa tìm kiếm chung
         String tuKhoa = txtTimKiem.getText().trim();
         if (!tuKhoa.isEmpty() && !"Tìm trong danh sách...".equals(tuKhoa)) {
-            cacBoLoc.add(RowFilter.regexFilter("(?i)" + java.util.regex.Pattern.quote(tuKhoa)));
+            cacBoLoc.add(RowFilter.regexFilter("(?iu)" + java.util.regex.Pattern.quote(tuKhoa)));
         }
 
         // 2. Lọc phương thức thanh toán (cột 6 trong model)
         String phuongThuc = (String) cboPhuongThuc.getSelectedItem();
         if (phuongThuc != null && !"TẤT CẢ".equals(phuongThuc)) {
-            cacBoLoc.add(RowFilter.regexFilter("^" + phuongThuc + "$", 6));
+            String maPt =
+                    switch (phuongThuc) {
+                        case "Tiền mặt" -> "CASH|TIEN_MAT|Tiền mặt";
+                        case "Chuyển khoản" -> "TRANSFER|CHUYEN_KHOAN|Chuyển khoản.*";
+                        case "Thẻ" -> "CARD|THE|QUET_THE|Thẻ";
+                        default -> "SPLIT|MIXED|KET_HOP|Kết hợp";
+                    };
+            cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maPt + ")$", 6));
         }
 
         // 3. Lọc trạng thái (cột 7 trong model)
         String trangThai = (String) cboTrangThai.getSelectedItem();
         if (trangThai != null && !"TẤT CẢ".equals(trangThai)) {
-            cacBoLoc.add(RowFilter.regexFilter("^" + trangThai + "$", 7));
+            String maTt =
+                    switch (trangThai) {
+                        case "Đã thanh toán" -> "PAID|COMPLETED|DA_THANH_TOAN|Đã thanh toán";
+                        case "Đã hủy" -> "CANCELLED|VOIDED|DA_HUY|Đã hủy";
+                        default -> "REFUNDED|RETURNED|DA_HOAN|Đã hoàn";
+                    };
+            cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maTt + ")$", 7));
         }
 
         // 4. Lọc ngày tháng (cột 4 trong model: thanh_toan_luc)
-        String tuNgayStr = txtTuNgay.getText().trim();
-        String denNgayStr = txtDenNgay.getText().trim();
+        LocalDate tuNgay = txtTuNgay.layNgayDuocChon();
+        String tuNgayStr = tuNgay == null ? "" : tuNgay.toString();
+        LocalDate denNgay = txtDenNgay.layNgayDuocChon();
+        String denNgayStr = denNgay == null ? "" : denNgay.toString();
         if (!tuNgayStr.isEmpty() || !denNgayStr.isEmpty()) {
             cacBoLoc.add(
                     new RowFilter<DefaultTableModel, Object>() {
@@ -267,34 +323,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                                 if (!denNgayStr.isEmpty()) {
                                     LocalDate den = LocalDate.parse(denNgayStr);
                                     if (d.isAfter(den)) return false;
-                                }
-                                return true;
-                            } catch (Exception ex) {
-                                return true;
-                            }
-                        }
-                    });
-        }
-
-        // 5. Lọc khoảng giá (cột 5 trong model: tong_tien)
-        String minStr = txtGiaMin.getText().trim();
-        String maxStr = txtGiaMax.getText().trim();
-        if (!minStr.isEmpty() || !maxStr.isEmpty()) {
-            cacBoLoc.add(
-                    new RowFilter<DefaultTableModel, Object>() {
-                        @Override
-                        public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
-                            Object val = entry.getValue(5);
-                            if (val == null) return false;
-                            try {
-                                long tien = ((Number) val).longValue();
-                                if (!minStr.isEmpty()) {
-                                    long min = Long.parseLong(minStr);
-                                    if (tien < min) return false;
-                                }
-                                if (!maxStr.isEmpty()) {
-                                    long max = Long.parseLong(maxStr);
-                                    if (tien > max) return false;
                                 }
                                 return true;
                             } catch (Exception ex) {
