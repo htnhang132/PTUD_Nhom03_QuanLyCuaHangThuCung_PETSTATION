@@ -3,25 +3,23 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import com.petstation.util.DuLieu;
 
 /**
- * Biểu diễn dữ liệu ánh xạ với bảng nhat_ky_he_thong trong SQL Server.
- *
- * @param id id
- * @param idNguoiThucHienTaiKhoan id người thực hiện tài khoản
- * @param thaoTac thao tác
- * @param kieuThucThe kiểu thực thể
- * @param idThucThe id thực thể
- * @param giaTriCu giá trị cũ
- * @param giaTriMoi giá trị mới
- * @param ghiChu ghi chú
- * @param thoiDiemXayRa thời điểm xảy ra
+ * Thực thể Nhật ký hệ thống khớp bảng [nhat_ky_he_thong] trong SQL Server.
+ * Tuân thủ chuẩn OOP môn PTUD:
+ * - Khóa chính là mã nhật ký (maNhatKy). Đã bỏ thuộc tính id.
+ * - Quan hệ kết hợp với TaiKhoan (người thực hiện).
+ * - Equals/hashCode theo khóa chính maNhatKy.
+ * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
  */
 public class NhatKyHeThong implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private long id;
-    private Long idNguoiThucHienTaiKhoan;
+    /** Khóa chính nghiệp vụ của Nhật ký hệ thống */
+    private String maNhatKy;
+    /** Quan hệ kết hợp: Tài khoản thực hiện thao tác (có thể null nếu thao tác hệ thống). */
+    private TaiKhoan nguoiThucHien;
     private String thaoTac;
     private String kieuThucThe;
     private String idThucThe;
@@ -30,97 +28,318 @@ public class NhatKyHeThong implements Serializable {
     private String ghiChu;
     private LocalDateTime thoiDiemXayRa;
 
-    public NhatKyHeThong() {}
+    /** Constructor mặc định. */
+    public NhatKyHeThong() {
+        this.thoiDiemXayRa = LocalDateTime.now();
+    }
 
-    public NhatKyHeThong(long id, Long idNguoiThucHienTaiKhoan, String thaoTac, String kieuThucThe, String idThucThe, String giaTriCu, String giaTriMoi, String ghiChu, LocalDateTime thoiDiemXayRa) {
-        this.id = id;
-        this.idNguoiThucHienTaiKhoan = idNguoiThucHienTaiKhoan;
+    /** Constructor theo khóa chính nghiệp vụ maNhatKy. */
+    public NhatKyHeThong(String maNhatKy) {
+        this();
+        setMaNhatKy(maNhatKy);
+    }
+
+    /** Constructor cầu nối nhận id từ DAO. */
+    public NhatKyHeThong(long id) {
+        this();
+        setId(id);
+    }
+
+    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính maNhatKy. */
+    public NhatKyHeThong(
+            String maNhatKy,
+            TaiKhoan nguoiThucHien,
+            String thaoTac,
+            String kieuThucThe,
+            String idThucThe,
+            String giaTriCu,
+            String giaTriMoi,
+            String ghiChu,
+            LocalDateTime thoiDiemXayRa) {
+        setMaNhatKy(maNhatKy);
+        setNguoiThucHien(nguoiThucHien);
+        setThaoTac(thaoTac);
+        setKieuThucThe(kieuThucThe);
+        setIdThucThe(idThucThe);
+        setGiaTriCu(giaTriCu);
+        setGiaTriMoi(giaTriMoi);
+        setGhiChu(ghiChu);
+        setThoiDiemXayRa(thoiDiemXayRa);
+    }
+
+    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
+    public NhatKyHeThong(
+            long id,
+            TaiKhoan nguoiThucHien,
+            String thaoTac,
+            String kieuThucThe,
+            String idThucThe,
+            String giaTriCu,
+            String giaTriMoi,
+            String ghiChu,
+            LocalDateTime thoiDiemXayRa) {
+        this(DuLieu.taoMaTuId("SYS", 8, id), nguoiThucHien, thaoTac, kieuThucThe, idThucThe, giaTriCu, giaTriMoi, ghiChu, thoiDiemXayRa);
+        setId(id);
+    }
+
+    /** Constructor cầu nối tương thích ngược với tầng DAO. */
+    public NhatKyHeThong(
+            long id,
+            Long idNguoiThucHienTaiKhoan,
+            String thaoTac,
+            String kieuThucThe,
+            String idThucThe,
+            String giaTriCu,
+            String giaTriMoi,
+            String ghiChu,
+            LocalDateTime thoiDiemXayRa) {
+        this(
+                id,
+                idNguoiThucHienTaiKhoan == null ? null : new TaiKhoan(idNguoiThucHienTaiKhoan),
+                thaoTac,
+                kieuThucThe,
+                idThucThe,
+                giaTriCu,
+                giaTriMoi,
+                ghiChu,
+                thoiDiemXayRa);
+    }
+
+    // ==================== GETTER & SETTER CẦU NỐI ID ====================
+
+    public Long getId() {
+        return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
+    }
+
+    public long layId() {
+        return DuLieu.layIdCauNoi(this, this.maNhatKy);
+    }
+
+    public long id() {
+        return layId();
+    }
+
+    public void setId(long id) {
+        DuLieu.luuIdCauNoi(this, id);
+        if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
+            this.maNhatKy = DuLieu.taoMaTuId("SYS", 8, id);
+        }
+    }
+
+    public void datId(long id) {
+        setId(id);
+    }
+
+    // ==================== GETTER & SETTER THUỘC TÍNH ====================
+
+    public String getMaNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public String layMaNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public String maNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public void setMaNhatKy(String maNhatKy) {
+        this.maNhatKy = maNhatKy == null ? null : maNhatKy.trim();
+    }
+
+    public void datMaNhatKy(String maNhatKy) {
+        setMaNhatKy(maNhatKy);
+    }
+
+    public TaiKhoan getNguoiThucHien() {
+        return this.nguoiThucHien;
+    }
+
+    public void setNguoiThucHien(TaiKhoan nguoiThucHien) {
+        this.nguoiThucHien = nguoiThucHien;
+    }
+
+    public Long getIdNguoiThucHienTaiKhoan() {
+        return nguoiThucHien == null ? null : nguoiThucHien.getId();
+    }
+
+    public Long layIdNguoiThucHienTaiKhoan() {
+        return getIdNguoiThucHienTaiKhoan();
+    }
+
+    public Long idNguoiThucHienTaiKhoan() {
+        return getIdNguoiThucHienTaiKhoan();
+    }
+
+    public void setIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) {
+        this.nguoiThucHien = idNguoiThucHienTaiKhoan == null ? null : new TaiKhoan(idNguoiThucHienTaiKhoan);
+    }
+
+    public void datIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) {
+        setIdNguoiThucHienTaiKhoan(idNguoiThucHienTaiKhoan);
+    }
+
+    public String getThaoTac() {
+        return this.thaoTac;
+    }
+
+    public String layThaoTac() {
+        return this.thaoTac;
+    }
+
+    public String thaoTac() {
+        return this.thaoTac;
+    }
+
+    public void setThaoTac(String thaoTac) {
         this.thaoTac = thaoTac;
+    }
+
+    public void datThaoTac(String thaoTac) {
+        setThaoTac(thaoTac);
+    }
+
+    public String getKieuThucThe() {
+        return this.kieuThucThe;
+    }
+
+    public String layKieuThucThe() {
+        return this.kieuThucThe;
+    }
+
+    public String kieuThucThe() {
+        return this.kieuThucThe;
+    }
+
+    public void setKieuThucThe(String kieuThucThe) {
         this.kieuThucThe = kieuThucThe;
+    }
+
+    public void datKieuThucThe(String kieuThucThe) {
+        setKieuThucThe(kieuThucThe);
+    }
+
+    public String getIdThucThe() {
+        return this.idThucThe;
+    }
+
+    public String layIdThucThe() {
+        return this.idThucThe;
+    }
+
+    public String idThucThe() {
+        return this.idThucThe;
+    }
+
+    public void setIdThucThe(String idThucThe) {
         this.idThucThe = idThucThe;
+    }
+
+    public void datIdThucThe(String idThucThe) {
+        setIdThucThe(idThucThe);
+    }
+
+    public String getGiaTriCu() {
+        return this.giaTriCu;
+    }
+
+    public String layGiaTriCu() {
+        return this.giaTriCu;
+    }
+
+    public String giaTriCu() {
+        return this.giaTriCu;
+    }
+
+    public void setGiaTriCu(String giaTriCu) {
         this.giaTriCu = giaTriCu;
+    }
+
+    public void datGiaTriCu(String giaTriCu) {
+        setGiaTriCu(giaTriCu);
+    }
+
+    public String getGiaTriMoi() {
+        return this.giaTriMoi;
+    }
+
+    public String layGiaTriMoi() {
+        return this.giaTriMoi;
+    }
+
+    public String giaTriMoi() {
+        return this.giaTriMoi;
+    }
+
+    public void setGiaTriMoi(String giaTriMoi) {
         this.giaTriMoi = giaTriMoi;
+    }
+
+    public void datGiaTriMoi(String giaTriMoi) {
+        setGiaTriMoi(giaTriMoi);
+    }
+
+    public String getGhiChu() {
+        return this.ghiChu;
+    }
+
+    public String layGhiChu() {
+        return this.ghiChu;
+    }
+
+    public String ghiChu() {
+        return this.ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
+    }
+
+    public void datGhiChu(String ghiChu) {
+        setGhiChu(ghiChu);
+    }
+
+    public LocalDateTime getThoiDiemXayRa() {
+        return this.thoiDiemXayRa;
+    }
+
+    public LocalDateTime layThoiDiemXayRa() {
+        return this.thoiDiemXayRa;
+    }
+
+    public LocalDateTime thoiDiemXayRa() {
+        return this.thoiDiemXayRa;
+    }
+
+    public void setThoiDiemXayRa(LocalDateTime thoiDiemXayRa) {
         this.thoiDiemXayRa = thoiDiemXayRa;
     }
 
-    public long getId() { return this.id; }
-    public long layId() { return this.id; }
-    public long id() { return this.id; }
-    public void setId(long id) { this.id = id; }
-    public void datId(long id) { this.id = id; }
+    public void datThoiDiemXayRa(LocalDateTime thoiDiemXayRa) {
+        setThoiDiemXayRa(thoiDiemXayRa);
+    }
 
-    public Long getIdNguoiThucHienTaiKhoan() { return this.idNguoiThucHienTaiKhoan; }
-    public Long layIdNguoiThucHienTaiKhoan() { return this.idNguoiThucHienTaiKhoan; }
-    public Long idNguoiThucHienTaiKhoan() { return this.idNguoiThucHienTaiKhoan; }
-    public void setIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) { this.idNguoiThucHienTaiKhoan = idNguoiThucHienTaiKhoan; }
-    public void datIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) { this.idNguoiThucHienTaiKhoan = idNguoiThucHienTaiKhoan; }
-
-    public String getThaoTac() { return this.thaoTac; }
-    public String layThaoTac() { return this.thaoTac; }
-    public String thaoTac() { return this.thaoTac; }
-    public void setThaoTac(String thaoTac) { this.thaoTac = thaoTac; }
-    public void datThaoTac(String thaoTac) { this.thaoTac = thaoTac; }
-
-    public String getKieuThucThe() { return this.kieuThucThe; }
-    public String layKieuThucThe() { return this.kieuThucThe; }
-    public String kieuThucThe() { return this.kieuThucThe; }
-    public void setKieuThucThe(String kieuThucThe) { this.kieuThucThe = kieuThucThe; }
-    public void datKieuThucThe(String kieuThucThe) { this.kieuThucThe = kieuThucThe; }
-
-    public String getIdThucThe() { return this.idThucThe; }
-    public String layIdThucThe() { return this.idThucThe; }
-    public String idThucThe() { return this.idThucThe; }
-    public void setIdThucThe(String idThucThe) { this.idThucThe = idThucThe; }
-    public void datIdThucThe(String idThucThe) { this.idThucThe = idThucThe; }
-
-    public String getGiaTriCu() { return this.giaTriCu; }
-    public String layGiaTriCu() { return this.giaTriCu; }
-    public String giaTriCu() { return this.giaTriCu; }
-    public void setGiaTriCu(String giaTriCu) { this.giaTriCu = giaTriCu; }
-    public void datGiaTriCu(String giaTriCu) { this.giaTriCu = giaTriCu; }
-
-    public String getGiaTriMoi() { return this.giaTriMoi; }
-    public String layGiaTriMoi() { return this.giaTriMoi; }
-    public String giaTriMoi() { return this.giaTriMoi; }
-    public void setGiaTriMoi(String giaTriMoi) { this.giaTriMoi = giaTriMoi; }
-    public void datGiaTriMoi(String giaTriMoi) { this.giaTriMoi = giaTriMoi; }
-
-    public String getGhiChu() { return this.ghiChu; }
-    public String layGhiChu() { return this.ghiChu; }
-    public String ghiChu() { return this.ghiChu; }
-    public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
-    public void datGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
-
-    public LocalDateTime getThoiDiemXayRa() { return this.thoiDiemXayRa; }
-    public LocalDateTime layThoiDiemXayRa() { return this.thoiDiemXayRa; }
-    public LocalDateTime thoiDiemXayRa() { return this.thoiDiemXayRa; }
-    public void setThoiDiemXayRa(LocalDateTime thoiDiemXayRa) { this.thoiDiemXayRa = thoiDiemXayRa; }
-    public void datThoiDiemXayRa(LocalDateTime thoiDiemXayRa) { this.thoiDiemXayRa = thoiDiemXayRa; }
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         NhatKyHeThong that = (NhatKyHeThong) o;
-        return this.id == that.id
-                && Objects.equals(idNguoiThucHienTaiKhoan, that.idNguoiThucHienTaiKhoan)
-                && Objects.equals(thaoTac, that.thaoTac)
-                && Objects.equals(kieuThucThe, that.kieuThucThe)
-                && Objects.equals(idThucThe, that.idThucThe)
-                && Objects.equals(giaTriCu, that.giaTriCu)
-                && Objects.equals(giaTriMoi, that.giaTriMoi)
-                && Objects.equals(ghiChu, that.ghiChu)
-                && Objects.equals(thoiDiemXayRa, that.thoiDiemXayRa);
+        return Objects.equals(this.maNhatKy, that.maNhatKy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, idNguoiThucHienTaiKhoan, thaoTac, kieuThucThe, idThucThe, giaTriCu, giaTriMoi, ghiChu, thoiDiemXayRa);
+        return Objects.hash(maNhatKy);
     }
 
     @Override
     public String toString() {
-        return "NhatKyHeThong{" + "id=" + id + ", " + "idNguoiThucHienTaiKhoan=" + idNguoiThucHienTaiKhoan + ", " + "thaoTac=" + thaoTac + ", " + "kieuThucThe=" + kieuThucThe + ", " + "idThucThe=" + idThucThe + ", " + "giaTriCu=" + giaTriCu + ", " + "giaTriMoi=" + giaTriMoi + ", " + "ghiChu=" + ghiChu + ", " + "thoiDiemXayRa=" + thoiDiemXayRa + "}";
+        return "NhatKyHeThong{" + "maNhatKy='" + maNhatKy + '\'' + ", idNguoiThucHienTaiKhoan=" + getIdNguoiThucHienTaiKhoan()
+                + ", thaoTac='" + thaoTac + '\'' + ", kieuThucThe='" + kieuThucThe + '\'' + '}';
     }
 }

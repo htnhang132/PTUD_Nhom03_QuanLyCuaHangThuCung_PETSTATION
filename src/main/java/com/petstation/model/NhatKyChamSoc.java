@@ -3,18 +3,28 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import com.petstation.util.DuLieu;
 
 /**
- * Thực thể nhật ký chăm sóc thú cưng khớp bảng [nhat_ky_cham_soc].
+ * Thực thể Nhật ký chăm sóc thú cưng khớp bảng [nhat_ky_cham_soc].
+ * Tuân thủ chuẩn OOP môn PTUD:
+ * - Khóa chính là mã nhật ký (maNhatKy). Đã bỏ thuộc tính id.
+ * - Quan hệ kết hợp với HopDongLuuTru, PhieuTiepNhanSpa, NhanVien.
+ * - Phương thức kiểm tra hình ảnh đối chứng dẫn xuất và equals/hashCode theo khóa chính maNhatKy.
+ * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
  */
 public class NhatKyChamSoc implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private long id;
+    /** Khóa chính nghiệp vụ của Nhật ký chăm sóc */
     private String maNhatKy;
-    private Long hopDongId;
-    private Long spaId;
-    private long nhanVienId;
+    /** Quan hệ kết hợp: Hợp đồng lưu trú khách sạn liên quan (có thể null nếu là nhật ký Spa). */
+    private HopDongLuuTru hopDong;
+    /** Quan hệ kết hợp: Phiếu tiếp nhận Spa liên quan (có thể null nếu là nhật ký lưu trú). */
+    private PhieuTiepNhanSpa phieuSpa;
+    /** Quan hệ kết hợp: Nhân viên thực hiện ghi nhật ký chăm sóc. */
+    private NhanVien nhanVien;
+
     private LocalDateTime thoiGian;
     private String anUong;
     private String veSinh;
@@ -25,137 +35,468 @@ public class NhatKyChamSoc implements Serializable {
     private String anhSau;
     private String tepDinhKem;
 
-    public NhatKyChamSoc() {}
+    /** Constructor mặc định. */
+    public NhatKyChamSoc() {
+        this.thoiGian = LocalDateTime.now();
+    }
 
-    public NhatKyChamSoc(long id, String maNhatKy, Long hopDongId, Long spaId, long nhanVienId, LocalDateTime thoiGian, String anUong, String veSinh, String tinhTrang, String huongDanThuoc, String daThucHien, String anhTruoc, String anhSau, String tepDinhKem) {
-        this.id = id;
-        this.maNhatKy = maNhatKy;
-        this.hopDongId = hopDongId;
-        this.spaId = spaId;
-        this.nhanVienId = nhanVienId;
+    /** Constructor theo khóa chính nghiệp vụ maNhatKy. */
+    public NhatKyChamSoc(String maNhatKy) {
+        this();
+        setMaNhatKy(maNhatKy);
+    }
+
+    /** Constructor cầu nối nhận id từ DAO. */
+    public NhatKyChamSoc(long id) {
+        this();
+        setId(id);
+    }
+
+    /** Constructor chuẩn OOP nhận đối tượng HopDongLuuTru, PhieuTiepNhanSpa, NhanVien và khóa chính maNhatKy. */
+    public NhatKyChamSoc(
+            String maNhatKy,
+            HopDongLuuTru hopDong,
+            PhieuTiepNhanSpa phieuSpa,
+            NhanVien nhanVien,
+            LocalDateTime thoiGian,
+            String anUong,
+            String veSinh,
+            String tinhTrang,
+            String huongDanThuoc,
+            String daThucHien,
+            String anhTruoc,
+            String anhSau,
+            String tepDinhKem) {
+        setMaNhatKy(maNhatKy);
+        setHopDong(hopDong);
+        setPhieuSpa(phieuSpa);
+        setNhanVien(nhanVien);
+        setThoiGian(thoiGian);
+        setAnUong(anUong);
+        setVeSinh(veSinh);
+        setTinhTrang(tinhTrang);
+        setHuongDanThuoc(huongDanThuoc);
+        setDaThucHien(daThucHien);
+        setAnhTruoc(anhTruoc);
+        setAnhSau(anhSau);
+        setTepDinhKem(tepDinhKem);
+    }
+
+    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
+    public NhatKyChamSoc(
+            long id,
+            String maNhatKy,
+            HopDongLuuTru hopDong,
+            PhieuTiepNhanSpa phieuSpa,
+            NhanVien nhanVien,
+            LocalDateTime thoiGian,
+            String anUong,
+            String veSinh,
+            String tinhTrang,
+            String huongDanThuoc,
+            String daThucHien,
+            String anhTruoc,
+            String anhSau,
+            String tepDinhKem) {
+        this(maNhatKy, hopDong, phieuSpa, nhanVien, thoiGian, anUong, veSinh, tinhTrang, huongDanThuoc, daThucHien, anhTruoc, anhSau, tepDinhKem);
+        setId(id);
+    }
+
+    /** Constructor cầu nối tương thích ngược với tầng DAO. */
+    public NhatKyChamSoc(
+            long id,
+            String maNhatKy,
+            Long hopDongId,
+            Long spaId,
+            long nhanVienId,
+            LocalDateTime thoiGian,
+            String anUong,
+            String veSinh,
+            String tinhTrang,
+            String huongDanThuoc,
+            String daThucHien,
+            String anhTruoc,
+            String anhSau,
+            String tepDinhKem) {
+        this(
+                id,
+                maNhatKy,
+                hopDongId == null ? null : new HopDongLuuTru(hopDongId),
+                spaId == null ? null : new PhieuTiepNhanSpa(spaId),
+                new NhanVien(nhanVienId),
+                thoiGian,
+                anUong,
+                veSinh,
+                tinhTrang,
+                huongDanThuoc,
+                daThucHien,
+                anhTruoc,
+                anhSau,
+                tepDinhKem);
+    }
+
+    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
+
+    /** Kiểm tra bản ghi nhật ký đã có ảnh đối chứng trước/sau hay chưa (dẫn xuất). */
+    public boolean kiemTraCoHinhAnhDoiChung() {
+        return (anhTruoc != null && !anhTruoc.isBlank()) || (anhSau != null && !anhSau.isBlank());
+    }
+
+    // ==================== GETTER & SETTER CẦU NỐI ID ====================
+
+    public Long getId() {
+        return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
+    }
+
+    public long layId() {
+        return DuLieu.layIdCauNoi(this, this.maNhatKy);
+    }
+
+    public long id() {
+        return layId();
+    }
+
+    public void setId(long id) {
+        DuLieu.luuIdCauNoi(this, id);
+        if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
+            this.maNhatKy = DuLieu.taoMaTuId("NK", 8, id);
+        }
+    }
+
+    public void datId(long id) {
+        setId(id);
+    }
+
+    // ==================== GETTER & SETTER THUỘC TÍNH ====================
+
+    public String getMaNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public String layMaNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public String maNhatKy() {
+        return this.maNhatKy;
+    }
+
+    public void setMaNhatKy(String maNhatKy) {
+        this.maNhatKy = maNhatKy == null ? null : maNhatKy.trim();
+    }
+
+    public void datMaNhatKy(String maNhatKy) {
+        setMaNhatKy(maNhatKy);
+    }
+
+    public HopDongLuuTru getHopDong() {
+        return this.hopDong;
+    }
+
+    public HopDongLuuTru layHopDong() {
+        return this.hopDong;
+    }
+
+    public void setHopDong(HopDongLuuTru hopDong) {
+        this.hopDong = hopDong;
+    }
+
+    public void datHopDong(HopDongLuuTru hopDong) {
+        setHopDong(hopDong);
+    }
+
+    public Long getHopDongId() {
+        return hopDong == null ? null : hopDong.getId();
+    }
+
+    public Long layHopDongId() {
+        return getHopDongId();
+    }
+
+    public Long hopDongId() {
+        return getHopDongId();
+    }
+
+    public void setHopDongId(Long hopDongId) {
+        this.hopDong = hopDongId == null ? null : new HopDongLuuTru(hopDongId);
+    }
+
+    public void datHopDongId(Long hopDongId) {
+        setHopDongId(hopDongId);
+    }
+
+    public PhieuTiepNhanSpa getPhieuSpa() {
+        return this.phieuSpa;
+    }
+
+    public PhieuTiepNhanSpa layPhieuSpa() {
+        return this.phieuSpa;
+    }
+
+    public void setPhieuSpa(PhieuTiepNhanSpa phieuSpa) {
+        this.phieuSpa = phieuSpa;
+    }
+
+    public void datPhieuSpa(PhieuTiepNhanSpa phieuSpa) {
+        setPhieuSpa(phieuSpa);
+    }
+
+    public Long getSpaId() {
+        return phieuSpa == null ? null : phieuSpa.getId();
+    }
+
+    public Long laySpaId() {
+        return getSpaId();
+    }
+
+    public Long spaId() {
+        return getSpaId();
+    }
+
+    public void setSpaId(Long spaId) {
+        this.phieuSpa = spaId == null ? null : new PhieuTiepNhanSpa(spaId);
+    }
+
+    public void datSpaId(Long spaId) {
+        setSpaId(spaId);
+    }
+
+    public NhanVien getNhanVien() {
+        return this.nhanVien;
+    }
+
+    public NhanVien layNhanVien() {
+        return this.nhanVien;
+    }
+
+    public void setNhanVien(NhanVien nhanVien) {
+        this.nhanVien = nhanVien;
+    }
+
+    public void datNhanVien(NhanVien nhanVien) {
+        setNhanVien(nhanVien);
+    }
+
+    public long getNhanVienId() {
+        return nhanVien == null ? 0L : nhanVien.getId();
+    }
+
+    public long layNhanVienId() {
+        return getNhanVienId();
+    }
+
+    public long nhanVienId() {
+        return getNhanVienId();
+    }
+
+    public void setNhanVienId(long nhanVienId) {
+        this.nhanVien = new NhanVien(nhanVienId);
+    }
+
+    public void datNhanVienId(long nhanVienId) {
+        setNhanVienId(nhanVienId);
+    }
+
+    public LocalDateTime getThoiGian() {
+        return this.thoiGian;
+    }
+
+    public LocalDateTime layThoiGian() {
+        return this.thoiGian;
+    }
+
+    public LocalDateTime thoiGian() {
+        return this.thoiGian;
+    }
+
+    public void setThoiGian(LocalDateTime thoiGian) {
         this.thoiGian = thoiGian;
+    }
+
+    public void datThoiGian(LocalDateTime thoiGian) {
+        setThoiGian(thoiGian);
+    }
+
+    public String getAnUong() {
+        return this.anUong;
+    }
+
+    public String layAnUong() {
+        return this.anUong;
+    }
+
+    public String anUong() {
+        return this.anUong;
+    }
+
+    public void setAnUong(String anUong) {
         this.anUong = anUong;
+    }
+
+    public void datAnUong(String anUong) {
+        setAnUong(anUong);
+    }
+
+    public String getVeSinh() {
+        return this.veSinh;
+    }
+
+    public String layVeSinh() {
+        return this.veSinh;
+    }
+
+    public String veSinh() {
+        return this.veSinh;
+    }
+
+    public void setVeSinh(String veSinh) {
         this.veSinh = veSinh;
+    }
+
+    public void datVeSinh(String veSinh) {
+        setVeSinh(veSinh);
+    }
+
+    public String getTinhTrang() {
+        return this.tinhTrang;
+    }
+
+    public String layTinhTrang() {
+        return this.tinhTrang;
+    }
+
+    public String tinhTrang() {
+        return this.tinhTrang;
+    }
+
+    public void setTinhTrang(String tinhTrang) {
         this.tinhTrang = tinhTrang;
+    }
+
+    public void datTinhTrang(String tinhTrang) {
+        setTinhTrang(tinhTrang);
+    }
+
+    public String getHuongDanThuoc() {
+        return this.huongDanThuoc;
+    }
+
+    public String layHuongDanThuoc() {
+        return this.huongDanThuoc;
+    }
+
+    public String huongDanThuoc() {
+        return this.huongDanThuoc;
+    }
+
+    public void setHuongDanThuoc(String huongDanThuoc) {
         this.huongDanThuoc = huongDanThuoc;
+    }
+
+    public void datHuongDanThuoc(String huongDanThuoc) {
+        setHuongDanThuoc(huongDanThuoc);
+    }
+
+    public String getDaThucHien() {
+        return this.daThucHien;
+    }
+
+    public String layDaThucHien() {
+        return this.daThucHien;
+    }
+
+    public String daThucHien() {
+        return this.daThucHien;
+    }
+
+    public void setDaThucHien(String daThucHien) {
         this.daThucHien = daThucHien;
+    }
+
+    public void datDaThucHien(String daThucHien) {
+        setDaThucHien(daThucHien);
+    }
+
+    public String getAnhTruoc() {
+        return this.anhTruoc;
+    }
+
+    public String layAnhTruoc() {
+        return this.anhTruoc;
+    }
+
+    public String anhTruoc() {
+        return this.anhTruoc;
+    }
+
+    public void setAnhTruoc(String anhTruoc) {
         this.anhTruoc = anhTruoc;
+    }
+
+    public void datAnhTruoc(String anhTruoc) {
+        setAnhTruoc(anhTruoc);
+    }
+
+    public String getAnhSau() {
+        return this.anhSau;
+    }
+
+    public String layAnhSau() {
+        return this.anhSau;
+    }
+
+    public String anhSau() {
+        return this.anhSau;
+    }
+
+    public void setAnhSau(String anhSau) {
         this.anhSau = anhSau;
+    }
+
+    public void datAnhSau(String anhSau) {
+        setAnhSau(anhSau);
+    }
+
+    public String getTepDinhKem() {
+        return this.tepDinhKem;
+    }
+
+    public String layTepDinhKem() {
+        return this.tepDinhKem;
+    }
+
+    public String tepDinhKem() {
+        return this.tepDinhKem;
+    }
+
+    public void setTepDinhKem(String tepDinhKem) {
         this.tepDinhKem = tepDinhKem;
     }
 
-    public long getId() { return this.id; }
-    public long layId() { return this.id; }
-    public long id() { return this.id; }
-    public void setId(long id) { this.id = id; }
-    public void datId(long id) { this.id = id; }
+    public void datTepDinhKem(String tepDinhKem) {
+        setTepDinhKem(tepDinhKem);
+    }
 
-    public String getMaNhatKy() { return this.maNhatKy; }
-    public String layMaNhatKy() { return this.maNhatKy; }
-    public String maNhatKy() { return this.maNhatKy; }
-    public void setMaNhatKy(String maNhatKy) { this.maNhatKy = maNhatKy; }
-    public void datMaNhatKy(String maNhatKy) { this.maNhatKy = maNhatKy; }
-
-    public Long getHopDongId() { return this.hopDongId; }
-    public Long layHopDongId() { return this.hopDongId; }
-    public Long hopDongId() { return this.hopDongId; }
-    public void setHopDongId(Long hopDongId) { this.hopDongId = hopDongId; }
-    public void datHopDongId(Long hopDongId) { this.hopDongId = hopDongId; }
-
-    public Long getSpaId() { return this.spaId; }
-    public Long laySpaId() { return this.spaId; }
-    public Long spaId() { return this.spaId; }
-    public void setSpaId(Long spaId) { this.spaId = spaId; }
-    public void datSpaId(Long spaId) { this.spaId = spaId; }
-
-    public long getNhanVienId() { return this.nhanVienId; }
-    public long layNhanVienId() { return this.nhanVienId; }
-    public long nhanVienId() { return this.nhanVienId; }
-    public void setNhanVienId(long nhanVienId) { this.nhanVienId = nhanVienId; }
-    public void datNhanVienId(long nhanVienId) { this.nhanVienId = nhanVienId; }
-
-    public LocalDateTime getThoiGian() { return this.thoiGian; }
-    public LocalDateTime layThoiGian() { return this.thoiGian; }
-    public LocalDateTime thoiGian() { return this.thoiGian; }
-    public void setThoiGian(LocalDateTime thoiGian) { this.thoiGian = thoiGian; }
-    public void datThoiGian(LocalDateTime thoiGian) { this.thoiGian = thoiGian; }
-
-    public String getAnUong() { return this.anUong; }
-    public String layAnUong() { return this.anUong; }
-    public String anUong() { return this.anUong; }
-    public void setAnUong(String anUong) { this.anUong = anUong; }
-    public void datAnUong(String anUong) { this.anUong = anUong; }
-
-    public String getVeSinh() { return this.veSinh; }
-    public String layVeSinh() { return this.veSinh; }
-    public String veSinh() { return this.veSinh; }
-    public void setVeSinh(String veSinh) { this.veSinh = veSinh; }
-    public void datVeSinh(String veSinh) { this.veSinh = veSinh; }
-
-    public String getTinhTrang() { return this.tinhTrang; }
-    public String layTinhTrang() { return this.tinhTrang; }
-    public String tinhTrang() { return this.tinhTrang; }
-    public void setTinhTrang(String tinhTrang) { this.tinhTrang = tinhTrang; }
-    public void datTinhTrang(String tinhTrang) { this.tinhTrang = tinhTrang; }
-
-    public String getHuongDanThuoc() { return this.huongDanThuoc; }
-    public String layHuongDanThuoc() { return this.huongDanThuoc; }
-    public String huongDanThuoc() { return this.huongDanThuoc; }
-    public void setHuongDanThuoc(String huongDanThuoc) { this.huongDanThuoc = huongDanThuoc; }
-    public void datHuongDanThuoc(String huongDanThuoc) { this.huongDanThuoc = huongDanThuoc; }
-
-    public String getDaThucHien() { return this.daThucHien; }
-    public String layDaThucHien() { return this.daThucHien; }
-    public String daThucHien() { return this.daThucHien; }
-    public void setDaThucHien(String daThucHien) { this.daThucHien = daThucHien; }
-    public void datDaThucHien(String daThucHien) { this.daThucHien = daThucHien; }
-
-    public String getAnhTruoc() { return this.anhTruoc; }
-    public String layAnhTruoc() { return this.anhTruoc; }
-    public String anhTruoc() { return this.anhTruoc; }
-    public void setAnhTruoc(String anhTruoc) { this.anhTruoc = anhTruoc; }
-    public void datAnhTruoc(String anhTruoc) { this.anhTruoc = anhTruoc; }
-
-    public String getAnhSau() { return this.anhSau; }
-    public String layAnhSau() { return this.anhSau; }
-    public String anhSau() { return this.anhSau; }
-    public void setAnhSau(String anhSau) { this.anhSau = anhSau; }
-    public void datAnhSau(String anhSau) { this.anhSau = anhSau; }
-
-    public String getTepDinhKem() { return this.tepDinhKem; }
-    public String layTepDinhKem() { return this.tepDinhKem; }
-    public String tepDinhKem() { return this.tepDinhKem; }
-    public void setTepDinhKem(String tepDinhKem) { this.tepDinhKem = tepDinhKem; }
-    public void datTepDinhKem(String tepDinhKem) { this.tepDinhKem = tepDinhKem; }
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         NhatKyChamSoc that = (NhatKyChamSoc) o;
-        return this.id == that.id
-                && Objects.equals(maNhatKy, that.maNhatKy)
-                && Objects.equals(hopDongId, that.hopDongId)
-                && Objects.equals(spaId, that.spaId)
-                && this.nhanVienId == that.nhanVienId
-                && Objects.equals(thoiGian, that.thoiGian)
-                && Objects.equals(anUong, that.anUong)
-                && Objects.equals(veSinh, that.veSinh)
-                && Objects.equals(tinhTrang, that.tinhTrang)
-                && Objects.equals(huongDanThuoc, that.huongDanThuoc)
-                && Objects.equals(daThucHien, that.daThucHien)
-                && Objects.equals(anhTruoc, that.anhTruoc)
-                && Objects.equals(anhSau, that.anhSau)
-                && Objects.equals(tepDinhKem, that.tepDinhKem);
+        return Objects.equals(this.maNhatKy, that.maNhatKy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, maNhatKy, hopDongId, spaId, nhanVienId, thoiGian, anUong, veSinh, tinhTrang, huongDanThuoc, daThucHien, anhTruoc, anhSau, tepDinhKem);
+        return Objects.hash(maNhatKy);
     }
 
     @Override
     public String toString() {
-        return "NhatKyChamSoc{" + "id=" + id + ", " + "maNhatKy=" + maNhatKy + ", " + "hopDongId=" + hopDongId + ", " + "spaId=" + spaId + ", " + "nhanVienId=" + nhanVienId + ", " + "thoiGian=" + thoiGian + ", " + "anUong=" + anUong + ", " + "veSinh=" + veSinh + ", " + "tinhTrang=" + tinhTrang + ", " + "huongDanThuoc=" + huongDanThuoc + ", " + "daThucHien=" + daThucHien + ", " + "anhTruoc=" + anhTruoc + ", " + "anhSau=" + anhSau + ", " + "tepDinhKem=" + tepDinhKem + "}";
+        return "NhatKyChamSoc{" + "maNhatKy='" + maNhatKy + '\'' + ", hopDongId=" + getHopDongId()
+                + ", spaId=" + getSpaId() + ", nhanVienId=" + getNhanVienId() + '}';
     }
 }

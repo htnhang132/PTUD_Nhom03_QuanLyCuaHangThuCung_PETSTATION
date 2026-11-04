@@ -1,26 +1,19 @@
 package com.petstation.model;
 
+import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Objects;
 
 /**
- * Biểu diễn dữ liệu ánh xạ với bảng nhan_vien trong SQL Server.
- *
- * @param id id
- * @param maNhanVien mã nhân viên
- * @param hoTen họ tên
- * @param ngaySinh ngày sinh
- * @param soDienThoai số điện thoại
- * @param diaChi địa chỉ
- * @param viTri vị trí
- * @param ngayBatDau ngày bắt đầu
- * @param hoatDong hoạt động
+ * Thực thể Nhân viên ánh xạ bảng [nhan_vien] trong SQL Server.
+ * Khóa chính: maNhanVien.
  */
 public class NhanVien implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private long id;
+    /** Khóa chính (PK): Mã nhân viên (ví dụ: NV0001). */
     private String maNhanVien;
     private String hoTen;
     private LocalDate ngaySinh;
@@ -30,97 +23,282 @@ public class NhanVien implements Serializable {
     private LocalDate ngayBatDau;
     private boolean hoatDong;
 
-    public NhanVien() {}
+    /** Constructor mặc định. */
+    public NhanVien() {
+        this.hoatDong = true;
+    }
 
-    public NhanVien(long id, String maNhanVien, String hoTen, LocalDate ngaySinh, String soDienThoai, String diaChi, String viTri, LocalDate ngayBatDau, boolean hoatDong) {
-        this.id = id;
-        this.maNhanVien = maNhanVien;
-        this.hoTen = hoTen;
+    /** Constructor chỉ có khóa chính (dùng khi tham chiếu khóa ngoại từ TaiKhoan, LichLamViec...). */
+    public NhanVien(String maNhanVien) {
+        this();
+        setMaNhanVien(maNhanVien);
+    }
+
+    /** Constructor đầy đủ thuộc tính thường (gọi qua setter để kiểm tra ràng buộc). */
+    public NhanVien(
+            String maNhanVien,
+            String hoTen,
+            LocalDate ngaySinh,
+            String soDienThoai,
+            String diaChi,
+            String viTri,
+            LocalDate ngayBatDau,
+            boolean hoatDong) {
+        this();
+        setMaNhanVien(maNhanVien);
+        setHoTen(hoTen);
+        setNgaySinh(ngaySinh);
+        setSoDienThoai(soDienThoai);
+        setDiaChi(diaChi);
+        setViTri(viTri);
+        setNgayBatDau(ngayBatDau);
+        setHoatDong(hoatDong);
+    }
+
+    /** Constructor cầu nối tương thích ngược với tầng DAO. */
+    public NhanVien(long id) {
+        this();
+        setId(id);
+    }
+
+    public NhanVien(
+            long id,
+            String maNhanVien,
+            String hoTen,
+            LocalDate ngaySinh,
+            String soDienThoai,
+            String diaChi,
+            String viTri,
+            LocalDate ngayBatDau,
+            boolean hoatDong) {
+        this(maNhanVien, hoTen, ngaySinh, soDienThoai, diaChi, viTri, ngayBatDau, hoatDong);
+        setId(id);
+    }
+
+    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
+
+    /** Tính tuổi nhân viên (dẫn xuất từ ngaySinh). */
+    public int tinhTuoi() {
+        if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
+            return 0;
+        }
+        return Period.between(ngaySinh, LocalDate.now()).getYears();
+    }
+
+    /** Tính thâm niên làm việc theo số năm (dẫn xuất từ ngayBatDau). */
+    public int tinhThamNienNam() {
+        if (ngayBatDau == null || ngayBatDau.isAfter(LocalDate.now())) {
+            return 0;
+        }
+        return Period.between(ngayBatDau, LocalDate.now()).getYears();
+    }
+
+    // ==================== GETTER & SETTER ====================
+
+    public String getMaNhanVien() {
+        return this.maNhanVien;
+    }
+
+    public String layMaNhanVien() {
+        return this.maNhanVien;
+    }
+
+    public String maNhanVien() {
+        return this.maNhanVien;
+    }
+
+    public void setMaNhanVien(String maNhanVien) {
+        this.maNhanVien = maNhanVien == null ? null : maNhanVien.trim();
+    }
+
+    public void datMaNhanVien(String maNhanVien) {
+        setMaNhanVien(maNhanVien);
+    }
+
+    public String getHoTen() {
+        return this.hoTen;
+    }
+
+    public String layHoTen() {
+        return this.hoTen;
+    }
+
+    public String hoTen() {
+        return this.hoTen;
+    }
+
+    public void setHoTen(String hoTen) {
+        this.hoTen = hoTen == null ? null : hoTen.trim();
+    }
+
+    public void datHoTen(String hoTen) {
+        setHoTen(hoTen);
+    }
+
+    public LocalDate getNgaySinh() {
+        return this.ngaySinh;
+    }
+
+    public LocalDate layNgaySinh() {
+        return this.ngaySinh;
+    }
+
+    public LocalDate ngaySinh() {
+        return this.ngaySinh;
+    }
+
+    public void setNgaySinh(LocalDate ngaySinh) {
         this.ngaySinh = ngaySinh;
-        this.soDienThoai = soDienThoai;
+    }
+
+    public void datNgaySinh(LocalDate ngaySinh) {
+        setNgaySinh(ngaySinh);
+    }
+
+    public String getSoDienThoai() {
+        return this.soDienThoai;
+    }
+
+    public String laySoDienThoai() {
+        return this.soDienThoai;
+    }
+
+    public String soDienThoai() {
+        return this.soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim();
+    }
+
+    public void datSoDienThoai(String soDienThoai) {
+        setSoDienThoai(soDienThoai);
+    }
+
+    public String getDiaChi() {
+        return this.diaChi;
+    }
+
+    public String layDiaChi() {
+        return this.diaChi;
+    }
+
+    public String diaChi() {
+        return this.diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
+    }
+
+    public void datDiaChi(String diaChi) {
+        setDiaChi(diaChi);
+    }
+
+    public String getViTri() {
+        return this.viTri;
+    }
+
+    public String layViTri() {
+        return this.viTri;
+    }
+
+    public String viTri() {
+        return this.viTri;
+    }
+
+    public void setViTri(String viTri) {
         this.viTri = viTri;
+    }
+
+    public void datViTri(String viTri) {
+        setViTri(viTri);
+    }
+
+    public LocalDate getNgayBatDau() {
+        return this.ngayBatDau;
+    }
+
+    public LocalDate layNgayBatDau() {
+        return this.ngayBatDau;
+    }
+
+    public LocalDate ngayBatDau() {
+        return this.ngayBatDau;
+    }
+
+    public void setNgayBatDau(LocalDate ngayBatDau) {
         this.ngayBatDau = ngayBatDau;
+    }
+
+    public void datNgayBatDau(LocalDate ngayBatDau) {
+        setNgayBatDau(ngayBatDau);
+    }
+
+    public boolean isHoatDong() {
+        return this.hoatDong;
+    }
+
+    public boolean layHoatDong() {
+        return this.hoatDong;
+    }
+
+    public boolean hoatDong() {
+        return this.hoatDong;
+    }
+
+    public void setHoatDong(boolean hoatDong) {
         this.hoatDong = hoatDong;
     }
 
-    public long getId() { return this.id; }
-    public long layId() { return this.id; }
-    public long id() { return this.id; }
-    public void setId(long id) { this.id = id; }
-    public void datId(long id) { this.id = id; }
+    public void datHoatDong(boolean hoatDong) {
+        setHoatDong(hoatDong);
+    }
 
-    public String getMaNhanVien() { return this.maNhanVien; }
-    public String layMaNhanVien() { return this.maNhanVien; }
-    public String maNhanVien() { return this.maNhanVien; }
-    public void setMaNhanVien(String maNhanVien) { this.maNhanVien = maNhanVien; }
-    public void datMaNhanVien(String maNhanVien) { this.maNhanVien = maNhanVien; }
+    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
 
-    public String getHoTen() { return this.hoTen; }
-    public String layHoTen() { return this.hoTen; }
-    public String hoTen() { return this.hoTen; }
-    public void setHoTen(String hoTen) { this.hoTen = hoTen; }
-    public void datHoTen(String hoTen) { this.hoTen = hoTen; }
+    public long getId() {
+        return DuLieu.layIdCauNoi(this, maNhanVien);
+    }
 
-    public LocalDate getNgaySinh() { return this.ngaySinh; }
-    public LocalDate layNgaySinh() { return this.ngaySinh; }
-    public LocalDate ngaySinh() { return this.ngaySinh; }
-    public void setNgaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; }
-    public void datNgaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; }
+    public long layId() {
+        return getId();
+    }
 
-    public String getSoDienThoai() { return this.soDienThoai; }
-    public String laySoDienThoai() { return this.soDienThoai; }
-    public String soDienThoai() { return this.soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
-    public void datSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
+    public long id() {
+        return getId();
+    }
 
-    public String getDiaChi() { return this.diaChi; }
-    public String layDiaChi() { return this.diaChi; }
-    public String diaChi() { return this.diaChi; }
-    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    public void datDiaChi(String diaChi) { this.diaChi = diaChi; }
+    public void setId(long id) {
+        if (id < 0) throw new IllegalArgumentException("Mã định danh nhân viên không hợp lệ.");
+        DuLieu.luuIdCauNoi(this, id);
+        if ((this.maNhanVien == null || this.maNhanVien.isBlank()) && id > 0) {
+            this.maNhanVien = DuLieu.taoMaTuId("NV", 4, id);
+        }
+    }
 
-    public String getViTri() { return this.viTri; }
-    public String layViTri() { return this.viTri; }
-    public String viTri() { return this.viTri; }
-    public void setViTri(String viTri) { this.viTri = viTri; }
-    public void datViTri(String viTri) { this.viTri = viTri; }
+    public void datId(long id) {
+        setId(id);
+    }
 
-    public LocalDate getNgayBatDau() { return this.ngayBatDau; }
-    public LocalDate layNgayBatDau() { return this.ngayBatDau; }
-    public LocalDate ngayBatDau() { return this.ngayBatDau; }
-    public void setNgayBatDau(LocalDate ngayBatDau) { this.ngayBatDau = ngayBatDau; }
-    public void datNgayBatDau(LocalDate ngayBatDau) { this.ngayBatDau = ngayBatDau; }
-
-    public boolean isHoatDong() { return this.hoatDong; }
-    public boolean layHoatDong() { return this.hoatDong; }
-    public boolean hoatDong() { return this.hoatDong; }
-    public void setHoatDong(boolean hoatDong) { this.hoatDong = hoatDong; }
-    public void datHoatDong(boolean hoatDong) { this.hoatDong = hoatDong; }
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maNhanVien) ====================
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NhanVien that = (NhanVien) o;
-        return this.id == that.id
-                && Objects.equals(maNhanVien, that.maNhanVien)
-                && Objects.equals(hoTen, that.hoTen)
-                && Objects.equals(ngaySinh, that.ngaySinh)
-                && Objects.equals(soDienThoai, that.soDienThoai)
-                && Objects.equals(diaChi, that.diaChi)
-                && Objects.equals(viTri, that.viTri)
-                && Objects.equals(ngayBatDau, that.ngayBatDau)
-                && this.hoatDong == that.hoatDong;
+        return Objects.equals(this.maNhanVien, that.maNhanVien);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, maNhanVien, hoTen, ngaySinh, soDienThoai, diaChi, viTri, ngayBatDau, hoatDong);
+        return Objects.hash(maNhanVien);
     }
 
     @Override
     public String toString() {
-        return "NhanVien{" + "id=" + id + ", " + "maNhanVien=" + maNhanVien + ", " + "hoTen=" + hoTen + ", " + "ngaySinh=" + ngaySinh + ", " + "soDienThoai=" + soDienThoai + ", " + "diaChi=" + diaChi + ", " + "viTri=" + viTri + ", " + "ngayBatDau=" + ngayBatDau + ", " + "hoatDong=" + hoatDong + "}";
+        return "NhanVien{" + "maNhanVien='" + maNhanVien + '\'' + ", hoTen='" + hoTen + '\''
+                + ", viTri='" + viTri + '\'' + ", hoatDong=" + hoatDong + '}';
     }
 }
