@@ -124,7 +124,7 @@ public class BoChonNgay extends JPanel {
                 SwingUtilities.getWindowAncestor(txtTruongVanBan != null ? txtTruongVanBan : this);
         if (cuaSo instanceof Frame) {
             lichHopThoai = new JDialog((Frame) cuaSo, "Chọn ngày", true);
-        } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+        } else 
         if (cuaSo instanceof Dialog) {
             lichHopThoai = new JDialog((Dialog) cuaSo, "Chọn ngày", true);
         } else {

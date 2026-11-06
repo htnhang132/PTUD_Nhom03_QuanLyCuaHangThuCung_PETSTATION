@@ -19,8 +19,8 @@ public final class TaiKhoanService {
         if (hienTai.equals(tiepTheo))
             throw new IllegalArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại.");
         com.petstation.database.ThaoTacSQL.thucHienGiaoDich(ketNoi -> {
-            long taiKhoan = PhienDangNhapService.layIdTaiKhoan();
-            Object giaTri = taiKhoanDAO.layMaBamMatKhau(taiKhoan);
+            String tenDangNhap = PhienDangNhapService.layTenDangNhap();
+            Object giaTri = taiKhoanDAO.layMaBamMatKhau(tenDangNhap);
             if (giaTri == null)
                 throw new IllegalStateException("Tài khoản không còn tồn tại.");
             String maBam = String.valueOf(giaTri);
@@ -28,7 +28,7 @@ public final class TaiKhoanService {
                 throw new IllegalArgumentException("Mật khẩu hiện tại không đúng.");
             int soDong = taiKhoanDAO.capNhatMatKhau(
                     org.mindrot.jbcrypt.BCrypt.hashpw(
-                            tiepTheo, org.mindrot.jbcrypt.BCrypt.gensalt()), taiKhoan);
+                            tiepTheo, org.mindrot.jbcrypt.BCrypt.gensalt()), tenDangNhap);
             if (soDong != 1)
                 throw new IllegalStateException("Không cập nhật được mật khẩu.");
             NhatKyHeThongService.ghiNhatKy("Đổi mật khẩu", "Tài khoản hiện tại");

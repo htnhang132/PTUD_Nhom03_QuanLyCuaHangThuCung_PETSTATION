@@ -15,33 +15,40 @@ public final class QuyTrinhService {
 
     public static void chuyenBuoc(String tu, String den, GioHang gio) {
         var q = gio.layQuyTrinh();
-        if (den.startsWith("SPA_")) {
+        if (List.of(
+                        "DAT_LICH_HEN_SPA",
+                        "TIEP_NHAN_SPA",
+                        "CHON_GOI_SPA",
+                        "CAP_NHAT_TIEN_DO_SPA",
+                        "HOAN_TAT_SPA")
+                .contains(den)) {
             PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
-            if (den.equals("SPA_SCHEDULE") || den.equals("SPA_INTAKE")) return;
+            if (den.equals("DAT_LICH_HEN_SPA") || den.equals("TIEP_NHAN_SPA")) return;
             var dong = quyTrinhDAO.laySpa(q.layPhieuSpa());
             if (dong.isEmpty())
                 throw new IllegalArgumentException(
                         "Hãy chọn hoặc tiếp nhận một phiếu Spa trước khi chuyển bước.");
             String trangThai = dong.get(0)[0].toString();
-            if (trangThai.equals("PAID"))
+            if (trangThai.equals("DA_THANH_TOAN"))
                 throw new IllegalArgumentException("Phiếu Spa đã thanh toán. Hãy chọn phiếu khác.");
-            if (den.equals("SPA_PROGRESS") && ((Number) dong.get(0)[1]).longValue() == 0)
+            if (den.equals("CAP_NHAT_TIEN_DO_SPA") && ((Number) dong.get(0)[1]).longValue() == 0)
                 throw new IllegalArgumentException(
                         "Cần thêm dịch vụ vào phiếu trước khi chuyển sang tiến độ.");
-            if (den.equals("SPA_CLOSE") && !trangThai.equals("COMPLETED"))
+            if (den.equals("HOAN_TAT_SPA") && !trangThai.equals("HOAN_TAT"))
                 throw new IllegalArgumentException("Cần hoàn thành dịch vụ trước khi đóng phiếu.");
         }
-        if (den.equals("HOTEL_JOURNAL") || den.equals("CHECKOUT")) {
+        if (den.equals("NHAT_KY_CHAM_SOC") || den.equals("TRA_PHONG_LUU_TRU")) {
             PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
             String trangThai = quyTrinhDAO.layTrangThaiHotel(q.layHopDongHotel());
-            if (!List.of("BOOKED", "CHECKED_IN").contains(trangThai))
+            if (!List.of("DA_DAT", "DANG_O").contains(trangThai))
                 throw new IllegalArgumentException(
                         "Hãy chọn hợp đồng Hotel đang đặt hoặc đang lưu trú.");
-            if (den.equals("CHECKOUT") && !trangThai.equals("CHECKED_IN"))
+            if (den.equals("TRA_PHONG_LUU_TRU") && !trangThai.equals("DANG_O"))
                 throw new IllegalArgumentException("Hợp đồng chưa nhận phòng.");
         }
-        if (den.equals("PAYMENT") && (tu.equals("SPA_CLOSE") || tu.equals("CHECKOUT"))) {
-            String loai = tu.equals("SPA_CLOSE") ? "SPA" : "HOTEL";
+        if (den.equals("THANH_TOAN")
+                && (tu.equals("HOAN_TAT_SPA") || tu.equals("TRA_PHONG_LUU_TRU"))) {
+            String loai = tu.equals("HOAN_TAT_SPA") ? "SPA" : "HOTEL";
             long id = loai.equals("SPA") ? q.layPhieuSpa() : q.layHopDongHotel();
             if (id <= 0) throw new IllegalArgumentException("Hãy chọn bản ghi cần thanh toán.");
             if (!gio.kiemTraTrong() && !(loai.equals(gio.layKieuNguon()) && id == gio.layIdNguon()))
@@ -86,7 +93,7 @@ public final class QuyTrinhService {
                                                                     .toLocalDateTime());
                             var dangO =
                                     cacLich.stream()
-                                            .filter(l -> l[6].equals("CHECKED_IN"))
+                                            .filter(l -> l[6].equals("DANG_O"))
                                             .map(doi)
                                             .findFirst()
                                             .orElse(null);
@@ -99,7 +106,7 @@ public final class QuyTrinhService {
                                     ((Number) p[5]).intValue(),
                                     dangO,
                                     cacLich.stream()
-                                            .filter(l -> l[6].equals("BOOKED"))
+                                            .filter(l -> l[6].equals("DA_DAT"))
                                             .map(doi)
                                             .toList());
                         })

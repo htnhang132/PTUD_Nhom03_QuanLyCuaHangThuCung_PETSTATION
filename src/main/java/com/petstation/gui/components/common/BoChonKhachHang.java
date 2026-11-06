@@ -73,7 +73,6 @@ public final class BoChonKhachHang extends JPanel {
         lblNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(lblNhan);
 
-        // Dòng.
         JPanel pnlDong = new JPanel(new BorderLayout(6, 0));
         pnlDong.setOpaque(false);
         pnlDong.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -98,7 +97,6 @@ public final class BoChonKhachHang extends JPanel {
         pnlNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
         pnlNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
         lblVanBanNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-        // Xóa.
         JButton btnXoa = new JButton("Bỏ chọn");
         btnXoa.setFocusPainted(false);
         btnXoa.addActionListener(suKien -> xoa());
@@ -257,7 +255,7 @@ public final class BoChonKhachHang extends JPanel {
             if (chon == null) return;
             for (int chiSo = 0;
                     chiSo < cacLuaChon.length;
-                    chiSo++) // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                    chiSo++) 
             if (cacLuaChon[chiSo].equals(chon)) daChon = cacKetQua.get(chiSo);
         }
         banHang.datKhachHang(

@@ -39,7 +39,7 @@ public final class ThaoTacNhanh {
                     cacGiaTri.get("reason"),
                     "Lịch làm việc ngày " + ngay,
                     "Nghỉ phép",
-                    "LEAVE",
+                    "NGHI_PHEP",
                     layIdNhanVien(),
                     ngay.toString());
             HopThoai.hienThiThanhCong(cha, "Đã gửi yêu cầu nghỉ phép.");

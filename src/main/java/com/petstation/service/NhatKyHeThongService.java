@@ -81,7 +81,7 @@ public final class NhatKyHeThongService {
 
     public static void ghiNhatKy(String kieu, String thaoTac, String doiTuong, String ketQua) {
         nhatKyHeThongDAO.capNhatNhatKy(
-                layPhienHienTai() == null ? null : layIdTaiKhoan(),
+                layPhienHienTai() == null ? null : layTenDangNhap(),
                 thaoTac,
                 doiTuong,
                 layNguoiDung(),

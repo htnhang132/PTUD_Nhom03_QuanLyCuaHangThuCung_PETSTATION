@@ -76,20 +76,20 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         themCap(khoi, "Tổng SL mua", String.valueOf(thongTin.tongSoLuong()), false);
         themCap(
                 khoi,
-                thongTin.loaiNguon().equals("HOTEL") ? "Phải thu sau cọc" : "Tiền hàng",
+                thongTin.loaiNguon().equals("LUU_TRU") ? "Phải thu sau cọc" : "Tiền hàng",
                 TienTe.dinhDang(bienLai.tamTinh()),
                 false);
         if (bienLai.giamGia() > 0)
             themCap(
                     khoi,
-                    thongTin.loaiNguon().equals("EXCHANGE")
+                    thongTin.loaiNguon().equals("DOI_HANG")
                             ? "Giá trị hàng được đổi"
                             : "Giảm giá / voucher",
                     "−" + TienTe.dinhDang(bienLai.giamGia()),
                     false);
         if (!bienLai.voucher().isBlank())
             themChu(khoi, "Voucher: " + bienLai.voucher(), 8, false, 0);
-        if (thongTin.loaiNguon().equals("HOTEL"))
+        if (thongTin.loaiNguon().equals("LUU_TRU"))
             themCap(khoi, "Cọc đã cấn trừ", TienTe.dinhDang(thongTin.daCanTru()), false);
         themCap(khoi, "Tổng thanh toán", TienTe.dinhDang(bienLai.tong()), true);
         String phuongThuc =

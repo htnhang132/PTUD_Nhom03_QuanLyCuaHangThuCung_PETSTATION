@@ -4,6 +4,7 @@ import static com.petstation.database.ThaoTacSQL.*;
 
 import com.petstation.dao.NghiepVuDAO;
 import com.petstation.model.LoaiNghiepVu;
+import com.petstation.util.DuLieu;
 
 import java.util.List;
 
@@ -33,17 +34,15 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Thanh toán",
                                 "Trạng thái"
                             },
-                            "SELECT h.id,h.so_hoa_don,COALESCE(k.ho_ten,N'Khách"
-                                + " lẻ'),COALESCE(n.ho_ten,N'Thu"
-                                + " ngân'),h.thanh_toan_luc,h.tong_tien,"
-                                + " CASE h.hinh_thuc_thanh_toan WHEN 'TIEN_MAT' THEN N'Tiền mặt' WHEN 'CASH' THEN N'Tiền mặt' WHEN 'CHUYEN_KHOAN' THEN N'Chuyển khoản' WHEN 'TRANSFER' THEN N'Chuyển khoản' WHEN 'THE' THEN N'Thẻ' WHEN 'CARD' THEN N'Thẻ' WHEN 'QUET_THE' THEN N'Thẻ' WHEN 'KET_HOP' THEN N'Kết hợp' WHEN 'MIXED' THEN N'Kết hợp' ELSE COALESCE(h.hinh_thuc_thanh_toan,N'Tiền mặt') END,"
-                                + " CASE h.trang_thai WHEN 'PAID' THEN N'Đã thanh toán' WHEN 'DA_THANH_TOAN' THEN N'Đã thanh toán' WHEN 'CANCELLED' THEN N'Đã hủy' WHEN 'VOIDED' THEN N'Đã hủy' WHEN 'DA_HUY' THEN N'Đã hủy' WHEN 'REFUNDED' THEN N'Đã hoàn' WHEN 'DA_HOAN' THEN N'Đã hoàn' ELSE COALESCE(h.trang_thai,N'Đã thanh toán') END"
-                                + " FROM hoa_don h LEFT JOIN phien_lam_viec s ON"
-                                + " s.id=h.phien_lam_viec_id LEFT JOIN tai_khoan a ON"
-                                + " a.id=COALESCE(h.tai_khoan_id,s.tai_khoan_id) LEFT JOIN"
-                                + " nhan_vien n ON n.id=a.nhan_vien_id LEFT JOIN khach_hang k ON"
-                                + " k.id=h.khach_hang_id WHERE h.trang_thai<>'GIO_TREO' ORDER BY"
-                                + " h.thanh_toan_luc DESC,h.id DESC");
+                            "SELECT h.ma_hoa_don AS ma_khoa, h.ma_hoa_don, COALESCE(k.ho_ten, N'Khách lẻ'), COALESCE(n.ho_ten, N'Thu ngân'), h.thanh_toan_luc, h.tong_tien,"
+                                + " CASE h.hinh_thuc_thanh_toan WHEN 'TIEN_MAT' THEN N'Tiền mặt' WHEN 'CHUYEN_KHOAN' THEN N'Chuyển khoản' WHEN 'THE_NGAN_HANG' THEN N'Thẻ' WHEN 'KET_HOP' THEN N'Kết hợp' ELSE COALESCE(h.hinh_thuc_thanh_toan, N'Tiền mặt') END,"
+                                + " CASE h.trang_thai WHEN 'DA_THANH_TOAN' THEN N'Đã thanh toán' WHEN 'DA_HUY' THEN N'Đã hủy' ELSE COALESCE(h.trang_thai, N'Đã thanh toán') END"
+                                + " FROM hoa_don h"
+                                + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap = h.ten_dang_nhap"
+                                + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien = a.ma_nhan_vien"
+                                + " LEFT JOIN khach_hang k ON k.ma_khach_hang = h.ma_khach_hang"
+                                + " WHERE h.trang_thai <> 'GIO_TREO'"
+                                + " ORDER BY h.thanh_toan_luc DESC, h.ma_hoa_don DESC");
             case LO_HANG ->
                     new KieuHienThi(
                             "Tồn kho theo lô",
@@ -56,10 +55,9 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Tồn kho",
                                 "Trạng thái"
                             },
-                            "SELECT"
-                                + " l.id,p.ma_san_pham,p.ten,l.so_lo,l.han_su_dung,l.so_luong_ton,l.trang_thai"
-                                + " FROM lo_hang l JOIN san_pham p ON p.id=l.san_pham_id ORDER BY"
-                                + " p.ma_san_pham,l.han_su_dung,l.id");
+                            "SELECT l.ma_lo, p.ma_san_pham, p.ten, l.so_lo, l.han_su_dung, l.so_luong_ton, l.trang_thai"
+                                + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham = l.ma_san_pham"
+                                + " ORDER BY p.ma_san_pham, l.han_su_dung, l.ma_lo");
             case LICH_HEN ->
                     new KieuHienThi(
                             "Lịch hẹn Spa",
@@ -74,11 +72,12 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Kết thúc",
                                 "Trạng thái"
                             },
-                            "SELECT"
-                                + " l.id,l.ma_lich_hen,k.ho_ten,p.ten,g.ten_goi,n.ho_ten,l.bat_dau,l.ket_thuc,l.trang_thai"
-                                + " FROM lich_hen l JOIN khach_hang k ON k.id=l.khach_hang_id JOIN"
-                                + " thu_cung p ON p.id=l.thu_cung_id LEFT JOIN goi_dich_vu_spa g ON"
-                                + " g.id=l.dich_vu_id LEFT JOIN nhan_vien n ON n.id=l.nhan_vien_id"
+                            "SELECT l.ma_lich_hen AS ma_khoa, l.ma_lich_hen, k.ho_ten, p.ten, g.ten_goi, n.ho_ten, l.bat_dau, l.ket_thuc, l.trang_thai"
+                                + " FROM lich_hen l"
+                                + " JOIN khach_hang k ON k.ma_khach_hang = l.ma_khach_hang"
+                                + " JOIN thu_cung p ON p.ma_thu_cung = l.ma_thu_cung"
+                                + " LEFT JOIN goi_dich_vu_spa g ON g.ma_goi = l.ma_goi"
+                                + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien = l.ma_nhan_vien"
                                 + " ORDER BY l.bat_dau DESC");
             case PHIEU_SPA, TIEP_NHAN_SPA, GOI_DICH_VU_SPA, TIEN_DO_SPA, HOAN_TAT_SPA ->
                     new KieuHienThi(
@@ -100,17 +99,16 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái",
                                 "Tiếp nhận lúc"
                             },
-                            "SELECT"
-                                + " t.id,t.ma_phieu,k.ho_ten,p.ten,t.can_nang_thuc_te,n.ho_ten,t.tong_tien,t.trang_thai,t.tao_luc"
-                                + " FROM phieu_tiep_nhan_spa t JOIN thu_cung p ON"
-                                + " p.id=t.thu_cung_id JOIN khach_hang k ON k.id=p.khach_hang_id"
-                                + " LEFT JOIN nhan_vien n ON n.id=t.nhan_vien_id"
+                            "SELECT t.ma_phieu AS ma_khoa, t.ma_phieu, k.ho_ten, p.ten, t.can_nang_thuc_te, n.ho_ten, t.tong_tien, t.trang_thai, t.tao_luc"
+                                + " FROM phieu_tiep_nhan_spa t"
+                                + " JOIN thu_cung p ON p.ma_thu_cung = t.ma_thu_cung"
+                                + " JOIN khach_hang k ON k.ma_khach_hang = p.ma_khach_hang"
+                                + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien = t.ma_nhan_vien"
                                     + (cheDo == LoaiNghiepVu.PHIEU_SPA
-                                            ? " WHERE t.tao_luc>=CONVERT(date,SYSDATETIME()) AND"
-                                                  + " t.tao_luc<DATEADD(day,1,CONVERT(date,SYSDATETIME()))"
+                                            ? " WHERE t.tao_luc >= CONVERT(date, SYSDATETIME()) AND"
+                                                  + " t.tao_luc < DATEADD(day, 1, CONVERT(date, SYSDATETIME()))"
                                             : "")
-                                    + " ORDER BY t.tao_luc"
-                                    + " DESC,t.id DESC");
+                                    + " ORDER BY t.tao_luc DESC, t.ma_phieu DESC");
             case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
                     new KieuHienThi(
                             switch (cheDo) {
@@ -132,23 +130,23 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái",
                                 "Cọc yêu cầu"
                             },
-                            "SELECT"
-                                + " h.id,h.ma_hop_dong,k.ho_ten,p.ten,r.ma_phong,h.ngay_vao,h.ngay_ra_du_kien,CASE"
-                                + " WHEN h.da_nhan_coc=1 THEN h.tien_coc ELSE 0"
-                                + " END,COALESCE(h.gia_dem,r.gia_dem),h.trang_thai,COALESCE(h.coc_yeu_cau,h.tien_coc)"
-                                + " FROM hop_dong_luu_tru h JOIN khach_hang k ON"
-                                + " k.id=h.khach_hang_id JOIN thu_cung p ON p.id=h.thu_cung_id JOIN"
-                                + " phong_hotel r ON r.id=h.phong_id"
+                            "SELECT h.ma_hop_dong AS ma_khoa, h.ma_hop_dong, k.ho_ten, p.ten, r.ma_phong, h.ngay_vao, h.ngay_ra_du_kien,"
+                                + " CASE WHEN h.da_nhan_coc=1 THEN h.tien_coc ELSE 0 END,"
+                                + " COALESCE(h.gia_dem, r.gia_dem), h.trang_thai, COALESCE(h.coc_yeu_cau, h.tien_coc)"
+                                + " FROM hop_dong_luu_tru h"
+                                + " JOIN khach_hang k ON k.ma_khach_hang = h.ma_khach_hang"
+                                + " JOIN thu_cung p ON p.ma_thu_cung = h.ma_thu_cung"
+                                + " JOIN phong_hotel r ON r.ma_phong = h.ma_phong"
                                 + (cheDo == LoaiNghiepVu.DAT_PHONG_LUU_TRU
-                                        ? " WHERE h.trang_thai='BOOKED'"
+                                        ? " WHERE h.trang_thai='DA_DAT'"
                                         : cheDo == LoaiNghiepVu.NHAT_KY_LUU_TRU
-                                                ? " WHERE h.trang_thai IN ('CHECKED_IN','CHECKED_OUT')"
+                                                ? " WHERE h.trang_thai IN ('DANG_O','DA_TRA_PHONG')"
                                                         + " AND EXISTS (SELECT 1 FROM nhat_ky_cham_soc j"
-                                                        + " WHERE j.hop_dong_id=h.id)"
+                                                        + " WHERE j.ma_hop_dong=h.ma_hop_dong)"
                                                 : cheDo == LoaiNghiepVu.TRA_PHONG_LUU_TRU
-                                                        ? " WHERE h.trang_thai='CHECKED_IN'"
+                                                        ? " WHERE h.trang_thai='DANG_O'"
                                                         : "")
-                                + " ORDER BY h.ngay_vao DESC,h.id DESC");
+                                + " ORDER BY h.ngay_vao DESC, h.ma_hop_dong DESC");
             case PHONG_LUU_TRU ->
                     new KieuHienThi(
                             "Sơ đồ phòng và lưu trú",
@@ -160,8 +158,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Giá / ngày",
                                 "Trạng thái"
                             },
-                            "SELECT id,ma_phong,loai_phong,suc_chua,gia_dem,trang_thai FROM"
-                                    + " phong_hotel ORDER BY ma_phong");
+                            "SELECT ma_phong AS ma_khoa, ma_phong, loai_phong, suc_chua, gia_dem, trang_thai FROM phong_hotel ORDER BY ma_phong");
             case PHIEU_NHAP_KHO ->
                     new KieuHienThi(
                             "Nhập kho",
@@ -174,11 +171,11 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Đã trả",
                                 "Trạng thái"
                             },
-                            "SELECT"
-                                + " p.id,p.so_phieu,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,CASE"
-                                + " WHEN p.da_tra>=p.tong_tien THEN N'Đã thanh toán' ELSE N'Đã ghi"
-                                + " sổ' END FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
-                                + " n.id=p.nha_cung_cap_id ORDER BY p.id DESC");
+                            "SELECT p.ma_phieu_nhap AS ma_khoa, p.ma_phieu_nhap, n.ten, p.ngay_nhap, p.tong_tien, p.da_tra,"
+                                + " CASE WHEN p.da_tra>=p.tong_tien THEN N'Đã thanh toán' ELSE N'Đã ghi sổ' END"
+                                + " FROM phieu_nhap_kho p"
+                                + " JOIN nha_cung_cap n ON n.ma_nha_cung_cap = p.ma_nha_cung_cap"
+                                + " ORDER BY p.ma_phieu_nhap DESC");
             case PHIEU_XUAT_KHO ->
                     new KieuHienThi(
                             "Xuất kho và xuất hủy",
@@ -191,16 +188,15 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái",
                                 "Ngày tạo"
                             },
-                            "SELECT id,so_phieu,loai_xuat,ly_do,tong_gia_tri,trang_thai,tao_luc"
-                                    + " FROM phieu_xuat_kho ORDER BY id DESC");
+                            "SELECT ma_phieu_xuat AS ma_khoa, ma_phieu_xuat, loai_xuat, ly_do, tong_gia_tri, trang_thai, tao_luc"
+                                    + " FROM phieu_xuat_kho ORDER BY ma_phieu_xuat DESC");
             case KIEM_KE ->
                     new KieuHienThi(
                             "Kiểm kê tồn kho",
                             new String[] {
                                 "ID", "Số biên bản", "Kỳ kiểm kê", "Trạng thái", "Ngày tạo"
                             },
-                            "SELECT id,so_bien_ban,ky_kiem_ke,trang_thai,tao_luc FROM"
-                                    + " bien_ban_kiem_ke ORDER BY id DESC");
+                            "SELECT ma_bien_ban AS ma_khoa, ma_bien_ban, ky_kiem_ke, trang_thai, tao_luc FROM bien_ban_kiem_ke ORDER BY ma_bien_ban DESC");
             case DOI_TRA ->
                     new KieuHienThi(
                             "Đổi trả hàng",
@@ -213,10 +209,10 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái",
                                 "Ngày tạo"
                             },
-                            "SELECT"
-                                + " p.id,p.ma_phieu,h.so_hoa_don,p.chenh_lech,p.ly_do,CONCAT(p.loai_phieu,':"
-                                + " ',p.trang_thai),p.tao_luc FROM phieu_doi_tra p JOIN hoa_don h"
-                                + " ON h.id=p.hoa_don_id ORDER BY p.id DESC");
+                            "SELECT p.ma_phieu AS ma_khoa, p.ma_phieu, h.ma_hoa_don, p.chenh_lech, p.ly_do, CONCAT(p.loai_phieu,': ',p.trang_thai), p.tao_luc"
+                                + " FROM phieu_doi_tra p"
+                                + " JOIN hoa_don h ON h.ma_hoa_don = p.ma_hoa_don"
+                                + " ORDER BY p.ma_phieu DESC");
             case GIO_HANG_TREO ->
                     new KieuHienThi(
                             "Đơn đang treo",
@@ -230,20 +226,25 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Tạm tính",
                                 "Loại đơn"
                             },
-                            "SELECT g.id,g.so_hoa_don,COALESCE(k.ho_ten,N'Khách"
-                                + " lẻ'),COALESCE(n.ho_ten,N'Thu ngân'),g.tao_luc,(SELECT COUNT(*)"
-                                + " FROM chi_tiet_hoa_don c WHERE c.hoa_don_id=g.id),g.tam_tinh,"
-                                + " CASE WHEN JSON_VALUE(CASE WHEN ISJSON(g.ghi_chu)=1 THEN g.ghi_chu"
-                                + " ELSE N'{}' END,'$.loai')='DOI_PHU_KIEN'"
-                                + " THEN N'Đổi phụ kiện' ELSE N'Bán hàng' END"
-                                + " FROM hoa_don g LEFT JOIN tai_khoan t ON t.id=g.tai_khoan_id"
-                                + " LEFT JOIN nhan_vien n ON n.id=t.nhan_vien_id LEFT JOIN"
-                                + " khach_hang k ON k.id=g.khach_hang_id WHERE"
-                                + " g.trang_thai='GIO_TREO' ORDER BY g.id DESC");
+                            "SELECT g.ma_hoa_don AS ma_khoa, g.ma_hoa_don, COALESCE(k.ho_ten, N'Khách lẻ'), COALESCE(n.ho_ten, N'Thu ngân'), g.tao_luc,"
+                                + " (SELECT COUNT(*) FROM chi_tiet_hoa_don c WHERE c.ma_hoa_don = g.ma_hoa_don), g.tam_tinh,"
+                                + " CASE WHEN JSON_VALUE(CASE WHEN ISJSON(g.ghi_chu)=1 THEN g.ghi_chu ELSE N'{}' END, '$.loai')='DOI_PHU_KIEN' THEN N'Đổi phụ kiện' ELSE N'Bán hàng' END"
+                                + " FROM hoa_don g"
+                                + " LEFT JOIN tai_khoan t ON t.ten_dang_nhap = g.ten_dang_nhap"
+                                + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien = t.ma_nhan_vien"
+                                + " LEFT JOIN khach_hang k ON k.ma_khach_hang = g.ma_khach_hang"
+                                + " WHERE g.trang_thai = 'GIO_TREO'"
+                                + " ORDER BY g.ma_hoa_don DESC");
         };
     }
 
     public List<Object[]> layCacDong(LoaiNghiepVu cheDo, long idNguoiThucHien) {
-        return truyVan(taoKieuHienThi(cheDo).sql());
+        List<Object[]> rows = truyVan(taoKieuHienThi(cheDo).sql());
+        for (Object[] r : rows) {
+            if (r.length > 0 && r[0] != null) {
+                r[0] = DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
+            }
+        }
+        return rows;
     }
 }

@@ -24,7 +24,7 @@ public class PhongHotel implements Serializable {
 
     /** Constructor mặc định. */
     public PhongHotel() {
-        this.trangThai = "AVAILABLE";
+        this.trangThai = "TRONG";
         this.sucChua = 1;
     }
 
@@ -77,17 +77,17 @@ public class PhongHotel implements Serializable {
     /** Lấy nhãn trạng thái tiếng Việt hiển thị trên giao diện (dẫn xuất từ trangThai). */
     public String layNhanTrangThai() {
         return switch (trangThai != null ? trangThai : "") {
-            case "AVAILABLE" -> "Trống";
-            case "OCCUPIED" -> "Có thú";
-            case "CLEANING" -> "Đang dọn";
-            case "MAINTENANCE" -> "Bảo trì";
+            case "TRONG" -> "Trống";
+            case "DANG_O" -> "Có thú";
+            case "DANG_DON" -> "Đang dọn";
+            case "BAO_TRI" -> "Bảo trì";
             default -> "Ngừng hoạt động";
         };
     }
 
     /** Kiểm tra phòng hiện có đang trống sẵn sàng đón thú cưng hay không (dẫn xuất). */
     public boolean kiemTraPhongTrong() {
-        return "AVAILABLE".equalsIgnoreCase(trangThai);
+        return "TRONG".equalsIgnoreCase(trangThai);
     }
 
     /** Tính tiền phòng theo số đêm lưu trú (dẫn xuất: soDem * gia). */

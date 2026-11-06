@@ -253,7 +253,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     }
 
     public void moPhong(PhongHotel phong) {
-        if (!List.of("AVAILABLE", "OCCUPIED").contains(phong.trangThai())) {
+        if (!List.of("TRONG", "DANG_O").contains(phong.trangThai())) {
             HopThoai.hienThiThongTin(
                     this,
                     "Phòng "
@@ -264,7 +264,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             return;
         }
         gio.layQuyTrinh().chonPhongHotel(phong.id(), phong.ma());
-        if (phong.trangThai().equals("OCCUPIED")) {
+        if (phong.trangThai().equals("DANG_O")) {
             if (phong.dangO() == null) {
                 HopThoai.hienThiCanhBao(this, "Chưa tìm thấy hợp đồng đang ở. Hãy làm mới sơ đồ.");
                 return;
@@ -364,9 +364,9 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
 
     private static Color mauTrangThai(String s) {
         return switch (s) {
-            case "AVAILABLE" -> MauUngDung.THANH_CONG;
-            case "OCCUPIED" -> MauUngDung.DO_THUONG_HIEU;
-            case "CLEANING" -> MauUngDung.CANH_BAO;
+            case "TRONG" -> MauUngDung.THANH_CONG;
+            case "DANG_O" -> MauUngDung.DO_THUONG_HIEU;
+            case "DANG_DON" -> MauUngDung.CANH_BAO;
             default -> MauUngDung.VAN_BAN_XAM;
         };
     }

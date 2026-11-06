@@ -10,17 +10,17 @@ import com.petstation.util.DuLieu;
 /**
  * Thực thể Phiếu nhập kho khớp bảng [phieu_nhap_kho].
  * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là số phiếu (soPhieu). Đã bỏ thuộc tính id.
+ * - Khóa chính chuẩn hóa là mã phiếu nhập (maPhieuNhap / soPhieu).
  * - Quan hệ kết hợp với NhaCungCap, TaiKhoan (người lập phiếu) và danh sách ChiTietPhieuNhap.
- * - Phương thức tính thuộc tính dẫn xuất: tinhTongTien(), tinhCongNoConLai(), kiemTraDaTatToanCongNo().
- * - Kiểm tra ràng buộc trong setter và equals/hashCode chỉ theo khóa chính soPhieu.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
+ * - Thuộc tính dẫn xuất: tongTien, congNoConLai, kiemTraDaTatToanCongNo() được tính toán động
+ *   tuyệt đối KHÔNG có setter công khai.
+ * - Equals/hashCode chỉ theo khóa chính.
  */
 public class PhieuNhapKho implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Phiếu nhập kho */
-    private String soPhieu;
+    /** Khóa chính nghiệp vụ của Phiếu nhập kho (ma_phieu_nhap) */
+    private String maPhieuNhap;
     /** Quan hệ kết hợp: Nhà cung cấp giao hàng. */
     private NhaCungCap nhaCungCap;
     /** Quan hệ kết hợp: Tài khoản nhân viên lập phiếu nhập kho. */
@@ -29,7 +29,7 @@ public class PhieuNhapKho implements Serializable {
     private List<ChiTietPhieuNhap> danhSachChiTiet = new ArrayList<>();
 
     private LocalDateTime ngayNhap;
-    private long tongTien;
+    private long tongTien; // snapshot từ CSDL khi chưa load danh sách chi tiết
     private String trangThai;
     private String ghiChu;
     private long daTra;
@@ -37,13 +37,13 @@ public class PhieuNhapKho implements Serializable {
     /** Constructor mặc định. */
     public PhieuNhapKho() {
         this.ngayNhap = LocalDateTime.now();
-        this.trangThai = "COMPLETED";
+        this.trangThai = "DA_NHAP";
     }
 
-    /** Constructor theo khóa chính nghiệp vụ soPhieu. */
-    public PhieuNhapKho(String soPhieu) {
+    /** Constructor theo khóa chính nghiệp vụ maPhieuNhap. */
+    public PhieuNhapKho(String maPhieuNhap) {
         this();
-        setSoPhieu(soPhieu);
+        setMaPhieuNhap(maPhieuNhap);
     }
 
     /** Constructor cầu nối nhận id từ DAO. */
@@ -52,16 +52,16 @@ public class PhieuNhapKho implements Serializable {
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng NhaCungCap, TaiKhoan và khóa chính soPhieu. */
+    /** Constructor chuẩn OOP nhận đối tượng NhaCungCap, TaiKhoan và khóa chính maPhieuNhap. */
     public PhieuNhapKho(
-            String soPhieu,
+            String maPhieuNhap,
             NhaCungCap nhaCungCap,
             TaiKhoan nguoiLap,
             LocalDateTime ngayNhap,
             String trangThai,
             String ghiChu,
             long daTra) {
-        setSoPhieu(soPhieu);
+        setMaPhieuNhap(maPhieuNhap);
         setNhaCungCap(nhaCungCap);
         setNguoiLap(nguoiLap);
         setNgayNhap(ngayNhap);
@@ -73,21 +73,21 @@ public class PhieuNhapKho implements Serializable {
     /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public PhieuNhapKho(
             long id,
-            String soPhieu,
+            String maPhieuNhap,
             NhaCungCap nhaCungCap,
             TaiKhoan nguoiLap,
             LocalDateTime ngayNhap,
             String trangThai,
             String ghiChu,
             long daTra) {
-        this(soPhieu, nhaCungCap, nguoiLap, ngayNhap, trangThai, ghiChu, daTra);
+        this(maPhieuNhap, nhaCungCap, nguoiLap, ngayNhap, trangThai, ghiChu, daTra);
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
+    /** Constructor cầu nối tương thích ngược với tầng DAO (có tham số tongTien snapshot). */
     public PhieuNhapKho(
             long id,
-            String soPhieu,
+            String maPhieuNhap,
             long nhaCungCapId,
             long nguoiLapId,
             LocalDateTime ngayNhap,
@@ -97,14 +97,14 @@ public class PhieuNhapKho implements Serializable {
             long daTra) {
         this(
                 id,
-                soPhieu,
+                maPhieuNhap,
                 new NhaCungCap(nhaCungCapId),
                 new TaiKhoan(nguoiLapId),
                 ngayNhap,
                 trangThai,
                 ghiChu,
                 daTra);
-        setTongTien(tongTien);
+        this.tongTien = Math.max(0L, tongTien);
     }
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
@@ -125,11 +125,37 @@ public class PhieuNhapKho implements Serializable {
         return Math.max(0L, this.tongTien);
     }
 
+    /** Thuộc tính dẫn xuất: Không có setter công khai để đảm bảo tính an toàn dữ liệu. */
+    public long getTongTien() {
+        return tinhTongTien();
+    }
+
+    public long layTongTien() {
+        return tinhTongTien();
+    }
+
+    public long tongTien() {
+        return tinhTongTien();
+    }
+
+    /** Phương thức nội bộ gán snapshot tổng tiền từ CSDL. */
+    public void napTongTienSnapshot(long tongTien) {
+        this.tongTien = Math.max(0L, tongTien);
+    }
+
     /**
      * Tính công nợ còn lại phải trả cho nhà cung cấp (thuộc tính dẫn xuất: tongTien - daTra).
      */
     public long tinhCongNoConLai() {
         return Math.max(0L, tinhTongTien() - daTra);
+    }
+
+    public long getCongNoConLai() {
+        return tinhCongNoConLai();
+    }
+
+    public long layCongNoConLai() {
+        return tinhCongNoConLai();
     }
 
     /**
@@ -153,11 +179,11 @@ public class PhieuNhapKho implements Serializable {
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.soPhieu);
+        return DuLieu.layIdCauNoiObj(this, getMaPhieuNhap());
     }
 
     public long layId() {
-        return DuLieu.layIdCauNoi(this, this.soPhieu);
+        return DuLieu.layIdCauNoi(this, getMaPhieuNhap());
     }
 
     public long id() {
@@ -166,8 +192,8 @@ public class PhieuNhapKho implements Serializable {
 
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-        if ((this.soPhieu == null || this.soPhieu.isBlank()) && id > 0) {
-            this.soPhieu = DuLieu.taoMaTuId("PN", 8, id);
+        if ((this.maPhieuNhap == null || this.maPhieuNhap.isBlank()) && id > 0) {
+            this.maPhieuNhap = DuLieu.taoMaTuId("PN", 8, id);
         }
     }
 
@@ -177,24 +203,45 @@ public class PhieuNhapKho implements Serializable {
 
     // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
+    public String getMaPhieuNhap() {
+        return this.maPhieuNhap;
+    }
+
+    public String layMaPhieuNhap() {
+        return this.maPhieuNhap;
+    }
+
+    public String maPhieuNhap() {
+        return this.maPhieuNhap;
+    }
+
+    public void setMaPhieuNhap(String maPhieuNhap) {
+        this.maPhieuNhap = maPhieuNhap == null ? null : maPhieuNhap.trim();
+    }
+
+    public void datMaPhieuNhap(String maPhieuNhap) {
+        setMaPhieuNhap(maPhieuNhap);
+    }
+
+    // Alias soPhieu tương thích ngược
     public String getSoPhieu() {
-        return this.soPhieu;
+        return getMaPhieuNhap();
     }
 
     public String laySoPhieu() {
-        return this.soPhieu;
+        return getMaPhieuNhap();
     }
 
     public String soPhieu() {
-        return this.soPhieu;
+        return getMaPhieuNhap();
     }
 
     public void setSoPhieu(String soPhieu) {
-        this.soPhieu = soPhieu == null ? null : soPhieu.trim();
+        setMaPhieuNhap(soPhieu);
     }
 
     public void datSoPhieu(String soPhieu) {
-        setSoPhieu(soPhieu);
+        setMaPhieuNhap(soPhieu);
     }
 
     public NhaCungCap getNhaCungCap() {
@@ -211,6 +258,22 @@ public class PhieuNhapKho implements Serializable {
 
     public void datNhaCungCap(NhaCungCap nhaCungCap) {
         setNhaCungCap(nhaCungCap);
+    }
+
+    public String getMaNhaCungCap() {
+        return nhaCungCap == null ? null : nhaCungCap.getMaNhaCungCap();
+    }
+
+    public void setMaNhaCungCap(String maNhaCungCap) {
+        this.nhaCungCap = (maNhaCungCap == null || maNhaCungCap.isBlank()) ? null : new NhaCungCap(maNhaCungCap);
+    }
+
+    public String getMaNcc() {
+        return getMaNhaCungCap();
+    }
+
+    public void setMaNcc(String maNcc) {
+        setMaNhaCungCap(maNcc);
     }
 
     public long getNhaCungCapId() {
@@ -297,28 +360,6 @@ public class PhieuNhapKho implements Serializable {
         setNgayNhap(ngayNhap);
     }
 
-    public long getTongTien() {
-        return this.tongTien;
-    }
-
-    public long layTongTien() {
-        return this.tongTien;
-    }
-
-    public long tongTien() {
-        return this.tongTien;
-    }
-
-    public void setTongTien(long tongTien) {
-        if (tongTien < 0)
-            throw new IllegalArgumentException("Tổng tiền phiếu nhập không được âm.");
-        this.tongTien = tongTien;
-    }
-
-    public void datTongTien(long tongTien) {
-        setTongTien(tongTien);
-    }
-
     public String getTrangThai() {
         return this.trangThai;
     }
@@ -390,17 +431,17 @@ public class PhieuNhapKho implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         PhieuNhapKho that = (PhieuNhapKho) o;
-        return Objects.equals(this.soPhieu, that.soPhieu);
+        return Objects.equals(this.getMaPhieuNhap(), that.getMaPhieuNhap());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(soPhieu);
+        return Objects.hash(getMaPhieuNhap());
     }
 
     @Override
     public String toString() {
-        return "PhieuNhapKho{" + "soPhieu='" + soPhieu + '\'' + ", nhaCungCapId=" + getNhaCungCapId()
+        return "PhieuNhapKho{" + "maPhieuNhap='" + getMaPhieuNhap() + '\'' + ", nhaCungCap=" + getMaNhaCungCap()
                 + ", tongTien=" + tinhTongTien() + ", congNoConLai=" + tinhCongNoConLai() + ", trangThai='" + trangThai
                 + '\'' + '}';
     }

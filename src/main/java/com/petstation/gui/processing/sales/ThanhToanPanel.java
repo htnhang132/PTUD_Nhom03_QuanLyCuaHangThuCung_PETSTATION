@@ -109,6 +109,13 @@ public final class ThanhToanPanel extends CoSoPanel {
         this.thuNgan = thuNgan;
         this.boDieuHuong = boDieuHuong;
         this.quayLaiTuThanhToan = quayLaiTuThanhToan;
+        this.banHang.themBoLangNghe(() -> {
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                lamMoi();
+            } else {
+                javax.swing.SwingUtilities.invokeLater(this::lamMoi);
+            }
+        });
         setLayout(new BorderLayout(0, 14));
 
         JLabel lblTieuDe = taoTieuDeMuc("Thanh toán");
@@ -189,7 +196,7 @@ public final class ThanhToanPanel extends CoSoPanel {
      * Không sử dụng callback chuyển bước của thanh quy trình.
      */
     private void quayLaiManHinhNguon() {
-        if ("EXCHANGE".equals(banHang.layKieuNguon())) {
+        if ("DOI_HANG".equals(banHang.layKieuNguon())) {
             treoDonDoi(true);
             return;
         }
@@ -229,15 +236,15 @@ public final class ThanhToanPanel extends CoSoPanel {
      */
     private void capNhatNhanNutQuayLai() {
         String nguon = banHang.layKieuNguon();
-        btnTreoDoi.setVisible("EXCHANGE".equals(nguon));
+        btnTreoDoi.setVisible("DOI_HANG".equals(nguon));
 
-        if ("HOTEL".equals(nguon)) {
+        if ("HOTEL".equals(nguon) || "LUU_TRU".equals(nguon)) {
             btnQuayLaiTrangThaiRong.setText("Về trả phòng Hotel");
             btnHuy.setText("Quay lại trả phòng");
         } else if ("SPA".equals(nguon)) {
             btnQuayLaiTrangThaiRong.setText("Về đóng phiếu Spa");
             btnHuy.setText("Quay lại đóng phiếu");
-        } else if ("EXCHANGE".equals(nguon)) {
+        } else if ("DOI_HANG".equals(nguon)) {
             btnHuy.setText("Sửa đơn đổi");
             btnQuayLaiTrangThaiRong.setText("Về đổi phụ kiện");
         } else {
@@ -660,7 +667,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         lblVoucherThongBao.setText("");
 
         boolean doiHang =
-            "EXCHANGE".equals(banHang.layKieuNguon());
+            "DOI_HANG".equals(banHang.layKieuNguon());
 
         // Đổi hàng thì khóa toàn bộ điều khiển voucher.
         dieuKhienVoucher.forEach(

@@ -1,23 +1,16 @@
 package com.petstation.gui.components;
 
-import static com.petstation.util.DuLieu.*;
-
 import com.petstation.gui.components.common.BieuMauSQL.TruongDuLieu;
 import com.petstation.service.LuaChonNghiepVuService;
 
-import java.awt.*;
-import java.time.*;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.*;
-
-/** Cung cấp giao diện và xử lý tương tác cho nghiệp vụ các trường. */
 public final class TruongNghiepVu {
     private TruongNghiepVu() {}
 
-    /** Thời gian ngày. */
     public static final DateTimeFormatter THOI_GIAN_NGAY =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm");
 

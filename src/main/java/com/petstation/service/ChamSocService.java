@@ -133,8 +133,8 @@ public final class ChamSocService {
                         var r = chamSocDAO.khoaPhieu(loai.equals("SPA"), id);
                         if (r.isEmpty()
                                 || !(loai.equals("SPA")
-                                                ? Set.of("RECEIVED", "IN_PROGRESS", "COMPLETED")
-                                                : Set.of("CHECKED_IN"))
+                                                ? Set.of("TIEP_NHAN", "DANG_THUC_HIEN", "HOAN_TAT")
+                                                : Set.of("DANG_O"))
                                         .contains(r.get(0)[0]))
                             throw new IllegalArgumentException("Phiếu không còn cho ghi chăm sóc.");
                         chamSocDAO.themPhieu(

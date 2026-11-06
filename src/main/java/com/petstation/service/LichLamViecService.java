@@ -55,7 +55,7 @@ public final class LichLamViecService {
         }
 
         public boolean kiemTraNghiPhep() {
-            return "LEAVE".equals(loai);
+            return "NGHI_PHEP".equals(loai);
         }
     }
 

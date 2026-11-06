@@ -36,7 +36,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
         });
 
     private static final String[] MA_TRANG_THAI = {
-        "", "RECEIVED", "IN_PROGRESS", "COMPLETED", "PAID"
+        "", "TIEP_NHAN", "DANG_THUC_HIEN", "HOAN_TAT", "DA_THANH_TOAN"
     };
 
     private record BoLoc(

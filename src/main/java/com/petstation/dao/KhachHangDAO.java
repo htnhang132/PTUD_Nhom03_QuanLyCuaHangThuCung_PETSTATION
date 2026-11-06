@@ -2,7 +2,8 @@ package com.petstation.dao;
 
 import com.petstation.model.KhachHang;
 
-import java.sql.*;
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,10 @@ public interface KhachHangDAO {
 
     List<KhachHang> timTheoHangThanhVien(String hang);
 
+    List<KhachHang> timTheoNgaySinh(Date ngaySinh);
+
+    List<KhachHang> timTheoKhoangNgayTao(LocalDateTime tuThoiDiem, LocalDateTime denThoiDiem);
+
     boolean capNhat(KhachHang khachHang);
 
     boolean capNhatDiemTichLuy(Long idKhachHang, Integer diem);
@@ -32,5 +37,11 @@ public interface KhachHangDAO {
 
     boolean layTonTaiTheoSoDienThoai(String soDienThoai);
 
+    boolean kiemTraTonTaiTheoSoDienThoai(String soDienThoai);
+
+    boolean kiemTraTonTaiTheoMaKhachHang(String maKhachHang);
+
     long dem();
+
+    long demSoLuong();
 }

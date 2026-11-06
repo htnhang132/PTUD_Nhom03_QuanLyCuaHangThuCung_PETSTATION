@@ -164,7 +164,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     }
 
     private void moDaChon() {
-        // Dòng.
         int dong = tblBang.getSelectedRow();
         if (dong < 0) return;
         // Mô hình đang xét.

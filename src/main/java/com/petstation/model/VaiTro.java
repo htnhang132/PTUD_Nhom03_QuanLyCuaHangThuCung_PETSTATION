@@ -21,10 +21,10 @@ public enum VaiTro {
     public static VaiTro docTuCSDL(String giaTri) {
         if (giaTri == null) return NHAN_VIEN_BAN_HANG;
         return switch (giaTri.trim().toUpperCase()) {
-            case "QUAN_LY_CUA_HANG", "CUA_HANG_TRUONG", "STORE_MANAGER" -> QUAN_LY_CUA_HANG;
-            case "NHAN_VIEN_KHO", "WAREHOUSE_STAFF" -> NHAN_VIEN_KHO;
-            case "NHAN_VIEN_BAN_HANG", "SALES_STAFF" -> NHAN_VIEN_BAN_HANG;
-            case "NHAN_VIEN_SPA_HOTEL", "SPA_HOTEL_STAFF" -> NHAN_VIEN_SPA_HOTEL;
+            case "QUAN_LY_CUA_HANG", "CUA_HANG_TRUONG" -> QUAN_LY_CUA_HANG;
+            case "NHAN_VIEN_KHO" -> NHAN_VIEN_KHO;
+            case "NHAN_VIEN_BAN_HANG" -> NHAN_VIEN_BAN_HANG;
+            case "NHAN_VIEN_SPA_HOTEL" -> NHAN_VIEN_SPA_HOTEL;
             default -> VaiTro.valueOf(giaTri.trim());
         };
     }

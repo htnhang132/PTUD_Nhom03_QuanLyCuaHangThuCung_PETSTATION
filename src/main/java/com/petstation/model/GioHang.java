@@ -285,7 +285,27 @@ public final class GioHang {
     }
 
     private final List<DongHang> cacDong = new ArrayList<>();
+    private final List<Runnable> cacBoLangNghe = new java.util.concurrent.CopyOnWriteArrayList<>();
     private volatile boolean dangGhiThanhToan;
+
+    public void themBoLangNghe(Runnable boLangNghe) {
+        if (boLangNghe != null) {
+            cacBoLangNghe.add(boLangNghe);
+        }
+    }
+
+    public void xoaBoLangNghe(Runnable boLangNghe) {
+        cacBoLangNghe.remove(boLangNghe);
+    }
+
+    public void thongBaoThayDoi() {
+        for (Runnable boLangNghe : cacBoLangNghe) {
+            try {
+                boLangNghe.run();
+            } catch (Exception ignored) {
+            }
+        }
+    }
 
     public boolean dangGhiThanhToan() {
         return dangGhiThanhToan;
@@ -405,6 +425,7 @@ public final class GioHang {
 
     public void datDoiHang(YeuCauDoiHang giaTri) {
         doiHang = giaTri;
+        thongBaoThayDoi();
     }
 
     public List<DongHang> layCacDong() {
@@ -459,6 +480,7 @@ public final class GioHang {
     public void datCacDong(List<DongHang> moiCacDong) {
         cacDong.clear();
         cacDong.addAll(moiCacDong);
+        thongBaoThayDoi();
     }
 
     public String layMaKhachHang() {
@@ -493,6 +515,7 @@ public final class GioHang {
         maVoucher = "";
         giaTriVoucher = 0;
         diemDaDung = 0;
+        thongBaoThayDoi();
     }
 
     /**
@@ -628,10 +651,12 @@ public final class GioHang {
 
     public void datKhachHangSoDienThoai(String soDienThoai) {
         this.khachHangSoDienThoai = soDienThoai == null ? "" : soDienThoai.trim();
+        thongBaoThayDoi();
     }
 
     public void datGiamGiaPhanTram(int phanTram) {
         this.giamGiaPhanTram = Math.max(0, Math.min(phanTram, 100));
+        thongBaoThayDoi();
     }
 
     public long tinhTamTinh() {
@@ -642,7 +667,7 @@ public final class GioHang {
     }
 
     public long tinhGiamGia() {
-        if ("EXCHANGE".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.giaTriDuocDoi();
+        if ("DOI_HANG".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.giaTriDuocDoi();
         // Theo phần trăm.
         long theoPhanTram = Math.round(tinhTamTinh() * giamGiaPhanTram / 100.0);
         return Math.min(
@@ -664,18 +689,20 @@ public final class GioHang {
      * @return kết quả áp dụng voucher
      */
     public String apDungVoucher(String ma) {
-        if ("EXCHANGE".equals(kieuNguon) && ma != null && !ma.isBlank())
+        if ("DOI_HANG".equals(kieuNguon) && ma != null && !ma.isBlank())
             return "Đổi hàng không áp dụng thêm voucher.";
         String giaTri = ma == null ? "" : ma.trim().toUpperCase(Locale.ROOT);
         if (giaTri.isEmpty()) {
             maVoucher = "";
             giaTriVoucher = 0;
+            thongBaoThayDoi();
             return null;
         }
         try {
             long soTien = chinhSach.kiemTraVoucher(giaTri, maKhachHang, kieuNguon, tinhTamTinh());
             maVoucher = giaTri;
             giaTriVoucher = soTien;
+            thongBaoThayDoi();
             return null;
         } catch (IllegalArgumentException loi) {
             return loi.getMessage();
@@ -717,5 +744,6 @@ public final class GioHang {
         tenKhachHang = "";
         khachHangDiem = 0;
         diemDaDung = 0;
+        thongBaoThayDoi();
     }
 }

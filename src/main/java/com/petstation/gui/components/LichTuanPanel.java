@@ -1017,7 +1017,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                     giaTri.get("reason"),
                     "Đổi " + giaTri.get("my_shift"),
                     "Đổi với " + giaTri.get("target_staff"),
-                    "SHIFT_SWAP",
+                    "NGHI_PHEP",
                     com.petstation.service.PhienDangNhapService.layIdNhanVien(),
                     giaTri.get("target_staff"));
             HopThoai.hienThiThanhCong(this, "Đã gửi yêu cầu đổi ca đến Cửa hàng trưởng.");

@@ -38,7 +38,7 @@ public final class DeXuatGiaService {
                             lyDo,
                             ma + ": " + cu,
                             ma + ": " + gia,
-                            "PRICE_CHANGE",
+                            "DOI_GIA",
                             id,
                             "");
                 });

@@ -33,7 +33,7 @@ public class PhienLamViec implements Serializable {
 
     /** Constructor mặc định. */
     public PhienLamViec() {
-        this.trangThai = "OPEN";
+        this.trangThai = "DANG_MO";
         this.moLuc = LocalDateTime.now();
     }
 

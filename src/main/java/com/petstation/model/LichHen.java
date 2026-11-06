@@ -36,7 +36,7 @@ public class LichHen implements Serializable {
 
     /** Constructor mặc định. */
     public LichHen() {
-        this.trangThai = "BOOKED";
+        this.trangThai = "DA_XAC_NHAN";
     }
 
     /** Constructor theo khóa chính nghiệp vụ maLichHen. */

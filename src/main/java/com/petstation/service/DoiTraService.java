@@ -66,7 +66,7 @@ public final class DoiTraService {
     private static DuLieu kiemTra(long dong, int soLuong) {
         if (soLuong <= 0) throw new IllegalArgumentException("Số lượng đổi phải dương.");
         var cacDong = doiHangDAO.timDongGoc(dong);
-        if (cacDong.isEmpty() || !"PAID".equals(cacDong.get(0)[6]))
+        if (cacDong.isEmpty() || !"DA_THANH_TOAN".equals(cacDong.get(0)[6]))
             throw new IllegalArgumentException("Hóa đơn gốc không hợp lệ.");
         Object[] goc = cacDong.get(0);
         if (!"Phụ kiện".equals(goc[7]))
@@ -143,7 +143,7 @@ public final class DoiTraService {
                                             maThayThe, sp.get(0)[1].toString(), gia, soLuongMoi)));
                     Object[] g = dl.goc();
                     gio.datKhachHang(g[8].toString(), g[9].toString(), so(g[10]));
-                    gio.datNguon("EXCHANGE", dong);
+                    gio.datNguon("DOI_HANG", dong);
                     gio.datDoiHang(
                             new GioHang.YeuCauDoiHang(
                                     dong, soLuong, lyDo, dl.giaTri(), g[8].toString()));

@@ -29,21 +29,28 @@ class DonDoiTreoSQLTest {
         try {
             thucHienGiaoDich(c -> {
                 String ma = UUID.randomUUID().toString().substring(0, 8);
-                long nv = them("INSERT nhan_vien(ma_nhan_vien,ho_ten,so_dien_thoai,chuc_vu,ngay_vao_lam)"
-                    + " VALUES(?,N'Test hold',?,N'Thu ngân',GETDATE())", "NV" + ma, ma);
-                long tk = them("INSERT tai_khoan(nhan_vien_id,ten_dang_nhap,mat_khau_hash,vai_tro)"
-                    + " VALUES(?,?,?,'NHAN_VIEN_BAN_HANG')", nv, ma, "test-hash");
-                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk);
+                String maNhanVien = "NV" + ma;
+                capNhat("INSERT INTO nhan_vien(ma_nhan_vien,ho_ten,so_dien_thoai,chuc_vu,ngay_vao_lam)"
+                    + " VALUES(?,N'Test hold',?,N'Thu ngân',GETDATE())", maNhanVien, ma);
+                long nv = com.petstation.util.DuLieu.layIdCauNoi(null, maNhanVien);
+                capNhat("INSERT INTO tai_khoan(ma_nhan_vien,ten_dang_nhap,mat_khau_hash,vai_tro)"
+                    + " VALUES(?,?,?,'NHAN_VIEN_BAN_HANG')", maNhanVien, ma, "test-hash");
+                long tk = com.petstation.util.DuLieu.layIdCauNoi(null, ma);
+                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk); taiKhoan.setTenDangNhap(ma);
+                NhanVien nhanVien = new NhanVien(); nhanVien.setId(nv); nhanVien.setMaNhanVien(maNhanVien);
                 PhienDangNhapService.datPhienDangNhap(new PhienDangNhap(taiKhoan,
-                    new NhanVien(), EnumSet.allOf(Quyen.class)));
+                    nhanVien, EnumSet.allOf(Quyen.class)));
                 maHang = "SP" + ma;
-                long sp = them("INSERT san_pham(ma_san_pham,ten,nhom_hang,don_vi_tinh,gia_ban)"
+                capNhat("INSERT INTO san_pham(ma_san_pham,ten,nhom_hang,don_vi_tinh,gia_ban)"
                     + " VALUES(?,?,N'Phụ kiện',N'Cái',120000)", maHang, "Test " + ma);
+                long sp = com.petstation.util.DuLieu.layIdCauNoi(null, maHang);
                 soHoaDon = "HD" + ma;
-                hoaDon = them("INSERT hoa_don(so_hoa_don,tai_khoan_id,tam_tinh,tong_tien,trang_thai,thanh_toan_luc)"
-                    + " VALUES(?,?,200000,200000,'PAID',SYSDATETIME())", soHoaDon, tk);
-                dong = them("INSERT chi_tiet_hoa_don(hoa_don_id,san_pham_id,so_luong,don_gia)"
-                    + " VALUES(?,?,2,100000)", hoaDon, sp);
+                capNhat("INSERT INTO hoa_don(ma_hoa_don,ten_dang_nhap,tam_tinh,tong_tien,trang_thai,thanh_toan_luc)"
+                    + " VALUES(?,?,200000,200000,'DA_THANH_TOAN',SYSDATETIME())", soHoaDon, ma);
+                hoaDon = com.petstation.util.DuLieu.layIdCauNoi(null, soHoaDon);
+                capNhat("INSERT INTO chi_tiet_hoa_don(ma_hoa_don,ma_san_pham,so_luong,don_gia)"
+                    + " VALUES(?,?,2,100000)", soHoaDon, maHang);
+                dong = sp;
                 viec.run();
                 throw new HoanTac();
             });
@@ -77,7 +84,7 @@ class DonDoiTreoSQLTest {
             DoiTraService.lapDoiHang(gio, dong, 1, maHang, 1, "Đổi cỡ");
             gio.xacNhanDaNhanTien(PhuongThuc.CHUYEN_KHOAN, true);
             long id = BanHangService.treo(gio);
-            assertThat(gio.layKieuNguon()).isEqualTo("EXCHANGE");
+            assertThat(gio.layKieuNguon()).isEqualTo("DOI_HANG");
             gio.xoa();
             var nhap = DonDoiTreoService.lay(id);
             assertThat(nhap.dongGoc()).isEqualTo(dong);
@@ -86,7 +93,7 @@ class DonDoiTreoSQLTest {
             assertThat(DonDoiTreoService.lay(id)).isNotNull();
             capNhat("UPDATE san_pham SET gia_ban=140000 WHERE ma_san_pham=?", maHang);
             DonDoiTreoService.chuyenThanhToan(id, gio, nhap.dongGoc(), nhap.soLuong(), nhap.maThayThe(), nhap.lyDo());
-            assertThat(gio.layKieuNguon()).isEqualTo("EXCHANGE");
+            assertThat(gio.layKieuNguon()).isEqualTo("DOI_HANG");
             assertThat(gio.tinhTong()).isEqualTo(40000);
             assertThat(gio.kiemTraDaNhanTien(PhuongThuc.CHUYEN_KHOAN)).isFalse();
             assertThat(DonDoiTreoService.lay(id)).isNull();
@@ -108,7 +115,7 @@ class DonDoiTreoSQLTest {
             assertThat(gio.layCacDong()).hasSize(1);
             assertThat(DonDoiTreoService.lay(id)).isNotNull();
             gio.xoa();
-            capNhat("UPDATE hoa_don SET thanh_toan_luc=DATEADD(hour,-73,SYSDATETIME()) WHERE id=?", hoaDon);
+            capNhat("UPDATE hoa_don SET thanh_toan_luc=DATEADD(hour,-73,SYSDATETIME()) WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", hoaDon, hoaDon);
             assertThatThrownBy(() -> DonDoiTreoService.chuyenThanhToan(id, gio, dong, 1, maHang, "Đổi"))
                 .hasMessageContaining("72 giờ");
             assertThat(DonDoiTreoService.lay(id)).isNotNull();
@@ -122,7 +129,7 @@ class DonDoiTreoSQLTest {
             GioHang gio = GioHangService.tao();
             gio.datCacDong(java.util.List.of(new GioHang.DongHang(maHang, "Phụ kiện", 120000, 1)));
             long id = BanHangService.treo(gio);
-            capNhat("UPDATE hoa_don SET ghi_chu=N'Khách đang đi lựa' WHERE id=?", id);
+            capNhat("UPDATE hoa_don SET ghi_chu=N'Khách đang đi lựa' WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id);
             assertThat(DonDoiTreoService.lay(id)).isNull();
             gio.xoa();
             BanHangService.moLai(id, gio);

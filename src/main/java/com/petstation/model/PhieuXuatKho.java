@@ -10,16 +10,17 @@ import com.petstation.util.DuLieu;
 /**
  * Thực thể Phiếu xuất kho khớp bảng [phieu_xuat_kho].
  * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là số phiếu (soPhieu). Đã bỏ thuộc tính id.
+ * - Khóa chính chuẩn hóa là mã phiếu xuất (maPhieuXuat / soPhieu).
  * - Quan hệ kết hợp với TaiKhoan (người lập phiếu) và danh sách ChiTietPhieuXuat.
- * - Có phương thức tính tổng giá trị xuất dẫn xuất và equals/hashCode theo khóa chính soPhieu.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
+ * - Thuộc tính dẫn xuất: tongGiaTri được tính động qua getTongGiaTri() / tinhTongGiaTri()
+ *   tuyệt đối KHÔNG có setter công khai.
+ * - Equals/hashCode chỉ theo khóa chính.
  */
 public class PhieuXuatKho implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Phiếu xuất kho */
-    private String soPhieu;
+    /** Khóa chính nghiệp vụ của Phiếu xuất kho (ma_phieu_xuat) */
+    private String maPhieuXuat;
     /** Quan hệ kết hợp: Tài khoản nhân viên lập phiếu xuất kho. */
     private TaiKhoan nguoiLap;
     /** Quan hệ 1-nhiều: Danh sách dòng chi tiết xuất kho. */
@@ -27,20 +28,20 @@ public class PhieuXuatKho implements Serializable {
 
     private String loaiXuat;
     private String lyDo;
-    private long tongGiaTri;
+    private long tongGiaTri; // snapshot từ CSDL khi chưa load danh sách chi tiết
     private String trangThai;
     private LocalDateTime taoLuc;
 
     /** Constructor mặc định. */
     public PhieuXuatKho() {
-        this.trangThai = "COMPLETED";
+        this.trangThai = "DA_XUAT";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ soPhieu. */
-    public PhieuXuatKho(String soPhieu) {
+    /** Constructor theo khóa chính nghiệp vụ maPhieuXuat. */
+    public PhieuXuatKho(String maPhieuXuat) {
         this();
-        setSoPhieu(soPhieu);
+        setMaPhieuXuat(maPhieuXuat);
     }
 
     /** Constructor cầu nối nhận id từ DAO. */
@@ -49,15 +50,15 @@ public class PhieuXuatKho implements Serializable {
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính soPhieu. */
+    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính maPhieuXuat. */
     public PhieuXuatKho(
-            String soPhieu,
+            String maPhieuXuat,
             TaiKhoan nguoiLap,
             String loaiXuat,
             String lyDo,
             String trangThai,
             LocalDateTime taoLuc) {
-        setSoPhieu(soPhieu);
+        setMaPhieuXuat(maPhieuXuat);
         setNguoiLap(nguoiLap);
         setLoaiXuat(loaiXuat);
         setLyDo(lyDo);
@@ -68,28 +69,28 @@ public class PhieuXuatKho implements Serializable {
     /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public PhieuXuatKho(
             long id,
-            String soPhieu,
+            String maPhieuXuat,
             TaiKhoan nguoiLap,
             String loaiXuat,
             String lyDo,
             String trangThai,
             LocalDateTime taoLuc) {
-        this(soPhieu, nguoiLap, loaiXuat, lyDo, trangThai, taoLuc);
+        this(maPhieuXuat, nguoiLap, loaiXuat, lyDo, trangThai, taoLuc);
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
+    /** Constructor cầu nối tương thích ngược với tầng DAO (nhận snapshot tổng giá trị). */
     public PhieuXuatKho(
             long id,
-            String soPhieu,
+            String maPhieuXuat,
             long nguoiLapId,
             String loaiXuat,
             String lyDo,
             long tongGiaTri,
             String trangThai,
             LocalDateTime taoLuc) {
-        this(id, soPhieu, new TaiKhoan(nguoiLapId), loaiXuat, lyDo, trangThai, taoLuc);
-        setTongGiaTri(tongGiaTri);
+        this(id, maPhieuXuat, new TaiKhoan(nguoiLapId), loaiXuat, lyDo, trangThai, taoLuc);
+        this.tongGiaTri = Math.max(0L, tongGiaTri);
     }
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
@@ -108,14 +109,27 @@ public class PhieuXuatKho implements Serializable {
         return Math.max(0L, this.tongGiaTri);
     }
 
+    /** Thuộc tính dẫn xuất: Không có setter để đảm bảo tính toàn vẹn dữ liệu. */
+    public long getTongGiaTri() {
+        return tinhTongGiaTri();
+    }
+
+    public long layTongGiaTri() {
+        return tinhTongGiaTri();
+    }
+
+    public long tongGiaTri() {
+        return tinhTongGiaTri();
+    }
+
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.soPhieu);
+        return DuLieu.layIdCauNoiObj(this, getMaPhieuXuat());
     }
 
     public long layId() {
-        return DuLieu.layIdCauNoi(this, this.soPhieu);
+        return DuLieu.layIdCauNoi(this, getMaPhieuXuat());
     }
 
     public long id() {
@@ -124,8 +138,8 @@ public class PhieuXuatKho implements Serializable {
 
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-        if ((this.soPhieu == null || this.soPhieu.isBlank()) && id > 0) {
-            this.soPhieu = DuLieu.taoMaTuId("PX", 8, id);
+        if ((this.maPhieuXuat == null || this.maPhieuXuat.isBlank()) && id > 0) {
+            this.maPhieuXuat = DuLieu.taoMaTuId("PX", 8, id);
         }
     }
 
@@ -135,24 +149,45 @@ public class PhieuXuatKho implements Serializable {
 
     // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
+    public String getMaPhieuXuat() {
+        return this.maPhieuXuat;
+    }
+
+    public String layMaPhieuXuat() {
+        return this.maPhieuXuat;
+    }
+
+    public String maPhieuXuat() {
+        return this.maPhieuXuat;
+    }
+
+    public void setMaPhieuXuat(String maPhieuXuat) {
+        this.maPhieuXuat = maPhieuXuat == null ? null : maPhieuXuat.trim();
+    }
+
+    public void datMaPhieuXuat(String maPhieuXuat) {
+        setMaPhieuXuat(maPhieuXuat);
+    }
+
+    // Alias soPhieu tương thích ngược
     public String getSoPhieu() {
-        return this.soPhieu;
+        return getMaPhieuXuat();
     }
 
     public String laySoPhieu() {
-        return this.soPhieu;
+        return getMaPhieuXuat();
     }
 
     public String soPhieu() {
-        return this.soPhieu;
+        return getMaPhieuXuat();
     }
 
     public void setSoPhieu(String soPhieu) {
-        this.soPhieu = soPhieu == null ? null : soPhieu.trim();
+        setMaPhieuXuat(soPhieu);
     }
 
     public void datSoPhieu(String soPhieu) {
-        setSoPhieu(soPhieu);
+        setMaPhieuXuat(soPhieu);
     }
 
     public TaiKhoan getNguoiLap() {
@@ -171,23 +206,23 @@ public class PhieuXuatKho implements Serializable {
         setNguoiLap(nguoiLap);
     }
 
-    public long getNguoiLapId() {
-        return nguoiLap == null ? 0L : nguoiLap.getId();
+    public Long getNguoiLapId() {
+        return nguoiLap == null ? null : nguoiLap.getId();
     }
 
-    public long layNguoiLapId() {
+    public Long layNguoiLapId() {
         return getNguoiLapId();
     }
 
-    public long nguoiLapId() {
+    public Long nguoiLapId() {
         return getNguoiLapId();
     }
 
-    public void setNguoiLapId(long nguoiLapId) {
-        this.nguoiLap = new TaiKhoan(nguoiLapId);
+    public void setNguoiLapId(Long nguoiLapId) {
+        this.nguoiLap = nguoiLapId == null ? null : new TaiKhoan(nguoiLapId);
     }
 
-    public void datNguoiLapId(long nguoiLapId) {
+    public void datNguoiLapId(Long nguoiLapId) {
         setNguoiLapId(nguoiLapId);
     }
 
@@ -195,8 +230,19 @@ public class PhieuXuatKho implements Serializable {
         return this.danhSachChiTiet;
     }
 
+    public List<ChiTietPhieuXuat> layDanhSachChiTiet() {
+        return this.danhSachChiTiet;
+    }
+
     public void setDanhSachChiTiet(List<ChiTietPhieuXuat> danhSachChiTiet) {
         this.danhSachChiTiet = danhSachChiTiet == null ? new ArrayList<>() : new ArrayList<>(danhSachChiTiet);
+    }
+
+    public void themChiTietPhieuXuat(ChiTietPhieuXuat chiTiet) {
+        if (chiTiet == null) return;
+        if (this.danhSachChiTiet == null) this.danhSachChiTiet = new ArrayList<>();
+        chiTiet.setPhieuXuat(this);
+        this.danhSachChiTiet.add(chiTiet);
     }
 
     public String getLoaiXuat() {
@@ -237,28 +283,6 @@ public class PhieuXuatKho implements Serializable {
 
     public void datLyDo(String lyDo) {
         setLyDo(lyDo);
-    }
-
-    public long getTongGiaTri() {
-        return this.tongGiaTri;
-    }
-
-    public long layTongGiaTri() {
-        return this.tongGiaTri;
-    }
-
-    public long tongGiaTri() {
-        return this.tongGiaTri;
-    }
-
-    public void setTongGiaTri(long tongGiaTri) {
-        if (tongGiaTri < 0)
-            throw new IllegalArgumentException("Tổng giá trị xuất kho không được âm.");
-        this.tongGiaTri = tongGiaTri;
-    }
-
-    public void datTongGiaTri(long tongGiaTri) {
-        setTongGiaTri(tongGiaTri);
     }
 
     public String getTrangThai() {
@@ -310,16 +334,17 @@ public class PhieuXuatKho implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         PhieuXuatKho that = (PhieuXuatKho) o;
-        return Objects.equals(this.soPhieu, that.soPhieu);
+        return Objects.equals(this.getMaPhieuXuat(), that.getMaPhieuXuat());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(soPhieu);
+        return Objects.hash(getMaPhieuXuat());
     }
 
     @Override
     public String toString() {
-        return "PhieuXuatKho{" + "soPhieu='" + soPhieu + '\'' + ", nguoiLapId=" + getNguoiLapId() + ", loaiXuat='" + loaiXuat + '\'' + ", tongGiaTri=" + tinhTongGiaTri() + '}';
+        return "PhieuXuatKho{" + "maPhieuXuat='" + getMaPhieuXuat() + '\'' + ", nguoiLapId=" + getNguoiLapId()
+                + ", loaiXuat='" + loaiXuat + '\'' + ", tongGiaTri=" + tinhTongGiaTri() + '}';
     }
 }

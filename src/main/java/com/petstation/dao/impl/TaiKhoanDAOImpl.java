@@ -2,6 +2,7 @@ package com.petstation.dao.impl;
 
 import com.petstation.dao.TaiKhoanDAO;
 import com.petstation.model.Quyen;
+import com.petstation.model.NhanVien;
 import com.petstation.model.TaiKhoan;
 import com.petstation.model.TrangThaiTaiKhoan;
 import com.petstation.model.VaiTro;
@@ -22,7 +23,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
             throws Exception {
         // SQL.
         String sql = """
-                SELECT id, nhan_vien_id, ten_dang_nhap, mat_khau_hash, vai_tro, trang_thai,
+                SELECT ten_dang_nhap, ma_nhan_vien, mat_khau_hash, vai_tro, trang_thai,
                        so_lan_dang_nhap_sai, khoa_den, bat_buoc_doi_mat_khau
                 FROM tai_khoan
                 WHERE LOWER(ten_dang_nhap) = LOWER(?)
@@ -38,9 +39,8 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
                 Timestamp khoaDenLuc = ketQua.getTimestamp("khoa_den");
                 return Optional.of(
                         new TaiKhoan(
-                                ketQua.getLong("id"),
-                                ketQua.getLong("nhan_vien_id"),
                                 ketQua.getString("ten_dang_nhap"),
+                                new NhanVien(ketQua.getString("ma_nhan_vien")),
                                 ketQua.getString("mat_khau_hash"),
                                 VaiTro.docTuCSDL(ketQua.getString("vai_tro")),
                                 TrangThaiTaiKhoan.docTuCSDL(ketQua.getString("trang_thai")),
@@ -52,12 +52,12 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     }
 
     @Override
-    public Set<Quyen> timCacQuyen(Connection ketNoi, long idTaiKhoan) throws Exception {
-        String sql = "SELECT vai_tro, quyen FROM tai_khoan WHERE id = ?";
+    public Set<Quyen> timCacQuyen(Connection ketNoi, String tenDangNhap) throws Exception {
+        String sql = "SELECT vai_tro, quyen FROM tai_khoan WHERE ten_dang_nhap = ?";
         Set<Quyen> cacQuyen = EnumSet.noneOf(Quyen.class);
         String tenVaiTro = null;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setLong(1, idTaiKhoan);
+            cauLenh.setString(1, tenDangNhap);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
                 if (ketQua.next()) {
                     tenVaiTro = ketQua.getString("vai_tro");
@@ -98,10 +98,10 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
                     SELECT vtq.ma_quyen
                     FROM tai_khoan tk
                     JOIN vai_tro_quyen vtq ON vtq.vai_tro = tk.vai_tro
-                    WHERE tk.id = ?
+                    WHERE tk.ten_dang_nhap = ?
                     """;
             try (PreparedStatement cauLenhFallback = ketNoi.prepareStatement(sqlFallback)) {
-                cauLenhFallback.setLong(1, idTaiKhoan);
+                cauLenhFallback.setString(1, tenDangNhap);
                 try (ResultSet rs = cauLenhFallback.executeQuery()) {
                     while (rs.next()) {
                         try {
@@ -119,40 +119,41 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
 
     @Override
     public void ghiNhanDangNhapThatBai(
-            Connection ketNoi, long idTaiKhoan, int soLuongThatBai, LocalDateTime khoaDenLuc)
+            Connection ketNoi, String tenDangNhap, int soLuongThatBai, LocalDateTime khoaDenLuc)
             throws Exception {
         // SQL.
-        String sql = "UPDATE tai_khoan SET so_lan_dang_nhap_sai = ?, khoa_den = ? WHERE id = ?";
+        String sql = "UPDATE tai_khoan SET so_lan_dang_nhap_sai = ?, khoa_den = ? WHERE ten_dang_nhap = ?";
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setInt(1, soLuongThatBai);
             cauLenh.setTimestamp(2, khoaDenLuc == null ? null : Timestamp.valueOf(khoaDenLuc));
-            cauLenh.setLong(3, idTaiKhoan);
+            cauLenh.setString(3, tenDangNhap);
             cauLenh.executeUpdate();
         }
     }
 
     @Override
-    public void ghiNhanDangNhapThanhCong(Connection ketNoi, long idTaiKhoan) throws Exception {
+    public void ghiNhanDangNhapThanhCong(Connection ketNoi, String tenDangNhap) throws Exception {
         // SQL.
         String sql = """
                 UPDATE tai_khoan
                 SET so_lan_dang_nhap_sai = 0, khoa_den = NULL, dang_nhap_cuoi = SYSUTCDATETIME()
-                WHERE id = ?
+                WHERE ten_dang_nhap = ?
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setLong(1, idTaiKhoan);
+            cauLenh.setString(1, tenDangNhap);
             cauLenh.executeUpdate();
         }
     }
 
     public Object layMaBamMatKhau(Object... cacThamSo) {
         return com.petstation.database.ThaoTacSQL.layGiaTriDon(
-                "SELECT mat_khau_hash FROM tai_khoan WITH(UPDLOCK,HOLDLOCK) WHERE id=?", cacThamSo);
+                "SELECT mat_khau_hash FROM tai_khoan WITH(UPDLOCK,HOLDLOCK) WHERE ten_dang_nhap=?",
+                cacThamSo);
     }
 
     public int capNhatMatKhau(Object... cacThamSo) {
         return com.petstation.database.ThaoTacSQL.capNhat(
-                "UPDATE tai_khoan SET mat_khau_hash=?,bat_buoc_doi_mat_khau=0 WHERE id=?",
+                "UPDATE tai_khoan SET mat_khau_hash=?,bat_buoc_doi_mat_khau=0 WHERE ten_dang_nhap=?",
                 cacThamSo);
     }
 }

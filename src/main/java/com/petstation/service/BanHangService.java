@@ -63,7 +63,6 @@ public final class BanHangService {
         final List<DongThuTien> khoanThu = List.copyOf(cacKhoanThu);
         return thucHienGiaoDich(
                 ketNoi -> {
-                    // Hiện có.
                     Object hienCo = banHangDAO.timHoaDonTheoKhoaThu(banHang.layKhoaThanhToan());
                     if (hienCo != null) return layBienLai(chuyenThanhChuoi(hienCo));
                     if (banHang.kiemTraTrong())
@@ -79,7 +78,7 @@ public final class BanHangService {
                         throw new IllegalStateException("Ngày đã chốt, không thể ghi giao dịch.");
                     // Khách hàng.
                     long phieuDoi =
-                            "EXCHANGE".equals(banHang.layKieuNguon())
+                            "DOI_HANG".equals(banHang.layKieuNguon())
                                     ? DoiTraService.chuanBi(banHang)
                                     : 0;
                     Long khachHang =
@@ -157,13 +156,13 @@ public final class BanHangService {
                         // Sản phẩm.
                         Long sanPham = null;
                         if (banHang.layKieuNguon().isBlank()
-                                || "EXCHANGE".equals(banHang.layKieuNguon())) {
+                                || "DOI_HANG".equals(banHang.layKieuNguon())) {
                             // Các sản phẩm.
                             List<Object[]> cacSanPham = banHangDAO.khoaSanPhamDeBan(dong.ma());
-                            if (cacSanPham.isEmpty() || !"SELLING".equals(cacSanPham.get(0)[2]))
+                            if (cacSanPham.isEmpty() || !"DANG_BAN".equals(cacSanPham.get(0)[2]))
                                 throw new IllegalArgumentException(
                                         "Sản phẩm " + dong.ma() + " không còn bán.");
-                            sanPham = ((Number) cacSanPham.get(0)[0]).longValue();
+                            sanPham = layIdCauNoi(null, chuyenThanhChuoi(cacSanPham.get(0)[0]));
                             if (((Number) cacSanPham.get(0)[1]).longValue() != dong.donGia())
                                 throw new IllegalArgumentException(
                                         "Giá sản phẩm "
@@ -211,7 +210,7 @@ public final class BanHangService {
                                     "Phiếu Spa chưa hoàn thành hoặc số tiền đã thay đổi.");
                         if (banHangDAO.ganHoaDonSpa(hoaDon, banHang.layIdNguon()) != 1)
                             throw new IllegalStateException("Phiếu Spa đã thanh toán.");
-                    } else if ("HOTEL".equals(banHang.layKieuNguon())) {
+                    } else if ("HOTEL".equals(banHang.layKieuNguon()) || "LUU_TRU".equals(banHang.layKieuNguon())) {
                         // Dự kiến.
                         long duKien = LuuTruService.tinhTienLuuTruConLai(banHang.layIdNguon());
                         if (duKien != banHang.tinhTamTinh())
@@ -280,7 +279,7 @@ public final class BanHangService {
 
     public static long treo(GioHang banHang) {
         yeuCau(Quyen.BAN_HANG);
-        if ("EXCHANGE".equals(banHang.layKieuNguon())) return DonDoiTreoService.treo(banHang);
+        if ("DOI_HANG".equals(banHang.layKieuNguon())) return DonDoiTreoService.treo(banHang);
         if (banHang.kiemTraTrong()) throw new IllegalArgumentException("Giỏ hàng trống.");
         if (!banHang.layKieuNguon().isBlank())
             throw new IllegalArgumentException(
@@ -370,7 +369,7 @@ public final class BanHangService {
                                 layGiaTri(dongDuLieu[2]),
                                 ((Number) dongDuLieu[3]).intValue()));
             khachHang = banHangDAO.layKhachCuaPhieuSpa(id);
-        } else if (loai.equals("HOTEL")) {
+        } else if (loai.equals("HOTEL") || loai.equals("LUU_TRU")) {
             yeuCau(Quyen.QUAN_LY_LUU_TRU);
             // Còn phải thu.
             long conPhaiThu = LuuTruService.tinhTienLuuTruConLai(id);

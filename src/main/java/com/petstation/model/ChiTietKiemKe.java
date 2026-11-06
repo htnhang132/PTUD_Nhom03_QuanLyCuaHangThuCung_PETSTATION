@@ -71,9 +71,17 @@ public class ChiTietKiemKe implements Serializable {
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
 
-    /** Tính chênh lệch kiểm kê (thuộc tính dẫn xuất: tonThucTe - tonHeThong). */
+    /** Tính chênh lệch kiểm kê (thuộc tính dẫn xuất: tonThucTe - tonHeThong - không có setter). */
     public int tinhChenhLech() {
         return tonThucTe - tonHeThong;
+    }
+
+    public int getChenhLech() {
+        return tinhChenhLech();
+    }
+
+    public int layChenhLech() {
+        return tinhChenhLech();
     }
 
     /**

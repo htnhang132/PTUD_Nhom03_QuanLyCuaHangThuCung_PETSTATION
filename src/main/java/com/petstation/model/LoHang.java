@@ -35,7 +35,7 @@ public class LoHang implements Serializable {
     /** Constructor mặc định. */
     public LoHang() {
         this.ngayNhap = LocalDate.now();
-        this.trangThai = "AVAILABLE";
+        this.trangThai = "SAN_SANG";
     }
 
     /** Constructor theo khóa chính nghiệp vụ maLo. */

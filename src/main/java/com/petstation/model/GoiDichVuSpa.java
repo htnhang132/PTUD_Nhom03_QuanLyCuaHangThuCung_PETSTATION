@@ -23,7 +23,7 @@ public class GoiDichVuSpa implements Serializable {
 
     /** Constructor mặc định. */
     public GoiDichVuSpa() {
-        this.trangThai = "ACTIVE";
+        this.trangThai = "HOAT_DONG";
     }
 
     /** Constructor chỉ có khóa chính. */
@@ -82,7 +82,7 @@ public class GoiDichVuSpa implements Serializable {
 
     /** Kiểm tra gói dịch vụ còn đang mở phục vụ hay không (dẫn xuất). */
     public boolean kiemTraDangPhucVu() {
-        return trangThai == null || "ACTIVE".equalsIgnoreCase(trangThai) || "Đang áp dụng".equalsIgnoreCase(trangThai);
+        return trangThai == null || "HOAT_DONG".equalsIgnoreCase(trangThai) || "Đang áp dụng".equalsIgnoreCase(trangThai) || "Đang hoạt động".equalsIgnoreCase(trangThai);
     }
 
     // ==================== GETTER & SETTER ====================

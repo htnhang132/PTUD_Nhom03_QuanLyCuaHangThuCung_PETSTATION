@@ -171,9 +171,9 @@ public final class InHoaDonPanel extends CoSoPanel {
         boGhepChuoi
                 .append(
                         layGiua(
-                                nguon.loai().equals("EXCHANGE")
+                                nguon.loai().equals("DOI_HANG")
                                         ? "Đổi hàng — thu chênh lệch"
-                                        : nguon.loai().equals("HOTEL")
+                                        : nguon.loai().equals("LUU_TRU")
                                                 ? "Quyết toán Hotel"
                                                 : "Hóa đơn bán hàng"))
                 .append('\n');
@@ -191,7 +191,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         if (!nguon.ma().isBlank()) boGhepChuoi.append("Nguồn : ").append(nguon.ma()).append('\n');
         if (!nguon.hoaDonGoc().isBlank())
             boGhepChuoi.append("HĐ gốc: ").append(nguon.hoaDonGoc()).append('\n');
-        if (nguon.loai().equals("HOTEL"))
+        if (nguon.loai().equals("LUU_TRU"))
             boGhepChuoi
                     .append(layCap("Tiền cọc đã trừ", TienTe.dinhDang(nguon.daCanTru())))
                     .append('\n');
@@ -214,7 +214,7 @@ public final class InHoaDonPanel extends CoSoPanel {
             boGhepChuoi
                     .append(
                             layCap(
-                                    (nguon.loai().equals("EXCHANGE")
+                                    (nguon.loai().equals("DOI_HANG")
                                                     ? "Giá trị hàng được đổi"
                                                     : "Giảm giá")
                                             + (dongDuLieu.voucher().isEmpty()
@@ -304,11 +304,11 @@ public final class InHoaDonPanel extends CoSoPanel {
         if (bienLai.giamGia() > 0)
             themTong(
                     html,
-                    nguon.loai().equals("EXCHANGE")
+                    nguon.loai().equals("DOI_HANG")
                             ? "Giá trị hàng được đổi"
                             : "Giảm giá " + bienLai.voucher(),
                     -bienLai.giamGia());
-        if (nguon.loai().equals("HOTEL")) themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
+        if (nguon.loai().equals("LUU_TRU")) themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
         themTong(html, "TỔNG THANH TOÁN", bienLai.tong());
         String phuongThuc =
                 switch (bienLai.phuongThuc()) {

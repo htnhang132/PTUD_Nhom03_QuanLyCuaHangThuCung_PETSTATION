@@ -42,7 +42,7 @@ public class PhieuTiepNhanSpa implements Serializable {
     /** Constructor mặc định. */
     public PhieuTiepNhanSpa() {
         this.soLuong = 1;
-        this.trangThai = "WAITING";
+        this.trangThai = "TIEP_NHAN";
         this.taoLuc = LocalDateTime.now();
     }
 
@@ -145,7 +145,7 @@ public class PhieuTiepNhanSpa implements Serializable {
                 ghiChu,
                 anh,
                 hoaDonId == null ? null : new HoaDon(hoaDonId));
-        setTongTien(tongTien);
+        this.tongTien = Math.max(0L, tongTien);
     }
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
@@ -403,25 +403,20 @@ public class PhieuTiepNhanSpa implements Serializable {
     }
 
     public long getTongTien() {
-        return this.tongTien;
+        return tinhTongTien();
     }
 
     public long layTongTien() {
-        return this.tongTien;
+        return tinhTongTien();
     }
 
     public long tongTien() {
-        return this.tongTien;
+        return tinhTongTien();
     }
 
-    public void setTongTien(long tongTien) {
-        if (tongTien < 0)
-            throw new IllegalArgumentException("Tổng tiền phiếu Spa không được âm.");
-        this.tongTien = tongTien;
-    }
-
-    public void datTongTien(long tongTien) {
-        setTongTien(tongTien);
+    /** Phương thức nội bộ gán snapshot từ CSDL (không cung cấp setter công khai vì thuộc tính dẫn xuất). */
+    void napTongTienSnapshot(long tongTien) {
+        this.tongTien = Math.max(0L, tongTien);
     }
 
     public String getTrangThai() {
@@ -574,6 +569,22 @@ public class PhieuTiepNhanSpa implements Serializable {
 
     public void datHoaDonId(Long hoaDonId) {
         setHoaDonId(hoaDonId);
+    }
+
+    public String getMaHoaDon() {
+        return hoaDon == null ? null : hoaDon.getMaHoaDon();
+    }
+
+    public void setMaHoaDon(String maHoaDon) {
+        this.hoaDon = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
+    }
+
+    public String getSoHoaDon() {
+        return getMaHoaDon();
+    }
+
+    public void setSoHoaDon(String soHoaDon) {
+        setMaHoaDon(soHoaDon);
     }
 
     // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================

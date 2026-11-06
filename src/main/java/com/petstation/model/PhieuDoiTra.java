@@ -41,7 +41,7 @@ public class PhieuDoiTra implements Serializable {
 
     /** Constructor mặc định. */
     public PhieuDoiTra() {
-        this.trangThai = "COMPLETED";
+        this.trangThai = "HOAN_TAT";
         this.taoLuc = LocalDateTime.now();
     }
 

@@ -25,19 +25,22 @@ class PhieuSpaTreoSQLTest {
         try {
             thucHienGiaoDich(c -> {
                 String ma = UUID.randomUUID().toString().substring(0, 8);
-                long nv = them("INSERT nhan_vien(ma_nhan_vien,ho_ten,so_dien_thoai,chuc_vu,ngay_vao_lam)"
-                    + " VALUES(?,N'Test Spa',?,N'Spa',GETDATE())", "NV" + ma, ma);
-                long tk = them("INSERT tai_khoan(nhan_vien_id,ten_dang_nhap,mat_khau_hash,vai_tro)"
-                    + " VALUES(?,?,?,'NHAN_VIEN_SPA_HOTEL')", nv, ma, "test-hash");
-                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk);
-                NhanVien nhanVien = new NhanVien(); nhanVien.setId(nv);
+                String maNhanVien = "NV" + ma;
+                capNhat("INSERT INTO nhan_vien(ma_nhan_vien,ho_ten,so_dien_thoai,chuc_vu,ngay_vao_lam)"
+                    + " VALUES(?,N'Test Spa',?,N'Spa',GETDATE())", maNhanVien, ma);
+                long nv = com.petstation.util.DuLieu.layIdCauNoi(null, maNhanVien);
+                capNhat("INSERT INTO tai_khoan(ma_nhan_vien,ten_dang_nhap,mat_khau_hash,vai_tro)"
+                    + " VALUES(?,?,?,'NHAN_VIEN_SPA_HOTEL')", maNhanVien, ma, "test-hash");
+                long tk = com.petstation.util.DuLieu.layIdCauNoi(null, ma);
+                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk); taiKhoan.setTenDangNhap(ma);
+                NhanVien nhanVien = new NhanVien(); nhanVien.setId(nv); nhanVien.setMaNhanVien(maNhanVien);
                 PhienDangNhapService.datPhienDangNhap(new PhienDangNhap(taiKhoan, nhanVien, EnumSet.allOf(Quyen.class)));
                 maKhach = "KH" + ma; maThu = "TC" + ma; maGoi = "GOI" + ma;
-                long khach = them("INSERT khach_hang(ma_khach_hang,ho_ten,so_dien_thoai) VALUES(?,N'Test Spa',?)",
+                capNhat("INSERT INTO khach_hang(ma_khach_hang,ho_ten,so_dien_thoai) VALUES(?,N'Test Spa',?)",
                     maKhach, "09" + ma);
-                them("INSERT thu_cung(ma_thu_cung,khach_hang_id,ten,loai,ngay_sinh,so_mui_tiem,ngay_tiem_gan_nhat)"
-                    + " VALUES(?,?,N'Test pet','DOG',DATEADD(month,-6,GETDATE()),2,DATEADD(day,-30,GETDATE()))", maThu, khach);
-                them("INSERT goi_dich_vu_spa(ma_goi,ten_goi,thoi_gian_du_kien,bang_gia) VALUES(?,?,60,'DOG:0-100:150000')",
+                capNhat("INSERT INTO thu_cung(ma_thu_cung,ma_khach_hang,ten,loai,ngay_sinh,so_mui_tiem,ngay_tiem_gan_nhat)"
+                    + " VALUES(?,?,N'Test pet',N'Chó',DATEADD(month,-6,GETDATE()),2,DATEADD(day,-30,GETDATE()))", maThu, maKhach);
+                capNhat("INSERT INTO goi_dich_vu_spa(ma_goi,ten_goi,thoi_gian_du_kien,bang_gia) VALUES(?,?,60,'DOG:0-100:150000')",
                     maGoi, "Test service " + ma);
                 viec.run();
                 throw new HoanTac();
@@ -86,7 +89,7 @@ class PhieuSpaTreoSQLTest {
         tinhHuong(() -> {
             long id = PhieuSpaTreoService.treo(0, nhap());
             long phieu = PhieuSpaTreoService.taoPhieu(id, maThu, maGoi, "", 5.2, "Bình thường", "Giữ vòng cổ");
-            assertThat(laySo("SELECT COUNT(*) FROM phieu_tiep_nhan_spa WHERE id=?", phieu)).isEqualTo(1);
+            assertThat(laySo("SELECT COUNT(*) FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", phieu, phieu)).isEqualTo(1);
             assertThatThrownBy(() -> PhieuSpaTreoService.lay(id)).hasMessageContaining("đã được tạo hoặc xóa");
             assertThatThrownBy(() -> PhieuSpaTreoService.taoPhieu(id, maThu, maGoi, "", 5.2, "Bình thường", ""))
                 .hasMessageContaining("đã được tạo hoặc xóa");

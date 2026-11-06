@@ -6,13 +6,13 @@ import java.util.Objects;
 
 /**
  * Thực thể Nhà cung cấp khớp bảng [nha_cung_cap].
- * Khóa chính: maNcc.
+ * Khóa chính: maNhaCungCap (alias: maNcc).
  */
 public class NhaCungCap implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** Khóa chính (PK): Mã nhà cung cấp (ví dụ: NCC0001). */
-    private String maNcc;
+    private String maNhaCungCap;
     private String ten;
     private String soDienThoai;
     private String diaChi;
@@ -29,14 +29,14 @@ public class NhaCungCap implements Serializable {
     }
 
     /** Constructor chỉ có khóa chính. */
-    public NhaCungCap(String maNcc) {
+    public NhaCungCap(String maNhaCungCap) {
         this();
-        setMaNcc(maNcc);
+        setMaNhaCungCap(maNhaCungCap);
     }
 
     /** Constructor đầy đủ thuộc tính thường. */
     public NhaCungCap(
-            String maNcc,
+            String maNhaCungCap,
             String ten,
             String soDienThoai,
             String diaChi,
@@ -47,7 +47,7 @@ public class NhaCungCap implements Serializable {
             String maSoThue,
             String dieuKhoan) {
         this();
-        setMaNcc(maNcc);
+        setMaNhaCungCap(maNhaCungCap);
         setTen(ten);
         setSoDienThoai(soDienThoai);
         setDiaChi(diaChi);
@@ -67,7 +67,7 @@ public class NhaCungCap implements Serializable {
 
     public NhaCungCap(
             long id,
-            String maNcc,
+            String maNhaCungCap,
             String ten,
             String soDienThoai,
             String diaChi,
@@ -77,7 +77,7 @@ public class NhaCungCap implements Serializable {
             String trangThai,
             String maSoThue,
             String dieuKhoan) {
-        this(maNcc, ten, soDienThoai, diaChi, nguoiDaiDien, nhomMatHang, ghiChu, trangThai, maSoThue, dieuKhoan);
+        this(maNhaCungCap, ten, soDienThoai, diaChi, nguoiDaiDien, nhomMatHang, ghiChu, trangThai, maSoThue, dieuKhoan);
         setId(id);
     }
 
@@ -86,16 +86,53 @@ public class NhaCungCap implements Serializable {
     /** Kiểm tra nhà cung cấp có đang trong trạng thái hợp tác hay không (dẫn xuất). */
     public boolean kiemTraDangHopTac() {
         return trangThai == null
-                || (!"Ngừng hợp tác".equalsIgnoreCase(trangThai) && !"INACTIVE".equalsIgnoreCase(trangThai));
+                || "DANG_HOP_TAC".equalsIgnoreCase(trangThai)
+                || "Đang hợp tác".equalsIgnoreCase(trangThai)
+                || (!"Ngừng hợp tác".equalsIgnoreCase(trangThai) && !"NGUNG_HOP_TAC".equalsIgnoreCase(trangThai));
     }
 
     // ==================== GETTER & SETTER ====================
 
-    public String getMaNcc() { return this.maNcc; }
-    public String layMaNcc() { return this.maNcc; }
-    public String maNcc() { return this.maNcc; }
-    public void setMaNcc(String maNcc) { this.maNcc = maNcc == null ? null : maNcc.trim(); }
-    public void datMaNcc(String maNcc) { setMaNcc(maNcc); }
+    public String getMaNhaCungCap() {
+        return this.maNhaCungCap;
+    }
+
+    public String layMaNhaCungCap() {
+        return this.maNhaCungCap;
+    }
+
+    public String maNhaCungCap() {
+        return this.maNhaCungCap;
+    }
+
+    public void setMaNhaCungCap(String maNhaCungCap) {
+        this.maNhaCungCap = maNhaCungCap == null ? null : maNhaCungCap.trim();
+    }
+
+    public void datMaNhaCungCap(String maNhaCungCap) {
+        setMaNhaCungCap(maNhaCungCap);
+    }
+
+    // Alias maNcc tương thích ngược
+    public String getMaNcc() {
+        return getMaNhaCungCap();
+    }
+
+    public String layMaNcc() {
+        return getMaNhaCungCap();
+    }
+
+    public String maNcc() {
+        return getMaNhaCungCap();
+    }
+
+    public void setMaNcc(String maNcc) {
+        setMaNhaCungCap(maNcc);
+    }
+
+    public void datMaNcc(String maNcc) {
+        setMaNhaCungCap(maNcc);
+    }
 
     public String getTen() { return this.ten; }
     public String layTen() { return this.ten; }
@@ -153,35 +190,35 @@ public class NhaCungCap implements Serializable {
 
     // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
 
-    public long getId() { return DuLieu.layIdCauNoi(this, maNcc); }
+    public long getId() { return DuLieu.layIdCauNoi(this, maNhaCungCap); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-        if ((this.maNcc == null || this.maNcc.isBlank()) && id > 0) {
-            this.maNcc = DuLieu.taoMaTuId("NCC", 4, id);
+        if ((this.maNhaCungCap == null || this.maNhaCungCap.isBlank()) && id > 0) {
+            this.maNhaCungCap = DuLieu.taoMaTuId("NCC", 4, id);
         }
     }
     public void datId(long id) { setId(id); }
 
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maNcc) ====================
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maNhaCungCap) ====================
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NhaCungCap that = (NhaCungCap) o;
-        return Objects.equals(this.maNcc, that.maNcc);
+        return Objects.equals(this.maNhaCungCap, that.maNhaCungCap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maNcc);
+        return Objects.hash(maNhaCungCap);
     }
 
     @Override
     public String toString() {
-        return "NhaCungCap{" + "maNcc='" + maNcc + '\'' + ", ten='" + ten + '\'' + ", soDienThoai='"
+        return "NhaCungCap{" + "maNhaCungCap='" + maNhaCungCap + '\'' + ", ten='" + ten + '\'' + ", soDienThoai='"
                 + soDienThoai + '\'' + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

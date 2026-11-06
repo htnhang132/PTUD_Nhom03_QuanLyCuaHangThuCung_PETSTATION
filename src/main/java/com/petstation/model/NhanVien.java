@@ -77,7 +77,7 @@ public class NhanVien implements Serializable {
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
 
-    /** Tính tuổi nhân viên (dẫn xuất từ ngaySinh). */
+    /** Tính tuổi nhân viên (thuộc tính dẫn xuất từ ngaySinh - không có setter). */
     public int tinhTuoi() {
         if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
             return 0;
@@ -85,12 +85,28 @@ public class NhanVien implements Serializable {
         return Period.between(ngaySinh, LocalDate.now()).getYears();
     }
 
-    /** Tính thâm niên làm việc theo số năm (dẫn xuất từ ngayBatDau). */
+    public int getTuoi() {
+        return tinhTuoi();
+    }
+
+    public int layTuoi() {
+        return tinhTuoi();
+    }
+
+    /** Tính thâm niên làm việc theo số năm (thuộc tính dẫn xuất từ ngayBatDau - không có setter). */
     public int tinhThamNienNam() {
         if (ngayBatDau == null || ngayBatDau.isAfter(LocalDate.now())) {
             return 0;
         }
         return Period.between(ngayBatDau, LocalDate.now()).getYears();
+    }
+
+    public int getThamNienNam() {
+        return tinhThamNienNam();
+    }
+
+    public int layThamNienNam() {
+        return tinhThamNienNam();
     }
 
     // ==================== GETTER & SETTER ====================

@@ -6,13 +6,16 @@ import java.util.Objects;
 
 /**
  * Thực thể Tham số cấu hình hệ thống khớp bảng [cai_dat].
- * Tuân thủ chuẩn OOP môn PTUD: quan hệ kết hợp với TaiKhoan (người cập nhật)
- * và equals/hashCode chỉ theo khóa chính (khoa).
+ * Tuân thủ chuẩn OOP môn PTUD:
+ * - Khóa chính chuẩn hóa là mã cài đặt (maCaiDat / khoa).
+ * - Quan hệ kết hợp với TaiKhoan (người cập nhật).
+ * - Equals/hashCode chỉ theo khóa chính.
  */
 public class CaiDat implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String khoa;
+    /** Khóa chính chuẩn hóa: mã cài đặt (ví dụ: VAT_RATE, MAX_LOGIN_ATTEMPTS) */
+    private String maCaiDat;
     private String giaTri;
     /** Quan hệ kết hợp: Tài khoản quản trị viên cập nhật tham số. */
     private TaiKhoan nguoiCapNhat;
@@ -23,41 +26,62 @@ public class CaiDat implements Serializable {
     }
 
     /** Constructor chỉ có khóa chính. */
-    public CaiDat(String khoa) {
-        setKhoa(khoa);
+    public CaiDat(String maCaiDat) {
+        setMaCaiDat(maCaiDat);
     }
 
     /** Constructor chuẩn OOP nhận đối tượng TaiKhoan. */
-    public CaiDat(String khoa, String giaTri, TaiKhoan nguoiCapNhat, LocalDateTime ngayCapNhat) {
-        setKhoa(khoa);
+    public CaiDat(String maCaiDat, String giaTri, TaiKhoan nguoiCapNhat, LocalDateTime ngayCapNhat) {
+        setMaCaiDat(maCaiDat);
         setGiaTri(giaTri);
         setNguoiCapNhat(nguoiCapNhat);
         setNgayCapNhat(ngayCapNhat);
     }
 
     /** Constructor cầu nối tương thích ngược với tầng DAO. */
-    public CaiDat(String khoa, String giaTri, Long nguoiCapNhatId, LocalDateTime ngayCapNhat) {
-        this(khoa, giaTri, nguoiCapNhatId == null ? null : new TaiKhoan(nguoiCapNhatId), ngayCapNhat);
+    public CaiDat(String maCaiDat, String giaTri, Long nguoiCapNhatId, LocalDateTime ngayCapNhat) {
+        this(maCaiDat, giaTri, nguoiCapNhatId == null ? null : new TaiKhoan(nguoiCapNhatId), ngayCapNhat);
     }
 
+    public String getMaCaiDat() {
+        return this.maCaiDat;
+    }
+
+    public String layMaCaiDat() {
+        return this.maCaiDat;
+    }
+
+    public String maCaiDat() {
+        return this.maCaiDat;
+    }
+
+    public void setMaCaiDat(String maCaiDat) {
+        this.maCaiDat = maCaiDat == null ? null : maCaiDat.trim();
+    }
+
+    public void datMaCaiDat(String maCaiDat) {
+        setMaCaiDat(maCaiDat);
+    }
+
+    // Alias khóa tương thích ngược
     public String getKhoa() {
-        return this.khoa;
+        return getMaCaiDat();
     }
 
     public String layKhoa() {
-        return this.khoa;
+        return getMaCaiDat();
     }
 
     public String khoa() {
-        return this.khoa;
+        return getMaCaiDat();
     }
 
     public void setKhoa(String khoa) {
-        this.khoa = khoa == null ? null : khoa.trim();
+        setMaCaiDat(khoa);
     }
 
     public void datKhoa(String khoa) {
-        setKhoa(khoa);
+        setMaCaiDat(khoa);
     }
 
     public String getGiaTri() {
@@ -135,16 +159,16 @@ public class CaiDat implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         CaiDat that = (CaiDat) o;
-        return Objects.equals(khoa, that.khoa);
+        return Objects.equals(this.maCaiDat, that.maCaiDat);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(khoa);
+        return Objects.hash(this.maCaiDat);
     }
 
     @Override
     public String toString() {
-        return "CaiDat{" + "khoa='" + khoa + '\'' + ", giaTri='" + giaTri + '\'' + '}';
+        return "CaiDat{" + "maCaiDat='" + maCaiDat + '\'' + ", giaTri='" + giaTri + '\'' + '}';
     }
 }

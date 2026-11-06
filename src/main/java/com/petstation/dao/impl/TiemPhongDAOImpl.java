@@ -16,18 +16,22 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
     public TiemPhongDAOImpl() {}
 
     public List<Object[]> layThuCung(String ma) {
-        return truyVan(
-                "SELECT id,ngay_sinh FROM thu_cung WITH(UPDLOCK,HOLDLOCK) WHERE ma_thu_cung=? AND"
+        var ds = truyVan(
+                "SELECT ma_thu_cung,ngay_sinh FROM thu_cung WITH(UPDLOCK,HOLDLOCK) WHERE (ma_thu_cung=? OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=TRY_CAST(? AS BIGINT)) AND"
                         + " dang_theo_doi=1",
-                ma);
+                ma, ma);
+        for (Object[] r : ds) {
+            r[0] = com.petstation.util.DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
+        }
+        return ds;
     }
 
     public List<Object[]> layLichSu(long id) {
         List<Object[]> dong =
                 truyVan(
                         "SELECT COALESCE(tiem_chung,N''), so_mui_tiem, ngay_tiem_gan_nhat FROM"
-                                + " thu_cung WHERE id=?",
-                        id);
+                                + " thu_cung WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=?)",
+                        id, id);
         if (dong.isEmpty()) return List.of();
         Object[] d = dong.get(0);
         String chuoi = String.valueOf(d[0]).trim();
@@ -142,10 +146,10 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
         if (chuoi.length() > 500) chuoi = chuoi.substring(0, 500);
         Date ganNhat = danhSach.isEmpty() ? null : (Date) danhSach.get(0)[2];
         capNhat(
-                "UPDATE thu_cung SET tiem_chung=?, so_mui_tiem=?, ngay_tiem_gan_nhat=? WHERE id=?",
+                "UPDATE thu_cung SET tiem_chung=?, so_mui_tiem=?, ngay_tiem_gan_nhat=? WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=?)",
                 chuoi.isBlank() ? null : chuoi,
                 danhSach.size(),
                 ganNhat,
-                thuCung);
+                thuCung, thuCung);
     }
 }

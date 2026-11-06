@@ -38,7 +38,7 @@ public class YeuCauPheDuyet implements Serializable {
 
     /** Constructor mặc định. */
     public YeuCauPheDuyet() {
-        this.trangThai = "PENDING";
+        this.trangThai = "CHO_DUYET";
         this.guiLuc = LocalDateTime.now();
     }
 
@@ -146,7 +146,7 @@ public class YeuCauPheDuyet implements Serializable {
 
     /** Kiểm tra yêu cầu phê duyệt đã được xử lý hay chưa (dẫn xuất). */
     public boolean kiemTraDaXuLy() {
-        return xuLyLuc != null || (trangThai != null && !"PENDING".equalsIgnoreCase(trangThai));
+        return xuLyLuc != null || (trangThai != null && !"CHO_DUYET".equalsIgnoreCase(trangThai));
     }
 
     // ==================== GETTER & SETTER CẦU NỐI ID ====================

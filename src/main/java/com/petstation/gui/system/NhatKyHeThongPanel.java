@@ -314,11 +314,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                             if (giaTri.equals("Thành công")) {
                                 lblNhan.setBackground(new Color(212, 237, 218));
                                 lblNhan.setForeground(new Color(21, 87, 36));
-                            } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                            } else 
                             if (giaTri.equals("Thất bại")) {
                                 lblNhan.setBackground(new Color(248, 215, 218));
                                 lblNhan.setForeground(new Color(114, 28, 36));
-                            } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                            } else 
                             if (giaTri.equals("Cảnh báo")) {
                                 lblNhan.setBackground(new Color(255, 243, 205));
                                 lblNhan.setForeground(new Color(133, 100, 4));
@@ -348,7 +348,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                                     || chuoi.contains("ERROR")
                                     || chuoi.contains("DELETE")) {
                                 lblNhan.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-                            } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                            } else 
                             if (chuoi.contains("LOGIN") || chuoi.contains("LOGOUT")) {
                                 lblNhan.setForeground(MauUngDung.CHINH);
                             } else {
@@ -376,7 +376,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                     @Override
                     public void mouseClicked(java.awt.event.MouseEvent suKien) {
                         if (suKien.getClickCount() == 2) {
-                            // Dòng.
                             int dong = tblBang.getSelectedRow();
                             if (dong >= 0) {
                                 xuLyHienThiChiTiet(dong);

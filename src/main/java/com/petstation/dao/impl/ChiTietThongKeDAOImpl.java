@@ -14,36 +14,36 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
     public ChiTietBaoCao lay(
             String baoCao, String goc, KhoangNgay ky, Long taiKhoan, Long nhanVien) {
         boolean all = taiKhoan == null;
-        String own = all ? "" : " AND s.tai_khoan_id=" + taiKhoan;
-        String nv = all ? "" : " AND t.nhan_vien_id=" + nhanVien;
+        String own = all ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")";
+        String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, 3, 20) AS BIGINT) = " + nhanVien + ")";
         Object tu = ky.tuNgay(), den = ky.layCanTren();
         if (baoCao.contains("doanh thu")) {
             String source =
-                    "CASE WHEN EXISTS(SELECT 1 FROM phieu_tiep_nhan_spa t WHERE t.hoa_don_id=h.id)"
+                    "CASE WHEN EXISTS(SELECT 1 FROM phieu_tiep_nhan_spa t WHERE t.ma_hoa_don=h.ma_hoa_don)"
                             + " THEN 'Spa' WHEN EXISTS(SELECT 1 FROM hop_dong_luu_tru t WHERE"
-                            + " t.hoa_don_id=h.id) THEN 'Hotel' ELSE N'Hàng hóa' END";
+                            + " t.ma_hoa_don=h.ma_hoa_don) THEN 'Hotel' ELSE N'Hàng hóa' END";
             String select =
-                    "SELECT h.so_hoa_don,h.thanh_toan_luc,"
+                    "SELECT h.ma_hoa_don,h.thanh_toan_luc,"
                             + source
                             + ",LEFT(sp.value, CHARINDEX(':', sp.value) - 1),n.ho_ten,s.ten_ca,CAST(SUBSTRING(sp.value, CHARINDEX(':', sp.value) + 1, CHARINDEX(':', sp.value + ':', CHARINDEX(':', sp.value) + 1) - CHARINDEX(':', sp.value) - 1) AS decimal(18,2))"
-                            + " FROM hoa_don h JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id"
-                            + " JOIN tai_khoan a ON a.id=s.tai_khoan_id JOIN nhan_vien n ON n.id=a.nhan_vien_id"
+                            + " FROM hoa_don h JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien"
+                            + " JOIN tai_khoan a ON a.ten_dang_nhap=s.ten_dang_nhap JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien"
                             + " CROSS APPLY STRING_SPLIT(CASE WHEN h.chi_tiet_thanh_toan IS NOT NULL AND CHARINDEX(':', h.chi_tiet_thanh_toan) > 0 THEN h.chi_tiet_thanh_toan ELSE h.hinh_thuc_thanh_toan + ':' + CAST(h.tong_tien AS varchar(30)) END, ';') sp"
-                            + " WHERE h.trang_thai='PAID' AND CHARINDEX(':', sp.value) > 0 AND"
+                            + " WHERE h.trang_thai='DA_THANH_TOAN' AND CHARINDEX(':', sp.value) > 0 AND"
                             + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
                             + own;
             List<Object[]> rows;
             if (goc.equals("Doanh thu hoàn tất"))
                 rows =
                         truyVan(
-                                "SELECT h.so_hoa_don,h.thanh_toan_luc,"
+                                "SELECT h.ma_hoa_don,h.thanh_toan_luc,"
                                         + source
                                         + ",h.hinh_thuc_thanh_toan,n.ho_ten,s.ten_ca,h.tong_tien+COALESCE((SELECT"
                                         + " SUM(tien_coc) FROM hop_dong_luu_tru t WHERE"
-                                        + " t.hoa_don_id=h.id AND t.da_nhan_coc=1),0) FROM hoa_don"
-                                        + " h JOIN phien_lam_viec s ON s.id=h.phien_lam_viec_id JOIN"
-                                        + " tai_khoan a ON a.id=s.tai_khoan_id JOIN nhan_vien n ON"
-                                        + " n.id=a.nhan_vien_id WHERE h.trang_thai='PAID' AND"
+                                        + " t.ma_hoa_don=h.ma_hoa_don AND t.da_nhan_coc=1),0) FROM hoa_don"
+                                        + " h JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien JOIN"
+                                        + " tai_khoan a ON a.ten_dang_nhap=s.ten_dang_nhap JOIN nhan_vien n ON"
+                                        + " n.ma_nhan_vien=a.ma_nhan_vien WHERE h.trang_thai='DA_THANH_TOAN' AND"
                                         + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
                                         + own,
                                 tu,
@@ -55,10 +55,10 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         		 "SELECT h.ma_hop_dong,l.tao_luc,'Hotel',l.phuong_thuc,"
                                          + " n.ho_ten,s.ten_ca,l.so_tien"
                                          + " FROM lich_su_thu_coc_hotel l"
-                                         + " JOIN hop_dong_luu_tru h ON h.id=l.hop_dong_id"
-                                         + " LEFT JOIN phien_lam_viec s ON s.id=l.phien_lam_viec_id"
-                                         + " LEFT JOIN tai_khoan a ON a.id=l.nguoi_thu_id"
-                                         + " LEFT JOIN nhan_vien n ON n.id=a.nhan_vien_id"
+                                         + " JOIN hop_dong_luu_tru h ON h.ma_hop_dong=l.ma_hop_dong"
+                                         + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
+                                         + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap=l.ten_dang_nhap_thu"
+                                         + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien"
                                          + " WHERE l.tao_luc>=? AND l.tao_luc<?"
                                         + own,
                                 tu,
@@ -69,11 +69,11 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                         + source
                                         + ",h.hinh_thuc_thanh_toan,n.ho_ten,s.ten_ca,p.chenh_lech"
                                         + " FROM phieu_doi_tra p JOIN hoa_don h ON"
-                                        + " h.id=p.hoa_don_id JOIN phien_lam_viec s ON"
-                                        + " s.id=h.phien_lam_viec_id JOIN tai_khoan a ON"
-                                        + " a.id=s.tai_khoan_id JOIN nhan_vien n ON"
-                                        + " n.id=a.nhan_vien_id WHERE p.loai_phieu='LEGACY_RETURN'"
-                                        + " AND p.trang_thai='COMPLETED' AND p.tao_luc>=? AND"
+                                        + " h.ma_hoa_don=p.ma_hoa_don JOIN phien_lam_viec s ON"
+                                        + " s.ma_phien=h.ma_phien JOIN tai_khoan a ON"
+                                        + " a.ten_dang_nhap=s.ten_dang_nhap JOIN nhan_vien n ON"
+                                        + " n.ma_nhan_vien=a.ma_nhan_vien WHERE p.loai_phieu='TRA_HANG_CU'"
+                                        + " AND p.trang_thai='HOAN_TAT' AND p.tao_luc>=? AND"
                                         + " p.tao_luc<?"
                                         + own,
                                 tu,
@@ -106,12 +106,12 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                             "Giá trị dịch vụ"
                         },
                         truyVan(
-                                "SELECT t.ma_phieu,h.so_hoa_don,g.ma_goi,g.ten_goi,t.so_luong,CASE"
+                                "SELECT t.ma_phieu,h.ma_hoa_don,g.ma_goi,g.ten_goi,t.so_luong,CASE"
                                     + " WHEN h.tam_tinh>0 THEN t.tong_tien*h.tong_tien/h.tam_tinh"
                                     + " ELSE t.tong_tien END FROM phieu_tiep_nhan_spa t JOIN"
-                                    + " goi_dich_vu_spa g ON g.id=t.goi_id JOIN hoa_don h ON"
-                                    + " h.id=t.hoa_don_id JOIN phien_lam_viec s ON"
-                                    + " s.id=h.phien_lam_viec_id WHERE t.trang_thai='PAID' AND"
+                                    + " goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don h ON"
+                                    + " h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON"
+                                    + " s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_THANH_TOAN' AND"
                                     + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
                                         + own,
                                 tu,
@@ -127,7 +127,7 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                     + (hen ? "bat_dau" : "tao_luc")
                                     + ",t.trang_thai FROM "
                                     + (hen ? "lich_hen" : "phieu_tiep_nhan_spa")
-                                    + " t JOIN thu_cung p ON p.id=t.thu_cung_id WHERE t."
+                                    + " t JOIN thu_cung p ON p.ma_thu_cung=t.ma_thu_cung WHERE t."
                                     + (hen ? "bat_dau" : "tao_luc")
                                     + ">=? AND t."
                                     + (hen ? "bat_dau" : "tao_luc")
@@ -152,10 +152,10 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         		"SELECT h.ma_hop_dong,l.tao_luc,l.phuong_thuc,"
                                         + " l.so_tien,n.ho_ten,s.ten_ca"
                                         + " FROM lich_su_thu_coc_hotel l"
-                                        + " JOIN hop_dong_luu_tru h ON h.id=l.hop_dong_id"
-                                        + " LEFT JOIN phien_lam_viec s ON s.id=l.phien_lam_viec_id"
-                                        + " LEFT JOIN tai_khoan a ON a.id=l.nguoi_thu_id"
-                                        + " LEFT JOIN nhan_vien n ON n.id=a.nhan_vien_id"
+                                        + " JOIN hop_dong_luu_tru h ON h.ma_hop_dong=l.ma_hop_dong"
+                                        + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
+                                        + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap=l.ten_dang_nhap_thu"
+                                        + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien"
                                         + " WHERE l.tao_luc>=? AND l.tao_luc<?"
                                         + own,
                                 tu,
@@ -172,11 +172,11 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         },
                         truyVan(
                                 "SELECT"
-                                    + " t.ma_hop_dong,p.loai_phong,h.so_hoa_don,h.thanh_toan_luc,h.tong_tien+CASE"
+                                    + " t.ma_hop_dong,p.loai_phong,h.ma_hoa_don,h.thanh_toan_luc,h.tong_tien+CASE"
                                     + " WHEN t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
-                                    + " hop_dong_luu_tru t JOIN phong_hotel p ON p.id=t.phong_id"
-                                    + " JOIN hoa_don h ON h.id=t.hoa_don_id JOIN phien_lam_viec s"
-                                    + " ON s.id=h.phien_lam_viec_id WHERE t.trang_thai='CHECKED_OUT'"
+                                    + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong"
+                                    + " JOIN hoa_don h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s"
+                                    + " ON s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_TRA_PHONG'"
                                     + " AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
                                         + own,
                                 tu,
@@ -187,14 +187,14 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                     truyVan(
                             "SELECT t.ma_hop_dong,p.ma_phong,t.ngay_vao,t.trang_thai,CASE WHEN"
                                 + " t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
-                                + " hop_dong_luu_tru t JOIN phong_hotel p ON p.id=t.phong_id WHERE"
+                                + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong WHERE"
                                 + " t.ngay_vao>=? AND t.ngay_vao<?"
                                     + (all
                                             ? ""
                                             : " AND EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
-                                                  + " s.id=t.phien_nhan_coc_id AND s.tai_khoan_id="
+                                                  + " s.ma_phien=t.ma_phien_nhan_coc AND (s.ten_dang_nhap=CAST("
                                                     + taiKhoan
-                                                    + ")"),
+                                                    + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + "))"),
                             tu,
                             den),
                     3);
@@ -212,14 +212,14 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                     },
                     truyVan(
                             "SELECT"
-                                + " p.so_phieu,n.ma_ncc,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,p.tong_tien-p.da_tra"
+                                + " p.ma_phieu_nhap,n.ma_nha_cung_cap,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,p.tong_tien-p.da_tra"
                                 + " FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
-                                + " n.id=p.nha_cung_cap_id WHERE p.trang_thai='POSTED'"
+                                + " n.ma_nha_cung_cap=p.ma_nha_cung_cap WHERE p.trang_thai='DA_NHAP'"
                                     + (goc.equals("Dư nợ hiện tại")
                                             ? ""
                                             : " AND p.ngay_nhap>=? AND p.ngay_nhap<?"),
                             goc.equals("Dư nợ hiện tại")
-                                    ? new Object[] {}
+                                     ? new Object[] {}
                                     : new Object[] {tu, den}),
                     1);
         }
@@ -228,9 +228,9 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                     new String[] {"Hóa đơn", "Mã KH", "Khách hàng", "Thanh toán lúc", "Chi tiêu"},
                     truyVan(
                             "SELECT"
-                                + " h.so_hoa_don,k.ma_khach_hang,k.ho_ten,h.thanh_toan_luc,h.tong_tien"
-                                + " FROM hoa_don h JOIN khach_hang k ON k.id=h.khach_hang_id WHERE"
-                                + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND"
+                                + " h.ma_hoa_don,k.ma_khach_hang,k.ho_ten,h.thanh_toan_luc,h.tong_tien"
+                                + " FROM hoa_don h JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                                + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
                                 + " h.thanh_toan_luc<?",
                             tu,
                             den),
@@ -250,21 +250,21 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         },
                         truyVan(
                                 "SELECT"
-                                    + " h.so_hoa_don,p.ma_san_pham,p.ten,h.thanh_toan_luc,i.so_luong-COALESCE(r.qty,0),CASE"
+                                    + " h.ma_hoa_don,p.ma_san_pham,p.ten,h.thanh_toan_luc,i.so_luong-COALESCE(r.qty,0),CASE"
                                     + " WHEN h.tam_tinh>0 THEN"
                                     + " i.so_luong*i.don_gia*(h.tong_tien+COALESCE(ex.credit,0))/h.tam_tinh"
                                     + " ELSE 0 END-COALESCE(r.refund,0),p.nhom_hang FROM"
-                                    + " chi_tiet_hoa_don i JOIN san_pham p ON p.id=i.san_pham_id"
-                                    + " JOIN hoa_don h ON h.id=i.hoa_don_id JOIN phien_lam_viec s"
-                                    + " ON s.id=h.phien_lam_viec_id OUTER APPLY(SELECT"
+                                    + " chi_tiet_hoa_don i JOIN san_pham p ON p.ma_san_pham=i.ma_san_pham"
+                                    + " JOIN hoa_don h ON h.ma_hoa_don=i.ma_hoa_don JOIN phien_lam_viec s"
+                                    + " ON s.ma_phien=h.ma_phien OUTER APPLY(SELECT"
                                     + " SUM(c.so_luong) qty,SUM(c.tien_hoan) refund FROM"
                                     + " chi_tiet_doi_tra c JOIN phieu_doi_tra x ON"
-                                    + " x.id=c.phieu_doi_tra_id WHERE c.chi_tiet_hoa_don_id=i.id"
-                                    + " AND x.trang_thai='COMPLETED')r OUTER APPLY(SELECT"
+                                    + " x.ma_phieu=c.ma_phieu WHERE c.ma_hoa_don=i.ma_hoa_don AND c.ma_san_pham=i.ma_san_pham"
+                                    + " AND x.trang_thai='HOAN_TAT')r OUTER APPLY(SELECT"
                                     + " SUM(dx.gia_tri_duoc_doi) credit FROM phieu_doi_tra dx WHERE"
-                                    + " dx.hoa_don_thay_the_id=h.id AND dx.loai_phieu='EXCHANGE'"
-                                    + " AND dx.trang_thai='COMPLETED')ex WHERE"
-                                    + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND"
+                                    + " dx.ma_hoa_don_thay_the=h.ma_hoa_don AND dx.loai_phieu='DOI_HANG'"
+                                    + " AND dx.trang_thai='HOAN_TAT')ex WHERE"
+                                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
                                     + " h.thanh_toan_luc<?"
                                         + own,
                                 tu,
@@ -278,7 +278,7 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         truyVan(
                                 "SELECT"
                                     + " l.so_lo,p.ma_san_pham,p.ten,l.han_su_dung,l.so_luong_ton,l.trang_thai"
-                                    + " FROM lo_hang l JOIN san_pham p ON p.id=l.san_pham_id"
+                                    + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham"
                                         + (goc.equals("Sắp hết hạn")
                                                 ? " WHERE l.so_luong_ton>0 AND"
                                                       + " l.han_su_dung<=DATEADD(day,30,CAST(GETDATE()"
@@ -286,22 +286,21 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                                 : "")),
                         1);
             String ledger =
-                    "SELECT n.so_phieu chung_tu,p.ma_san_pham,p.ten,N'Nhập kho' loai,n.ngay_nhap"
+                    "SELECT n.ma_phieu_nhap chung_tu,p.ma_san_pham,p.ten,N'Nhập kho' loai,n.ngay_nhap"
                         + " ngay,c.so_luong FROM chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n ON"
-                        + " n.id=c.phieu_nhap_id JOIN san_pham p ON p.id=c.san_pham_id WHERE"
-                        + " n.trang_thai='POSTED' UNION ALL SELECT"
-                        + " h.so_hoa_don,p.ma_san_pham,p.ten,N'Bán"
+                        + " n.ma_phieu_nhap=c.ma_phieu_nhap JOIN san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE"
+                        + " n.trang_thai='DA_NHAP' UNION ALL SELECT"
+                        + " h.ma_hoa_don,p.ma_san_pham,p.ten,N'Bán"
                         + " hàng',h.thanh_toan_luc,-c.so_luong FROM chi_tiet_hoa_don c JOIN"
-                        + " san_pham p ON p.id=c.san_pham_id JOIN hoa_don h ON"
-                        + " h.id=c.hoa_don_id WHERE h.trang_thai='PAID' UNION ALL SELECT"
-                        + " n.so_phieu,p.ma_san_pham,p.ten,N'Xuất hủy',n.tao_luc,-c.so_luong FROM"
-                        + " chi_tiet_phieu_xuat c JOIN phieu_xuat_kho n ON n.id=c.phieu_xuat_id"
-                        + " JOIN lo_hang l ON l.id=c.lo_hang_id JOIN san_pham p ON"
-                        + " p.id=l.san_pham_id WHERE n.trang_thai='POSTED' UNION ALL SELECT"
+                        + " san_pham p ON p.ma_san_pham=c.ma_san_pham JOIN hoa_don h ON"
+                        + " h.ma_hoa_don=c.ma_hoa_don WHERE h.trang_thai='DA_THANH_TOAN' UNION ALL SELECT"
+                        + " n.ma_phieu_xuat,p.ma_san_pham,p.ten,N'Xuất hủy',n.tao_luc,-c.so_luong FROM"
+                        + " chi_tiet_phieu_xuat c JOIN phieu_xuat_kho n ON n.ma_phieu_xuat=c.ma_phieu_xuat"
+                        + " JOIN lo_hang l ON l.ma_lo=c.ma_lo JOIN san_pham p ON"
+                        + " p.ma_san_pham=l.ma_san_pham WHERE n.trang_thai='DA_XUAT' UNION ALL SELECT"
                         + " n.ma_phieu,p.ma_san_pham,p.ten,N'Nhận hàng đổi',n.tao_luc,c.so_luong"
-                        + " FROM chi_tiet_doi_tra c JOIN phieu_doi_tra n ON n.id=c.phieu_doi_tra_id"
-                        + " JOIN chi_tiet_hoa_don i ON i.id=c.chi_tiet_hoa_don_id JOIN san_pham p"
-                        + " ON p.id=i.san_pham_id WHERE n.trang_thai='COMPLETED'";
+                        + " FROM chi_tiet_doi_tra c JOIN phieu_doi_tra n ON n.ma_phieu=c.ma_phieu"
+                        + " JOIN san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE n.trang_thai='HOAN_TAT'";
             return new ChiTietBaoCao(
                     new String[] {
                         "Chứng từ", "Mã SP", "Sản phẩm", "Loại giao dịch", "Ngày", "Số lượng"
@@ -326,13 +325,13 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                             "Tiền thanh toán"
                         },
                         truyVan(
-                                "SELECT h.so_hoa_don,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu"
-                                    + " WHERE cu.khach_hang_id=k.id AND cu.trang_thai='PAID' AND"
+                                "SELECT h.ma_hoa_don,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu"
+                                    + " WHERE cu.ma_khach_hang=k.ma_khach_hang AND cu.trang_thai='DA_THANH_TOAN' AND"
                                     + " cu.thanh_toan_luc<?) THEN N'Khách quay lại' ELSE N'Khách"
                                     + " mua lần đầu'"
                                     + " END,k.ma_khach_hang,k.ho_ten,h.thanh_toan_luc,h.tong_tien"
-                                    + " FROM khach_hang k JOIN hoa_don h ON h.khach_hang_id=k.id"
-                                    + " WHERE h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND"
+                                    + " FROM khach_hang k JOIN hoa_don h ON h.ma_khach_hang=k.ma_khach_hang"
+                                    + " WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
                                     + " h.thanh_toan_luc<?",
                                 tu,
                                 tu,
@@ -343,10 +342,10 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                         new String[] {"Hóa đơn", "Voucher", "Khách hàng", "Ngày", "Giảm giá"},
                         truyVan(
                                 "SELECT"
-                                    + " h.so_hoa_don,v.ma_voucher,k.ho_ten,h.thanh_toan_luc,h.giam_gia"
-                                    + " FROM voucher v JOIN khach_hang k ON k.id=v.khach_hang_id"
+                                    + " h.ma_hoa_don,v.ma_voucher,k.ho_ten,h.thanh_toan_luc,h.giam_gia"
+                                    + " FROM voucher v JOIN khach_hang k ON k.ma_khach_hang=v.ma_khach_hang"
                                     + " JOIN hoa_don h ON h.ma_voucher=v.ma_voucher WHERE"
-                                    + " h.trang_thai='PAID' AND h.thanh_toan_luc>=? AND"
+                                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
                                     + " h.thanh_toan_luc<?",
                                 tu,
                                 den),
@@ -354,10 +353,10 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
             return new ChiTietBaoCao(
                     new String[] {"Hóa đơn", "Voucher", "Khách hàng", "Ngày", "Giảm giá"},
                     truyVan(
-                            "SELECT h.so_hoa_don,v.ma_voucher,COALESCE(k.ho_ten,N'Khách"
+                            "SELECT h.ma_hoa_don,v.ma_voucher,COALESCE(k.ho_ten,N'Khách"
                                 + " lẻ'),h.thanh_toan_luc,h.giam_gia FROM voucher v JOIN hoa_don h"
                                 + " ON h.ma_voucher=v.ma_voucher LEFT JOIN khach_hang k ON"
-                                + " k.id=v.khach_hang_id WHERE h.trang_thai='PAID'"),
+                                + " k.ma_khach_hang=v.ma_khach_hang WHERE h.trang_thai='DA_THANH_TOAN'"),
                     1);
         }
         if (baoCao.contains("nhân viên")) {
@@ -376,8 +375,8 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                 "SELECT"
                                     + " l.ngay_lam,n.ma_nhan_vien,n.ho_ten,c.ten_ca,c.gio_bat_dau,c.gio_ket_thuc,l.trang_thai"
                                     + " FROM lich_lam_viec l JOIN nhan_vien n ON"
-                                    + " n.id=l.nhan_vien_id JOIN ca_lam_viec c ON"
-                                    + " c.id=l.ca_lam_viec_id WHERE l.ngay_lam>=? AND l.ngay_lam<?",
+                                    + " n.ma_nhan_vien=l.ma_nhan_vien JOIN ca_lam_viec c ON"
+                                    + " c.ma_ca=l.ma_ca WHERE l.ngay_lam>=? AND l.ngay_lam<?",
                                 tu,
                                 den),
                         1);
@@ -394,8 +393,8 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                     truyVan(
                             "SELECT"
                                 + " s.ten_ca,n.ho_ten,s.mo_luc,s.dong_luc,s.tien_dau_ca,s.tien_thuc_te,s.chenh_lech"
-                                + " FROM phien_lam_viec s JOIN tai_khoan a ON a.id=s.tai_khoan_id"
-                                + " JOIN nhan_vien n ON n.id=a.nhan_vien_id WHERE s.mo_luc>=? AND"
+                                + " FROM phien_lam_viec s JOIN tai_khoan a ON a.ten_dang_nhap=s.ten_dang_nhap"
+                                + " JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien WHERE s.mo_luc>=? AND"
                                 + " s.mo_luc<?",
                             tu,
                             den),

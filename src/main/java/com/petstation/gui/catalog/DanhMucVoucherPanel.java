@@ -57,7 +57,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                                     if ("Ngừng".equals(trangThai)) return;
                                     if (hanDung != null && hanDung.isBefore(LocalDate.now()))
                                         dongDuLieu[6] = "Hết hạn";
-                                    else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp
+                                    else 
                                     // ứng.
                                     if (soLuong >= 0 && daDung >= soLuong)
                                         dongDuLieu[6] = "Hết lượt";

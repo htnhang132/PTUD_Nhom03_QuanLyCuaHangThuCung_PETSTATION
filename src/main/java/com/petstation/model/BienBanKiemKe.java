@@ -18,8 +18,8 @@ import com.petstation.util.DuLieu;
 public class BienBanKiemKe implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Biên bản kiểm kê */
-    private String soBienBan;
+    /** Khóa chính nghiệp vụ của Biên bản kiểm kê (ma_bien_ban / so_bien_ban) */
+    private String maBienBan;
     /** Quan hệ kết hợp: Tài khoản nhân viên lập biên bản kiểm kê. */
     private TaiKhoan nguoiLap;
     /** Quan hệ 1-nhiều: Danh sách dòng chi tiết kiểm kê. */
@@ -31,14 +31,14 @@ public class BienBanKiemKe implements Serializable {
 
     /** Constructor mặc định. */
     public BienBanKiemKe() {
-        this.trangThai = "COMPLETED";
+        this.trangThai = "DA_DUYET";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ soBienBan. */
-    public BienBanKiemKe(String soBienBan) {
+    /** Constructor theo khóa chính nghiệp vụ maBienBan. */
+    public BienBanKiemKe(String maBienBan) {
         this();
-        setSoBienBan(soBienBan);
+        setMaBienBan(maBienBan);
     }
 
     /** Constructor cầu nối nhận id từ DAO. */
@@ -86,7 +86,7 @@ public class BienBanKiemKe implements Serializable {
 
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
 
-    /** Tính tổng số lô hàng có chênh lệch tồn kho trong biên bản (thuộc tính dẫn xuất). */
+    /** Tính tổng số lô hàng có chênh lệch tồn kho trong biên bản (thuộc tính dẫn xuất - không có setter). */
     public int tinhSoLoLechKho() {
         if (danhSachChiTiet == null || danhSachChiTiet.isEmpty()) {
             return 0;
@@ -100,14 +100,22 @@ public class BienBanKiemKe implements Serializable {
         return dem;
     }
 
+    public int getSoLoLechKho() {
+        return tinhSoLoLechKho();
+    }
+
+    public int laySoLoLechKho() {
+        return tinhSoLoLechKho();
+    }
+
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.soBienBan);
+        return DuLieu.layIdCauNoiObj(this, getMaBienBan());
     }
 
     public long layId() {
-        return DuLieu.layIdCauNoi(this, this.soBienBan);
+        return DuLieu.layIdCauNoi(this, getMaBienBan());
     }
 
     public long id() {
@@ -116,8 +124,8 @@ public class BienBanKiemKe implements Serializable {
 
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-        if ((this.soBienBan == null || this.soBienBan.isBlank()) && id > 0) {
-            this.soBienBan = DuLieu.taoMaTuId("KK", 8, id);
+        if ((this.maBienBan == null || this.maBienBan.isBlank()) && id > 0) {
+            this.maBienBan = DuLieu.taoMaTuId("KK", 8, id);
         }
     }
 
@@ -127,24 +135,45 @@ public class BienBanKiemKe implements Serializable {
 
     // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
+    public String getMaBienBan() {
+        return this.maBienBan;
+    }
+
+    public String layMaBienBan() {
+        return this.maBienBan;
+    }
+
+    public String maBienBan() {
+        return this.maBienBan;
+    }
+
+    public void setMaBienBan(String maBienBan) {
+        this.maBienBan = maBienBan == null ? null : maBienBan.trim();
+    }
+
+    public void datMaBienBan(String maBienBan) {
+        setMaBienBan(maBienBan);
+    }
+
+    // Alias soBienBan tương thích ngược
     public String getSoBienBan() {
-        return this.soBienBan;
+        return getMaBienBan();
     }
 
     public String laySoBienBan() {
-        return this.soBienBan;
+        return getMaBienBan();
     }
 
     public String soBienBan() {
-        return this.soBienBan;
+        return getMaBienBan();
     }
 
     public void setSoBienBan(String soBienBan) {
-        this.soBienBan = soBienBan == null ? null : soBienBan.trim();
+        setMaBienBan(soBienBan);
     }
 
     public void datSoBienBan(String soBienBan) {
-        setSoBienBan(soBienBan);
+        setMaBienBan(soBienBan);
     }
 
     public TaiKhoan getNguoiLap() {
@@ -251,7 +280,7 @@ public class BienBanKiemKe implements Serializable {
         setTaoLuc(taoLuc);
     }
 
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maBienBan) ====================
 
     @Override
     public boolean equals(Object o) {
@@ -260,16 +289,16 @@ public class BienBanKiemKe implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         BienBanKiemKe that = (BienBanKiemKe) o;
-        return Objects.equals(this.soBienBan, that.soBienBan);
+        return Objects.equals(this.getMaBienBan(), that.getMaBienBan());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(soBienBan);
+        return Objects.hash(getMaBienBan());
     }
 
     @Override
     public String toString() {
-        return "BienBanKiemKe{" + "soBienBan='" + soBienBan + '\'' + ", nguoiLapId=" + getNguoiLapId() + ", kyKiemKe='" + kyKiemKe + '\'' + ", trangThai='" + trangThai + '\'' + '}';
+        return "BienBanKiemKe{" + "maBienBan='" + getMaBienBan() + '\'' + ", nguoiLapId=" + getNguoiLapId() + ", kyKiemKe='" + kyKiemKe + '\'' + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

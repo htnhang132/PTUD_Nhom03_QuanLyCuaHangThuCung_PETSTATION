@@ -51,7 +51,7 @@ public class HopDongLuuTru implements Serializable {
 
     /** Constructor mặc định. */
     public HopDongLuuTru() {
-        this.trangThai = "BOOKED";
+        this.trangThai = "DA_DAT";
     }
 
     /** Constructor theo khóa chính nghiệp vụ maHopDong. */
@@ -222,6 +222,38 @@ public class HopDongLuuTru implements Serializable {
     public long tinhTienConPhaiThu() {
         long cocDaThu = daNhanCoc ? Math.max(0L, tienCoc) : 0L;
         return Math.max(0L, tinhTienPhongDuKien() - cocDaThu);
+    }
+
+    public long getSoDemLuuTru() {
+        return tinhSoDemLuuTru();
+    }
+
+    public long laySoDemLuuTru() {
+        return tinhSoDemLuuTru();
+    }
+
+    public long getTienPhongDuKien() {
+        return tinhTienPhongDuKien();
+    }
+
+    public long layTienPhongDuKien() {
+        return tinhTienPhongDuKien();
+    }
+
+    public long getCocToiThieu50PhanTram() {
+        return tinhCocToiThieu50PhanTram();
+    }
+
+    public long layCocToiThieu50PhanTram() {
+        return tinhCocToiThieu50PhanTram();
+    }
+
+    public long getTienConPhaiThu() {
+        return tinhTienConPhaiThu();
+    }
+
+    public long layTienConPhaiThu() {
+        return tinhTienConPhaiThu();
     }
 
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
@@ -617,6 +649,22 @@ public class HopDongLuuTru implements Serializable {
 
     public void datHoaDonId(Long hoaDonId) {
         setHoaDonId(hoaDonId);
+    }
+
+    public String getMaHoaDon() {
+        return hoaDon == null ? null : hoaDon.getMaHoaDon();
+    }
+
+    public void setMaHoaDon(String maHoaDon) {
+        this.hoaDon = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
+    }
+
+    public String getSoHoaDon() {
+        return getMaHoaDon();
+    }
+
+    public void setSoHoaDon(String soHoaDon) {
+        setMaHoaDon(soHoaDon);
     }
 
     public boolean isDaNhanCoc() {

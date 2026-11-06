@@ -25,7 +25,7 @@ public class LichLamViec implements Serializable {
 
     /** Constructor mặc định. */
     public LichLamViec() {
-        this.trangThai = "SCHEDULED";
+        this.trangThai = "DANG_MO";
     }
 
     /** Constructor chỉ có khóa chính. */
@@ -87,7 +87,15 @@ public class LichLamViec implements Serializable {
 
     // ==================== GETTER & SETTER ====================
 
-    public String getMaLichLamViec() { return this.maLichLamViec; }
+    public String getMaLichLamViec() {
+        if (this.maLichLamViec != null && !this.maLichLamViec.isBlank()) {
+            return this.maLichLamViec;
+        }
+        String nv = nhanVien != null ? nhanVien.getMaNhanVien() : "";
+        String ca = caLamViec != null ? caLamViec.getMaCa() : "";
+        String nl = ngayLam != null ? ngayLam.toString() : "";
+        return (nv.isEmpty() && ca.isEmpty() && nl.isEmpty()) ? null : (nv + "_" + nl + "_" + ca);
+    }
     public String layMaLichLamViec() { return this.maLichLamViec; }
     public String maLichLamViec() { return this.maLichLamViec; }
     public void setMaLichLamViec(String maLichLamViec) {
@@ -148,24 +156,29 @@ public class LichLamViec implements Serializable {
     public void setCaLamViecId(long caLamViecId) { this.caLamViec = new CaLamViec(caLamViecId); }
     public void datCaLamViecId(long caLamViecId) { setCaLamViecId(caLamViecId); }
 
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maLichLamViec) ====================
+    // ==================== EQUALS & HASHCODE THEO KHÓA PHỨC HỢP (nhanVien + ngayLam + caLamViec) ====================
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LichLamViec that = (LichLamViec) o;
-        if (this.maLichLamViec != null && that.maLichLamViec != null) {
-            return Objects.equals(this.maLichLamViec, that.maLichLamViec);
+        if (this.nhanVien != null && that.nhanVien != null
+                && this.caLamViec != null && that.caLamViec != null
+                && this.ngayLam != null && that.ngayLam != null) {
+            return Objects.equals(this.nhanVien, that.nhanVien)
+                    && Objects.equals(this.caLamViec, that.caLamViec)
+                    && Objects.equals(this.ngayLam, that.ngayLam);
         }
-        return Objects.equals(this.nhanVien, that.nhanVien)
-                && Objects.equals(this.caLamViec, that.caLamViec)
-                && Objects.equals(this.ngayLam, that.ngayLam);
+        return Objects.equals(this.getMaLichLamViec(), that.getMaLichLamViec());
     }
 
     @Override
     public int hashCode() {
-        return maLichLamViec != null ? Objects.hash(maLichLamViec) : Objects.hash(nhanVien, caLamViec, ngayLam);
+        if (nhanVien != null && caLamViec != null && ngayLam != null) {
+            return Objects.hash(nhanVien, caLamViec, ngayLam);
+        }
+        return Objects.hash(getMaLichLamViec());
     }
 
     @Override

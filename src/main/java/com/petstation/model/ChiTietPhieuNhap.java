@@ -20,6 +20,8 @@ public class ChiTietPhieuNhap implements Serializable {
     private PhieuNhapKho phieuNhap;
     /** Quan hệ kết hợp: Sản phẩm nhập kho. */
     private SanPham sanPham;
+    /** Mã lô hàng (chuẩn hóa khóa ngoại sang lo_hang) */
+    private String maLo;
     private String soLo;
     private LocalDate hanSuDung;
     private int soLuong;
@@ -80,10 +82,18 @@ public class ChiTietPhieuNhap implements Serializable {
     // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
 
     /**
-     * Tính thành tiền của dòng phiếu nhập kho (thuộc tính dẫn xuất: soLuong * giaNhap).
+     * Tính thành tiền của dòng phiếu nhập kho (thuộc tính dẫn xuất: soLuong * giaNhap - không có setter).
      */
     public long tinhThanhTien() {
         return (long) Math.max(0, soLuong) * Math.max(0L, giaNhap);
+    }
+
+    public long getThanhTien() {
+        return tinhThanhTien();
+    }
+
+    public long layThanhTien() {
+        return tinhThanhTien();
     }
 
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
@@ -184,8 +194,27 @@ public class ChiTietPhieuNhap implements Serializable {
         setSanPhamId(sanPhamId);
     }
 
+    public String getMaLo() {
+        return this.maLo != null ? this.maLo : this.soLo;
+    }
+
+    public String layMaLo() {
+        return getMaLo();
+    }
+
+    public void setMaLo(String maLo) {
+        this.maLo = maLo == null ? null : maLo.trim();
+        if (this.soLo == null) {
+            this.soLo = this.maLo;
+        }
+    }
+
+    public void datMaLo(String maLo) {
+        setMaLo(maLo);
+    }
+
     public String getSoLo() {
-        return this.soLo;
+        return this.soLo != null ? this.soLo : this.maLo;
     }
 
     public String laySoLo() {
@@ -268,7 +297,7 @@ public class ChiTietPhieuNhap implements Serializable {
         setGiaNhap(giaNhap);
     }
 
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
+    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (phieuNhap, sanPham, maLo) ====================
 
     @Override
     public boolean equals(Object o) {
@@ -279,12 +308,12 @@ public class ChiTietPhieuNhap implements Serializable {
         ChiTietPhieuNhap that = (ChiTietPhieuNhap) o;
         return Objects.equals(this.phieuNhap, that.phieuNhap)
                 && Objects.equals(this.sanPham, that.sanPham)
-                && Objects.equals(this.soLo, that.soLo);
+                && Objects.equals(this.getMaLo(), that.getMaLo());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(phieuNhap, sanPham, soLo);
+        return Objects.hash(phieuNhap, sanPham, getMaLo());
     }
 
     @Override

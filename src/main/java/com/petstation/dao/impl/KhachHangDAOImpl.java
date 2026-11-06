@@ -3,6 +3,7 @@ package com.petstation.dao.impl;
 import com.petstation.dao.KhachHangDAO;
 import com.petstation.database.TruyCapDuLieuException;
 import com.petstation.model.KhachHang;
+import com.petstation.util.DuLieu;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -22,15 +23,18 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public KhachHang tao(KhachHang khachHang) {
-        // SQL.
         String sql =
                 "INSERT INTO khach_hang (ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, "
                         + "ngay_sinh, diem_tich_luy, hang_thanh_vien, ngay_tao) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement cauLenh =
-                ketNoi.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            cauLenh.setString(1, khachHang.layMaKhachHang());
+        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
+            String ma = khachHang.layMaKhachHang();
+            if (ma == null || ma.isBlank()) {
+                ma = DuLieu.taoMa("KH");
+                khachHang.datMaKhachHang(ma);
+            }
+            cauLenh.setString(1, ma);
             cauLenh.setString(2, khachHang.layHoTen());
             cauLenh.setString(3, khachHang.laySoDienThoai());
             cauLenh.setString(4, khachHang.layDiaChi());
@@ -45,22 +49,12 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                             : "REGULAR");
             cauLenh.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
 
-            // Bị ảnh hưởng các dòng.
             int biAnhHuongCacDong = cauLenh.executeUpdate();
-            // Kiểm tra số bản ghi chịu tác động để phát hiện cập nhật thất bại.
             if (biAnhHuongCacDong == 0) {
                 throw new TruyCapDuLieuException("Creating customer failed, no rows affected.");
             }
 
-            try (ResultSet duocSinhCacKhoa = cauLenh.getGeneratedKeys()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
-                if (duocSinhCacKhoa.next()) {
-                    khachHang.datId(duocSinhCacKhoa.getLong(1));
-                } else {
-                    throw new TruyCapDuLieuException("Creating customer failed, no ID obtained.");
-                }
-            }
-
+            khachHang.datId(DuLieu.layIdCauNoi(khachHang, ma));
             return khachHang;
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException("Error creating customer: " + loi.getMessage(), loi);
@@ -69,16 +63,15 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public Optional<KhachHang> timTheoId(Long id) {
-        // SQL.
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
-                        + "FROM khach_hang WHERE id = ?";
+                        + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, id);
+            cauLenh.setLong(2, id);
             try (ResultSet tapKetQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (tapKetQua.next()) {
                     return Optional.of(anhXaKetQuaDatDenKhachHang(tapKetQua));
                 }
@@ -93,16 +86,14 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public Optional<KhachHang> timTheoMaKhachHang(String maKhachHang) {
-        // SQL.
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
                         + "FROM khach_hang WHERE ma_khach_hang = ?";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, maKhachHang);
             try (ResultSet tapKetQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (tapKetQua.next()) {
                     return Optional.of(anhXaKetQuaDatDenKhachHang(tapKetQua));
                 }
@@ -117,16 +108,14 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public Optional<KhachHang> timTheoSoDienThoai(String soDienThoai) {
-        // SQL.
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
                         + "FROM khach_hang WHERE so_dien_thoai = ?";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, soDienThoai);
             try (ResultSet tapKetQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (tapKetQua.next()) {
                     return Optional.of(anhXaKetQuaDatDenKhachHang(tapKetQua));
                 }
@@ -140,17 +129,15 @@ public class KhachHangDAOImpl implements KhachHangDAO {
     }
 
     @Override
-    public List<KhachHang> timKiemTheoTen(String ten) {
-        // SQL.
+    public List<KhachHang> timTheoNgaySinh(Date ngaySinh) {
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
-                        + "FROM khach_hang WHERE ho_ten LIKE ? ORDER BY ho_ten";
+                        + "FROM khach_hang WHERE ngay_sinh = ? ORDER BY ho_ten";
 
-        // Các khách hàng.
         List<KhachHang> cacKhachHang = new ArrayList<>();
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setString(1, "%" + ten + "%");
+            cauLenh.setDate(1, ngaySinh);
             try (ResultSet tapKetQua = cauLenh.executeQuery()) {
                 while (tapKetQua.next()) {
                     cacKhachHang.add(anhXaKetQuaDatDenKhachHang(tapKetQua));
@@ -158,30 +145,32 @@ public class KhachHangDAOImpl implements KhachHangDAO {
             }
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException(
-                    "Error searching customers by name: " + loi.getMessage(), loi);
+                    "Error finding customers by birth date: " + loi.getMessage(), loi);
         }
 
         return cacKhachHang;
     }
 
     @Override
-    public List<KhachHang> timTatCa() {
-        // SQL.
+    public List<KhachHang> timTheoKhoangNgayTao(
+            LocalDateTime tuThoiDiem, LocalDateTime denThoiDiem) {
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
-                        + "FROM khach_hang ORDER BY ngay_tao DESC";
+                        + "FROM khach_hang WHERE ngay_tao BETWEEN ? AND ? ORDER BY ngay_tao DESC";
 
-        // Các khách hàng.
         List<KhachHang> cacKhachHang = new ArrayList<>();
-        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
-                ResultSet tapKetQua = cauLenh.executeQuery()) {
-            while (tapKetQua.next()) {
-                cacKhachHang.add(anhXaKetQuaDatDenKhachHang(tapKetQua));
+        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
+            cauLenh.setTimestamp(1, Timestamp.valueOf(tuThoiDiem));
+            cauLenh.setTimestamp(2, Timestamp.valueOf(denThoiDiem));
+            try (ResultSet tapKetQua = cauLenh.executeQuery()) {
+                while (tapKetQua.next()) {
+                    cacKhachHang.add(anhXaKetQuaDatDenKhachHang(tapKetQua));
+                }
             }
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException(
-                    "Error finding all customers: " + loi.getMessage(), loi);
+                    "Error finding customers by creation date: " + loi.getMessage(), loi);
         }
 
         return cacKhachHang;
@@ -189,13 +178,11 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public List<KhachHang> timTheoHangThanhVien(String hang) {
-        // SQL.
         String sql =
-                "SELECT id, ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
                         + "FROM khach_hang WHERE hang_thanh_vien = ? ORDER BY diem_tich_luy DESC";
 
-        // Các khách hàng.
         List<KhachHang> cacKhachHang = new ArrayList<>();
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, hang);
@@ -213,12 +200,53 @@ public class KhachHangDAOImpl implements KhachHangDAO {
     }
 
     @Override
+    public List<KhachHang> timTatCa() {
+        String sql =
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                        + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
+                        + "FROM khach_hang ORDER BY ho_ten";
+
+        List<KhachHang> cacKhachHang = new ArrayList<>();
+        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
+                ResultSet tapKetQua = cauLenh.executeQuery()) {
+            while (tapKetQua.next()) {
+                cacKhachHang.add(anhXaKetQuaDatDenKhachHang(tapKetQua));
+            }
+        } catch (SQLException loi) {
+            throw new TruyCapDuLieuException("Error finding all customers: " + loi.getMessage(), loi);
+        }
+
+        return cacKhachHang;
+    }
+
+    @Override
+    public List<KhachHang> timKiemTheoTen(String ten) {
+        String sql =
+                "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
+                        + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
+                        + "FROM khach_hang WHERE ho_ten LIKE ? ORDER BY ho_ten";
+
+        List<KhachHang> cacKhachHang = new ArrayList<>();
+        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
+            cauLenh.setString(1, "%" + (ten == null ? "" : ten) + "%");
+            try (ResultSet tapKetQua = cauLenh.executeQuery()) {
+                while (tapKetQua.next()) {
+                    cacKhachHang.add(anhXaKetQuaDatDenKhachHang(tapKetQua));
+                }
+            }
+        } catch (SQLException loi) {
+            throw new TruyCapDuLieuException("Error finding customers by name: " + loi.getMessage(), loi);
+        }
+
+        return cacKhachHang;
+    }
+
+    @Override
     public boolean capNhat(KhachHang khachHang) {
-        // SQL.
         String sql =
                 "UPDATE khach_hang SET ho_ten = ?, so_dien_thoai = ?, dia_chi = ?, "
                         + "ngay_sinh = ?, diem_tich_luy = ?, hang_thanh_vien = ? "
-                        + "WHERE id = ?";
+                        + "WHERE (ma_khach_hang = ? OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, khachHang.layHoTen());
@@ -229,7 +257,8 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                     khachHang.layNgaySinh() != null ? Date.valueOf(khachHang.layNgaySinh()) : null);
             cauLenh.setInt(5, khachHang.layDiemTichLuy());
             cauLenh.setString(6, khachHang.layHangThanhVien());
-            cauLenh.setLong(7, khachHang.layId());
+            cauLenh.setString(7, khachHang.layMaKhachHang());
+            cauLenh.setLong(8, khachHang.layId());
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -239,12 +268,12 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean capNhatDiemTichLuy(Long idKhachHang, Integer diem) {
-        // SQL.
-        String sql = "UPDATE khach_hang SET diem_tich_luy = ? WHERE id = ?";
+        String sql = "UPDATE khach_hang SET diem_tich_luy = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setInt(1, diem);
             cauLenh.setLong(2, idKhachHang);
+            cauLenh.setLong(3, idKhachHang);
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -255,12 +284,12 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean capNhatHangThanhVien(Long idKhachHang, String hang) {
-        // SQL.
-        String sql = "UPDATE khach_hang SET hang_thanh_vien = ? WHERE id = ?";
+        String sql = "UPDATE khach_hang SET hang_thanh_vien = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, hang);
             cauLenh.setLong(2, idKhachHang);
+            cauLenh.setLong(3, idKhachHang);
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -271,11 +300,11 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean xoa(Long id) {
-        // SQL.
-        String sql = "DELETE FROM khach_hang WHERE id = ?";
+        String sql = "DELETE FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, id);
+            cauLenh.setLong(2, id);
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -285,20 +314,42 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean layTonTaiTheoSoDienThoai(String soDienThoai) {
-        // SQL.
+        return kiemTraTonTaiTheoSoDienThoai(soDienThoai);
+    }
+
+    @Override
+    public boolean kiemTraTonTaiTheoSoDienThoai(String soDienThoai) {
         String sql = "SELECT COUNT(*) FROM khach_hang WHERE so_dien_thoai = ?";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, soDienThoai);
             try (ResultSet tapKetQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (tapKetQua.next()) {
                     return tapKetQua.getInt(1) > 0;
                 }
             }
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException(
-                    "Error checking customer existence: " + loi.getMessage(), loi);
+                    "Error checking customer by phone: " + loi.getMessage(), loi);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean kiemTraTonTaiTheoMaKhachHang(String maKhachHang) {
+        String sql = "SELECT COUNT(*) FROM khach_hang WHERE ma_khach_hang = ?";
+
+        try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
+            cauLenh.setString(1, maKhachHang);
+            try (ResultSet tapKetQua = cauLenh.executeQuery()) {
+                if (tapKetQua.next()) {
+                    return tapKetQua.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException loi) {
+            throw new TruyCapDuLieuException(
+                    "Error checking customer by code: " + loi.getMessage(), loi);
         }
 
         return false;
@@ -306,12 +357,15 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public long dem() {
-        // SQL.
+        return demSoLuong();
+    }
+
+    @Override
+    public long demSoLuong() {
         String sql = "SELECT COUNT(*) FROM khach_hang";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql);
                 ResultSet tapKetQua = cauLenh.executeQuery()) {
-            // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
             if (tapKetQua.next()) {
                 return tapKetQua.getLong(1);
             }
@@ -323,15 +377,14 @@ public class KhachHangDAOImpl implements KhachHangDAO {
     }
 
     private KhachHang anhXaKetQuaDatDenKhachHang(ResultSet tapKetQua) throws SQLException {
-        // Khách hàng.
         KhachHang khachHang = new KhachHang();
-        khachHang.datId(tapKetQua.getLong("id"));
-        khachHang.datMaKhachHang(tapKetQua.getString("ma_khach_hang"));
+        String maKhachHang = tapKetQua.getString("ma_khach_hang");
+        khachHang.datMaKhachHang(maKhachHang);
+        khachHang.datId(DuLieu.layIdCauNoi(khachHang, maKhachHang));
         khachHang.datHoTen(tapKetQua.getString("ho_ten"));
         khachHang.datSoDienThoai(tapKetQua.getString("so_dien_thoai"));
         khachHang.datDiaChi(tapKetQua.getString("dia_chi"));
 
-        // Ngày sinh.
         Date ngaySinh = tapKetQua.getDate("ngay_sinh");
         if (ngaySinh != null) {
             khachHang.datNgaySinh(ngaySinh.toLocalDate());
@@ -340,7 +393,6 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         khachHang.datDiemTichLuy(tapKetQua.getInt("diem_tich_luy"));
         khachHang.datHangThanhVien(tapKetQua.getString("hang_thanh_vien"));
 
-        // Thời điểm tạo.
         Timestamp thoiDiemTao = tapKetQua.getTimestamp("ngay_tao");
         if (thoiDiemTao != null) {
             khachHang.datThoiDiemTao(thoiDiemTao.toLocalDateTime());

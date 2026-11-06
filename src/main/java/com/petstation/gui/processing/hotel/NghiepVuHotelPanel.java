@@ -66,21 +66,21 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             if (thanhPhan instanceof JButton btn) {
                 switch (btn.getText()) {
                     case "Thu cọc" ->
-                            btn.setEnabled(trangThai.equals("BOOKED") && cocConThieu() > 0);
-                    case "Điều chỉnh cọc" -> btn.setEnabled(trangThai.equals("BOOKED"));
+                            btn.setEnabled(trangThai.equals("DA_DAT") && cocConThieu() > 0);
+                    case "Điều chỉnh cọc" -> btn.setEnabled(trangThai.equals("DA_DAT"));
                     case "Nhận phòng" ->
-                            btn.setEnabled(trangThai.equals("BOOKED") && cocConThieu() <= 0);
-                    case "Phiếu chăm sóc" -> btn.setEnabled(trangThai.equals("CHECKED_IN"));
+                            btn.setEnabled(trangThai.equals("DA_DAT") && cocConThieu() <= 0);
+                    case "Phiếu chăm sóc" -> btn.setEnabled(trangThai.equals("DANG_O"));
                     case "Quyết toán" ->
-                            btn.setEnabled(trangThai.equals("CHECKED_IN")
+                            btn.setEnabled(trangThai.equals("DANG_O")
                                     && kieuNghiepVu != LoaiNghiepVu.NHAT_KY_LUU_TRU);
                     case "Xem nhật ký" ->
-                            btn.setEnabled(trangThai.equals("CHECKED_IN")
-                                    || trangThai.equals("CHECKED_OUT"));
+                            btn.setEnabled(trangThai.equals("DANG_O")
+                                    || trangThai.equals("DA_TRA_PHONG"));
                     case "Lịch sử cọc" -> btn.setEnabled(daChon);
-                    case "Sửa đặt phòng" -> btn.setEnabled(trangThai.equals("BOOKED"));
+                    case "Sửa đặt phòng" -> btn.setEnabled(trangThai.equals("DA_DAT"));
                     case "Hủy đặt phòng" ->
-                            btn.setEnabled(trangThai.equals("BOOKED") && cocDaThu() == 0);
+                            btn.setEnabled(trangThai.equals("DA_DAT") && cocDaThu() == 0);
                     default -> {
                         if (btn.getText().startsWith("+ Đặt phòng"))
                             btn.setEnabled(kieuNghiepVu != LoaiNghiepVu.TRA_PHONG_LUU_TRU

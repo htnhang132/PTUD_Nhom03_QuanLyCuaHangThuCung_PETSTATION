@@ -1,22 +1,7 @@
-/*
-    Pet Station - 001_schema.sql
-    Mục đích: Khởi tạo database PetStationDemo1, cấu trúc toàn bộ 33 bảng theo chuẩn OOP / PTUD:
-              - Loại bỏ hoàn toàn trường [id] BIGINT IDENTITY.
-              - Khóa chính là các mã nghiệp vụ (ma_..., so_..., ten_dang_nhap, khoa).
-              - Liên kết khóa ngoại trực tiếp bằng các mã nghiệp vụ tương ứng.
-              - Đầy đủ ràng buộc toàn vẹn (CHECK, UNIQUE, DEFAULT) và INDEX phục vụ tra cứu.
-    
-    Hướng dẫn chạy:
-      - Mở SQL Server Management Studio (SSMS).
-      - Mở file 001_schema.sql và nhấn Execute (F5).
-      - File tự động tạo database PetStationDemo1 (nếu chưa có), chuyển ngữ cảnh vào database
-        và dọn dẹp các ràng buộc / bảng cũ nếu có (an toàn chạy lại nhiều lần).
-*/
-
 USE [master];
 GO
 
-IF DB_ID(N'PetStationDemo1') IS NULL AND DB_ID(N'PetStationDB') IS NULL
+IF DB_ID(N'PetStationDemo1') IS NULL
 BEGIN
     CREATE DATABASE [PetStationDemo1]
         COLLATE Vietnamese_CI_AS;
@@ -25,8 +10,6 @@ GO
 
 IF DB_ID(N'PetStationDemo1') IS NOT NULL
     USE [PetStationDemo1];
-ELSE
-    USE [PetStationDB];
 GO
 
 SET NOCOUNT ON;
@@ -61,17 +44,19 @@ IF LEN(@dropTableSql) > 0
     EXEC sp_executesql @dropTableSql;
 GO
 
+BEGIN TRANSACTION;
 BEGIN TRY
-    BEGIN TRANSACTION;
+
+-- ==================== KHỞI TẠO CÁC BẢNG (TABLES) ====================
 
 -- 1. BẢNG CA LÀM VIỆC (PK: ma_ca)
 CREATE TABLE dbo.[ca_lam_viec] (
     [ma_ca] VARCHAR(20) NOT NULL,
     [ten_ca] NVARCHAR(60) NOT NULL,
-    [gio_bat_dau] TIME(7) NOT NULL,
-    [gio_ket_thuc] TIME(7) NOT NULL,
+    [gio_bat_dau] TIME(0) NOT NULL,
+    [gio_ket_thuc] TIME(0) NOT NULL,
     [so_nhan_su_toi_thieu] INT NOT NULL DEFAULT ((1)),
-    [he_so_luong] DECIMAL(5,2) NOT NULL DEFAULT ((1.0)),
+    [he_so_luong] DECIMAL(4,2) NOT NULL DEFAULT ((1.0)),
     CONSTRAINT [PK_ca_lam_viec] PRIMARY KEY CLUSTERED ([ma_ca]),
     CONSTRAINT [CK_ca_lam_viec_1] CHECK ([so_nhan_su_toi_thieu]>(0))
 );
@@ -85,11 +70,13 @@ CREATE TABLE dbo.[chuong_trinh_khuyen_mai] (
     [bat_dau] DATETIME2(7) NOT NULL,
     [ket_thuc] DATETIME2(7) NOT NULL,
     [nguon] VARCHAR(30) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('HOAT_DONG'),
     [don_toi_thieu] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
     CONSTRAINT [PK_chuong_trinh_khuyen_mai] PRIMARY KEY CLUSTERED ([ma_chuong_trinh]),
     CONSTRAINT [CK_chuong_trinh_khuyen_mai_1] CHECK ([don_toi_thieu]>=(0)),
     CONSTRAINT [CK_chuong_trinh_khuyen_mai_2] CHECK ([gia_tri]>(0)),
+    CONSTRAINT [CK_chuong_trinh_khuyen_mai_loai_giam] CHECK ([loai_giam] IN ('PHAN_TRAM', 'SO_TIEN')),
+    CONSTRAINT [CK_chuong_trinh_khuyen_mai_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'NGUNG_HOAT_DONG')),
     CONSTRAINT [CK_km_ngay] CHECK ([ket_thuc]>[bat_dau])
 );
 
@@ -102,10 +89,11 @@ CREATE TABLE dbo.[goi_dich_vu_spa] (
     [chung_loai_ap_dung] NVARCHAR(30) NOT NULL DEFAULT (N'Cả hai'),
     [don_gia_goc] DECIMAL(18,2) NOT NULL DEFAULT ((150000)),
     [bang_gia] NVARCHAR(1000) NULL,
-    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('ACTIVE'),
+    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('HOAT_DONG'),
     CONSTRAINT [PK_goi_dich_vu_spa] PRIMARY KEY CLUSTERED ([ma_goi]),
     CONSTRAINT [UQ_goi_dich_vu_spa_ten] UNIQUE NONCLUSTERED ([ten_goi]),
-    CONSTRAINT [CK_goi_dich_vu_spa_1] CHECK ([thoi_gian_du_kien]>(0))
+    CONSTRAINT [CK_goi_dich_vu_spa_1] CHECK ([thoi_gian_du_kien]>(0)),
+    CONSTRAINT [CK_goi_dich_vu_spa_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'NGUNG_HOAT_DONG'))
 );
 
 -- 4. BẢNG KHÁCH HÀNG (PK: ma_khach_hang)
@@ -128,19 +116,20 @@ CREATE TABLE dbo.[khach_hang] (
     CONSTRAINT [CK_khach_hang_1] CHECK ([diem_tich_luy]>=(0))
 );
 
--- 5. BẢNG NHÀ CUNG CẤP (PK: ma_ncc)
+-- 5. BẢNG NHÀ CUNG CẤP (PK: ma_nha_cung_cap - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[nha_cung_cap] (
-    [ma_ncc] VARCHAR(20) NOT NULL,
+    [ma_nha_cung_cap] VARCHAR(20) NOT NULL,
     [ten] NVARCHAR(160) NOT NULL,
     [so_dien_thoai] VARCHAR(20) NOT NULL,
     [dia_chi] NVARCHAR(300) NULL,
     [nguoi_dai_dien] NVARCHAR(120) NULL,
     [nhom_mat_hang] NVARCHAR(200) NULL,
     [ghi_chu] NVARCHAR(500) NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('COOPERATING'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DANG_HOP_TAC'),
     [ma_so_thue] VARCHAR(30) NULL,
     [dieu_khoan] NVARCHAR(100) NOT NULL DEFAULT (N'Trả ngay'),
-    CONSTRAINT [PK_nha_cung_cap] PRIMARY KEY CLUSTERED ([ma_ncc])
+    CONSTRAINT [PK_nha_cung_cap] PRIMARY KEY CLUSTERED ([ma_nha_cung_cap]),
+    CONSTRAINT [CK_nha_cung_cap_trang_thai] CHECK ([trang_thai] IN ('DANG_HOP_TAC', 'NGUNG_HOP_TAC'))
 );
 
 -- 6. BẢNG NHÂN VIÊN (PK: ma_nhan_vien)
@@ -160,18 +149,16 @@ CREATE TABLE dbo.[nhan_vien] (
     CONSTRAINT [UQ_nhan_vien_phone] UNIQUE NONCLUSTERED ([so_dien_thoai])
 );
 
--- 7. BẢNG LỊCH LÀM VIỆC (PK: ma_lich_lam_viec, FK: ma_nhan_vien, ma_ca)
+-- 7. BẢNG LỊCH LÀM VIỆC (PK phức hợp: ma_nhan_vien, ngay_lam, ma_ca - Bảng liên kết 2 bảng cha nhan_vien và ca_lam_viec)
 CREATE TABLE dbo.[lich_lam_viec] (
-    [ma_lich_lam_viec] VARCHAR(30) NOT NULL,
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
-    [ma_ca] VARCHAR(20) NOT NULL,
     [ngay_lam] DATE NOT NULL,
-    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('OPEN'),
-    [loai] VARCHAR(10) NOT NULL DEFAULT ('WORK'),
-    CONSTRAINT [PK_lich_lam_viec] PRIMARY KEY CLUSTERED ([ma_lich_lam_viec]),
-    CONSTRAINT [UQ_lich_lam_viec] UNIQUE NONCLUSTERED ([ma_nhan_vien], [ngay_lam], [ma_ca]),
-    CONSTRAINT [CK_lich_lam_viec_1] CHECK ([loai]='LEAVE' OR [loai]='WORK'),
-    CONSTRAINT [CK_lich_trang_thai] CHECK ([trang_thai]='CANCELLED' OR [trang_thai]='LOCKED' OR [trang_thai]='OPEN')
+    [ma_ca] VARCHAR(20) NOT NULL,
+    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('DANG_MO'),
+    [loai] VARCHAR(20) NOT NULL DEFAULT ('DI_LAM'),
+    CONSTRAINT [PK_lich_lam_viec] PRIMARY KEY CLUSTERED ([ma_nhan_vien], [ngay_lam], [ma_ca]),
+    CONSTRAINT [CK_lich_lam_viec_1] CHECK ([loai] IN ('DI_LAM', 'NGHI_PHEP')),
+    CONSTRAINT [CK_lich_trang_thai] CHECK ([trang_thai] IN ('DANG_MO', 'DA_KHOA', 'DA_HUY'))
 );
 
 -- 8. BẢNG PHÒNG HOTEL (PK: ma_phong)
@@ -180,17 +167,18 @@ CREATE TABLE dbo.[phong_hotel] (
     [ten_phong] NVARCHAR(80) NULL,
     [loai_phong] NVARCHAR(80) NOT NULL,
     [gia_dem] DECIMAL(18,2) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('TRONG'),
     [row_version] ROWVERSION NOT NULL,
     [suc_chua] INT NOT NULL DEFAULT ((1)),
     [ghi_chu] NVARCHAR(1000) NOT NULL DEFAULT (N''),
     [bang_gia] NVARCHAR(1000) NULL,
     CONSTRAINT [PK_phong_hotel] PRIMARY KEY CLUSTERED ([ma_phong]),
     CONSTRAINT [CK_phong_hotel_1] CHECK ([gia_dem]>(0)),
-    CONSTRAINT [CK_phong_hotel_2] CHECK ([suc_chua]>(0))
+    CONSTRAINT [CK_phong_hotel_2] CHECK ([suc_chua]>(0)),
+    CONSTRAINT [CK_phong_hotel_trang_thai] CHECK ([trang_thai] IN ('TRONG', 'DANG_O', 'DANG_DON', 'BAO_TRI'))
 );
 
--- 9. BẢNG SẢN PHẨM (PK: ma_san_pham)
+-- 9. BẢNG SẢN PHẨM / DỊCH VỤ (PK: ma_san_pham)
 CREATE TABLE dbo.[san_pham] (
     [ma_san_pham] VARCHAR(30) NOT NULL,
     [barcode] VARCHAR(80) NULL,
@@ -202,7 +190,7 @@ CREATE TABLE dbo.[san_pham] (
     [ton_toi_thieu] INT NOT NULL DEFAULT ((0)),
     [theo_doi_hsd] BIT NOT NULL DEFAULT ((0)),
     [anh] NVARCHAR(500) NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('SELLING'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DANG_BAN'),
     [row_version] ROWVERSION NOT NULL,
     [thuong_hieu] NVARCHAR(100) NULL,
     [quy_cach] NVARCHAR(100) NULL,
@@ -216,7 +204,8 @@ CREATE TABLE dbo.[san_pham] (
     CONSTRAINT [UQ_san_pham_ten] UNIQUE NONCLUSTERED ([ten]),
     CONSTRAINT [CK_san_pham_1] CHECK ([gia_ban]>(0)),
     CONSTRAINT [CK_san_pham_2] CHECK ([gia_nhap_gan_nhat]>(0)),
-    CONSTRAINT [CK_san_pham_3] CHECK ([ton_toi_thieu]>=(0))
+    CONSTRAINT [CK_san_pham_3] CHECK ([ton_toi_thieu]>=(0)),
+    CONSTRAINT [CK_san_pham_trang_thai] CHECK ([trang_thai] IN ('DANG_BAN', 'NGUNG_BAN'))
 );
 
 -- 10. BẢNG LÔ HÀNG (PK: ma_lo, FK: ma_san_pham)
@@ -231,17 +220,18 @@ CREATE TABLE dbo.[lo_hang] (
     [so_luong_nhap] INT NULL,
     [so_luong_ton] INT NOT NULL,
     [ngay_kiem_ke] DATE NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('AVAILABLE'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('SAN_SANG'),
     [row_version] ROWVERSION NOT NULL,
     CONSTRAINT [PK_lo_hang] PRIMARY KEY CLUSTERED ([ma_lo]),
     CONSTRAINT [UQ_lo_hang] UNIQUE NONCLUSTERED ([ma_san_pham], [so_lo]),
-    CONSTRAINT [CK_lo_hang_1] CHECK ([so_luong_ton]>=(0))
+    CONSTRAINT [CK_lo_hang_1] CHECK ([so_luong_ton]>=(0)),
+    CONSTRAINT [CK_lo_hang_trang_thai] CHECK ([trang_thai] IN ('SAN_SANG', 'HET_HAN', 'TAM_KHOA', 'HET_HANG'))
 );
 
--- 11. BẢNG TÀI KHOẢN (PK: ten_dang_nhap, FK: ma_nhan_vien)
+-- 11. BẢNG TÀI KHOẢN (PK: ma_nhan_vien - Quan hệ 1-1 lấy khóa của nhan_vien làm PK; ten_dang_nhap là UNIQUE)
 CREATE TABLE dbo.[tai_khoan] (
-    [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
+    [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [mat_khau_hash] VARCHAR(100) NOT NULL,
     [vai_tro] VARCHAR(40) NOT NULL,
     [quyen] NVARCHAR(1000) NULL,
@@ -250,39 +240,41 @@ CREATE TABLE dbo.[tai_khoan] (
     [khoa_den] DATETIME2(7) NULL,
     [bat_buoc_doi_mat_khau] BIT NOT NULL DEFAULT ((1)),
     [dang_nhap_cuoi] DATETIME2(7) NULL,
-    CONSTRAINT [PK_tai_khoan] PRIMARY KEY CLUSTERED ([ten_dang_nhap]),
-    CONSTRAINT [UQ_tai_khoan_nhan_vien] UNIQUE NONCLUSTERED ([ma_nhan_vien]),
-    CONSTRAINT [CK_tai_khoan_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'TAM_KHOA', 'NGUNG_HOAT_DONG', 'ACTIVE', 'INACTIVE')),
-    CONSTRAINT [CK_tai_khoan_vai_tro] CHECK ([vai_tro] IN ('QUAN_LY_CUA_HANG', 'CUA_HANG_TRUONG', 'NHAN_VIEN_KHO', 'NHAN_VIEN_BAN_HANG', 'NHAN_VIEN_SPA_HOTEL', 'STORE_MANAGER', 'WAREHOUSE_STAFF', 'SALES_STAFF', 'SPA_HOTEL_STAFF'))
+    CONSTRAINT [PK_tai_khoan] PRIMARY KEY CLUSTERED ([ma_nhan_vien]),
+    CONSTRAINT [UQ_tai_khoan_username] UNIQUE NONCLUSTERED ([ten_dang_nhap]),
+    CONSTRAINT [CK_tai_khoan_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'TAM_KHOA', 'NGUNG_HOAT_DONG')),
+    CONSTRAINT [CK_tai_khoan_vai_tro] CHECK ([vai_tro] IN ('QUAN_LY_CUA_HANG', 'NHAN_VIEN_BAN_HANG', 'NHAN_VIEN_KHO', 'NHAN_VIEN_SPA_HOTEL'))
 );
 
--- 12. BẢNG BIÊN BẢN KIỂM KÊ (PK: so_bien_ban, FK: ten_dang_nhap)
+-- 12. BẢNG BIÊN BẢN KIỂM KÊ (PK: ma_bien_ban - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[bien_ban_kiem_ke] (
-    [so_bien_ban] VARCHAR(30) NOT NULL,
+    [ma_bien_ban] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
-    [ky_kiem_ke] VARCHAR(30) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('COUNTING'),
+    [ky_kiem_ke] NVARCHAR(150) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DANG_KIEM'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
-    CONSTRAINT [PK_bien_ban_kiem_ke] PRIMARY KEY CLUSTERED ([so_bien_ban])
+    CONSTRAINT [PK_bien_ban_kiem_ke] PRIMARY KEY CLUSTERED ([ma_bien_ban]),
+    CONSTRAINT [CK_bien_ban_kiem_ke_trang_thai] CHECK ([trang_thai] IN ('DANG_KIEM', 'CHO_DUYET', 'DA_DUYET', 'TU_CHOI'))
 );
 
--- 13. BẢNG CÀI ĐẶT HỆ THỐNG (PK: khoa, FK: ten_dang_nhap)
+-- 13. BẢNG CÀI ĐẶT HỆ THỐNG (PK: ma_cai_dat - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[cai_dat] (
-    [khoa] VARCHAR(100) NOT NULL,
+    [ma_cai_dat] VARCHAR(100) NOT NULL,
     [gia_tri] NVARCHAR(1000) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NULL,
     [ngay_cap_nhat] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
-    CONSTRAINT [PK_cai_dat] PRIMARY KEY CLUSTERED ([khoa])
+    CONSTRAINT [PK_cai_dat] PRIMARY KEY CLUSTERED ([ma_cai_dat])
 );
 
--- 14. BẢNG CHI TIẾT KIỂM KÊ (PK phức hợp: so_bien_ban, ma_lo)
+-- 14. BẢNG CHI TIẾT KIỂM KÊ (PK phức hợp: ma_bien_ban, ma_lo - Lấy mã bảng cha bien_ban_kiem_ke và lo_hang)
 CREATE TABLE dbo.[chi_tiet_kiem_ke] (
-    [so_bien_ban] VARCHAR(30) NOT NULL,
+    [ma_bien_ban] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NOT NULL,
     [ton_he_thong] INT NOT NULL,
     [ton_thuc_te] INT NOT NULL,
+    [chenh_lech] AS ([ton_thuc_te] - [ton_he_thong]), -- Thuộc tính dẫn xuất tự tính
     [nguyen_nhan] NVARCHAR(1000) NULL,
-    CONSTRAINT [PK_chi_tiet_kiem_ke] PRIMARY KEY CLUSTERED ([so_bien_ban], [ma_lo])
+    CONSTRAINT [PK_chi_tiet_kiem_ke] PRIMARY KEY CLUSTERED ([ma_bien_ban], [ma_lo])
 );
 
 -- 15. BẢNG NHẬT KÝ HỆ THỐNG (PK: ma_nhat_ky, FK: ten_dang_nhap)
@@ -290,7 +282,7 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     [ma_nhat_ky] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NULL,
     [hanh_dong] NVARCHAR(100) NOT NULL,
-    [loai_doi_tuong] VARCHAR(60) NULL,
+    [loai_doi_tuong] NVARCHAR(60) NULL,
     [ma_doi_tuong] VARCHAR(60) NULL,
     [gia_tri_cu] NVARCHAR(MAX) NULL,
     [gia_tri_moi] NVARCHAR(MAX) NULL,
@@ -302,10 +294,10 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     CONSTRAINT [PK_nhat_ky_he_thong] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
 );
 
--- 16. BẢNG PHIÊN LÀM VIỆC (PK: ma_phien, FK: ma_lich_lam_viec, ten_dang_nhap, nguoi_nhan_ban_giao)
+-- 16. BẢNG PHIÊN LÀM VIỆC (PK: ma_phien, FK: ten_dang_nhap, ma_ca)
 CREATE TABLE dbo.[phien_lam_viec] (
     [ma_phien] VARCHAR(30) NOT NULL,
-    [ma_lich_lam_viec] VARCHAR(30) NULL,
+    [ma_ca] VARCHAR(20) NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [mo_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
     [dong_luc] DATETIME2(7) NULL,
@@ -313,19 +305,19 @@ CREATE TABLE dbo.[phien_lam_viec] (
     [tien_thuc_te] DECIMAL(18,2) NULL,
     [chenh_lech] DECIMAL(18,2) NULL,
     [giai_trinh] NVARCHAR(1000) NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('OPEN'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DANG_MO'),
     [ten_ca] NVARCHAR(80) NOT NULL DEFAULT (N'Ca làm việc'),
     [nguoi_nhan_ban_giao] VARCHAR(80) NULL,
     [hinh_thuc_ban_giao] VARCHAR(20) NULL,
     CONSTRAINT [PK_phien_lam_viec] PRIMARY KEY CLUSTERED ([ma_phien]),
     CONSTRAINT [CK_phien_lam_viec_1] CHECK ([tien_dau_ca]>=(0)),
     CONSTRAINT [CK_phien_hinh_thuc_ban_giao] CHECK ([hinh_thuc_ban_giao]='BAN_GIAO' OR [hinh_thuc_ban_giao]='NOP_QUY'),
-    CONSTRAINT [CK_phien_trang_thai] CHECK ([trang_thai]='LOCKED' OR [trang_thai]='HANDED_OVER' OR [trang_thai]='RECONCILED' OR [trang_thai]='PENDING_APPROVAL' OR [trang_thai]='OPEN')
+    CONSTRAINT [CK_phien_trang_thai] CHECK ([trang_thai] IN ('DANG_MO', 'DA_KHOA', 'DA_BAN_GIAO', 'CHO_DUYET', 'DA_DOI_SOAT'))
 );
 
--- 17. BẢNG HÓA ĐƠN (PK: so_hoa_don, FK: ma_phien, ten_dang_nhap, ma_khach_hang, ma_voucher)
+-- 17. BẢNG HÓA ĐƠN (PK: ma_hoa_don - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[hoa_don] (
-    [so_hoa_don] VARCHAR(40) NOT NULL,
+    [ma_hoa_don] VARCHAR(40) NOT NULL,
     [ma_phien] VARCHAR(30) NULL,
     [ten_dang_nhap] VARCHAR(80) NULL,
     [ma_khach_hang] VARCHAR(20) NULL,
@@ -334,7 +326,7 @@ CREATE TABLE dbo.[hoa_don] (
     [tien_khach_dua] DECIMAL(18,2) NULL,
     [tien_thoi] DECIMAL(18,2) NULL,
     [diem_cong] INT NOT NULL DEFAULT ((0)),
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('PAID'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DA_THANH_TOAN'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [thanh_toan_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
     [idempotency_key] VARCHAR(80) NULL,
@@ -344,15 +336,15 @@ CREATE TABLE dbo.[hoa_don] (
     [ma_voucher] VARCHAR(40) NULL,
     [ghi_chu] NVARCHAR(1000) NULL,
     [chi_tiet_thanh_toan] NVARCHAR(1000) NULL,
-    CONSTRAINT [PK_hoa_don] PRIMARY KEY CLUSTERED ([so_hoa_don]),
-    CONSTRAINT [CK_hoa_don_1] CHECK ([tong_tien]>=(0))
+    CONSTRAINT [PK_hoa_don] PRIMARY KEY CLUSTERED ([ma_hoa_don]),
+    CONSTRAINT [CK_hoa_don_1] CHECK ([tong_tien]>=(0)),
+    CONSTRAINT [CK_hoa_don_trang_thai] CHECK ([trang_thai] IN ('DA_THANH_TOAN', 'DA_HUY', 'CHO_THANH_TOAN', 'GIO_TREO'))
 );
 
--- 18. BẢNG CHI TIẾT HÓA ĐƠN (PK: ma_chi_tiet_hoa_don, FK: so_hoa_don, ma_san_pham, ma_lo)
+-- 18. BẢNG CHI TIẾT HÓA ĐƠN (PK phức hợp: ma_hoa_don, ma_san_pham - Lấy mã bảng cha hoa_don và san_pham làm khóa, không tạo thêm khóa nhân tạo)
 CREATE TABLE dbo.[chi_tiet_hoa_don] (
-    [ma_chi_tiet_hoa_don] VARCHAR(30) NOT NULL,
-    [so_hoa_don] VARCHAR(40) NOT NULL,
-    [ma_san_pham] VARCHAR(30) NULL,
+    [ma_hoa_don] VARCHAR(40) NOT NULL,
+    [ma_san_pham] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NULL,
     [so_luong] INT NOT NULL,
     [don_gia] DECIMAL(18,2) NOT NULL,
@@ -360,87 +352,95 @@ CREATE TABLE dbo.[chi_tiet_hoa_don] (
     [thue_gtgt] DECIMAL(5,2) NOT NULL DEFAULT ((0)),
     [ma_dich_vu] VARCHAR(40) NULL,
     [ten_hang] NVARCHAR(180) NULL,
-    CONSTRAINT [PK_chi_tiet_hoa_don] PRIMARY KEY CLUSTERED ([ma_chi_tiet_hoa_don]),
+    [thanh_tien] AS (([so_luong] * [don_gia]) - [giam_gia]), -- Thuộc tính dẫn xuất tự tính
+    CONSTRAINT [PK_chi_tiet_hoa_don] PRIMARY KEY CLUSTERED ([ma_hoa_don], [ma_san_pham]),
     CONSTRAINT [CK_chi_tiet_hoa_don_1] CHECK ([giam_gia]>=(0)),
     CONSTRAINT [CK_chi_tiet_hoa_don_2] CHECK ([so_luong]>(0)),
     CONSTRAINT [CK_chi_tiet_hoa_don_gia] CHECK ([don_gia]>=(0))
 );
 
--- 19. BẢNG PHIẾU ĐỔI TRẢ (PK: ma_phieu, FK: so_hoa_don, ten_dang_nhap, hoa_don_thay_the)
+-- 19. BẢNG PHIẾU ĐỔI TRẢ (PK: ma_phieu - Đồng nhất tiền tố ma_hoa_don)
 CREATE TABLE dbo.[phieu_doi_tra] (
     [ma_phieu] VARCHAR(30) NOT NULL,
-    [so_hoa_don] VARCHAR(40) NOT NULL,
+    [ma_hoa_don] VARCHAR(40) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [chenh_lech] DECIMAL(18,2) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_XU_LY'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
     [ly_do] NVARCHAR(1000) NULL,
-    [loai_phieu] VARCHAR(20) NOT NULL DEFAULT ('LEGACY_RETURN'),
-    [hoa_don_thay_the] VARCHAR(40) NULL,
+    [loai_phieu] VARCHAR(20) NOT NULL DEFAULT ('TRA_HANG_CU'),
+    [ma_hoa_don_thay_the] VARCHAR(40) NULL,
     [gia_tri_duoc_doi] BIGINT NULL,
     [khoa_thao_tac] VARCHAR(80) NULL,
-    CONSTRAINT [PK_phieu_doi_tra] PRIMARY KEY CLUSTERED ([ma_phieu])
+    CONSTRAINT [PK_phieu_doi_tra] PRIMARY KEY CLUSTERED ([ma_phieu]),
+    CONSTRAINT [CK_phieu_doi_tra_trang_thai] CHECK ([trang_thai] IN ('CHO_XU_LY', 'HOAN_TAT', 'TU_CHOI', 'DA_HUY')),
+    CONSTRAINT [CK_phieu_doi_tra_loai_phieu] CHECK ([loai_phieu] IN ('DOI_HANG', 'TRA_HANG', 'TRA_HANG_CU'))
 );
 
--- 20. BẢNG CHI TIẾT ĐỔI TRẢ (PK phức hợp: ma_phieu, ma_chi_tiet_hoa_don, ma_lo)
+-- 20. BẢNG CHI TIẾT ĐỔI TRẢ (PK phức hợp: ma_phieu, ma_hoa_don, ma_san_pham, ma_lo - Lấy mã bảng cha phieu_doi_tra và chi_tiet_hoa_don)
 CREATE TABLE dbo.[chi_tiet_doi_tra] (
     [ma_phieu] VARCHAR(30) NOT NULL,
-    [ma_chi_tiet_hoa_don] VARCHAR(30) NOT NULL,
+    [ma_hoa_don] VARCHAR(40) NOT NULL,
+    [ma_san_pham] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NOT NULL,
     [so_luong] INT NOT NULL,
     [tien_hoan] DECIMAL(18,2) NOT NULL,
-    CONSTRAINT [PK_chi_tiet_doi_tra] PRIMARY KEY CLUSTERED ([ma_phieu], [ma_chi_tiet_hoa_don], [ma_lo]),
+    CONSTRAINT [PK_chi_tiet_doi_tra] PRIMARY KEY CLUSTERED ([ma_phieu], [ma_hoa_don], [ma_san_pham], [ma_lo]),
     CONSTRAINT [CK_chi_tiet_doi_tra_1] CHECK ([so_luong]>(0)),
     CONSTRAINT [CK_chi_tiet_doi_tra_2] CHECK ([tien_hoan]>=(0))
 );
 
--- 21. BẢNG PHIẾU NHẬP KHO (PK: so_phieu, FK: ma_ncc, ten_dang_nhap)
+-- 21. BẢNG PHIẾU NHẬP KHO (PK: ma_phieu_nhap - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[phieu_nhap_kho] (
-    [so_phieu] VARCHAR(30) NOT NULL,
-    [ma_ncc] VARCHAR(20) NOT NULL,
+    [ma_phieu_nhap] VARCHAR(30) NOT NULL,
+    [ma_nha_cung_cap] VARCHAR(20) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [ngay_nhap] DATE NOT NULL,
     [tong_tien] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
-    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('DRAFT'),
+    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('CHO_NHAP'),
     [ghi_chu] NVARCHAR(500) NULL,
     [da_tra] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
-    CONSTRAINT [PK_phieu_nhap_kho] PRIMARY KEY CLUSTERED ([so_phieu]),
+    CONSTRAINT [PK_phieu_nhap_kho] PRIMARY KEY CLUSTERED ([ma_phieu_nhap]),
     CONSTRAINT [CK_phieu_nhap_kho_1] CHECK ([da_tra]>=(0)),
-    CONSTRAINT [CK_phieu_nhap_kho_2] CHECK ([tong_tien]>=(0))
+    CONSTRAINT [CK_phieu_nhap_kho_2] CHECK ([tong_tien]>=(0)),
+    CONSTRAINT [CK_phieu_nhap_kho_trang_thai] CHECK ([trang_thai] IN ('CHO_NHAP', 'DA_NHAP', 'DA_HUY'))
 );
 
--- 22. BẢNG CHI TIẾT PHIẾU NHẬP (PK phức hợp: so_phieu, ma_san_pham, so_lo)
+-- 22. BẢNG CHI TIẾT PHIẾU NHẬP (PK phức hợp: ma_phieu_nhap, ma_san_pham, ma_lo - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[chi_tiet_phieu_nhap] (
-    [so_phieu] VARCHAR(30) NOT NULL,
+    [ma_phieu_nhap] VARCHAR(30) NOT NULL,
     [ma_san_pham] VARCHAR(30) NOT NULL,
-    [so_lo] VARCHAR(60) NOT NULL,
+    [ma_lo] VARCHAR(40) NOT NULL,
     [han_su_dung] DATE NULL,
     [so_luong] INT NOT NULL,
     [gia_nhap] DECIMAL(18,2) NOT NULL,
-    CONSTRAINT [PK_chi_tiet_phieu_nhap] PRIMARY KEY CLUSTERED ([so_phieu], [ma_san_pham], [so_lo]),
+    [thanh_tien] AS ([so_luong] * [gia_nhap]), -- Thuộc tính dẫn xuất tự tính
+    CONSTRAINT [PK_chi_tiet_phieu_nhap] PRIMARY KEY CLUSTERED ([ma_phieu_nhap], [ma_san_pham], [ma_lo]),
     CONSTRAINT [CK_chi_tiet_phieu_nhap_1] CHECK ([gia_nhap]>(0)),
     CONSTRAINT [CK_chi_tiet_phieu_nhap_2] CHECK ([so_luong]>(0))
 );
 
--- 23. BẢNG PHIẾU XUẤT KHO (PK: so_phieu, FK: ten_dang_nhap)
+-- 23. BẢNG PHIẾU XUẤT KHO (PK: ma_phieu_xuat - Đồng nhất tiền tố ma_)
 CREATE TABLE dbo.[phieu_xuat_kho] (
-    [so_phieu] VARCHAR(30) NOT NULL,
+    [ma_phieu_xuat] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
     [loai_xuat] VARCHAR(40) NOT NULL,
     [ly_do] NVARCHAR(1000) NOT NULL,
     [tong_gia_tri] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DRAFT'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_XUAT'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
-    CONSTRAINT [PK_phieu_xuat_kho] PRIMARY KEY CLUSTERED ([so_phieu])
+    CONSTRAINT [PK_phieu_xuat_kho] PRIMARY KEY CLUSTERED ([ma_phieu_xuat]),
+    CONSTRAINT [CK_phieu_xuat_kho_loai] CHECK ([loai_xuat] IN ('XUAT_HUY', 'THANH_LY', 'TRA_NHA_CUNG_CAP', 'SU_DUNG_NOI_BO')),
+    CONSTRAINT [CK_phieu_xuat_kho_trang_thai] CHECK ([trang_thai] IN ('CHO_XUAT', 'DA_XUAT', 'TU_CHOI', 'DA_HUY'))
 );
 
--- 24. BẢNG CHI TIẾT PHIẾU XUẤT (PK phức hợp: so_phieu, ma_lo)
+-- 24. BẢNG CHI TIẾT PHIẾU XUẤT (PK phức hợp: ma_phieu_xuat, ma_lo)
 CREATE TABLE dbo.[chi_tiet_phieu_xuat] (
-    [so_phieu] VARCHAR(30) NOT NULL,
+    [ma_phieu_xuat] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NOT NULL,
     [so_luong] INT NOT NULL,
     [gia_tri] DECIMAL(18,2) NOT NULL,
-    CONSTRAINT [PK_chi_tiet_phieu_xuat] PRIMARY KEY CLUSTERED ([so_phieu], [ma_lo]),
+    CONSTRAINT [PK_chi_tiet_phieu_xuat] PRIMARY KEY CLUSTERED ([ma_phieu_xuat], [ma_lo]),
     CONSTRAINT [CK_chi_tiet_phieu_xuat_1] CHECK ([gia_tri]>=(0)),
     CONSTRAINT [CK_chi_tiet_phieu_xuat_2] CHECK ([so_luong]>(0))
 );
@@ -466,10 +466,10 @@ CREATE TABLE dbo.[thu_cung] (
     [ngay_tiem_gan_nhat] DATE NULL,
     CONSTRAINT [PK_thu_cung] PRIMARY KEY CLUSTERED ([ma_thu_cung]),
     CONSTRAINT [CK_thu_cung_1] CHECK ([can_nang]>(0)),
-    CONSTRAINT [CK_thu_cung_2] CHECK ([loai] IN (N'Chó', N'Mèo', 'DOG', 'CAT'))
+    CONSTRAINT [CK_thu_cung_2] CHECK ([loai] IN (N'Chó', N'Mèo'))
 );
 
--- 26. BẢNG HỢP ĐỒNG LƯU TRÚ (PK: ma_hop_dong, FK: ma_khach_hang, ma_thu_cung, ma_phong, so_hoa_don, nhan_coc_boi, ma_phien_nhan_coc)
+-- 26. BẢNG HỢP ĐỒNG LƯU TRÚ (PK: ma_hop_dong, FK: ma_khach_hang, ma_thu_cung, ma_phong, ma_hoa_don)
 CREATE TABLE dbo.[hop_dong_luu_tru] (
     [ma_hop_dong] VARCHAR(30) NOT NULL,
     [ma_khach_hang] VARCHAR(20) NOT NULL,
@@ -482,10 +482,10 @@ CREATE TABLE dbo.[hop_dong_luu_tru] (
     [tien_coc] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
     [phuong_thuc_coc] VARCHAR(30) NULL DEFAULT ('TIEN_MAT'),
     [khoa_thu_coc] VARCHAR(120) NULL,
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DA_DAT'),
     [gia_dem] DECIMAL(18,2) NULL,
     [ghi_chu] NVARCHAR(1000) NOT NULL DEFAULT (N''),
-    [so_hoa_don] VARCHAR(40) NULL,
+    [ma_hoa_don] VARCHAR(40) NULL,
     [da_nhan_coc] BIT NOT NULL DEFAULT ((0)),
     [nhan_coc_luc] DATETIME2(7) NULL,
     [nhan_coc_boi] VARCHAR(80) NULL,
@@ -493,7 +493,8 @@ CREATE TABLE dbo.[hop_dong_luu_tru] (
     [coc_yeu_cau] DECIMAL(18,2) NULL,
     [ly_do_doi_coc] NVARCHAR(1000) NULL,
     CONSTRAINT [PK_hop_dong_luu_tru] PRIMARY KEY CLUSTERED ([ma_hop_dong]),
-    CONSTRAINT [CK_hop_dong_luu_tru_1] CHECK ([gia_dem]>(0))
+    CONSTRAINT [CK_hop_dong_luu_tru_1] CHECK ([gia_dem]>(0)),
+    CONSTRAINT [CK_hop_dong_luu_tru_trang_thai] CHECK ([trang_thai] IN ('DA_DAT', 'DANG_O', 'DA_TRA_PHONG', 'DA_HUY'))
 );
 
 -- 27. BẢNG LỊCH HẸN (PK: ma_lich_hen, FK: ma_khach_hang, ma_thu_cung, ma_nhan_vien, ma_goi)
@@ -504,11 +505,12 @@ CREATE TABLE dbo.[lich_hen] (
     [loai_dich_vu] VARCHAR(20) NOT NULL,
     [bat_dau] DATETIME2(7) NOT NULL,
     [ket_thuc] DATETIME2(7) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DA_XAC_NHAN'),
     [ghi_chu] NVARCHAR(1000) NULL,
     [ma_nhan_vien] VARCHAR(20) NULL,
     [ma_goi] VARCHAR(30) NULL,
-    CONSTRAINT [PK_lich_hen] PRIMARY KEY CLUSTERED ([ma_lich_hen])
+    CONSTRAINT [PK_lich_hen] PRIMARY KEY CLUSTERED ([ma_lich_hen]),
+    CONSTRAINT [CK_lich_hen_trang_thai] CHECK ([trang_thai] IN ('DA_XAC_NHAN', 'DANG_THUC_HIEN', 'HOAN_TAT', 'DA_HUY'))
 );
 
 -- 28. BẢNG NHẬT KÝ CHĂM SÓC (PK: ma_nhat_ky, FK: ma_hop_dong, ma_phieu_spa, ma_nhan_vien)
@@ -529,7 +531,7 @@ CREATE TABLE dbo.[nhat_ky_cham_soc] (
     CONSTRAINT [PK_nhat_ky_cham_soc] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
 );
 
--- 29. BẢNG PHIẾU TIẾP NHẬN SPA (PK: ma_phieu, FK: ma_lich_hen, ma_thu_cung, ma_goi, ma_nhan_vien, so_hoa_don)
+-- 29. BẢNG PHIẾU TIẾP NHẬN SPA (PK: ma_phieu, FK: ma_lich_hen, ma_thu_cung, ma_goi, ma_nhan_vien, ma_hoa_don)
 CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     [ma_phieu] VARCHAR(30) NOT NULL,
     [ma_lich_hen] VARCHAR(30) NULL,
@@ -540,14 +542,15 @@ CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     [so_luong] INT NOT NULL DEFAULT ((1)),
     [can_nang_thuc_te] DECIMAL(8,2) NOT NULL,
     [tong_tien] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
-    [trang_thai] VARCHAR(30) NOT NULL,
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('TIEP_NHAN'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
     [ma_nhan_vien] VARCHAR(20) NULL,
     [ghi_chu] NVARCHAR(1000) NOT NULL DEFAULT (N''),
     [anh] NVARCHAR(500) NULL,
-    [so_hoa_don] VARCHAR(40) NULL,
+    [ma_hoa_don] VARCHAR(40) NULL,
     CONSTRAINT [PK_phieu_tiep_nhan_spa] PRIMARY KEY CLUSTERED ([ma_phieu]),
-    CONSTRAINT [CK_phieu_tiep_nhan_spa_1] CHECK ([can_nang_thuc_te]>(0))
+    CONSTRAINT [CK_phieu_tiep_nhan_spa_1] CHECK ([can_nang_thuc_te]>(0)),
+    CONSTRAINT [CK_phieu_tiep_nhan_spa_trang_thai] CHECK ([trang_thai] IN ('TIEP_NHAN', 'DANG_THUC_HIEN', 'HOAN_TAT', 'DA_THANH_TOAN', 'DA_HUY'))
 );
 
 -- 30. BẢNG VOUCHER (PK: ma_voucher, FK: ma_khach_hang)
@@ -561,12 +564,13 @@ CREATE TABLE dbo.[voucher] (
     [so_luong] INT NOT NULL DEFAULT ((1)),
     [da_dung] INT NOT NULL DEFAULT ((0)),
     [don_toi_thieu] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
-    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('ACTIVE'),
+    [trang_thai] VARCHAR(20) NOT NULL DEFAULT ('CON_HAN'),
     [khoa_doi_diem] VARCHAR(80) NULL,
     CONSTRAINT [PK_voucher] PRIMARY KEY CLUSTERED ([ma_voucher]),
     CONSTRAINT [CK_voucher_1] CHECK ([da_dung]>=(0)),
     CONSTRAINT [CK_voucher_2] CHECK ([menh_gia]>(0)),
-    CONSTRAINT [CK_voucher_3] CHECK ([so_luong]>=(0))
+    CONSTRAINT [CK_voucher_3] CHECK ([so_luong]>=(0)),
+    CONSTRAINT [CK_voucher_trang_thai] CHECK ([trang_thai] IN ('CON_HAN', 'DA_DUNG', 'HET_HAN', 'DA_HUY'))
 );
 
 -- 31. BẢNG YÊU CẦU PHÊ DUYỆT (PK: ma_yeu_cau, FK: ten_dang_nhap_gui, ten_dang_nhap_xu_ly)
@@ -577,7 +581,7 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     [loai_doi_tuong] VARCHAR(50) NOT NULL,
     [ma_doi_tuong] VARCHAR(50) NOT NULL,
     [ly_do] NVARCHAR(1000) NOT NULL,
-    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('PENDING'),
+    [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_DUYET'),
     [ten_dang_nhap_xu_ly] VARCHAR(80) NULL,
     [phan_hoi] NVARCHAR(1000) NULL,
     [gui_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
@@ -589,9 +593,9 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     CONSTRAINT [CK_yeu_cau_phe_duyet_loai]
         CHECK ([loai] IN ('SUA_HOA_DON', 'DOI_TRA', 'XUAT_HUY', 'KIEM_KE', 'NGHI_PHEP', 'GIA_BAN')),
     CONSTRAINT [CK_yeu_cau_phe_duyet_loai_doi_tuong]
-        CHECK ([loai_doi_tuong] IN ('PRICE_CHANGE', 'WRITE_OFF', 'STOCKTAKE', 'RETURN', 'LEAVE', 'INVOICE_NOTE', 'CANCEL_INVOICE')),
+        CHECK ([loai_doi_tuong] IN ('DOI_GIA', 'XUAT_HUY', 'KIEM_KE', 'DOI_TRA', 'NGHI_PHEP', 'GHI_CHU_HOA_DON', 'HUY_HOA_DON')),
     CONSTRAINT [CK_yeu_cau_phe_duyet_trang_thai]
-        CHECK ([trang_thai] IN ('PENDING', 'APPROVED', 'REJECTED', 'NEEDS_INFO', 'CANCELLED'))
+        CHECK ([trang_thai] IN ('CHO_DUYET', 'DA_DUYET', 'TU_CHOI', 'CAN_THEM_THONG_TIN', 'DA_HUY'))
 );
 
 -- 32. BẢNG LỊCH SỬ THU CỌC HOTEL (PK phức hợp: ma_hop_dong, khoa_thu_coc, phuong_thuc)
@@ -639,12 +643,12 @@ ALTER TABLE dbo.[bien_ban_kiem_ke] ADD CONSTRAINT [FK_bien_ban_kiem_ke_tai_khoan
 
 ALTER TABLE dbo.[cai_dat] ADD CONSTRAINT [FK_cai_dat_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
-ALTER TABLE dbo.[chi_tiet_kiem_ke] ADD CONSTRAINT [FK_chi_tiet_kiem_ke_bien_ban] FOREIGN KEY ([so_bien_ban]) REFERENCES dbo.[bien_ban_kiem_ke] ([so_bien_ban]);
+ALTER TABLE dbo.[chi_tiet_kiem_ke] ADD CONSTRAINT [FK_chi_tiet_kiem_ke_bien_ban] FOREIGN KEY ([ma_bien_ban]) REFERENCES dbo.[bien_ban_kiem_ke] ([ma_bien_ban]);
 ALTER TABLE dbo.[chi_tiet_kiem_ke] ADD CONSTRAINT [FK_chi_tiet_kiem_ke_lo_hang] FOREIGN KEY ([ma_lo]) REFERENCES dbo.[lo_hang] ([ma_lo]);
 
 ALTER TABLE dbo.[nhat_ky_he_thong] ADD CONSTRAINT [FK_nhat_ky_he_thong_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
-ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_lich_lam_viec] FOREIGN KEY ([ma_lich_lam_viec]) REFERENCES dbo.[lich_lam_viec] ([ma_lich_lam_viec]);
+ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_ca_lam_viec] FOREIGN KEY ([ma_ca]) REFERENCES dbo.[ca_lam_viec] ([ma_ca]);
 ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 ALTER TABLE dbo.[phien_lam_viec] ADD CONSTRAINT [FK_phien_lam_viec_nguoi_nhan_ban_giao] FOREIGN KEY ([nguoi_nhan_ban_giao]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
@@ -653,27 +657,26 @@ ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_tai_khoan] FOREIGN KEY ([te
 ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
 ALTER TABLE dbo.[hoa_don] ADD CONSTRAINT [FK_hoa_don_voucher] FOREIGN KEY ([ma_voucher]) REFERENCES dbo.[voucher] ([ma_voucher]);
 
-ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_hoa_don] FOREIGN KEY ([so_hoa_don]) REFERENCES dbo.[hoa_don] ([so_hoa_don]);
-ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_san_pham] FOREIGN KEY ([ma_san_pham]) REFERENCES dbo.[san_pham] ([ma_san_pham]);
+ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_hoa_don] FOREIGN KEY ([ma_hoa_don]) REFERENCES dbo.[hoa_don] ([ma_hoa_don]);
 ALTER TABLE dbo.[chi_tiet_hoa_don] ADD CONSTRAINT [FK_chi_tiet_hoa_don_lo_hang] FOREIGN KEY ([ma_lo]) REFERENCES dbo.[lo_hang] ([ma_lo]);
 
-ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don] FOREIGN KEY ([so_hoa_don]) REFERENCES dbo.[hoa_don] ([so_hoa_don]);
+ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don] FOREIGN KEY ([ma_hoa_don]) REFERENCES dbo.[hoa_don] ([ma_hoa_don]);
 ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
-ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don_thay_the] FOREIGN KEY ([hoa_don_thay_the]) REFERENCES dbo.[hoa_don] ([so_hoa_don]);
+ALTER TABLE dbo.[phieu_doi_tra] ADD CONSTRAINT [FK_phieu_doi_tra_hoa_don_thay_the] FOREIGN KEY ([ma_hoa_don_thay_the]) REFERENCES dbo.[hoa_don] ([ma_hoa_don]);
 
 ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_phieu_doi_tra] FOREIGN KEY ([ma_phieu]) REFERENCES dbo.[phieu_doi_tra] ([ma_phieu]);
-ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_chi_tiet_hoa_don] FOREIGN KEY ([ma_chi_tiet_hoa_don]) REFERENCES dbo.[chi_tiet_hoa_don] ([ma_chi_tiet_hoa_don]);
+ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_chi_tiet_hoa_don] FOREIGN KEY ([ma_hoa_don], [ma_san_pham]) REFERENCES dbo.[chi_tiet_hoa_don] ([ma_hoa_don], [ma_san_pham]);
 ALTER TABLE dbo.[chi_tiet_doi_tra] ADD CONSTRAINT [FK_chi_tiet_doi_tra_lo_hang] FOREIGN KEY ([ma_lo]) REFERENCES dbo.[lo_hang] ([ma_lo]);
 
-ALTER TABLE dbo.[phieu_nhap_kho] ADD CONSTRAINT [FK_phieu_nhap_kho_nha_cung_cap] FOREIGN KEY ([ma_ncc]) REFERENCES dbo.[nha_cung_cap] ([ma_ncc]);
+ALTER TABLE dbo.[phieu_nhap_kho] ADD CONSTRAINT [FK_phieu_nhap_kho_nha_cung_cap] FOREIGN KEY ([ma_nha_cung_cap]) REFERENCES dbo.[nha_cung_cap] ([ma_nha_cung_cap]);
 ALTER TABLE dbo.[phieu_nhap_kho] ADD CONSTRAINT [FK_phieu_nhap_kho_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
-ALTER TABLE dbo.[chi_tiet_phieu_nhap] ADD CONSTRAINT [FK_chi_tiet_phieu_nhap_phieu_nhap] FOREIGN KEY ([so_phieu]) REFERENCES dbo.[phieu_nhap_kho] ([so_phieu]);
+ALTER TABLE dbo.[chi_tiet_phieu_nhap] ADD CONSTRAINT [FK_chi_tiet_phieu_nhap_phieu_nhap] FOREIGN KEY ([ma_phieu_nhap]) REFERENCES dbo.[phieu_nhap_kho] ([ma_phieu_nhap]);
 ALTER TABLE dbo.[chi_tiet_phieu_nhap] ADD CONSTRAINT [FK_chi_tiet_phieu_nhap_san_pham] FOREIGN KEY ([ma_san_pham]) REFERENCES dbo.[san_pham] ([ma_san_pham]);
 
 ALTER TABLE dbo.[phieu_xuat_kho] ADD CONSTRAINT [FK_phieu_xuat_kho_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
-ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_phieu_xuat] FOREIGN KEY ([so_phieu]) REFERENCES dbo.[phieu_xuat_kho] ([so_phieu]);
+ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_phieu_xuat] FOREIGN KEY ([ma_phieu_xuat]) REFERENCES dbo.[phieu_xuat_kho] ([ma_phieu_xuat]);
 ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_lo_hang] FOREIGN KEY ([ma_lo]) REFERENCES dbo.[lo_hang] ([ma_lo]);
 
 ALTER TABLE dbo.[thu_cung] ADD CONSTRAINT [FK_thu_cung_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
@@ -681,7 +684,7 @@ ALTER TABLE dbo.[thu_cung] ADD CONSTRAINT [FK_thu_cung_khach_hang] FOREIGN KEY (
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_thu_cung] FOREIGN KEY ([ma_thu_cung]) REFERENCES dbo.[thu_cung] ([ma_thu_cung]);
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_phong] FOREIGN KEY ([ma_phong]) REFERENCES dbo.[phong_hotel] ([ma_phong]);
-ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_hoa_don] FOREIGN KEY ([so_hoa_don]) REFERENCES dbo.[hoa_don] ([so_hoa_don]);
+ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_hoa_don] FOREIGN KEY ([ma_hoa_don]) REFERENCES dbo.[hoa_don] ([ma_hoa_don]);
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_tai_khoan_coc] FOREIGN KEY ([nhan_coc_boi]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_phien_coc] FOREIGN KEY ([ma_phien_nhan_coc]) REFERENCES dbo.[phien_lam_viec] ([ma_phien]);
 
@@ -698,7 +701,7 @@ ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_lic
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_thu_cung] FOREIGN KEY ([ma_thu_cung]) REFERENCES dbo.[thu_cung] ([ma_thu_cung]);
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_goi_spa] FOREIGN KEY ([ma_goi]) REFERENCES dbo.[goi_dich_vu_spa] ([ma_goi]);
 ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_nhan_vien] FOREIGN KEY ([ma_nhan_vien]) REFERENCES dbo.[nhan_vien] ([ma_nhan_vien]);
-ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_hoa_don] FOREIGN KEY ([so_hoa_don]) REFERENCES dbo.[hoa_don] ([so_hoa_don]);
+ALTER TABLE dbo.[phieu_tiep_nhan_spa] ADD CONSTRAINT [FK_phieu_tiep_nhan_spa_hoa_don] FOREIGN KEY ([ma_hoa_don]) REFERENCES dbo.[hoa_don] ([ma_hoa_don]);
 
 ALTER TABLE dbo.[voucher] ADD CONSTRAINT [FK_voucher_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
 
@@ -721,10 +724,10 @@ CREATE INDEX [IX_lich_hen_thoi_gian] ON dbo.[lich_hen] ([bat_dau], [ket_thuc], [
 CREATE INDEX [IX_lich_ngay_ca] ON dbo.[lich_lam_viec] ([ngay_lam], [ma_ca]);
 CREATE INDEX [IX_lo_hang_fefo] ON dbo.[lo_hang] ([ma_san_pham], [han_su_dung], [trang_thai]) INCLUDE ([so_luong_ton]);
 CREATE INDEX [IX_audit_time] ON dbo.[nhat_ky_he_thong] ([thoi_gian] DESC);
-CREATE UNIQUE INDEX [UX_phien_open] ON dbo.[phien_lam_viec] ([ten_dang_nhap]) WHERE ([trang_thai]='OPEN');
+CREATE UNIQUE INDEX [UX_phien_dang_mo] ON dbo.[phien_lam_viec] ([ten_dang_nhap]) WHERE ([trang_thai]='DANG_MO');
 CREATE UNIQUE INDEX [UX_doi_hang_khoa] ON dbo.[phieu_doi_tra] ([khoa_thao_tac]) WHERE ([khoa_thao_tac] IS NOT NULL);
-CREATE UNIQUE INDEX [UX_doi_hang_hoa_don] ON dbo.[phieu_doi_tra] ([hoa_don_thay_the]) WHERE ([hoa_don_thay_the] IS NOT NULL);
-CREATE INDEX [IX_spa_pending] ON dbo.[phieu_tiep_nhan_spa] ([trang_thai], [tao_luc]);
+CREATE UNIQUE INDEX [UX_doi_hang_hoa_don] ON dbo.[phieu_doi_tra] ([ma_hoa_don_thay_the]) WHERE ([ma_hoa_don_thay_the] IS NOT NULL);
+CREATE INDEX [IX_spa_trang_thai_tao_luc] ON dbo.[phieu_tiep_nhan_spa] ([trang_thai], [tao_luc]);
 CREATE UNIQUE INDEX [UX_san_pham_barcode] ON dbo.[san_pham] ([barcode]) WHERE ([barcode] IS NOT NULL AND [barcode]<>'');
 CREATE INDEX [IX_tai_khoan_username_status] ON dbo.[tai_khoan] ([ten_dang_nhap], [trang_thai]);
 CREATE UNIQUE INDEX [UX_voucher_doi_diem] ON dbo.[voucher] ([khoa_doi_diem]) WHERE ([khoa_doi_diem] IS NOT NULL);

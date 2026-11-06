@@ -88,8 +88,8 @@ public final class CaThuNganPanel extends CoSoPanel {
         add(lblTieuDe, BorderLayout.NORTH);
 
         pnlGoc.setOpaque(false);
-        pnlGoc.add(taoMo(), "open");
-        pnlGoc.add(taoDangChay(), "running");
+        pnlGoc.add(taoMo(), "MO_CA");
+        pnlGoc.add(taoDangChay(), "DANG_CHAY");
         JScrollPane scrNoiDung = new JScrollPane(pnlGoc);
         scrNoiDung.setBorder(BorderFactory.createEmptyBorder());
         scrNoiDung.getViewport().setBackground(MauUngDung.NEN_KEM);
@@ -357,7 +357,7 @@ public final class CaThuNganPanel extends CoSoPanel {
                                     + caLamViec.layTieuDeDangCho()
                                     + "\"."
                             : "");
-            cacThe.show(pnlGoc, "open");
+            cacThe.show(pnlGoc, "MO_CA");
             txtTienDauCa.setText("");
             txtTienDauCa.requestFocusInWindow();
             return;
@@ -395,7 +395,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         cboNguoiNhan.setSelectedItem(null);
         lblDongLoi.setText("");
         capNhatSoLuongTomTat();
-        cacThe.show(pnlGoc, "running");
+        cacThe.show(pnlGoc, "DANG_CHAY");
     }
 
     @Override

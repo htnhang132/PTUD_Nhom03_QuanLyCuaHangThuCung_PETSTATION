@@ -12,13 +12,13 @@ import java.util.Set;
 public interface TaiKhoanDAO {
     Optional<TaiKhoan> timTheoTenDangNhap(Connection ketNoi, String tenDangNhap) throws Exception;
 
-    Set<Quyen> timCacQuyen(Connection ketNoi, long idTaiKhoan) throws Exception;
+    Set<Quyen> timCacQuyen(Connection ketNoi, String tenDangNhap) throws Exception;
 
     void ghiNhanDangNhapThatBai(
-            Connection ketNoi, long idTaiKhoan, int soLuongThatBai, LocalDateTime khoaDenLuc)
+            Connection ketNoi, String tenDangNhap, int soLuongThatBai, LocalDateTime khoaDenLuc)
             throws Exception;
 
-    void ghiNhanDangNhapThanhCong(Connection ketNoi, long idTaiKhoan) throws Exception;
+    void ghiNhanDangNhapThanhCong(Connection ketNoi, String tenDangNhap) throws Exception;
 
     Object layMaBamMatKhau(Object... cacThamSo);
 

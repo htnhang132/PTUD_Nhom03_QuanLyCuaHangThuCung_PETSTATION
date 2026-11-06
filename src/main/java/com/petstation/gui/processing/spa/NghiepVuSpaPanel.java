@@ -49,12 +49,12 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
             if (thanhPhan instanceof JButton btn) {
                 switch (btn.getText()) {
                     case "Thêm dịch vụ" ->
-                            btn.setEnabled(Set.of("RECEIVED", "IN_PROGRESS").contains(trangThai));
-                    case "Bắt đầu làm" -> btn.setEnabled(trangThai.equals("RECEIVED") && coDichVu);
-                    case "Hoàn thành" -> btn.setEnabled(trangThai.equals("IN_PROGRESS"));
+                            btn.setEnabled(Set.of("TIEP_NHAN", "DANG_THUC_HIEN").contains(trangThai));
+                    case "Bắt đầu làm" -> btn.setEnabled(trangThai.equals("TIEP_NHAN") && coDichVu);
+                    case "Hoàn thành" -> btn.setEnabled(trangThai.equals("DANG_THUC_HIEN"));
                     case "Thanh toán" ->
                             btn.setEnabled(
-                                    trangThai.equals("COMPLETED")
+                                    trangThai.equals("HOAN_TAT")
                                             && com.petstation.service.PhienDangNhapService
                                                     .layPhien()
                                                     .kiemTraCo(

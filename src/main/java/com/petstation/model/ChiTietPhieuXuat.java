@@ -38,7 +38,7 @@ public class ChiTietPhieuXuat implements Serializable {
         setPhieuXuat(phieuXuat);
         setLoHang(loHang);
         setSoLuong(soLuong);
-        setGiaTri(giaTri);
+        this.giaTri = Math.max(0L, giaTri);
     }
 
     /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
@@ -183,25 +183,20 @@ public class ChiTietPhieuXuat implements Serializable {
     }
 
     public long getGiaTri() {
-        return this.giaTri;
+        return tinhGiaTriXuat();
     }
 
     public long layGiaTri() {
-        return this.giaTri;
+        return tinhGiaTriXuat();
     }
 
     public long giaTri() {
-        return this.giaTri;
+        return tinhGiaTriXuat();
     }
 
-    public void setGiaTri(long giaTri) {
-        if (giaTri < 0)
-            throw new IllegalArgumentException("Giá trị xuất kho không được âm.");
-        this.giaTri = giaTri;
-    }
-
-    public void datGiaTri(long giaTri) {
-        setGiaTri(giaTri);
+    /** Phương thức nội bộ gán snapshot từ CSDL (không cung cấp setter công khai vì thuộc tính dẫn xuất). */
+    void napGiaTriSnapshot(long giaTri) {
+        this.giaTri = Math.max(0L, giaTri);
     }
 
     // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================

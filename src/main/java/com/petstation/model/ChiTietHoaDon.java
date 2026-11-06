@@ -7,23 +7,23 @@ import com.petstation.util.DuLieu;
 /**
  * Thực thể Chi tiết hóa đơn khớp bảng [chi_tiet_hoa_don].
  * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã chi tiết hóa đơn (maChiTietHoaDon). Đã bỏ thuộc tính id.
+ * - Khóa chính phức hợp theo thực thể yếu là cặp (hoaDon, sanPham).
  * - Quan hệ kết hợp với đối tượng HoaDon, SanPham, LoHang.
- * - Có phương thức tính thành tiền dẫn xuất, kiểm tra ràng buộc trong setter.
- * - Equals/hashCode theo khóa chính maChiTietHoaDon (hoặc cặp hoaDon + sanPham + loHang khi chưa sinh mã).
+ * - Thuộc tính dẫn xuất: thanhTien được tính động qua getThanhTien() / tinhThanhTien()
+ *   tuyệt đối KHÔNG có setter công khai.
+ * - Equals/hashCode theo cặp khóa chính phức hợp (hoaDon, sanPham).
  * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
  */
 public class ChiTietHoaDon implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Chi tiết hóa đơn */
-    private String maChiTietHoaDon;
-    /** Quan hệ kết hợp (Association): Dòng chi tiết thuộc về một Hóa đơn. */
+    /** Quan hệ kết hợp (Association): Dòng chi tiết thuộc về một Hóa đơn (Thành phần khóa chính 1). */
     private HoaDon hoaDon;
-    /** Quan hệ kết hợp: Sản phẩm bán ra (null nếu là dòng dịch vụ Spa/Hotel). */
+    /** Quan hệ kết hợp: Sản phẩm hoặc dịch vụ bán ra (Thành phần khóa chính 2). */
     private SanPham sanPham;
-    /** Quan hệ kết hợp: Lô hàng xuất kho theo FEFO (null nếu là dòng dịch vụ). */
+    /** Quan hệ kết hợp: Lô hàng xuất kho theo FEFO (có thể null nếu là dịch vụ Spa/Hotel). */
     private LoHang loHang;
+
     private int soLuong;
     private long donGia;
     private long giamGia;
@@ -36,10 +36,9 @@ public class ChiTietHoaDon implements Serializable {
         this.soLuong = 1;
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maChiTietHoaDon. */
+    /** Constructor theo mã cầu nối. */
     public ChiTietHoaDon(String maChiTietHoaDon) {
         this();
-        setMaChiTietHoaDon(maChiTietHoaDon);
     }
 
     /** Constructor cầu nối nhận id từ DAO. */
@@ -48,7 +47,29 @@ public class ChiTietHoaDon implements Serializable {
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng HoaDon, SanPham, LoHang và khóa chính. */
+    /** Constructor chuẩn OOP nhận đối tượng HoaDon, SanPham, LoHang. */
+    public ChiTietHoaDon(
+            HoaDon hoaDon,
+            SanPham sanPham,
+            LoHang loHang,
+            int soLuong,
+            long donGia,
+            long giamGia,
+            double thueGtgt,
+            String maDichVu,
+            String tenHang) {
+        setHoaDon(hoaDon);
+        setSanPham(sanPham);
+        setLoHang(loHang);
+        setSoLuong(soLuong);
+        setDonGia(donGia);
+        setGiamGia(giamGia);
+        setThueGtgt(thueGtgt);
+        setMaDichVu(maDichVu);
+        setTenHang(tenHang);
+    }
+
+    /** Constructor tương thích ngược có tham số maChiTietHoaDon. */
     public ChiTietHoaDon(
             String maChiTietHoaDon,
             HoaDon hoaDon,
@@ -60,16 +81,7 @@ public class ChiTietHoaDon implements Serializable {
             double thueGtgt,
             String maDichVu,
             String tenHang) {
-        setMaChiTietHoaDon(maChiTietHoaDon);
-        setHoaDon(hoaDon);
-        setSanPham(sanPham);
-        setLoHang(loHang);
-        setSoLuong(soLuong);
-        setDonGia(donGia);
-        setGiamGia(giamGia);
-        setThueGtgt(thueGtgt);
-        setMaDichVu(maDichVu);
-        setTenHang(tenHang);
+        this(hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
     }
 
     /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
@@ -84,7 +96,7 @@ public class ChiTietHoaDon implements Serializable {
             double thueGtgt,
             String maDichVu,
             String tenHang) {
-        this(DuLieu.taoMaTuId("CTHD", 6, id), hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
+        this(hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
         setId(id);
     }
 
@@ -122,6 +134,14 @@ public class ChiTietHoaDon implements Serializable {
         return (long) Math.max(0, soLuong) * Math.max(0L, donGia);
     }
 
+    public long getThanhTienTruocGiam() {
+        return tinhThanhTienTruocGiam();
+    }
+
+    public long layThanhTienTruocGiam() {
+        return tinhThanhTienTruocGiam();
+    }
+
     /** Tính tiền thuế GTGT của dòng hàng (thuộc tính dẫn xuất). */
     public long tinhTienThueGtgt() {
         long sauGiam = Math.max(0L, tinhThanhTienTruocGiam() - giamGia);
@@ -131,21 +151,42 @@ public class ChiTietHoaDon implements Serializable {
         return Math.round(sauGiam * thueGtgt / 100.0);
     }
 
+    public long getTienThueGtgt() {
+        return tinhTienThueGtgt();
+    }
+
+    public long layTienThueGtgt() {
+        return tinhTienThueGtgt();
+    }
+
     /**
      * Tính thành tiền cuối cùng của dòng chi tiết hóa đơn (thuộc tính dẫn xuất).
+     * Tuyệt đối KHÔNG có setter công khai.
      */
     public long tinhThanhTien() {
         return Math.max(0L, tinhThanhTienTruocGiam() - giamGia) + tinhTienThueGtgt();
     }
 
+    public long getThanhTien() {
+        return tinhThanhTien();
+    }
+
+    public long layThanhTien() {
+        return tinhThanhTien();
+    }
+
+    public long thanhTien() {
+        return tinhThanhTien();
+    }
+
     // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maChiTietHoaDon);
+        return DuLieu.layIdCauNoiObj(this, getMaChiTietHoaDon());
     }
 
     public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maChiTietHoaDon);
+        return DuLieu.layIdCauNoi(this, getMaChiTietHoaDon());
     }
 
     public long id() {
@@ -154,9 +195,6 @@ public class ChiTietHoaDon implements Serializable {
 
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-        if ((this.maChiTietHoaDon == null || this.maChiTietHoaDon.isBlank()) && id > 0) {
-            this.maChiTietHoaDon = DuLieu.taoMaTuId("CTHD", 6, id);
-        }
     }
 
     public void datId(long id) {
@@ -165,20 +203,24 @@ public class ChiTietHoaDon implements Serializable {
 
     // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
+    /** Mã tổng hợp đại diện dòng chi tiết (hoaDon-sanPham) tương thích ngược */
     public String getMaChiTietHoaDon() {
-        return this.maChiTietHoaDon;
+        String hd = (hoaDon != null && hoaDon.getMaHoaDon() != null) ? hoaDon.getMaHoaDon() : "";
+        String sp = (sanPham != null && sanPham.getMaSanPham() != null) ? sanPham.getMaSanPham() : (maDichVu != null ? maDichVu : "");
+        String lo = (loHang != null && loHang.getMaLo() != null) ? loHang.getMaLo() : "";
+        return hd + "-" + sp + (lo.isEmpty() ? "" : "-" + lo);
     }
 
     public String layMaChiTietHoaDon() {
-        return this.maChiTietHoaDon;
+        return getMaChiTietHoaDon();
     }
 
     public String maChiTietHoaDon() {
-        return this.maChiTietHoaDon;
+        return getMaChiTietHoaDon();
     }
 
     public void setMaChiTietHoaDon(String maChiTietHoaDon) {
-        this.maChiTietHoaDon = maChiTietHoaDon == null ? null : maChiTietHoaDon.trim();
+        // Tương thích ngược, khóa chính thực sự là (hoaDon, sanPham)
     }
 
     public void datMaChiTietHoaDon(String maChiTietHoaDon) {
@@ -199,6 +241,14 @@ public class ChiTietHoaDon implements Serializable {
 
     public void datHoaDon(HoaDon hoaDon) {
         setHoaDon(hoaDon);
+    }
+
+    public String getMaHoaDon() {
+        return hoaDon == null ? null : hoaDon.getMaHoaDon();
+    }
+
+    public void setMaHoaDon(String maHoaDon) {
+        this.hoaDon = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
     }
 
     public long getHoaDonId() {
@@ -237,6 +287,14 @@ public class ChiTietHoaDon implements Serializable {
         setSanPham(sanPham);
     }
 
+    public String getMaSanPham() {
+        return sanPham == null ? null : sanPham.getMaSanPham();
+    }
+
+    public void setMaSanPham(String maSanPham) {
+        this.sanPham = (maSanPham == null || maSanPham.isBlank()) ? null : new SanPham(maSanPham);
+    }
+
     public Long getSanPhamId() {
         return sanPham == null ? null : sanPham.getId();
     }
@@ -271,6 +329,14 @@ public class ChiTietHoaDon implements Serializable {
 
     public void datLoHang(LoHang loHang) {
         setLoHang(loHang);
+    }
+
+    public String getMaLo() {
+        return loHang == null ? null : loHang.getMaLo();
+    }
+
+    public void setMaLo(String maLo) {
+        this.loHang = (maLo == null || maLo.isBlank()) ? null : new LoHang(maLo);
     }
 
     public Long getLoHangId() {
@@ -421,7 +487,7 @@ public class ChiTietHoaDon implements Serializable {
         setTenHang(tenHang);
     }
 
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
+    // ==================== EQUALS & HASHCODE THEO KHÓA PHỨC HỢP (hoaDon + sanPham) ====================
 
     @Override
     public boolean equals(Object o) {
@@ -430,24 +496,20 @@ public class ChiTietHoaDon implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         ChiTietHoaDon that = (ChiTietHoaDon) o;
-        if (this.maChiTietHoaDon != null && that.maChiTietHoaDon != null) {
-            return Objects.equals(this.maChiTietHoaDon, that.maChiTietHoaDon);
-        }
         return Objects.equals(this.hoaDon, that.hoaDon)
-                && Objects.equals(this.sanPham, that.sanPham)
-                && Objects.equals(this.loHang, that.loHang)
-                && Objects.equals(this.maDichVu, that.maDichVu);
+                && Objects.equals(this.sanPham, that.sanPham);
     }
 
     @Override
     public int hashCode() {
-        return maChiTietHoaDon != null ? Objects.hash(maChiTietHoaDon) : Objects.hash(hoaDon, sanPham, loHang, maDichVu);
+        return Objects.hash(hoaDon, sanPham);
     }
 
     @Override
     public String toString() {
-        return "ChiTietHoaDon{" + "maChiTietHoaDon='" + maChiTietHoaDon + '\'' + ", hoaDonId=" + getHoaDonId() + ", sanPhamId=" + getSanPhamId()
-                + ", loHangId=" + getLoHangId() + ", soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien="
-                + tinhThanhTien() + '}';
+        return "ChiTietHoaDon{" + "hoaDon=" + (hoaDon != null ? hoaDon.getMaHoaDon() : null)
+                + ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : null)
+                + ", loHang=" + (loHang != null ? loHang.getMaLo() : null)
+                + ", soLuong=" + soLuong + ", donGia=" + donGia + ", thanhTien=" + tinhThanhTien() + '}';
     }
 }

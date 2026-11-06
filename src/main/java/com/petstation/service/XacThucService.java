@@ -78,8 +78,8 @@ public final class XacThucService {
                                 if (taiKhoan.trangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
-                                            taiKhoan.id(),
-                                            "LOGIN_REJECTED",
+                                            taiKhoan.tenDangNhap(),
+                                            "TU_CHOI_DANG_NHAP",
                                             "Tài khoản không hoạt động");
                                     return KetQuaDangNhap.taoLoi(
                                             "Tài khoản đã bị khóa. Vui lòng liên hệ Cửa hàng"
@@ -88,8 +88,8 @@ public final class XacThucService {
                                 if (taiKhoan.layTamThoiDaKhoa(hienTai)) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
-                                            taiKhoan.id(),
-                                            "LOGIN_REJECTED",
+                                            taiKhoan.tenDangNhap(),
+                                            "TU_CHOI_DANG_NHAP",
                                             "Tài khoản đang tạm khóa");
                                     return KetQuaDangNhap.taoLoi(
                                             "Tài khoản bị tạm khóa đến "
@@ -108,11 +108,11 @@ public final class XacThucService {
                                                     ? hienTai.plusMinutes(KHOA_SO_PHUT)
                                                     : null;
                                     danhSachTaiKhoan.ghiNhanDangNhapThatBai(
-                                            ketNoi, taiKhoan.id(), soLuongThatBai, khoaDenLuc);
+                                            ketNoi, taiKhoan.tenDangNhap(), soLuongThatBai, khoaDenLuc);
                                     ghiNhatKyHeThong(
                                             ketNoi,
-                                            taiKhoan.id(),
-                                            "LOGIN_FAILED",
+                                            taiKhoan.tenDangNhap(),
+                                            "DANG_NHAP_THAT_BAI",
                                             "Sai mật khẩu lần " + soLuongThatBai);
                                     if (khoaDenLuc != null) {
                                         return KetQuaDangNhap.taoLoi(
@@ -129,25 +129,25 @@ public final class XacThucService {
                                 // Nhân viên.
                                 NhanVien nhanVien =
                                         cacNhanVien
-                                                .timTheoId(ketNoi, taiKhoan.idNhanVien())
+                                                .timTheoId(ketNoi, taiKhoan.getMaNhanVien())
                                                 .filter(NhanVien::hoatDong)
                                                 .orElse(null);
                                 if (nhanVien == null) {
                                     ghiNhatKyHeThong(
                                             ketNoi,
-                                            taiKhoan.id(),
-                                            "LOGIN_REJECTED",
+                                            taiKhoan.tenDangNhap(),
+                                            "TU_CHOI_DANG_NHAP",
                                             "Nhân viên đã ngừng làm việc");
                                     return KetQuaDangNhap.taoLoi("Nhân viên đã ngừng làm việc.");
                                 }
-                                danhSachTaiKhoan.ghiNhanDangNhapThanhCong(ketNoi, taiKhoan.id());
+                                danhSachTaiKhoan.ghiNhanDangNhapThanhCong(ketNoi, taiKhoan.tenDangNhap());
                                 // Các quyền.
                                 Set<Quyen> cacQuyen =
-                                        danhSachTaiKhoan.timCacQuyen(ketNoi, taiKhoan.id());
+                                        danhSachTaiKhoan.timCacQuyen(ketNoi, taiKhoan.tenDangNhap());
                                 ghiNhatKyHeThong(
                                         ketNoi,
-                                        taiKhoan.id(),
-                                        "LOGIN_SUCCESS",
+                                        taiKhoan.tenDangNhap(),
+                                        "DANG_NHAP_THANH_CONG",
                                         "Đăng nhập thành công");
                                 return KetQuaDangNhap.hienThiThanhCong(
                                         new PhienDangNhap(taiKhoan, nhanVien, cacQuyen));
@@ -162,16 +162,16 @@ public final class XacThucService {
     }
 
     private void ghiNhatKyHeThong(
-            java.sql.Connection ketNoi, Long idTaiKhoan, String thaoTac, String ghiChu)
+            java.sql.Connection ketNoi, String tenDangNhap, String thaoTac, String ghiChu)
             throws Exception {
         nhatKyHeThongCacNhatKy.them(
                 ketNoi,
                 new NhatKyHeThong(
-                        0,
-                        idTaiKhoan,
+                        "SYS" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 27),
+                        new TaiKhoan(tenDangNhap),
                         thaoTac,
                         "TAI_KHOAN",
-                        idTaiKhoan == null ? null : idTaiKhoan.toString(),
+                        tenDangNhap,
                         null,
                         null,
                         ghiChu,

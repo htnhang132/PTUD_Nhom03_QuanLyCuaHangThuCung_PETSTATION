@@ -29,7 +29,7 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                     "Chênh lệch"
                                 },
                                 0,
-                                8,
+                                5,
                                 true,
                                 ThongKeService::layTongHopCa),
                         taoKieuHienThi(

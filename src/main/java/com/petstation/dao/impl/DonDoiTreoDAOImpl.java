@@ -18,10 +18,10 @@ public final class DonDoiTreoDAOImpl implements DonDoiTreoDAO {
                        JSON_VALUE(j.noi_dung,'$.nguyenTem'), JSON_VALUE(j.noi_dung,'$.chuaDung')
                 FROM hoa_don h WITH(UPDLOCK,HOLDLOCK)
                 CROSS APPLY (SELECT CASE WHEN ISJSON(h.ghi_chu)=1 THEN h.ghi_chu ELSE N'{}' END noi_dung) j
-                WHERE h.id=? AND h.trang_thai='GIO_TREO'
+                WHERE (h.ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND h.trang_thai='GIO_TREO'
                   AND JSON_VALUE(j.noi_dung,'$.loai')='DOI_PHU_KIEN'
                   AND JSON_VALUE(j.noi_dung,'$.v')='1'
-                """, id);
+                """, id, id);
         if (ds.isEmpty()) return null;
         Object[] d = ds.get(0);
         return new DonDoiTreo((String) d[0], ((Number) d[1]).longValue(),
@@ -41,18 +41,18 @@ public final class DonDoiTreoDAOImpl implements DonDoiTreoDAO {
                     FOR JSON PATH, WITHOUT_ARRAY_WRAPPER);
                 IF DATALENGTH(@nhap)>2000
                     THROW 50001, N'Nội dung nháp quá dài. Hãy rút gọn lý do hoặc từ khóa tìm kiếm.', 1;
-                UPDATE hoa_don SET ghi_chu=@nhap, khach_hang_id=(
-                    SELECT h.khach_hang_id FROM chi_tiet_hoa_don c
-                    JOIN hoa_don h ON h.id=c.hoa_don_id WHERE c.id=?)
-                WHERE id=? AND trang_thai='GIO_TREO';
+                UPDATE hoa_don SET ghi_chu=@nhap, ma_khach_hang=(
+                    SELECT h.ma_khach_hang FROM chi_tiet_hoa_don c
+                    JOIN hoa_don h ON h.ma_hoa_don=c.ma_hoa_don WHERE (c.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(c.ma_san_pham, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))
+                WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai='GIO_TREO';
                 """, don.timHoaDon(), don.dongGoc(), don.maThayThe(), don.timHang(),
-                don.soLuong(), don.lyDo(), don.nguyenTem(), don.chuaDung(), don.dongGoc(), id);
+                don.soLuong(), don.lyDo(), don.nguyenTem(), don.chuaDung(), don.dongGoc(), don.dongGoc(), id, id);
     }
 
     @Override
     public String layMaHoaDonGoc(long dong) {
-        Object ma = layGiaTriDon("SELECT h.so_hoa_don FROM hoa_don h JOIN chi_tiet_hoa_don c"
-                + " ON c.hoa_don_id=h.id WHERE c.id=?", dong);
+        Object ma = layGiaTriDon("SELECT h.ma_hoa_don FROM hoa_don h JOIN chi_tiet_hoa_don c"
+                + " ON c.ma_hoa_don=h.ma_hoa_don WHERE (c.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(c.ma_san_pham, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", dong, dong);
         if (ma == null) throw new IllegalArgumentException("Không tìm thấy hóa đơn gốc.");
         return ma.toString();
     }

@@ -41,7 +41,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         layTruongVanBan("expiry", "Hạn sử dụng (yyyy-MM-dd, có thể trống)", ""),
                         layTruongVanBan("qty", "Số lượng", "1"),
                         layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", ""),
-                        layTruongVanBan("paid", "Đã trả (đồng)", "0"));
+                        layTruongVanBan("da_tra", "Đã trả (đồng)", "0"));
         if (giaTri != null)
             KhoService.nhapKho(
                     giaTri.get("supplier"),
@@ -50,7 +50,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                     giaTri.get("expiry").isBlank() ? null : LocalDate.parse(giaTri.get("expiry")),
                     docSoLuong(giaTri, "qty"),
                     docSoTien(giaTri, "cost"),
-                    docSoTien(giaTri, "paid"));
+                    docSoTien(giaTri, "da_tra"));
     }
 
     protected void thanhToanNhaCungCap() {
@@ -74,9 +74,9 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                 BieuMauSQL.layYeuCauNhap(
                         this,
                         "Trả công nợ",
-                        layTruongVanBan("paid", "Số tiền trả thêm (đồng)", ""));
+                        layTruongVanBan("da_tra", "Số tiền trả thêm (đồng)", ""));
         if (giaTri == null) return;
-        KhoService.thanhToanNhaCungCap(id, docSoTien(giaTri, "paid"));
+        KhoService.thanhToanNhaCungCap(id, docSoTien(giaTri, "da_tra"));
     }
 
     protected void ghiHuy() {

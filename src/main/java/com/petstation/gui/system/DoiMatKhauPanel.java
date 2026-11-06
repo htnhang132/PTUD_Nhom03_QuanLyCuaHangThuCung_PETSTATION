@@ -133,7 +133,7 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
                                 if (doManh < 3) {
                                     lblNhanDoManh.setText("Mật khẩu yếu");
                                     lblNhanDoManh.setForeground(MauUngDung.NGUY_HIEM);
-                                } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                                } else 
                                 if (doManh < 4) {
                                     lblNhanDoManh.setText("Mật khẩu trung bình");
                                     lblNhanDoManh.setForeground(MauUngDung.CANH_BAO);

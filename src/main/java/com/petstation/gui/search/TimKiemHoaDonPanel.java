@@ -279,10 +279,10 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         if (phuongThuc != null && !"TẤT CẢ".equals(phuongThuc)) {
             String maPt =
                     switch (phuongThuc) {
-                        case "Tiền mặt" -> "CASH|TIEN_MAT|Tiền mặt";
-                        case "Chuyển khoản" -> "TRANSFER|CHUYEN_KHOAN|Chuyển khoản.*";
-                        case "Thẻ" -> "CARD|THE|QUET_THE|Thẻ";
-                        default -> "SPLIT|MIXED|KET_HOP|Kết hợp";
+                        case "Tiền mặt" -> "TIEN_MAT|Tiền mặt";
+                        case "Chuyển khoản" -> "CHUYEN_KHOAN|Chuyển khoản.*";
+                        case "Thẻ" -> "THE_NGAN_HANG|THE|Thẻ";
+                        default -> "KET_HOP|Kết hợp";
                     };
             cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maPt + ")$", 6));
         }
@@ -292,9 +292,9 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         if (trangThai != null && !"TẤT CẢ".equals(trangThai)) {
             String maTt =
                     switch (trangThai) {
-                        case "Đã thanh toán" -> "PAID|COMPLETED|DA_THANH_TOAN|Đã thanh toán";
-                        case "Đã hủy" -> "CANCELLED|VOIDED|DA_HUY|Đã hủy";
-                        default -> "REFUNDED|RETURNED|DA_HOAN|Đã hoàn";
+                        case "Đã thanh toán" -> "DA_THANH_TOAN|Đã thanh toán";
+                        case "Đã hủy" -> "DA_HUY|Đã hủy";
+                        default -> "DA_HOAN|Trả hàng|Đã hoàn";
                     };
             cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maTt + ")$", 7));
         }

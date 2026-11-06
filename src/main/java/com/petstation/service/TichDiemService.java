@@ -62,7 +62,7 @@ public final class TichDiemService {
         var cacDong = tichDiemDAO.timVoucher(ma);
         if (cacDong.isEmpty()) throw new IllegalArgumentException("Mã voucher không tồn tại.");
         Object[] v = cacDong.get(0);
-        if (!"ACTIVE".equals(v[5]) || ((Number) v[2]).longValue() >= ((Number) v[3]).longValue())
+        if (!"CON_HAN".equals(v[5]) || ((Number) v[2]).longValue() >= ((Number) v[3]).longValue())
             throw new IllegalArgumentException("Voucher đã dùng hết lượt hoặc ngừng áp dụng.");
         if (!((java.sql.Timestamp) v[1]).toLocalDateTime().isAfter(LocalDateTime.now()))
             throw new IllegalArgumentException("Voucher đã hết hạn.");

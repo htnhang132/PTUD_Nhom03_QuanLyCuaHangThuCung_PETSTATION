@@ -39,7 +39,7 @@ public final class DonDoiTreoService {
     public static long treo(GioHang gio) {
         yeuCau(Quyen.BAN_HANG);
         if (gio.dangGhiThanhToan()) throw new IllegalStateException("Đang ghi thanh toán, vui lòng chờ.");
-        if (!"EXCHANGE".equals(gio.layKieuNguon()) || gio.layDoiHang() == null
+        if (!"DOI_HANG".equals(gio.layKieuNguon()) || gio.layDoiHang() == null
                 || gio.layCacDong().size() != 1)
             throw new IllegalArgumentException("Không có đơn đổi phụ kiện để treo.");
         var yc = gio.layDoiHang();

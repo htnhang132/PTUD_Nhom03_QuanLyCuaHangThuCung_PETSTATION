@@ -29,7 +29,6 @@ public final class SpaService {
                             nhanVien = layId("nhan_vien", "ma_nhan_vien", maNhanVien);
                     kiemTraDuong(xuLySpaDAO.demLichHen(goiDichVu));
                     kiemTraDuong(xuLySpaDAO.khoaNhanVienDangLam(nhanVien));
-                    // Kết thúc.
                     LocalDateTime ketThuc =
                             batDau.plusMinutes(xuLySpaDAO.layThoiLuongDichVu(goiDichVu));
                     if (xuLySpaDAO.demLichTrung(nhanVien, thuCung[0], ketThuc, batDau) > 0)
@@ -64,7 +63,7 @@ public final class SpaService {
         thucHienGiaoDich(
                 c -> {
                     var old = xuLySpaDAO.khoaLichHen(id);
-                    if (old.isEmpty() || !"SCHEDULED".equals(old.get(0)[0]))
+                    if (old.isEmpty() || !"DA_XAC_NHAN".equals(old.get(0)[0]))
                         throw new IllegalArgumentException("Chỉ được sửa lịch chưa tiếp nhận.");
                     Object[] thu = layThuCung(maThuCung);
                     long goi = layId("goi_dich_vu_spa", "ma_goi", maGoi),
@@ -123,7 +122,7 @@ public final class SpaService {
                     // Các phiếu Spa.
                     List<Object[]> cacPhieuSpa = xuLySpaDAO.timThemDichVuSpa(phieuSpa);
                     if (cacPhieuSpa.isEmpty()
-                            || !Set.of("RECEIVED", "IN_PROGRESS")
+                            || !Set.of("TIEP_NHAN", "DANG_THUC_HIEN")
                                     .contains(chuyenThanhChuoi(cacPhieuSpa.get(0)[2])))
                         throw new IllegalArgumentException(
                                 "Phiếu không còn cho phép thêm dịch vụ.");
@@ -147,22 +146,21 @@ public final class SpaService {
 
     public static void layTrangThaiSpa(long phieuSpa, String tiepTheo) {
         yeuCau(Quyen.QUAN_LY_SPA);
-        // Dự kiến.
-        String duKien =
-                switch (tiepTheo) {
-                    case "IN_PROGRESS" -> "RECEIVED";
-                    case "COMPLETED" -> "IN_PROGRESS";
-                    default -> throw new IllegalArgumentException("Trạng thái không hợp lệ.");
-                };
+        String trangThaiMoi = switch (tiepTheo) {
+            case "DANG_THUC_HIEN" -> "DANG_THUC_HIEN";
+            case "HOAN_TAT" -> "HOAN_TAT";
+            default -> throw new IllegalArgumentException("Trạng thái không hợp lệ.");
+        };
+        String duKien = "DANG_THUC_HIEN".equals(trangThaiMoi) ? "TIEP_NHAN" : "DANG_THUC_HIEN";
         thucHienGiaoDich(
                 ketNoi -> {
                     if (xuLySpaDAO.demTrangThaiSpa(phieuSpa) == 0)
                         throw new IllegalArgumentException("Cần chọn dịch vụ cho phiếu.");
-                    if (xuLySpaDAO.capNhatTrangThaiSpa(tiepTheo, phieuSpa, duKien) != 1)
+                    if (xuLySpaDAO.capNhatTrangThaiSpa(trangThaiMoi, phieuSpa, duKien) != 1)
                         throw new IllegalArgumentException(
                                 "Phiếu đã chuyển trạng thái. Hãy tải lại.");
-                    if (tiepTheo.equals("COMPLETED")) xuLySpaDAO.hoanTatLichHen(phieuSpa);
-                    NhatKyHeThongService.ghiNhatKy("Cập nhật Spa", phieuSpa + " / " + tiepTheo);
+                    if ("HOAN_TAT".equals(trangThaiMoi)) xuLySpaDAO.hoanTatLichHen(phieuSpa);
+                    NhatKyHeThongService.ghiNhatKy("Cập nhật Spa", phieuSpa + " / " + trangThaiMoi);
                     return null;
                 });
     }
@@ -209,7 +207,7 @@ public final class SpaService {
         String maTrangThai = trangThai == null ? "" : trangThai.trim();
 
         if (!Set.of(
-            "", "RECEIVED", "IN_PROGRESS", "COMPLETED", "PAID"
+            "", "TIEP_NHAN", "DANG_THUC_HIEN", "HOAN_TAT", "DA_THANH_TOAN", "DA_HUY"
         ).contains(maTrangThai)) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ.");
         }

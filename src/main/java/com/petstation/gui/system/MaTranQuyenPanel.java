@@ -43,7 +43,6 @@ public final class MaTranQuyenPanel extends CoSoPanel {
                     }
                 };
         for (Quyen vungDangXet : Quyen.values()) {
-            // Dòng.
             Object[] dong = new Object[cacCot.length];
             dong[0] = QuyenVaiTroService.layNhan(vungDangXet);
             for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)

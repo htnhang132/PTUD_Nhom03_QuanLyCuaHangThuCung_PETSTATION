@@ -410,7 +410,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         this.cacTruong = cacTruong;
         this.cacDong = cacDong;
         setLayout(new BorderLayout(0, 12));
-        for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp
+        for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) 
                                                                // ứng.
             if (cacTruong.get(chiSo).vaoDanhSach)
                 danhSachCacTruong.add(chiSo);
@@ -462,7 +462,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         txtTimKiem.setName("timKiemDanhMuc");
         txtTimKiem.setPreferredSize(new Dimension(150, 32));
         tblBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
-        // Thêm.
         NutDinhDang btnThem = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.CHINH);
         btnThem.setEnabled(coTheChinhSua());
         btnThem.addActionListener(suKien -> batDauTaoMoi());
@@ -847,7 +846,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
                     if (!giaTri2.isEmpty()) {
                         cboHop.addItem(giaTri2);
                         cboHop.setSelectedItem(giaTri2);
-                    } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                    } else 
                     if (cboHop.getItemCount() > 0)
                         cboHop.setSelectedIndex(0);
                 }
@@ -1531,7 +1530,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             if (!khopBoLoc(dongDuLieu))
                 continue;
             daHienThi.add(dongDuLieu);
-            // Dòng.
             Object[] dong = new Object[danhSachCacTruong.size()];
             for (int khoaDangXet = 0; khoaDangXet < dong.length; khoaDangXet++) {
                 // Chỉ số.

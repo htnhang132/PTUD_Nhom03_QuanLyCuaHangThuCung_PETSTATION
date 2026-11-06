@@ -4,14 +4,37 @@ import java.util.List;
 
 /** Thao tác dữ liệu cho CaThuNgan; service gọi qua hợp đồng này. */
 public interface CaLamViecDAO {
-    long layCocHotel(long ca, String phuongThuc);
+    long layCocHotel(String maPhien, String phuongThuc);
 
-    List<Object[]> layNguoiNhan(long taiKhoanHienTai);
+    default long layCocHotel(long ca, String phuongThuc) {
+        return layCocHotel(String.valueOf(ca), phuongThuc);
+    }
+
+    List<Object[]> layNguoiNhan(String tenDangNhapHienTai);
+
+    default List<Object[]> layNguoiNhan(long taiKhoanHienTai) {
+        return layNguoiNhan(String.valueOf(taiKhoanHienTai));
+    }
 
     int dongCoBanGiao(
-            long thucDem, long chenhLech, String lyDo, String hinhThuc, Long nguoiNhan, long id);
+            long thucDem, long chenhLech, String lyDo, String hinhThuc, String nguoiNhan, String maPhien);
 
-    long layTongCocDaNhan(long phien);
+    default int dongCoBanGiao(
+            long thucDem, long chenhLech, String lyDo, String hinhThuc, Long nguoiNhan, long id) {
+        return dongCoBanGiao(
+                thucDem,
+                chenhLech,
+                lyDo,
+                hinhThuc,
+                nguoiNhan == null ? null : String.valueOf(nguoiNhan),
+                String.valueOf(id));
+    }
+
+    long layTongCocDaNhan(String maPhien);
+
+    default long layTongCocDaNhan(long phien) {
+        return layTongCocDaNhan(String.valueOf(phien));
+    }
 
     long demDong(Object... cacThamSo);
 

@@ -551,7 +551,6 @@ public class DangNhapFrame extends JFrame {
         JLabel lblDongDangXet = new JLabel(vanBan);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         lblDongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
-        // Dòng.
         JComponent dong = layTraiDong(lblDongDangXet);
         dong.setMaximumSize(new Dimension(Integer.MAX_VALUE, dong.getPreferredSize().height));
         return dong;
@@ -567,7 +566,6 @@ public class DangNhapFrame extends JFrame {
      * @return kết quả lấy trái dòng
      */
     private JComponent layTraiDong(JComponent giaTriDangXet) {
-        // Dòng.
         JPanel pnlDong = new JPanel(new BorderLayout());
         pnlDong.setOpaque(false);
         pnlDong.add(giaTriDangXet, BorderLayout.WEST);

@@ -90,7 +90,7 @@ public class SanPham implements Serializable {
         int tong = 0;
         for (LoHang lo : danhSachLoHang) {
             if (lo != null
-                    && "AVAILABLE".equalsIgnoreCase(lo.getTrangThai())
+                    && "SAN_SANG".equalsIgnoreCase(lo.getTrangThai())
                     && lo.getSoLuongTon() > 0
                     && (lo.getHanSuDung() == null || !lo.getHanSuDung().isBefore(homNay))) {
                 tong += lo.getSoLuongTon();

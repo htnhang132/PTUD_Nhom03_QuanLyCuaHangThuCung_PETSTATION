@@ -11,86 +11,112 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
 
     public long demPhanCong(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT id FROM nhan_vien WITH(UPDLOCK,HOLDLOCK) WHERE id=?", cacThamSo);
+                "SELECT 1 FROM nhan_vien WITH(UPDLOCK,HOLDLOCK) WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     public long demNhanVienDangLam(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM nhan_vien WHERE id=? AND dang_lam_viec=1", cacThamSo);
+                "SELECT COUNT(*) FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND dang_lam_viec=1",
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     public List<Object[]> timKhoang(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT l.ngay_lam,c.ma_ca,n.ma_nhan_vien,l.loai FROM lich_lam_viec l JOIN"
-                        + " ca_lam_viec c ON c.id=l.ca_lam_viec_id JOIN nhan_vien n ON"
-                        + " n.id=l.nhan_vien_id WHERE l.ngay_lam>=? AND l.ngay_lam<? AND"
-                        + " l.trang_thai<>'CANCELLED' ORDER BY"
-                        + " l.ngay_lam,c.gio_bat_dau,n.ma_nhan_vien",
+                "SELECT l.ngay_lam, l.ma_ca, l.ma_nhan_vien, l.loai FROM lich_lam_viec l JOIN"
+                        + " ca_lam_viec c ON c.ma_ca=l.ma_ca WHERE l.ngay_lam>=? AND l.ngay_lam<? AND"
+                        + " l.trang_thai<>'DA_HUY' ORDER BY"
+                        + " l.ngay_lam, c.gio_bat_dau, l.ma_nhan_vien",
                 cacThamSo);
     }
 
     public long demLichTrungNgayCa(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM lich_lam_viec WHERE nhan_vien_id=? AND"
-                        + " ngay_lam=? AND trang_thai<>'CANCELLED' AND"
-                        + " (loai='LEAVE' OR ca_lam_viec_id=(SELECT id FROM"
-                        + " ca_lam_viec WHERE ma_ca=?))",
-                cacThamSo);
+                "SELECT COUNT(*) FROM lich_lam_viec WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                        + " ngay_lam=? AND trang_thai<>'DA_HUY' AND"
+                        + " (loai='NGHI_PHEP' OR ma_ca=?)",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int capNhatPhanCong(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "DELETE FROM lich_lam_viec WHERE nhan_vien_id=? AND ngay_lam=? AND"
-                        + " ca_lam_viec_id=(SELECT id FROM ca_lam_viec WHERE ma_ca=?) AND"
-                        + " trang_thai='CANCELLED'",
-                cacThamSo);
+                "DELETE FROM lich_lam_viec WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND ngay_lam=? AND"
+                        + " ma_ca=? AND trang_thai='DA_HUY'",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int themLichLamViec(Object... cacThamSo) {
+        String maNV = String.valueOf(cacThamSo[0]);
+        if (cacThamSo[0] instanceof Number) {
+            List<Object[]> r = ThaoTacSQL.truyVan(
+                    "SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                    cacThamSo[0], cacThamSo[0]);
+            if (!r.isEmpty()) maNV = String.valueOf(r.get(0)[0]);
+        }
         return ThaoTacSQL.capNhat(
-                "INSERT INTO lich_lam_viec(nhan_vien_id,ngay_lam,ca_lam_viec_id,loai)"
-                        + " SELECT ?,?,id,'WORK' FROM ca_lam_viec WHERE ma_ca=?",
-                cacThamSo);
+                "INSERT INTO lich_lam_viec(ma_nhan_vien, ngay_lam, ma_ca, loai, trang_thai) VALUES(?, ?, ?, 'DI_LAM', 'DANG_MO')",
+                maNV,
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int capNhatXoa(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lich_lam_viec SET trang_thai='CANCELLED' WHERE nhan_vien_id=(SELECT id FROM"
-                    + " nhan_vien WHERE ma_nhan_vien=?) AND ngay_lam=? AND ca_lam_viec_id=(SELECT"
-                    + " id FROM ca_lam_viec WHERE ma_ca=?)",
-                cacThamSo);
+                "UPDATE lich_lam_viec SET trang_thai='DA_HUY' WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND ngay_lam=? AND ma_ca=?",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int capNhatDanhDauNghiPhepDaDuyet(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lich_lam_viec SET loai='LEAVE',trang_thai='OPEN' WHERE"
-                        + " nhan_vien_id=? AND ngay_lam=?",
-                cacThamSo);
+                "UPDATE lich_lam_viec SET loai='NGHI_PHEP',trang_thai='DANG_MO' WHERE"
+                        + " (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND ngay_lam=?",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1]);
     }
 
     public int themLichNghiPhep(Object... cacThamSo) {
+        String maNV = String.valueOf(cacThamSo[0]);
+        if (cacThamSo[0] instanceof Number) {
+            List<Object[]> r = ThaoTacSQL.truyVan(
+                    "SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                    cacThamSo[0], cacThamSo[0]);
+            if (!r.isEmpty()) maNV = String.valueOf(r.get(0)[0]);
+        }
         return ThaoTacSQL.capNhat(
-                "INSERT INTO"
-                        + " lich_lam_viec(nhan_vien_id,ngay_lam,ca_lam_viec_id,loai)"
-                        + " SELECT ?,?,id,'LEAVE' FROM ca_lam_viec WHERE"
-                        + " ma_ca='CA01'",
-                cacThamSo);
+                "INSERT INTO lich_lam_viec(ma_nhan_vien, ngay_lam, ma_ca, loai, trang_thai) VALUES(?, ?, 'CA01', 'NGHI_PHEP', 'DANG_MO')",
+                maNV,
+                cacThamSo[1]);
     }
 
     public long demThangSoGio(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc)),0)/60"
-                        + " FROM lich_lam_viec l JOIN ca_lam_viec c ON c.id=l.ca_lam_viec_id"
-                        + " JOIN nhan_vien n ON n.id=l.nhan_vien_id WHERE n.ma_nhan_vien=? AND"
-                        + " l.ngay_lam>=? AND l.ngay_lam<? AND l.loai='WORK' AND"
-                        + " l.trang_thai<>'CANCELLED'",
-                cacThamSo);
+                "SELECT COALESCE(SUM(DATEDIFF(minute, c.gio_bat_dau, c.gio_ket_thuc)),0)/60"
+                        + " FROM lich_lam_viec l JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca"
+                        + " WHERE (l.ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(l.ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                        + " l.ngay_lam>=? AND l.ngay_lam<? AND l.loai='DI_LAM' AND"
+                        + " l.trang_thai<>'DA_HUY'",
+                cacThamSo[0],
+                cacThamSo[0],
+                cacThamSo[1],
+                cacThamSo[2]);
     }
 
     public int khoaLichKhoang(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lich_lam_viec SET trang_thai='LOCKED' WHERE ngay_lam>=? AND ngay_lam<? AND"
-                        + " trang_thai='OPEN'",
+                "UPDATE lich_lam_viec SET trang_thai='DA_KHOA' WHERE ngay_lam>=? AND ngay_lam<? AND"
+                        + " trang_thai='DANG_MO'",
                 cacThamSo);
     }
 }

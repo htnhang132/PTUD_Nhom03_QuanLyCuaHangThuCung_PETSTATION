@@ -73,11 +73,11 @@ public final class LuuTruService {
                     Object[] thu = layThuCung(maThuCung);
                     var phong = luuTruDAO.timDatPhong(maPhong);
                     if (phong.isEmpty()
-                            || Set.of("INACTIVE", "MAINTENANCE", "CLEANING")
+                            || Set.of("BAO_TRI", "DANG_DON", "NGUNG_HOAT_DONG")
                                     .contains(chuyenThanhChuoi(phong.get(0)[2])))
                         throw new IllegalArgumentException("Phòng không nhận đặt chỗ.");
                     Object[] p = phong.get(0);
-                    if ("Mèo".equals(p[3]) && !"CAT".equals(thu[2]))
+                    if ("Mèo".equals(p[3]) && !"Mèo".equalsIgnoreCase(String.valueOf(thu[2])) && !"CAT".equalsIgnoreCase(String.valueOf(thu[2])))
                         throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
                     if (luuTruDAO.demThuCungDatTrung(
                                     layGiaTri(thu[0]), ketThuc, batDau)
@@ -132,7 +132,7 @@ public final class LuuTruService {
                     var r = luuTruDAO.khoaHopDongThuCoc(id);
                     if (r.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hợp đồng.");
                     if (luuTruDAO.demKhoaThuCoc(id, khoa) > 0) return null;
-                    if (!"BOOKED".equals(r.get(0)[0]))
+                    if (!"DA_DAT".equals(r.get(0)[0]))
                         throw new IllegalArgumentException(
                                 "Chỉ nhận cọc khi hợp đồng đang chờ nhận phòng.");
                     long thu = 0;
@@ -162,7 +162,7 @@ public final class LuuTruService {
         thucHienGiaoDich(
                 c -> {
                     var r = luuTruDAO.khoaHopDongDoiCoc(id);
-                    if (r.isEmpty() || !"BOOKED".equals(r.get(0)[4]))
+                    if (r.isEmpty() || !"DA_DAT".equals(r.get(0)[4]))
                         throw new IllegalArgumentException("Hợp đồng không còn chờ nhận phòng.");
                     Object[] d = r.get(0);
                     long tong =
@@ -210,13 +210,13 @@ public final class LuuTruService {
         return new long[] {soNgay, tong, coc, gia};
     }
 
-    /** Thông tin để mở biểu mẫu sửa; chỉ hợp đồng BOOKED mới được sửa. */
+    /** Thông tin để mở biểu mẫu sửa; chỉ hợp đồng DA_DAT mới được sửa. */
     public static Object[] layThongTinDatPhong(long id) {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var dong = luuTruDAO.layDatPhongSua(id);
         if (dong.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy hợp đồng lưu trú.");
-        if (!"BOOKED".equals(chuyenThanhChuoi(dong.get(0)[0])))
+        if (!"DA_DAT".equals(chuyenThanhChuoi(dong.get(0)[0])))
             throw new IllegalArgumentException("Chỉ sửa được hợp đồng đang chờ nhận phòng.");
         return dong.get(0);
     }
@@ -240,7 +240,7 @@ public final class LuuTruService {
                 ketNoi -> {
                     var hopDong = luuTruDAO.layDatPhongSua(id);
                     if (hopDong.isEmpty()
-                            || !"BOOKED".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
+                            || !"DA_DAT".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
                         throw new IllegalArgumentException(
                                 "Hợp đồng không còn ở trạng thái chờ nhận phòng.");
 
@@ -251,12 +251,13 @@ public final class LuuTruService {
 
                     Object[] phong = cacPhong.get(0);
                     String trangThaiPhong = chuyenThanhChuoi(phong[2]);
-                    if (!Set.of("AVAILABLE", "OCCUPIED").contains(trangThaiPhong))
+                    if (!Set.of("TRONG", "DANG_O").contains(trangThaiPhong))
                         throw new IllegalArgumentException(
                                 "Phòng không nhận đặt chỗ do đang dọn, bảo trì hoặc ngừng hoạt động.");
 
                     if ("Mèo".equals(chuyenThanhChuoi(phong[3]))
-                            && !"CAT".equals(chuyenThanhChuoi(thu[2])))
+                            && !"Mèo".equalsIgnoreCase(chuyenThanhChuoi(thu[2]))
+                            && !"CAT".equalsIgnoreCase(chuyenThanhChuoi(thu[2])))
                         throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
 
                     long thuCungId = layGiaTri(thu[0]);
@@ -324,7 +325,7 @@ public final class LuuTruService {
                 ketNoi -> {
                     var hopDong = luuTruDAO.layDatPhongSua(id);
                     if (hopDong.isEmpty()
-                            || !"BOOKED".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
+                            || !"DA_DAT".equals(chuyenThanhChuoi(hopDong.get(0)[0])))
                         throw new IllegalArgumentException(
                                 "Chỉ hủy được hợp đồng đang chờ nhận phòng.");
 
@@ -392,7 +393,6 @@ public final class LuuTruService {
             throw new IllegalArgumentException("Hợp đồng chưa nhận phòng hoặc đã quyết toán.");
         // Dòng dữ liệu.
         Object[] dongDuLieu = cacDong.get(0);
-        // Bắt đầu.
         LocalDateTime batDau = ((java.sql.Timestamp) dongDuLieu[0]).toLocalDateTime(),
                 ketThuc = ((java.sql.Timestamp) dongDuLieu[1]).toLocalDateTime();
         // Trễ.

@@ -11,17 +11,17 @@ import java.util.Optional;
 /** Thực hiện truy vấn JDBC cho JDBC nhân viên DAO. */
 public final class NhanVienDAOImpl implements NhanVienDAO {
     @Override
-    public Optional<NhanVien> timTheoId(Connection ketNoi, long idNhanVien) throws Exception {
+    public Optional<NhanVien> timTheoId(Connection ketNoi, String maNhanVien) throws Exception {
         // SQL.
         String sql =
                 """
-                SELECT id, ma_nhan_vien, ho_ten, ngay_sinh, so_dien_thoai, dia_chi,
+                SELECT ma_nhan_vien, ho_ten, ngay_sinh, so_dien_thoai, dia_chi,
                        chuc_vu, ngay_vao_lam, dang_lam_viec
                 FROM nhan_vien
-                WHERE id = ?
+                WHERE ma_nhan_vien = ?
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setLong(1, idNhanVien);
+            cauLenh.setString(1, maNhanVien);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
                 // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (!ketQua.next()) {
@@ -29,7 +29,6 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
                 }
                 return Optional.of(
                         new NhanVien(
-                                ketQua.getLong("id"),
                                 ketQua.getString("ma_nhan_vien"),
                                 ketQua.getString("ho_ten"),
                                 ketQua.getDate("ngay_sinh") == null
@@ -48,7 +47,7 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
     public Optional<NhanVien> timTheoMa(Connection ketNoi, String maNhanVien) throws Exception {
         String sql =
                 """
-                SELECT id, ma_nhan_vien, ho_ten, ngay_sinh, so_dien_thoai, dia_chi,
+                SELECT ma_nhan_vien, ho_ten, ngay_sinh, so_dien_thoai, dia_chi,
                        chuc_vu, ngay_vao_lam, dang_lam_viec
                 FROM nhan_vien
                 WHERE ma_nhan_vien = ?
@@ -61,7 +60,6 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
                 }
                 return Optional.of(
                         new NhanVien(
-                                ketQua.getLong("id"),
                                 ketQua.getString("ma_nhan_vien"),
                                 ketQua.getString("ho_ten"),
                                 ketQua.getDate("ngay_sinh") == null

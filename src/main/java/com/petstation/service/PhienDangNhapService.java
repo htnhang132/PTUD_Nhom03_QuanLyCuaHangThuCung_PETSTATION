@@ -55,6 +55,10 @@ public final class PhienDangNhapService {
         return layPhien().taiKhoan().id();
     }
 
+    public static String layTenDangNhap() {
+        return layPhien().taiKhoan().tenDangNhap();
+    }
+
     public static long layIdNhanVien() {
         return layPhien().nhanVien().id();
     }

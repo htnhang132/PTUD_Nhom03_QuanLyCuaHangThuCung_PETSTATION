@@ -29,7 +29,7 @@ public class Voucher implements Serializable {
     /** Constructor mặc định. */
     public Voucher() {
         this.soLuong = 1;
-        this.trangThai = "ACTIVE";
+        this.trangThai = "CON_HAN";
     }
 
     /** Constructor chỉ có khóa chính. */
@@ -125,7 +125,7 @@ public class Voucher implements Serializable {
 
     /** Kiểm tra voucher còn hiệu lực sử dụng hay không (dẫn xuất). */
     public boolean kiemTraConHieuLuc() {
-        return "ACTIVE".equalsIgnoreCase(trangThai)
+        return "CON_HAN".equalsIgnoreCase(trangThai)
                 && tinhSoLuotConLai() > 0
                 && (hieuLucDen == null || hieuLucDen.isAfter(LocalDateTime.now()));
     }

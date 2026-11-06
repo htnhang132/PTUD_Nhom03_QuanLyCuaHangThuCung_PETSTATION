@@ -21,34 +21,38 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                         + " ma_thu_cung,ten,loai,giong,ngay_sinh,can_nang,tiem_chung,di_ung_benh_ly"
-                        + " FROM thu_cung WHERE khach_hang_id=? ORDER BY ma_thu_cung",
-                cacThamSo);
+                        + " FROM thu_cung WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_thu_cung",
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     public List<Object[]> layCacHoaDon(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT"
-                    + " h.so_hoa_don,h.thanh_toan_luc,h.tong_tien,h.hinh_thuc_thanh_toan,h.trang_thai"
-                    + " FROM hoa_don h WHERE h.khach_hang_id=? AND h.trang_thai<>'GIO_TREO' ORDER"
+                    + " h.ma_hoa_don,h.thanh_toan_luc,h.tong_tien,h.hinh_thuc_thanh_toan,h.trang_thai"
+                    + " FROM hoa_don h WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND h.trang_thai<>'GIO_TREO' ORDER"
                     + " BY h.thanh_toan_luc DESC",
-                cacThamSo);
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     public List<Object[]> layLichSuSpa(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT t.ma_phieu,p.ten,t.tao_luc,t.tong_tien,t.trang_thai FROM"
-                        + " phieu_tiep_nhan_spa t JOIN thu_cung p ON p.id=t.thu_cung_id"
-                        + " WHERE p.khach_hang_id=? ORDER BY t.tao_luc DESC",
-                cacThamSo);
+                        + " phieu_tiep_nhan_spa t JOIN thu_cung p ON p.ma_thu_cung=t.ma_thu_cung"
+                        + " WHERE (p.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY t.tao_luc DESC",
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     public List<Object[]> layLichSuLuuTru(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT h.ma_hop_dong,p.ten,r.ma_phong,h.ngay_vao,h.ngay_ra_du_kien,h.trang_thai"
-                        + " FROM hop_dong_luu_tru h JOIN thu_cung p ON p.id=h.thu_cung_id JOIN"
-                        + " phong_hotel r ON r.id=h.phong_id WHERE h.khach_hang_id=? ORDER BY"
+                        + " FROM hop_dong_luu_tru h JOIN thu_cung p ON p.ma_thu_cung=h.ma_thu_cung JOIN"
+                        + " phong_hotel r ON r.ma_phong=h.ma_phong WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY"
                         + " h.ngay_vao DESC",
-                cacThamSo);
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 
     @Override
@@ -56,8 +60,9 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         List<Object[]> dong =
                 ThaoTacSQL.truyVan(
                         "SELECT COALESCE(lich_su_diem, N'') "
-                                + "FROM khach_hang WHERE id=?",
-                        cacThamSo);
+                                + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        cacThamSo[0],
+                        cacThamSo[0]);
 
         if (dong.isEmpty()) {
             return List.of();
@@ -95,10 +100,10 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
                 Timestamp thoiGian =
                         Timestamp.valueOf(
                                 LocalDateTime.parse(
-                                        ngay.length() > 19
-                                                ? ngay.substring(0, 19)
-                                                : ngay,
-                                        DINH_DANG_ISO));
+                                    ngay.length() > 19
+                                            ? ngay.substring(0, 19)
+                                            : ngay,
+                                    DINH_DANG_ISO));
 
                 long thayDoi =
                         Long.parseLong(c[ngayODau ? 2 : 1].trim());
@@ -133,7 +138,8 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                         + " ma_voucher,menh_gia,hieu_luc_den,da_dung,so_luong,trang_thai"
-                        + " FROM voucher WHERE khach_hang_id=? ORDER BY id DESC",
-                cacThamSo);
+                        + " FROM voucher WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_voucher DESC",
+                cacThamSo[0],
+                cacThamSo[0]);
     }
 }

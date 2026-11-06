@@ -47,7 +47,7 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
             "Bắt đầu làm",
             () -> SpaService.layTrangThaiSpa(
                 layDongChon(),
-                "IN_PROGRESS"
+                "DANG_THUC_HIEN"
             )
         );
 
@@ -56,7 +56,7 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
             "Hoàn thành",
             () -> SpaService.layTrangThaiSpa(
                 layDongChon(),
-                "COMPLETED"
+                "HOAN_TAT"
             )
         );
 

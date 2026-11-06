@@ -203,7 +203,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         String soBB = row >= 0 ? tblBang.getValueAt(row, 0).toString() : ("#" + bienBanHienTaiId);
         String trangThai = row >= 0 ? tblBang.getValueAt(row, 2).toString() : "";
 
-        if ("APPROVED".equalsIgnoreCase(trangThai) || "Đã duyệt".equalsIgnoreCase(trangThai)) {
+        if ("DA_DUYET".equalsIgnoreCase(trangThai) || "Đã duyệt".equalsIgnoreCase(trangThai)) {
             HopThoai.hienThiThongTin(this, "Biên bản " + soBB + " đã được cân bằng kho trước đó.");
             return;
         }
@@ -639,7 +639,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                         + bienBanId
                                         + ")!\n"
                                         + "Nếu có mặt hàng chênh lệch, biên bản đã được chuyển sang"
-                                        + " trạng thái CHỜ DUYỆT (PENDING).");
+                                        + " trạng thái CHỜ DUYỆT.");
                         dlg.dispose();
                         lamMoi();
                         taiChiTietBienBan(bienBanId);

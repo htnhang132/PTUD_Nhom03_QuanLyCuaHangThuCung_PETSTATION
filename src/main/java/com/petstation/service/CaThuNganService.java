@@ -8,6 +8,7 @@ import com.petstation.dao.CaLamViecDAO;
 import com.petstation.dao.impl.CaLamViecDAOImpl;
 import com.petstation.model.PhuongThuc;
 import com.petstation.model.Quyen;
+import com.petstation.util.DuLieu;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -24,18 +25,23 @@ public final class CaThuNganService {
 
     private Object[] layHienTai() {
         if (layPhienHienTai() == null) return null;
-        List<Object[]> cacDong = caThuNganDAO.timHienTai(layIdTaiKhoan());
+        List<Object[]> cacDong = caThuNganDAO.timHienTai(layTenDangNhap());
         return cacDong.isEmpty() ? null : cacDong.get(0);
+    }
+
+    public String layMaPhien() {
+        Object[] dongDuLieu = layHienTai();
+        return dongDuLieu == null ? "" : chuyenThanhChuoi(dongDuLieu[0]);
     }
 
     public long layId() {
         // Dòng dữ liệu.
         Object[] dongDuLieu = layHienTai();
-        return dongDuLieu == null ? 0 : ((Number) dongDuLieu[0]).longValue();
+        return dongDuLieu == null ? 0 : DuLieu.layIdCauNoi(null, chuyenThanhChuoi(dongDuLieu[0]));
     }
 
     public boolean kiemTraMo() {
-        return layId() > 0;
+        return layHienTai() != null;
     }
 
     public String layTenCa() {
@@ -59,7 +65,7 @@ public final class CaThuNganService {
     }
 
     private long layDoanhThu(PhuongThuc phuongThuc) {
-        return caThuNganDAO.demBanHang(layId(), phuongThuc.name());
+        return caThuNganDAO.demBanHang(layMaPhien(), phuongThuc.name());
     }
 
     public long layDoanhThuTienMat() {
@@ -75,11 +81,11 @@ public final class CaThuNganService {
     }
 
     public int demHoaDon() {
-        return (int) caThuNganDAO.demSoLuongHoaDon(layId());
+        return (int) caThuNganDAO.demSoLuongHoaDon(layMaPhien());
     }
 
     public long layCocHotel(PhuongThuc pt) {
-        return caThuNganDAO.layCocHotel(layId(), pt.name());
+        return caThuNganDAO.layCocHotel(layMaPhien(), pt.name());
     }
 
     public long layTongCocHotel() {
@@ -92,11 +98,11 @@ public final class CaThuNganService {
         return layTienDauCa()
                 + layDoanhThuTienMat()
                 + layTienCocHotel()
-                - caThuNganDAO.demDuKienTienMat(layId());
+                - caThuNganDAO.demDuKienTienMat(layMaPhien());
     }
 
     public long layTienCocHotel() {
-        return caThuNganDAO.layTongCocDaNhan(layId());
+        return caThuNganDAO.layTongCocDaNhan(layMaPhien());
     }
 
     public String layNhan() {
@@ -122,7 +128,7 @@ public final class CaThuNganService {
         thucHienGiaoDich(
                 ketNoi -> {
                     if (kiemTraMo()) throw new IllegalStateException("Tài khoản đã có ca đang mở.");
-                    caThuNganDAO.capNhatMo(layIdTaiKhoan(), ten, soTien);
+                    caThuNganDAO.capNhatMo(layTenDangNhap(), ten, soTien);
                     NhatKyHeThongService.ghiNhatKy("Mở ca", ten);
                     return null;
                 });
@@ -151,11 +157,11 @@ public final class CaThuNganService {
 
     public List<NguoiNhan> layNguoiNhan() {
         yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
-        return caThuNganDAO.layNguoiNhan(layIdTaiKhoan()).stream()
+        return caThuNganDAO.layNguoiNhan(layTenDangNhap()).stream()
                 .map(
                         d ->
                                 new NguoiNhan(
-                                        ((Number) d[0]).longValue(),
+                                        DuLieu.layIdCauNoi(null, String.valueOf(d[0])),
                                         String.valueOf(d[1]),
                                         String.valueOf(d[2])))
                 .toList();
@@ -170,26 +176,33 @@ public final class CaThuNganService {
         if (daDem < 0) throw new IllegalArgumentException("Tiền thực đếm phải không âm.");
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Id hiện tại.
-                    long idHienTai = layId();
-                    if (idHienTai == 0) throw new IllegalStateException("Chưa mở ca.");
-                    caThuNganDAO.demDong(idHienTai);
+                    // Mã phiên hiện tại.
+                    String maPhienHienTai = layMaPhien();
+                    if (maPhienHienTai.isBlank()) throw new IllegalStateException("Chưa mở ca.");
+                    caThuNganDAO.demDong(maPhienHienTai);
                     // Dự kiến.
                     long duKien = layTienMatDuKien();
                     if (daDem != duKien && (ghiChu == null || ghiChu.isBlank()))
                         throw new IllegalArgumentException("Cần nhập lý do chênh lệch tiền mặt.");
-                    if (hinhThuc == HinhThucBanGiao.BAN_GIAO
-                            && (nguoiNhan == null
-                                    || layNguoiNhan().stream().noneMatch(n -> n.id() == nguoiNhan)))
-                        throw new IllegalArgumentException(
-                                "Chọn quản lý hoặc thu ngân đang hoạt động để nhận ca.");
+                    String tenNguoiNhan = null;
+                    if (hinhThuc == HinhThucBanGiao.BAN_GIAO) {
+                        var danhSach = layNguoiNhan();
+                        var opt = (nguoiNhan == null)
+                                ? Optional.<NguoiNhan>empty()
+                                : danhSach.stream().filter(n -> n.id() == nguoiNhan).findFirst();
+                        if (opt.isEmpty()) {
+                            throw new IllegalArgumentException(
+                                    "Chọn quản lý hoặc thu ngân đang hoạt động để nhận ca.");
+                        }
+                        tenNguoiNhan = opt.get().tenDangNhap();
+                    }
                     if (caThuNganDAO.dongCoBanGiao(
                                     daDem,
                                     daDem - duKien,
                                     ghiChu,
                                     hinhThuc.name(),
-                                    nguoiNhan,
-                                    idHienTai)
+                                    tenNguoiNhan,
+                                    maPhienHienTai)
                             != 1) throw new IllegalStateException("Ca đã đóng.");
                     cuoiCungBanGiao =
                             "Thực đếm "

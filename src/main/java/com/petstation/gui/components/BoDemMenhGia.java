@@ -59,7 +59,6 @@ public final class BoDemMenhGia extends JPanel {
         themTieuDe("Thành tiền", 2, giaTriDangXet);
 
         for (int chiSo = 0; chiSo < CAC_MENH_GIA.length; chiSo++) {
-            // Dòng.
             final int dong = chiSo;
             // Tên.
             JLabel lblTen = new JLabel(TienTe.dinhDang(CAC_MENH_GIA[chiSo]));
@@ -123,9 +122,9 @@ public final class BoDemMenhGia extends JPanel {
                                 suKien.consume();
                                 chuanHoa(dong);
                                 if (dong + 1 < cacTruong.length) layTieuDiem(dong + 1);
-                                else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                                else 
                                 if (suKien.getKeyCode() == KeyEvent.VK_ENTER) khiHoanTat.run();
-                            } else // Thực hiện bước tiếp theo khi điều kiện xử lý được đáp ứng.
+                            } else 
                             if (suKien.getKeyCode() == KeyEvent.VK_UP && dong > 0) {
                                 suKien.consume();
                                 chuanHoa(dong);
@@ -146,7 +145,6 @@ public final class BoDemMenhGia extends JPanel {
             add(cacSoTien[chiSo], giaTriDangXet);
         }
 
-        // Dòng.
         JPanel pnlDong = new JPanel();
         pnlDong.setBackground(MauUngDung.VIEN);
         pnlDong.setPreferredSize(new Dimension(1, 1));

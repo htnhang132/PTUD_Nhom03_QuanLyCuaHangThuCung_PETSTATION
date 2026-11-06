@@ -46,7 +46,7 @@ public class ChiTietDoiTra implements Serializable {
         setChiTietHoaDon(chiTietHoaDon);
         setLoHang(loHang);
         setSoLuong(soLuong);
-        setTienHoan(tienHoan);
+        this.tienHoan = Math.max(0L, tienHoan);
     }
 
     /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
@@ -251,25 +251,20 @@ public class ChiTietDoiTra implements Serializable {
     }
 
     public long getTienHoan() {
-        return this.tienHoan;
+        return tinhTienHoan();
     }
 
     public long layTienHoan() {
-        return this.tienHoan;
+        return tinhTienHoan();
     }
 
     public long tienHoan() {
-        return this.tienHoan;
+        return tinhTienHoan();
     }
 
-    public void setTienHoan(long tienHoan) {
-        if (tienHoan < 0)
-            throw new IllegalArgumentException("Tiền hoàn không được âm.");
-        this.tienHoan = tienHoan;
-    }
-
-    public void datTienHoan(long tienHoan) {
-        setTienHoan(tienHoan);
+    /** Phương thức nội bộ gán snapshot từ CSDL (không cung cấp setter công khai vì thuộc tính dẫn xuất). */
+    void napTienHoanSnapshot(long tienHoan) {
+        this.tienHoan = Math.max(0L, tienHoan);
     }
 
     // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================

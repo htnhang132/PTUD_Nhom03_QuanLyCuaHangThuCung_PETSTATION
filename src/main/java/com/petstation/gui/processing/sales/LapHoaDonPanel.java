@@ -105,6 +105,21 @@ public class LapHoaDonPanel extends CoSoPanel {
 		this.banHang = banHang;
 		this.boDieuHuong = boDieuHuong;
 		this.pnlBoChon = new BoChonKhachHang(banHang, this::capNhatCacTong);
+		this.banHang.themBoLangNghe(() -> {
+			if (!java.util.Objects.equals(this.gioHang, banHang.layCacDong())) {
+				Runnable dongBo = () -> {
+					this.gioHang.clear();
+					this.gioHang.addAll(banHang.layCacDong());
+					this.pnlBoChon.dongBo();
+					this.lamMoiGioHang();
+				};
+				if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+					dongBo.run();
+				} else {
+					javax.swing.SwingUtilities.invokeLater(dongBo);
+				}
+			}
+		});
 
 		setBorder(new EmptyBorder(14, 16, 14, 16));
 		setLayout(new BorderLayout(16, 0));

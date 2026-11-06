@@ -7,7 +7,7 @@ import java.util.Optional;
 
 /** Thao tác dữ liệu cho NhanVien; service gọi qua hợp đồng này. */
 public interface NhanVienDAO {
-    Optional<NhanVien> timTheoId(Connection ketNoi, long idNhanVien) throws Exception;
+    Optional<NhanVien> timTheoId(Connection ketNoi, String maNhanVien) throws Exception;
 
     Optional<NhanVien> timTheoMa(Connection ketNoi, String maNhanVien) throws Exception;
 }

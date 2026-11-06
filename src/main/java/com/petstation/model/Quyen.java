@@ -44,73 +44,50 @@ public enum Quyen {
         }
         switch (chuoi) {
             case "XEM_TONG_QUAN":
-            case "DASHBOARD_VIEW":
                 return XEM_TONG_QUAN;
             case "QUAN_LY_TAI_KHOAN":
-            case "ACCOUNT_MANAGE":
                 return QUAN_LY_TAI_KHOAN;
             case "QUAN_LY_LICH_LAM_VIEC":
-            case "SCHEDULE_MANAGE":
                 return QUAN_LY_LICH_LAM_VIEC;
             case "XEM_LICH_LAM_VIEC":
-            case "SCHEDULE_VIEW":
                 return XEM_LICH_LAM_VIEC;
             case "QUAN_LY_KHACH_HANG":
-            case "CUSTOMER_MANAGE":
                 return QUAN_LY_KHACH_HANG;
             case "QUAN_LY_THU_CUNG":
-            case "PET_MANAGE":
                 return QUAN_LY_THU_CUNG;
             case "QUAN_LY_SAN_PHAM":
-            case "PRODUCT_MANAGE":
                 return QUAN_LY_SAN_PHAM;
             case "QUAN_LY_NHA_CUNG_CAP":
-            case "SUPPLIER_MANAGE":
                 return QUAN_LY_NHA_CUNG_CAP;
             case "NHAP_KHO":
-            case "INVENTORY_RECEIVE":
                 return NHAP_KHO;
             case "XUAT_HUY_KHO":
-            case "INVENTORY_ISSUE":
                 return XUAT_HUY_KHO;
             case "KIEM_KE_KHO":
-            case "INVENTORY_COUNT":
                 return KIEM_KE_KHO;
             case "DE_XUAT_GIA":
-            case "PRICE_PROPOSE":
                 return DE_XUAT_GIA;
             case "DUYET_GIA":
-            case "PRICE_APPROVE":
                 return DUYET_GIA;
             case "BAN_HANG":
-            case "POS_SELL":
                 return BAN_HANG;
             case "THANH_TOAN":
-            case "PAYMENT_PROCESS":
                 return THANH_TOAN;
             case "QUAN_LY_CA_THU_NGAN":
-            case "CASH_SHIFT_MANAGE":
                 return QUAN_LY_CA_THU_NGAN;
             case "QUAN_LY_KHUYEN_MAI":
-            case "PROMOTION_MANAGE":
                 return QUAN_LY_KHUYEN_MAI;
             case "QUAN_LY_SPA":
-            case "SPA_MANAGE":
                 return QUAN_LY_SPA;
             case "QUAN_LY_LUU_TRU":
-            case "HOTEL_MANAGE":
                 return QUAN_LY_LUU_TRU;
             case "XU_LY_PHE_DUYET":
-            case "APPROVAL_PROCESS":
                 return XU_LY_PHE_DUYET;
             case "XEM_NHAT_KY":
-            case "AUDIT_VIEW":
                 return XEM_NHAT_KY;
             case "XEM_BAO_CAO_CHUNG":
-            case "REPORT_VIEW_ALL":
                 return XEM_BAO_CAO_CHUNG;
             case "XEM_BAO_CAO_CA":
-            case "REPORT_VIEW_OWN_SHIFT":
                 return XEM_BAO_CAO_CA;
             default:
                 try {
