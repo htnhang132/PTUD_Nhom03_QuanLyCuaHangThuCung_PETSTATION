@@ -46,50 +46,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
 
     @Override
     protected void datLichHen() {
-        String[] luaChon = {"Khách đã có hồ sơ", "Thêm khách mới"};
-        int cach = JOptionPane.showOptionDialog(this, "Chọn khách đặt lịch", "Đặt lịch Spa",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, luaChon, luaChon[0]);
-        if (cach < 0) return;
-        Object[] khach;
-        if (cach == 1) {
-            khach = com.petstation.gui.catalog.DanhMucKhachHangPanel.moThem(this, "");
-            if (khach == null) return;
-        } else {
-            var cacKhach = DanhMucService.layKhachHang().stream()
-                .filter(k -> "Đang hoạt động".equals(k[8]))
-                .map(k -> new Object[] {k[0], k[1] + " — " + k[2]}).toList();
-            var chon = BieuMauSQL.layYeuCauNhap(this, "Chọn khách đặt lịch",
-                BieuMauSQL.TruongDuLieu.layLuaChon("customer", "Khách hàng / SĐT", cacKhach));
-            if (chon == null) return;
-            khach = DanhMucService.layKhachHang().stream()
-                .filter(k -> String.valueOf(k[0]).equals(chon.get("customer")))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách."));
-        }
-        if (!"Đang hoạt động".equals(khach[8]))
-            throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
-        String maChu = String.valueOf(khach[0]);
-        var thu = thuCuaKhach(maChu);
-        if (thu.isEmpty()) {
-            if (!HopThoai.xacNhan(this, "Khách chưa có thú cưng. Mở hồ sơ để bổ sung?")) return;
-            HopThoai.hienThiThongTin(this, "Chọn chủ nuôi: " + khach[0] + " - " + khach[1]);
-            JDialog hoSo = new JDialog(SwingUtilities.getWindowAncestor(this), "Hồ sơ thú cưng",
-                Dialog.ModalityType.APPLICATION_MODAL);
-            hoSo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            hoSo.setContentPane(new com.petstation.gui.catalog.DanhMucThuCungPanel());
-            hoSo.setSize(1100, 720);
-            hoSo.setLocationRelativeTo(this);
-            hoSo.setVisible(true);
-            thu = thuCuaKhach(maChu);
-        }
-        var giaTri = BieuMauSQL.layYeuCauNhap(this, "Đặt lịch Spa — " + khach[1],
-            BieuMauSQL.TruongDuLieu.layLuaChon("pet", "Thú cưng của khách", thu),
-            layCacGoiDichVu(),
-            taoLuaChon("staff", "Thợ phụ trách", LuaChonNghiepVuService.layLuaChonNhanVien()),
-            layTruongVanBan("start", "Bắt đầu (yyyy-MM-dd HH:mm)", layThoiGianHienTai()));
-        if (giaTri == null) return;
-        long id = SpaService.datLichHen(giaTri.get("pet"), giaTri.get("package"),
-            giaTri.get("staff"), docThoiGian(giaTri, "start"));
-        banHang.getQuyTrinh().chonLichHen(id);
+        DatLichSpaDialog.mo(this, this::lamMoi);
     }
 
     private java.util.List<Object[]> thuCuaKhach(String maKhach) {

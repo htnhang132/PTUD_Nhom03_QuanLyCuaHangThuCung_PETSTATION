@@ -23,15 +23,39 @@ public final class NhatKyChamSocDialog {
                 food = new JTextArea(2, 30),
                 medicine = new JTextArea(2, 30),
                 tasks = new JTextArea(3, 30);
-        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
-        form.add(new JLabel("Tình trạng tiếp nhận *"));
-        form.add(new JScrollPane(health));
-        form.add(new JLabel("Hướng dẫn ăn uống"));
-        form.add(new JScrollPane(food));
-        form.add(new JLabel("Hướng dẫn thuốc do chủ nuôi cung cấp"));
-        form.add(new JScrollPane(medicine));
-        form.add(new JLabel("Việc đã thực hiện"));
-        form.add(new JScrollPane(tasks));
+        health.setLineWrap(true);
+        health.setWrapStyleWord(true);
+        food.setLineWrap(true);
+        food.setWrapStyleWord(true);
+        medicine.setLineWrap(true);
+        medicine.setWrapStyleWord(true);
+        tasks.setLineWrap(true);
+        tasks.setWrapStyleWord(true);
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        themPhanTu(form, new JLabel("Tình trạng tiếp nhận *"));
+        form.add(Box.createVerticalStrut(4));
+        themPhanTu(form, taoCuon(health, 65));
+        form.add(Box.createVerticalStrut(8));
+
+        themPhanTu(form, new JLabel("Hướng dẫn ăn uống"));
+        form.add(Box.createVerticalStrut(4));
+        themPhanTu(form, taoCuon(food, 55));
+        form.add(Box.createVerticalStrut(8));
+
+        themPhanTu(form, new JLabel("Hướng dẫn thuốc do chủ nuôi cung cấp"));
+        form.add(Box.createVerticalStrut(4));
+        themPhanTu(form, taoCuon(medicine, 55));
+        form.add(Box.createVerticalStrut(8));
+
+        themPhanTu(form, new JLabel("Việc đã thực hiện"));
+        form.add(Box.createVerticalStrut(4));
+        themPhanTu(form, taoCuon(tasks, 65));
+        form.add(Box.createVerticalStrut(12));
+
         var phien = com.petstation.service.PhienDangNhapService.layPhien();
         Path[] images = new Path[2];
         for (int i = 0; i < 2; i++) {
@@ -41,6 +65,9 @@ public final class NhatKyChamSocDialog {
                             i == 0
                                     ? "Chọn ảnh trước (JPEG/PNG ≤10 MB)"
                                     : "Chọn ảnh sau (JPEG/PNG ≤10 MB)");
+            b.setAlignmentX(Component.LEFT_ALIGNMENT);
+            b.setMaximumSize(new Dimension(Short.MAX_VALUE, 34));
+            b.setPreferredSize(new Dimension(280, 34));
             b.setToolTipText(
                     "Ảnh phải được lưu trên thư mục UNC dùng chung đã cấu hình trong Cài đặt.");
             b.addActionListener(
@@ -59,15 +86,21 @@ public final class NhatKyChamSocDialog {
                             b.setText(images[k].getFileName().toString());
                         }
                     });
-            form.add(b);
+            themPhanTu(form, b);
+            form.add(Box.createVerticalStrut(6));
         }
         JLabel sharedHint = new JLabel(
                 "<html><i>Ảnh được lưu trên thư mục mạng UNC dùng chung để các máy nhân viên "
                         + "cùng xem được. Nếu chưa cấu hình hoặc mất kết nối mạng, hệ thống sẽ báo lỗi.</i></html>");
         sharedHint.setForeground(new Color(90, 90, 90));
-        form.add(sharedHint);
+        sharedHint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        themPhanTu(form, sharedHint);
+        form.add(Box.createVerticalStrut(10));
         JButton save = new JButton("Lưu phiếu chăm sóc");
-        form.add(save);
+        save.setAlignmentX(Component.LEFT_ALIGNMENT);
+        save.setMaximumSize(new Dimension(Short.MAX_VALUE, 36));
+        save.setPreferredSize(new Dimension(280, 36));
+        themPhanTu(form, save);
         JEditorPane preview = new JEditorPane("text/html", "");
         preview.setEditable(false);
         DefaultListModel<String> model = new DefaultListModel<>();
@@ -192,9 +225,22 @@ public final class NhatKyChamSocDialog {
         split.setResizeWeight(.45);
         dialog.add(split);
         dialog.setSize(1050, 680);
-        dialog.setLocationRelativeTo(cha);
+        HopThoai.chuanHoaCuaSo(dialog, cha);
         load.run();
         dialog.setVisible(true);
+    }
+
+    private static void themPhanTu(JPanel form, JComponent comp) {
+        comp.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(comp);
+    }
+
+    private static JScrollPane taoCuon(JTextArea area, int height) {
+        JScrollPane sp = new JScrollPane(area);
+        sp.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sp.setPreferredSize(new Dimension(300, height));
+        sp.setMaximumSize(new Dimension(Short.MAX_VALUE, height + 20));
+        return sp;
     }
 
     private static String escape(Object s) {

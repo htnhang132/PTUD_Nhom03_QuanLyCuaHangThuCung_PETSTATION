@@ -195,7 +195,9 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                             new String[] {
                                 "ID", "Số biên bản", "Kỳ kiểm kê", "Trạng thái", "Ngày tạo"
                             },
-                            "SELECT ma_bien_ban AS ma_khoa, ma_bien_ban, ky_kiem_ke, trang_thai, tao_luc FROM bien_ban_kiem_ke ORDER BY ma_bien_ban DESC");
+                            "SELECT ma_bien_ban AS ma_khoa, ma_bien_ban, ky_kiem_ke,"
+                                + " CASE trang_thai WHEN 'DANG_KIEM' THEN N'Đang kiểm kê' WHEN 'CHO_DUYET' THEN N'Chờ duyệt' WHEN 'DA_DUYET' THEN N'Đã duyệt' WHEN 'TU_CHOI' THEN N'Từ chối' ELSE trang_thai END,"
+                                + " tao_luc FROM bien_ban_kiem_ke ORDER BY ma_bien_ban DESC");
             case DOI_TRA ->
                     new KieuHienThi(
                             "Đổi trả hàng",
@@ -208,7 +210,12 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái",
                                 "Ngày tạo"
                             },
-                            "SELECT p.ma_phieu AS ma_khoa, p.ma_phieu, h.ma_hoa_don, p.chenh_lech, p.ly_do, CONCAT(p.loai_phieu,': ',p.trang_thai), p.tao_luc"
+                            "SELECT p.ma_phieu AS ma_khoa, p.ma_phieu, h.ma_hoa_don, p.chenh_lech, p.ly_do,"
+                                + " CASE WHEN p.loai_phieu='DOI_HANG' AND p.trang_thai='HOAN_TAT' THEN N'Hoàn tất đổi hàng'"
+                                + " WHEN p.loai_phieu='DOI_HANG' AND p.trang_thai='CHO_XU_LY' THEN N'Chờ xử lý đổi hàng'"
+                                + " WHEN p.loai_phieu='DOI_HANG' AND p.trang_thai='DA_HUY' THEN N'Đã hủy đổi hàng'"
+                                + " WHEN p.loai_phieu='TRA_HANG_CU' THEN N'Lịch sử hoàn tiền'"
+                                + " ELSE CONCAT(p.loai_phieu, N': ', p.trang_thai) END, p.tao_luc"
                                 + " FROM phieu_doi_tra p"
                                 + " JOIN hoa_don h ON h.ma_hoa_don = p.ma_hoa_don"
                                 + " ORDER BY p.ma_phieu DESC");

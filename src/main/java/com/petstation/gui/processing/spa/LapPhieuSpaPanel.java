@@ -173,6 +173,10 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     public void moDanhSachPhieuTreo() {
+        if (khiTreo != null) {
+            khiTreo.run();
+            return;
+        }
         var cacPhieu = PhieuSpaTreoService.danhSach();
         if (cacPhieu.isEmpty()) {
             HopThoai.hienThiThongTin(this, "Chưa có phiếu Spa đang treo.");
@@ -219,11 +223,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         ds.setContentPane(noiDung);
         ds.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         ds.setSize(1000, 480);
-        ds.setLocationRelativeTo(this);
+        HopThoai.chuanHoaCuaSo(ds, this);
         ds.setVisible(true);
     }
 
-    private void khoiPhucPhieu(long id) {
+    public void khoiPhucPhieu(long id) {
         PhieuSpaTreo p = PhieuSpaTreoService.lay(id);
 
         Object[] khach = p.maKhach().isBlank() ? null : DanhMucService.layKhachHang().stream()
@@ -385,15 +389,17 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         if (khachHang == null)
             throw new IllegalArgumentException("Chọn khách hàng trước khi thêm thú cưng.");
 
-        HopThoai.hienThiThongTin(this, "Trong hồ sơ thú cưng, chọn chủ nuôi: "
-            + khachHang[0] + " - " + khachHang[1]);
-        JDialog hoSo = new JDialog(SwingUtilities.getWindowAncestor(this), "Hồ sơ thú cưng", Dialog.ModalityType.APPLICATION_MODAL);
-        hoSo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        hoSo.setContentPane(new DanhMucThuCungPanel());
-        hoSo.setSize(1100, 720);
-        hoSo.setLocationRelativeTo(this);
-        hoSo.setVisible(true);
-        taiThuCung();
+        Object[] thuMoi = DanhMucThuCungPanel.moThem(this, String.valueOf(khachHang[0]));
+        if (thuMoi != null) {
+            taiThuCung();
+            String maThuMoi = String.valueOf(thuMoi[0]);
+            for (int i = 0; i < cboThuCung.getItemCount(); i++) {
+                if (cboThuCung.getItemAt(i).giaTri().equals(maThuMoi)) {
+                    cboThuCung.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
     private void luu() {

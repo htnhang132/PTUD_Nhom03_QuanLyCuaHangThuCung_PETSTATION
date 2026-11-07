@@ -36,11 +36,14 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
     }
 
     public int capNhatNhatKy(Object... cacThamSo) {
+        Object[] thamSoDayDu = new Object[cacThamSo.length + 1];
+        thamSoDayDu[0] = com.petstation.util.DuLieu.taoMa("LOG");
+        System.arraycopy(cacThamSo, 0, thamSoDayDu, 1, cacThamSo.length);
         return ThaoTacSQL.capNhat(
                 "INSERT INTO nhat_ky_he_thong"
                     + "(ma_nhat_ky,ten_dang_nhap,hanh_dong,ghi_chu,nguoi_dung,loai_su_kien,ket_qua,thoi_gian)"
-                    + " VALUES(LEFT('SYS'+REPLACE(CONVERT(varchar(36),NEWID()),'-',''),30),?,?,?,?,?,?,SYSDATETIME())",
-                cacThamSo);
+                    + " VALUES(?,?,?,?,?,?,?,SYSDATETIME())",
+                thamSoDayDu);
     }
 
     public List<Object[]> timCacMuc(Object... cacThamSo) {

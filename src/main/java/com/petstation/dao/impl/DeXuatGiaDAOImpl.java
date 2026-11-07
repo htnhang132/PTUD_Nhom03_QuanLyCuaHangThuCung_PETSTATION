@@ -22,7 +22,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     public long them(long sanPham, long nguoi, long cu, long moi, String lyDo) {
         var hienTai = truyVan(
                 "SELECT COALESCE(de_xuat_gia,N'') FROM san_pham"
-                        + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)",
+                        + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 sanPham, sanPham);
         if (hienTai.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy sản phẩm.");
@@ -46,7 +46,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                         + (lyDo == null ? "" : lyDo.replace("|", "/").replace(";", ","))
                         + "|"
                         + LocalDateTime.now().format(DINH_DANG_ISO);
-        capNhat("UPDATE san_pham SET de_xuat_gia=? WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)", chuoi, sanPham, sanPham);
+        capNhat("UPDATE san_pham SET de_xuat_gia=? WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", chuoi, sanPham, sanPham);
         return sanPham;
     }
 
@@ -54,7 +54,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         List<Object[]> dong =
                 truyVan(
                         "SELECT ma_san_pham, gia_ban, COALESCE(de_xuat_gia, N'') FROM san_pham"
-                                + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)",
+                                + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                         id, id);
         if (dong.isEmpty()) return List.of();
         Object[] d = dong.get(0);
@@ -76,7 +76,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                     + " lich_su_gia = CASE WHEN lich_su_gia IS NULL OR lich_su_gia=N'' THEN N''"
                     + " ELSE lich_su_gia + N';' END + CONVERT(NVARCHAR(19), SYSDATETIME(), 120) +"
                     + " N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(? AS NVARCHAR(20)) + N'|' +"
-                    + " CAST(? AS NVARCHAR(20)) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)",
+                    + " CAST(? AS NVARCHAR(20)) WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 gia,
                 giaCu,
                 gia,
@@ -88,7 +88,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         capNhat(
                 "UPDATE san_pham SET"
                         + " de_xuat_gia=REPLACE(COALESCE(de_xuat_gia,N''),N'CHO_DUYET|',N'TU_CHOI|')"
-                        + " WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)",
+                        + " WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 id, id);
     }
 }

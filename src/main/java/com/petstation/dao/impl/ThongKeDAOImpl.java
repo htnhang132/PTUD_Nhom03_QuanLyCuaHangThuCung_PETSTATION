@@ -81,7 +81,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
 
     public List<Object[]> layDoanhThuTheoNgay(
             java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
-        String loc = taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")";
+        String loc = taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")";
         return ThaoTacSQL.truyVan(
                 "WITH ledger AS (SELECT CAST(h.thanh_toan_luc AS date) ngay,h.tong_tien so_tien"
                     + " FROM hoa_don h JOIN phien_lam_viec s"
@@ -137,7 +137,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     case "shift" -> "s.ten_ca";
                     default -> "'Hotel'";
                 };
-        String loc = taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")";
+        String loc = taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")";
         return ThaoTacSQL.truyVan(
                 "WITH ledger AS (SELECT "
                         + nhom
@@ -186,7 +186,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " dx.ma_hoa_don_thay_the=h.ma_hoa_don AND dx.loai_phieu='DOI_HANG' AND"
                     + " dx.trang_thai='HOAN_TAT') ex WHERE h.trang_thai='DA_THANH_TOAN' AND"
                     + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")")
+                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")")
                         + " GROUP BY p.ma_san_pham,p.ten ORDER BY qty DESC,p.ma_san_pham",
                 tu,
                 denNgay);
@@ -200,7 +200,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " phieu_tiep_nhan_spa t JOIN goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don"
                     + " h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien"
                     + " WHERE h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND t.trang_thai='DA_THANH_TOAN'"
-                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")")
+                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")")
                         + " GROUP BY g.ma_goi,g.ten_goi ORDER BY SUM(t.so_luong) DESC",
                 tu,
                 denNgay);
@@ -210,7 +210,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
             java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
         return ThaoTacSQL.truyVan(
                 "SELECT trang_thai,COUNT(*) FROM lich_hen WHERE bat_dau>=? AND bat_dau<?"
-                        + (nhanVien == null ? "" : " AND (ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = " + nhanVien + ")")
+                        + (nhanVien == null ? "" : " AND (ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")")
                         + " GROUP BY"
                         + " trang_thai ORDER BY trang_thai",
                 tu,
@@ -227,7 +227,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " phong_hotel p ON p.ma_phong=h.ma_phong JOIN hoa_don d ON d.ma_hoa_don=h.ma_hoa_don JOIN"
                     + " phien_lam_viec s ON s.ma_phien=d.ma_phien WHERE d.trang_thai='DA_THANH_TOAN' AND"
                     + " d.thanh_toan_luc>=? AND d.thanh_toan_luc<?"
-                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")")
+                        + (taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")")
                         + " GROUP BY p.loai_phong ORDER BY p.loai_phong",
                 tu,
                 denNgay);
@@ -248,7 +248,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " OUTER APPLY (SELECT SUM(ct.so_luong * COALESCE(NULLIF(l.gia_nhap, 0), sp.gia_nhap_gan_nhat, ct.don_gia * 0.6)) gia_von FROM chi_tiet_hoa_don ct JOIN san_pham sp ON sp.ma_san_pham=ct.ma_san_pham LEFT JOIN lo_hang l ON l.ma_lo=ct.ma_lo WHERE ct.ma_hoa_don=h.ma_hoa_don) gv"
                     + " JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien"
                     + " WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                    + " AND (? IS NULL OR (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
+                    + " AND (? IS NULL OR (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
                     + " GROUP BY CAST(h.thanh_toan_luc AS date) ORDER BY 1",
                 thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
     }
@@ -278,7 +278,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     public List<Object[]> layPhieuSpaTheoTrangThai(Object... thamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT trang_thai,COUNT(*) FROM phieu_tiep_nhan_spa WHERE tao_luc>=? AND tao_luc<?"
-                    + " AND (? IS NULL OR (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) GROUP BY trang_thai ORDER BY trang_thai",
+                    + " AND (? IS NULL OR (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) GROUP BY trang_thai ORDER BY trang_thai",
                 thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
     }
 
@@ -287,7 +287,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 "SELECT h.trang_thai,COUNT(*),SUM(h.gia_dem),SUM(CASE WHEN h.da_nhan_coc=1 THEN"
                     + " h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h WHERE h.ngay_vao>=? AND"
                     + " h.ngay_vao<? AND (? IS NULL OR EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
-                    + " s.ma_phien=h.ma_phien_nhan_coc AND (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))) GROUP BY h.trang_thai",
+                    + " s.ma_phien=h.ma_phien_nhan_coc AND (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))) GROUP BY h.trang_thai",
                 thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
     }
 
@@ -299,7 +299,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                         + " FROM lich_su_thu_coc_hotel l"
                         + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
                         + " WHERE l.tao_luc>=? AND l.tao_luc<?"
-                        + " AND (? IS NULL OR (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
+                        + " AND (? IS NULL OR (s.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
                         + " GROUP BY l.ma_hop_dong,l.khoa_thu_coc)"
                         + " SELECT CAST(ngay_nhan AS date),SUM(so_tien),COUNT(*)"
                         + " FROM lan_thu GROUP BY CAST(ngay_nhan AS date) ORDER BY 1",

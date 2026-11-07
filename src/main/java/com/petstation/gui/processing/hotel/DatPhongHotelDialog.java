@@ -75,7 +75,7 @@ public final class DatPhongHotelDialog {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setSize(680, 570);
         dialog.setMinimumSize(new Dimension(620, 520));
-        dialog.setLocationRelativeTo(parent);
+        HopThoai.chuanHoaCuaSo(dialog, dialog.getOwner());
     }
 
     public static Long mo(Component parent, Long hopDongId, String maPhongMacDinh) {
@@ -135,6 +135,10 @@ public final class DatPhongHotelDialog {
         root.add(lower, BorderLayout.SOUTH);
         dialog.setContentPane(root);
         dialog.getRootPane().setDefaultButton(btnLuu);
+        dialog.getRootPane().registerKeyboardAction(
+                e -> dialog.dispose(),
+                KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private static void themDong(

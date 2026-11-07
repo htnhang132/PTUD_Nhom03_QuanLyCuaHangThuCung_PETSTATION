@@ -37,19 +37,60 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         taoLuaChon(
                                 "product", "Sản phẩm", LuaChonNghiepVuService.layLuaChonSanPham()),
                         layTruongVanBan("batch", "Số lô", ""),
-                        layTruongVanBan("expiry", "Hạn sử dụng (yyyy-MM-dd, có thể trống)", ""),
+                        layTruongVanBan("expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", ""),
                         layTruongVanBan("qty", "Số lượng", "1"),
                         layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", ""),
                         layTruongVanBan("da_tra", "Đã trả (đồng)", "0"));
-        if (giaTri != null)
-            KhoService.nhapKho(
-                    giaTri.get("supplier"),
-                    giaTri.get("product"),
-                    giaTri.get("batch"),
-                    giaTri.get("expiry").isBlank() ? null : LocalDate.parse(giaTri.get("expiry")),
-                    docSoLuong(giaTri, "qty"),
-                    docSoTien(giaTri, "cost"),
-                    docSoTien(giaTri, "da_tra"));
+        if (giaTri != null) {
+            try {
+                int sl;
+                long gia;
+                try {
+                    sl = docSoLuong(giaTri, "qty");
+                    gia = docSoTien(giaTri, "cost");
+                } catch (Exception ex) {
+                    HopThoai.hienThiCanhBao(this, "Số lượng và giá nhập phải là số hợp lệ.");
+                    return;
+                }
+                if (sl <= 0) {
+                    HopThoai.hienThiCanhBao(this, "Số lượng nhập kho phải lớn hơn 0.");
+                    return;
+                }
+                if (gia <= 0) {
+                    HopThoai.hienThiCanhBao(this, "Giá nhập mỗi đơn vị phải lớn hơn 0 đồng.");
+                    return;
+                }
+                KhoService.nhapKho(
+                        giaTri.get("supplier"),
+                        giaTri.get("product"),
+                        giaTri.get("batch"),
+                        phanTichNgay(giaTri.get("expiry")),
+                        sl,
+                        gia,
+                        docSoTien(giaTri, "da_tra"));
+                HopThoai.hienThiThanhCong(this, "Đã lập phiếu nhập kho thành công.");
+                lamMoi();
+            } catch (RuntimeException ex) {
+                HopThoai.hienThiCanhBao(this, ex.getMessage());
+            }
+        }
+    }
+
+    private static LocalDate phanTichNgay(String s) {
+        if (s == null || s.isBlank()) return null;
+        String trimmed = s.trim();
+        java.time.format.DateTimeFormatter[] cacDinhDang = new java.time.format.DateTimeFormatter[] {
+                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy")
+        };
+        for (var d : cacDinhDang) {
+            try {
+                return LocalDate.parse(trimmed, d);
+            } catch (Exception ignored) {}
+        }
+        throw new IllegalArgumentException("Hạn sử dụng không hợp lệ (hỗ trợ dạng dd/MM/yyyy hoặc yyyy-MM-dd).");
     }
 
     protected void thanhToanNhaCungCap() {
@@ -87,9 +128,30 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         layTruongVanBan("qty", "Số lượng", "1"),
                         layTruongVanBan("reason", "Lý do", ""));
         if (giaTri != null) {
-            KhoService.ghiHuy(
-                    docSoTien(giaTri, "batch"), docSoLuong(giaTri, "qty"), giaTri.get("reason"));
-            HopThoai.hienThiThanhCong(this, "Đã lưu phiếu. Phiếu vượt ngưỡng sẽ chờ phê duyệt.");
+            try {
+                int sl;
+                try {
+                    sl = docSoLuong(giaTri, "qty");
+                } catch (Exception ex) {
+                    HopThoai.hienThiCanhBao(this, "Số lượng xuất hủy phải là số nguyên.");
+                    return;
+                }
+                if (sl <= 0) {
+                    HopThoai.hienThiCanhBao(this, "Số lượng xuất hủy phải lớn hơn 0.");
+                    return;
+                }
+                String lyDo = giaTri.get("reason");
+                if (lyDo == null || lyDo.trim().isBlank()) {
+                    HopThoai.hienThiCanhBao(this, "Vui lòng nhập lý do xuất hủy hàng hóa.");
+                    return;
+                }
+                KhoService.ghiHuy(
+                        docSoTien(giaTri, "batch"), sl, lyDo.trim());
+                HopThoai.hienThiThanhCong(this, "Đã lưu phiếu. Phiếu vượt ngưỡng sẽ chờ phê duyệt.");
+                lamMoi();
+            } catch (RuntimeException ex) {
+                HopThoai.hienThiCanhBao(this, ex.getMessage());
+            }
         }
     }
 
@@ -99,13 +161,29 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         this,
                         "Kiểm kê",
                         layCacLoHang(),
-                        layTruongVanBan("actual", "Tồn thực tế", ""),
+                        layTruongVanBan("actual", "Tồn thực tế", "0"),
                         layTruongVanBan("reason", "Lý do chênh lệch", ""));
         if (giaTri != null) {
-            KhoService.kiemKe(
-                    docSoTien(giaTri, "batch"), docSoLuong(giaTri, "actual"), giaTri.get("reason"));
-            HopThoai.hienThiThanhCong(
-                    this, "Đã lưu biên bản. Chênh lệch chỉ điều chỉnh sau phê duyệt.");
+            try {
+                int ton;
+                try {
+                    ton = docSoLuong(giaTri, "actual");
+                } catch (Exception ex) {
+                    HopThoai.hienThiCanhBao(this, "Tồn thực tế phải là số nguyên.");
+                    return;
+                }
+                if (ton < 0) {
+                    HopThoai.hienThiCanhBao(this, "Tồn thực tế không được là số âm.");
+                    return;
+                }
+                KhoService.kiemKe(
+                        docSoTien(giaTri, "batch"), ton, giaTri.get("reason"));
+                HopThoai.hienThiThanhCong(
+                        this, "Đã lưu biên bản. Chênh lệch chỉ điều chỉnh sau phê duyệt.");
+                lamMoi();
+            } catch (RuntimeException ex) {
+                HopThoai.hienThiCanhBao(this, ex.getMessage());
+            }
         }
     }
 

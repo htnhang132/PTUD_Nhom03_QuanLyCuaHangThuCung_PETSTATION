@@ -47,17 +47,17 @@ public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
         String maSpa = null;
         if (spa != null) {
             maSpa = String.valueOf(spa);
-            List<Object[]> r = truyVan("SELECT ma_phieu FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", spa, spa);
+            List<Object[]> r = truyVan("SELECT ma_phieu FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", spa, spa);
             if (!r.isEmpty()) maSpa = String.valueOf(r.get(0)[0]);
         }
         String maHotel = null;
         if (hotel != null) {
             maHotel = String.valueOf(hotel);
-            List<Object[]> r = truyVan("SELECT ma_hop_dong FROM hop_dong_luu_tru WHERE (ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", hotel, hotel);
+            List<Object[]> r = truyVan("SELECT ma_hop_dong FROM hop_dong_luu_tru WHERE (ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", hotel, hotel);
             if (!r.isEmpty()) maHotel = String.valueOf(r.get(0)[0]);
         }
         String maNV = String.valueOf(nhanVien);
-        List<Object[]> rNv = truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nhanVien, nhanVien);
+        List<Object[]> rNv = truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nhanVien, nhanVien);
         if (!rNv.isEmpty()) maNV = String.valueOf(rNv.get(0)[0]);
 
         return capNhat(

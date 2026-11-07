@@ -59,6 +59,8 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                                                     .kiemTraCo(
                                                             com.petstation.model.Quyen
                                                                     .THANH_TOAN));
+                    case "Chi tiết dịch vụ", "Phiếu chăm sóc" ->
+                            btn.setEnabled(tblBang.getSelectedRow() >= 0);
                     default -> {}
                 }
             }
@@ -148,8 +150,19 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     }
 
     protected void quyetToan(String loai) {
-        if (!banHang.kiemTraTrong())
-            throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
+        if (!banHang.kiemTraTrong()) {
+            int luaChon = javax.swing.JOptionPane.showConfirmDialog(
+                    this,
+                    "Giỏ hàng hiện tại đang có sản phẩm chưa thanh toán.\nBạn có muốn làm trống giỏ hàng để chuyển sang quyết toán Spa không?",
+                    "Giỏ hàng đang có sản phẩm",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.QUESTION_MESSAGE);
+            if (luaChon == javax.swing.JOptionPane.YES_OPTION) {
+                banHang.xoa();
+            } else {
+                return;
+            }
+        }
         BanHangService.quyetToan(loai, layDongChon(), banHang);
         dieuHuong.accept(MaManHinh.THANH_TOAN);
     }

@@ -27,23 +27,27 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
                                                     + ":"
                                                     + d.tienThua())
                             .collect(Collectors.joining(";"));
-            capNhat("UPDATE hoa_don SET chi_tiet_thanh_toan=? WHERE ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", chiTiet, hoaDon, hoaDon);
+            capNhat("UPDATE hoa_don SET chi_tiet_thanh_toan=? WHERE ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, PATINDEX('%[0-9]%', ma_hoa_don), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", chiTiet, hoaDon, hoaDon);
         }
         if (hotel != null && !dong.isEmpty()) {
             String maHopDong = String.valueOf(hotel);
-            List<Object[]> rHd = truyVan("SELECT ma_hop_dong FROM hop_dong_luu_tru WHERE ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", hotel, hotel);
+            List<Object[]> rHd = truyVan("SELECT ma_hop_dong FROM hop_dong_luu_tru WHERE ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", hotel, hotel);
             if (!rHd.isEmpty()) maHopDong = String.valueOf(rHd.get(0)[0]);
 
             String maPhien = null;
             if (ca != 0) {
-                List<Object[]> rPhien = truyVan("SELECT ma_phien FROM phien_lam_viec WHERE ma_phien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", ca, ca);
+                List<Object[]> rPhien = truyVan("SELECT ma_phien FROM phien_lam_viec WHERE ma_phien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phien, PATINDEX('%[0-9]%', ma_phien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", ca, ca);
                 if (!rPhien.isEmpty()) maPhien = String.valueOf(rPhien.get(0)[0]);
+            }
+            if (maPhien == null) {
+                Object pMo = layGiaTriDon("SELECT TOP 1 ma_phien FROM phien_lam_viec WHERE trang_thai='DANG_MO' ORDER BY mo_luc DESC");
+                if (pMo != null) maPhien = String.valueOf(pMo);
             }
 
             String tenDangNhapThu = com.petstation.util.BoiCanhDangNhap.layTenDangNhap();
             if (tenDangNhapThu == null || tenDangNhapThu.isBlank()) {
                 if (nguoi != 0) {
-                    List<Object[]> rUser = truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", nguoi, nguoi);
+                    List<Object[]> rUser = truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", nguoi, nguoi);
                     if (!rUser.isEmpty()) tenDangNhapThu = String.valueOf(rUser.get(0)[0]);
                 }
             }
@@ -67,7 +71,7 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
             }
             String phuongThuc = dong.size() == 1 ? dong.get(0).getPhuongThuc().name() : "KET_HOP";
             capNhat(
-                    "UPDATE hop_dong_luu_tru SET phuong_thuc_coc=?, khoa_thu_coc=? WHERE ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)",
+                    "UPDATE hop_dong_luu_tru SET phuong_thuc_coc=?, khoa_thu_coc=? WHERE ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)",
                     phuongThuc,
                     khoa,
                     hotel,

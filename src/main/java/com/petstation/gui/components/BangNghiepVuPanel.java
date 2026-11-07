@@ -9,10 +9,12 @@ import com.petstation.model.MaManHinh;
 import com.petstation.service.NghiepVuService;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.time.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -51,8 +53,8 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
 
         txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
         pnlCacThaoTac.add(txtTimKiem);
-        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server");
+        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới (F5)", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server (Phím F5)");
         btnLamMoi.addActionListener(
                 e -> {
                     try {
@@ -63,6 +65,14 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                     }
                 });
         ((ThanhDanhSach) pnlCacThaoTac).themBoLoc(btnLamMoi);
+        ganPhimTat(KeyEvent.VK_F5, () -> {
+            try {
+                datLaiBoLoc();
+                taiLaiNen();
+            } catch (RuntimeException loi) {
+                HopThoai.hienThiCanhBao(this, loi.getMessage());
+            }
+        });
         pnlTren.add(pnlCacThaoTac, BorderLayout.CENTER);
         add(pnlTren, BorderLayout.NORTH);
         moHinh =
@@ -106,13 +116,9 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         lamMoi();
     }
 
-    protected void themNut(JPanel pnlVungChua, String nhan, Runnable thaoTac) {
-        NutDinhDang btnNut =
-                new NutDinhDang(
-                        nhan,
-                        nhan.startsWith("+")
-                                ? NutDinhDang.KieuNut.CHINH
-                                : NutDinhDang.KieuNut.TRONG_SUOT);
+    protected NutDinhDang themNut(
+            JPanel pnlVungChua, String nhan, NutDinhDang.KieuNut kieu, Runnable thaoTac) {
+        NutDinhDang btnNut = new NutDinhDang(nhan, kieu);
         btnNut.addActionListener(
                 suKien -> {
                     try {
@@ -124,6 +130,71 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                 });
         pnlVungChua.add(btnNut);
         capNhatThaoTac();
+        return btnNut;
+    }
+
+    protected NutDinhDang themNut(JPanel pnlVungChua, String nhan, Runnable thaoTac) {
+        return themNut(
+                pnlVungChua,
+                nhan,
+                nhan.startsWith("+")
+                        ? NutDinhDang.KieuNut.CHINH
+                        : NutDinhDang.KieuNut.TRONG_SUOT,
+                thaoTac);
+    }
+
+    public void ganPhimTat(int keyCode, Runnable thaoTac) {
+        KeyStroke stroke = KeyStroke.getKeyStroke(keyCode, 0);
+        String actionKey = "phimTat_" + keyCode;
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, actionKey);
+        getActionMap().put(actionKey, new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                thaoTac.run();
+            }
+        });
+    }
+
+    protected void ganSuKienDupChuot(Runnable thaoTac) {
+        tblBang.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2 && tblBang.getSelectedRow() >= 0) {
+                    try {
+                        thaoTac.run();
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(BangNghiepVuPanel.this, ex.getMessage());
+                    }
+                }
+            }
+        });
+    }
+
+    protected void ganMenuChuotPhai(Function<Integer, JPopupMenu> taoMenu) {
+        tblBang.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                hienMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                hienMenu(e);
+            }
+
+            private void hienMenu(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    int row = tblBang.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        tblBang.setRowSelectionInterval(row, row);
+                        JPopupMenu menu = taoMenu.apply(row);
+                        if (menu != null) {
+                            menu.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+            }
+        });
     }
 
     protected void capNhatThaoTac() {}

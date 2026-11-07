@@ -57,7 +57,14 @@ public final class PhienDangNhapService {
 
     public static long layIdTaiKhoan() {
         var tk = layPhien().getTaiKhoan();
-        return com.petstation.util.DuLieu.layIdCauNoi(tk, tk != null ? tk.getTenDangNhap() : null);
+        if (tk == null) return 0L;
+        long id = com.petstation.util.DuLieu.layIdCauNoi(tk, tk.getTenDangNhap());
+        if (id > 0) return id;
+        if (tk.getNhanVien() != null && tk.getNhanVien().getMaNhanVien() != null) {
+            long nvId = com.petstation.util.DuLieu.layIdCauNoi(null, tk.getNhanVien().getMaNhanVien());
+            if (nvId > 0) return nvId;
+        }
+        return 1L;
     }
 
     public static String layTenDangNhap() {

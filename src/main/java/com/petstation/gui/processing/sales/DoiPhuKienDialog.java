@@ -155,7 +155,11 @@ public final class DoiPhuKienDialog extends JDialog {
         setSize(Math.min(1060, vung.width - le.left - le.right - 32),
             Math.min(900, vung.height - le.top - le.bottom - 32));
         setMinimumSize(new Dimension(820, 550));
-        setLocationRelativeTo(cha);
+        HopThoai.chuanHoaCuaSo(this, getOwner());
+        getRootPane().registerKeyboardAction(
+                e -> huy(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
         if (nhap != null) SwingUtilities.invokeLater(() -> khoiPhuc(nhap));
     }
 
@@ -301,6 +305,20 @@ public final class DoiPhuKienDialog extends JDialog {
         try {
             kiemTraTinhTrang();
             if (lyDo.getText().isBlank()) throw new IllegalArgumentException("Vui lòng nhập lý do đổi.");
+            if (!gio.kiemTraTrong()) {
+                int luaChon = JOptionPane.showConfirmDialog(
+                        this,
+                        "Giỏ hàng bán lẻ hiện tại đang có sản phẩm chưa thanh toán.\n"
+                                + "Bạn có muốn làm trống giỏ hàng để chuyển sang giỏ đổi hàng ngay không?",
+                        "Giỏ hàng đang có sản phẩm",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if (luaChon == JOptionPane.YES_OPTION) {
+                    gio.xoa();
+                } else {
+                    return;
+                }
+            }
             long dong = so(dongChon()[0]);
             String ma = hangChon()[0].toString();
             int sl = (Integer) soLuong.getValue();

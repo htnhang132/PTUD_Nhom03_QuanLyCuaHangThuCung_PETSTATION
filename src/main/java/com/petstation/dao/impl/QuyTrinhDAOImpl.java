@@ -13,19 +13,19 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
     public List<Object[]> laySpa(long id) {
         return truyVan(
                 "SELECT trang_thai, CASE WHEN (ma_goi IS NOT NULL OR don_gia>0 OR tong_tien>0)"
-                        + " THEN 1 ELSE 0 END FROM phieu_tiep_nhan_spa t WHERE (t.ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " THEN 1 ELSE 0 END FROM phieu_tiep_nhan_spa t WHERE (t.ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_phieu, PATINDEX('%[0-9]%', t.ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 id, id);
     }
 
     public String layTrangThaiHotel(long id) {
-        return chuyenThanhChuoi(
-                layGiaTriDon("SELECT trang_thai FROM hop_dong_luu_tru WHERE (ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id));
+        return DuLieu.chuyenThanhChuoi(
+                layGiaTriDon("SELECT trang_thai FROM hop_dong_luu_tru WHERE (ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id));
     }
 
     public List<Object[]> layLichHen(long id) {
         return truyVan(
                 "SELECT l.ma_lich_hen, p.ma_thu_cung FROM lich_hen l JOIN thu_cung p ON"
-                        + " p.ma_thu_cung=l.ma_thu_cung WHERE (l.ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(l.ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND l.trang_thai='DA_XAC_NHAN'",
+                        + " p.ma_thu_cung=l.ma_thu_cung WHERE (l.ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(l.ma_lich_hen, PATINDEX('%[0-9]%', l.ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND l.trang_thai='DA_XAC_NHAN'",
                 id, id);
     }
 

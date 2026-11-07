@@ -23,7 +23,7 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
     public List<Object[]> timKhachHang(String ma) {
         List<Object[]> rows = truyVan(
                 "SELECT ma_khach_hang, diem_tich_luy, dang_hoat_dong FROM khach_hang WITH(UPDLOCK,HOLDLOCK)"
-                        + " WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 ma, ma);
         for (Object[] r : rows) {
             if (r[0] != null) {
@@ -52,7 +52,7 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
         String ma = taoMa("VOUCHER");
         String maKH = String.valueOf(khachHang);
         List<Object[]> rKh = truyVan(
-                "SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 khachHang, khachHang);
         if (!rKh.isEmpty()) {
             maKH = String.valueOf(rKh.get(0)[0]);
@@ -69,7 +69,7 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
                     + " lich_su_diem = CASE WHEN lich_su_diem IS NULL OR lich_su_diem=N'' THEN N''"
                     + " ELSE lich_su_diem + N';' END + CONVERT(NVARCHAR(19), SYSDATETIME(), 120) +"
                     + " N'||-200|' + CAST(diem_tich_luy-200 AS NVARCHAR(20)) + N'|Đổi 200 điểm lấy"
-                    + " voucher ' + ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND diem_tich_luy>=200",
+                    + " voucher ' + ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND diem_tich_luy>=200",
                 ma,
                 khachHang,
                 khachHang);
@@ -91,7 +91,7 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
                 "SELECT v.ma_voucher, v.menh_gia, v.hieu_luc_den, CASE WHEN v.da_dung>=v.so_luong THEN"
                     + " N'Đã dùng' WHEN v.hieu_luc_den<=SYSDATETIME() THEN N'Hết hạn' ELSE N'Còn"
                     + " hiệu lực' END FROM voucher v"
-                    + " WHERE (v.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(v.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY v.ma_voucher DESC",
+                    + " WHERE (v.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(v.ma_khach_hang, PATINDEX('%[0-9]%', v.ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY v.ma_voucher DESC",
                 ma, ma);
     }
 }

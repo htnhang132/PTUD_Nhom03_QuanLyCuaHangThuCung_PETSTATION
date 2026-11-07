@@ -145,7 +145,8 @@ public final class LuuTruService {
                     if (thu <= 0 || thu > layGiaTri(r.get(0)[1]) - layGiaTri(r.get(0)[2]))
                         throw new IllegalArgumentException(
                                 "Tiền thu phải dương và không vượt phần cọc còn thiếu.");
-                    long ca = banHangDAO.demThanhToan(layIdTaiKhoan());
+                    long ca = banHangDAO.demThanhToan(layTenDangNhap());
+                    if (ca == 0) ca = banHangDAO.demThanhToan(layIdTaiKhoan());
                     if (ca == 0) throw new IllegalArgumentException("Cần mở ca trước khi thu cọc.");
                     if (banHangDAO.demNgayDaChot() > 0)
                         throw new IllegalArgumentException("Ngày đã chốt.");
@@ -338,9 +339,7 @@ public final class LuuTruService {
                                 "Hợp đồng đã thu cọc. Cần hoàn cọc và đối soát thủ quỹ trước "
                                         + "khi hủy; hệ thống hiện chưa tự động thực hiện hoàn tiền.");
 
-                    if (luuTruDAO.huyDatPhong(
-                                    lyDo.trim(), layIdTaiKhoan(), id)
-                            != 1)
+                    if (luuTruDAO.huyDatPhong(lyDo.trim(), id) != 1)
                         throw new IllegalStateException(
                                 "Không thể hủy hợp đồng. Hãy tải lại dữ liệu.");
 

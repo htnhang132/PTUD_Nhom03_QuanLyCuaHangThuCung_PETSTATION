@@ -70,7 +70,8 @@ public final class BanHangService {
                     if (banHang.kiemTraTrong())
                         throw new IllegalArgumentException("Hóa đơn chưa có hàng.");
 
-                    long caLamViec = banHangDAO.demThanhToan(layIdTaiKhoan());
+                    long caLamViec = banHangDAO.demThanhToan(layTenDangNhap());
+                    if (caLamViec == 0) caLamViec = banHangDAO.demThanhToan(layIdTaiKhoan());
                     if (caLamViec == 0)
                         throw new IllegalStateException("Cần mở ca trước khi thanh toán.");
 

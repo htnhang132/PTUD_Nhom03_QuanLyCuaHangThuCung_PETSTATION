@@ -310,7 +310,25 @@ public final class DinhDangBang {
     public static String tenTrangThai(String s) {
         if (s == null)
             return "";
-        return switch (s.trim().toUpperCase()) {
+        String trimmed = s.trim();
+        String normalized = trimmed.toUpperCase().replace(" ", "");
+        if (normalized.equals("DOI_HANG:HOAN_TAT")) {
+            return "Hoàn tất đổi hàng";
+        }
+        if (normalized.equals("DOI_HANG:CHO_XU_LY")) {
+            return "Chờ xử lý đổi hàng";
+        }
+        if (normalized.equals("DOI_HANG:DA_HUY")) {
+            return "Đã hủy đổi hàng";
+        }
+        if (normalized.startsWith("TRA_HANG_CU")) {
+            return "Lịch sử hoàn tiền";
+        }
+        if (trimmed.contains(":")) {
+            String[] parts = trimmed.split(":", 2);
+            return tenTrangThai(parts[0]) + ": " + tenTrangThai(parts[1]);
+        }
+        return switch (trimmed.toUpperCase()) {
             case "DA_THANH_TOAN" -> "Đã thanh toán";
             case "CHO_THANH_TOAN" -> "Chờ thanh toán";
             case "GIO_TREO" -> "Giỏ treo";
@@ -343,11 +361,18 @@ public final class DinhDangBang {
             case "CHO_NHAP" -> "Chờ nhập";
             case "DA_NHAP" -> "Đã nhập";
             case "XUAT_HUY" -> "Xuất hủy";
+            case "DANG_KIEM" -> "Đang kiểm kê";
+            case "DA_KIEM" -> "Đã kiểm kê";
+            case "DA_DOI_SOAT" -> "Đã đối soát";
+            case "HET_HANG" -> "Hết hàng";
+            case "CON_HANG" -> "Còn hàng";
+            case "DA_CAP_NHAT" -> "Đã cập nhật";
             case "CHO_DUYET" -> "Chờ duyệt";
             case "DA_DUYET" -> "Đã duyệt";
             case "TU_CHOI" -> "Từ chối";
             case "CAN_THEM_THONG_TIN" -> "Cần thêm thông tin";
             case "CHO_XU_LY" -> "Chờ xử lý";
+            case "DANG_XU_LY" -> "Đang xử lý";
             case "DANG_MO" -> "Đang mở";
             case "DA_KHOA" -> "Đã khóa";
             case "DA_BAN_GIAO" -> "Đã bàn giao";

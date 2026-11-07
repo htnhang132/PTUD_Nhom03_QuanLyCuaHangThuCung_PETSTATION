@@ -11,13 +11,13 @@ import java.util.List;
 public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
     @Override
     public long them(String ma, long nguoiLap, PhieuSpaTreo p) {
-        String maPhieu = (ma == null || ma.isBlank()) ? DuLieu.taoMa("TREO") : ma;
+        String maPhieu = (ma == null || ma.isBlank()) ? DuLieu.taoMa("TREOSPA") : ma;
         String tenDangNhap = null;
         try {
             tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         } catch (Exception ignored) {}
         if (tenDangNhap == null || tenDangNhap.isBlank()) {
-            List<Object[]> rTk = truyVan("SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ten_dang_nhap, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiLap, nguoiLap);
+            List<Object[]> rTk = truyVan("SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ten_dang_nhap, PATINDEX('%[0-9]%', ten_dang_nhap), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiLap, nguoiLap);
             if (!rTk.isEmpty()) {
                 tenDangNhap = String.valueOf(rTk.get(0)[0]);
             } else {
@@ -37,7 +37,7 @@ public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
         com.petstation.database.ThaoTacSQL.capNhat("""
             UPDATE phieu_spa_treo SET ma_khach=?, so_dien_thoai=?, ma_thu=?, ma_goi=?,
                 ma_hen=?, can_nang=?, tinh_trang=?, yeu_cau=?, cap_nhat_luc=SYSDATETIME()
-            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
+            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
             """, p.maKhach(), p.soDienThoai(), p.maThu(), p.maGoi(), p.maHen(),
             p.canNang(), p.tinhTrang(), p.yeuCau(), id, id);
     }
@@ -47,7 +47,7 @@ public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
         var ds = truyVan("""
             SELECT ma_khach, so_dien_thoai, ma_thu, ma_goi, ma_hen, can_nang, tinh_trang, yeu_cau
             FROM phieu_spa_treo WITH(UPDLOCK,HOLDLOCK)
-            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
+            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
             """, id, id);
         if (ds.isEmpty()) return null;
         Object[] d = ds.get(0);
@@ -77,7 +77,7 @@ public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
     public void xoa(long id) {
         com.petstation.database.ThaoTacSQL.capNhat("""
             DELETE FROM phieu_spa_treo
-            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
+            WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))
             """, id, id);
     }
 }

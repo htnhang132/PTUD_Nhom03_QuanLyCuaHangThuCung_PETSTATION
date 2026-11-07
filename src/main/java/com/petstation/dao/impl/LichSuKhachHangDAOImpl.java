@@ -20,7 +20,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                         + " ma_thu_cung,ten,loai,giong,ngay_sinh,can_nang,tiem_chung,di_ung_benh_ly"
-                        + " FROM thu_cung WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_thu_cung",
+                        + " FROM thu_cung WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_thu_cung",
                 cacThamSo[0],
                 cacThamSo[0]);
     }
@@ -29,7 +29,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                     + " h.ma_hoa_don,h.thanh_toan_luc,h.tong_tien,h.hinh_thuc_thanh_toan,h.trang_thai"
-                    + " FROM hoa_don h WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND h.trang_thai<>'GIO_TREO' ORDER"
+                    + " FROM hoa_don h WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, PATINDEX('%[0-9]%', h.ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND h.trang_thai<>'GIO_TREO' ORDER"
                     + " BY h.thanh_toan_luc DESC",
                 cacThamSo[0],
                 cacThamSo[0]);
@@ -39,7 +39,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT t.ma_phieu,p.ten,t.tao_luc,t.tong_tien,t.trang_thai FROM"
                         + " phieu_tiep_nhan_spa t JOIN thu_cung p ON p.ma_thu_cung=t.ma_thu_cung"
-                        + " WHERE (p.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY t.tao_luc DESC",
+                        + " WHERE (p.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p.ma_khach_hang, PATINDEX('%[0-9]%', p.ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY t.tao_luc DESC",
                 cacThamSo[0],
                 cacThamSo[0]);
     }
@@ -48,7 +48,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT h.ma_hop_dong,p.ten,r.ma_phong,h.ngay_vao,h.ngay_ra_du_kien,h.trang_thai"
                         + " FROM hop_dong_luu_tru h JOIN thu_cung p ON p.ma_thu_cung=h.ma_thu_cung JOIN"
-                        + " phong_hotel r ON r.ma_phong=h.ma_phong WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY"
+                        + " phong_hotel r ON r.ma_phong=h.ma_phong WHERE (h.ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_khach_hang, PATINDEX('%[0-9]%', h.ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY"
                         + " h.ngay_vao DESC",
                 cacThamSo[0],
                 cacThamSo[0]);
@@ -59,7 +59,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         List<Object[]> dong =
                 ThaoTacSQL.truyVan(
                         "SELECT COALESCE(lich_su_diem, N'') "
-                                + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                                + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                         cacThamSo[0],
                         cacThamSo[0]);
 
@@ -135,7 +135,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT"
                         + " ma_voucher,menh_gia,hieu_luc_den,da_dung,so_luong,trang_thai"
-                        + " FROM voucher WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_voucher DESC",
+                        + " FROM voucher WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY ma_voucher DESC",
                 cacThamSo[0],
                 cacThamSo[0]);
     }

@@ -13,8 +13,8 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
     public ChiTietBaoCao lay(
             String baoCao, String goc, KhoangNgay ky, Long taiKhoan, Long nhanVien) {
         boolean all = taiKhoan == null;
-        String own = all ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")";
-        String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, 3, 20) AS BIGINT) = " + nhanVien + ")";
+        String own = all ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")";
+        String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, PATINDEX('%[0-9]%', t.ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")";
         Object tu = ky.getTuNgay(), den = ky.getCanTren();
         if (baoCao.contains("doanh thu")) {
             if (goc.equals("Theo khung giờ") || goc.equals("Theo thứ trong tuần")) {
@@ -196,7 +196,7 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                             : " AND EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
                                                   + " s.ma_phien=t.ma_phien_nhan_coc AND (s.ten_dang_nhap=CAST("
                                                     + taiKhoan
-                                                    + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + "))"),
+                                                    + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + "))"),
                             tu,
                             den),
                     3);

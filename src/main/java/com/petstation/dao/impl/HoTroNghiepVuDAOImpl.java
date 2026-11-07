@@ -12,7 +12,7 @@ public final class HoTroNghiepVuDAOImpl implements HoTroNghiepVuDAO {
     public List<Object[]> timThuCung(Object... cacThamSo) {
         List<Object[]> rows = ThaoTacSQL.truyVan(
                 "SELECT p.ma_thu_cung, p.ma_khach_hang, p.loai, p.can_nang FROM thu_cung p JOIN"
-                        + " khach_hang k ON k.ma_khach_hang=p.ma_khach_hang WHERE (p.ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p.ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                        + " khach_hang k ON k.ma_khach_hang=p.ma_khach_hang WHERE (p.ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p.ma_thu_cung, PATINDEX('%[0-9]%', p.ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
                         + " p.dang_theo_doi=1 AND k.dang_hoat_dong=1",
                 cacThamSo[0], cacThamSo[0]);
         for (Object[] r : rows) {

@@ -30,8 +30,10 @@ public final class SpaService {
 
                     long goiDichVu = layId("goi_dich_vu_spa", "ma_goi", maGoiDichVu),
                             nhanVien = layId("nhan_vien", "ma_nhan_vien", maNhanVien);
-                    kiemTraDuong(xuLySpaDAO.demLichHen(goiDichVu));
-                    kiemTraDuong(xuLySpaDAO.khoaNhanVienDangLam(nhanVien));
+                    if (xuLySpaDAO.demLichHen(goiDichVu) <= 0)
+                        throw new IllegalArgumentException("Gói dịch vụ Spa không tồn tại hoặc đã ngừng hoạt động.");
+                    if (xuLySpaDAO.khoaNhanVienDangLam(nhanVien) <= 0)
+                        throw new IllegalArgumentException("Nhân viên phụ trách không hoạt động hoặc không trong ca.");
                     LocalDateTime ketThuc =
                             batDau.plusMinutes(xuLySpaDAO.layThoiLuongDichVu(goiDichVu));
                     if (xuLySpaDAO.demLichTrung(nhanVien, thuCung[0], ketThuc, batDau) > 0)
@@ -71,8 +73,10 @@ public final class SpaService {
                     Object[] thu = layThuCung(maThuCung);
                     long goi = layId("goi_dich_vu_spa", "ma_goi", maGoi),
                             nv = layId("nhan_vien", "ma_nhan_vien", maNhanVien);
-                    kiemTraDuong(xuLySpaDAO.demLichHen(goi));
-                    kiemTraDuong(xuLySpaDAO.khoaNhanVienDangLam(nv));
+                    if (xuLySpaDAO.demLichHen(goi) <= 0)
+                        throw new IllegalArgumentException("Gói dịch vụ Spa không tồn tại hoặc đã ngừng hoạt động.");
+                    if (xuLySpaDAO.khoaNhanVienDangLam(nv) <= 0)
+                        throw new IllegalArgumentException("Nhân viên phụ trách không hoạt động hoặc không trong ca.");
                     LocalDateTime end = batDau.plusMinutes(xuLySpaDAO.layThoiLuongDichVu(goi));
                     if (xuLySpaDAO.demLichTrungKhiSua(id, nv, thu[0], end, batDau) > 0)
                         throw new IllegalArgumentException(

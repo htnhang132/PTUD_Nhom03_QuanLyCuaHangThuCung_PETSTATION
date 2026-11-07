@@ -50,7 +50,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
 
                 hopThoai.setContentPane(bieuMau);
                 hopThoai.setSize(1000, 680);
-                hopThoai.setLocationRelativeTo(null);
+                com.petstation.gui.components.HopThoai.chuanHoaCuaSo(hopThoai, cha);
 
                 bieuMau.moTaoMoi();
                 hopThoai.setVisible(true);

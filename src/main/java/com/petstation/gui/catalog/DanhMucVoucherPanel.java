@@ -38,6 +38,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     private static CauHinh taoCauHinh() {
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục voucher", "voucher")
+                        .datTienTo("VOUCHER")
                         .themBoLoc("Chủ sở hữu", d -> String.valueOf(d[7]))
                         .themBoLoc("Phạm vi", d -> String.valueOf(d[8]))
                         .timKiem("Tìm theo mã voucher...")

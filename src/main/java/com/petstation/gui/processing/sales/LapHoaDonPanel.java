@@ -274,6 +274,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		dangKyPhimTat("F7", "hold", suKien -> treoGioHangHienTai());
 		dangKyPhimTat("F8", "retrieve", suKien -> hienThiTreoCacGioHang());
 		dangKyPhimTat("Ctrl+K", "search", suKien -> txtTimKiem.requestFocusInWindow());
+		dangKyPhimTat("F1", "search_focus", suKien -> txtTimKiem.requestFocusInWindow());
 
 		addHierarchyListener(
 				suKien -> {
@@ -764,6 +765,9 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlGioHangCacDong.repaint();
 		banHang.setCacDong(gioHang);
 		capNhatCacTong();
+		if (txtTimKiem != null && isShowing()) {
+			SwingUtilities.invokeLater(txtTimKiem::requestFocusInWindow);
+		}
 	}
 
 	private JPanel layGioHangDong(GioHang.DongHang dong) {
@@ -822,6 +826,11 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlSoLuong.add(btnTru);
 		pnlSoLuong.add(txtSoLuong);
 		pnlSoLuong.add(btnCong);
+		JButton btnXoa = layNutSoLuong("×", "Xóa sản phẩm " + dong.getTen());
+		btnXoa.setForeground(MauUngDung.NGUY_HIEM);
+		btnXoa.setToolTipText("Xóa món này khỏi giỏ hàng");
+		btnXoa.addActionListener(suKien -> layThayDoiSoLuong(dong.getMa(), -dong.getSoLuong()));
+		pnlSoLuong.add(btnXoa);
 
 		JLabel lblSoTien = new JLabel(TienTe.dinhDang(dong.docSoTien()), SwingConstants.RIGHT);
 		lblSoTien.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));

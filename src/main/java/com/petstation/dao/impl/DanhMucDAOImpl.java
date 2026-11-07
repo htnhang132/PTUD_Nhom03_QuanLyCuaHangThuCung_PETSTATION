@@ -434,7 +434,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                             },
                             giaTri2[0],
                             giaTri2[1],
-                            "Chó".equals(giaTri2[2]) ? "DOG" : "CAT",
+                            "Mèo".equals(giaTri2[2]) || "CAT".equalsIgnoreCase(String.valueOf(giaTri2[2])) ? "Mèo" : "Chó",
                             giaTri2[3],
                             giaTri2[4],
                             docNgay(giaTri2[5]),
@@ -723,21 +723,21 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
     }
 
     public int capNhatBarcode(long sanPhamId, String barcode) {
-        return capNhat("UPDATE san_pham SET barcode=? WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)", barcode, sanPhamId, sanPhamId);
+        return capNhat("UPDATE san_pham SET barcode=? WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", barcode, sanPhamId, sanPhamId);
     }
 
     public boolean kiemTraSanPhamCoGiaoDich(long sanPhamId) {
-        return laySo("SELECT COUNT(*) FROM chi_tiet_hoa_don WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)", sanPhamId, sanPhamId) > 0;
+        return laySo("SELECT COUNT(*) FROM chi_tiet_hoa_don WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", sanPhamId, sanPhamId) > 0;
     }
 
     public int ngungKinhDoanhSanPham(long sanPhamId) {
-        return capNhat("UPDATE san_pham SET trang_thai='NGUNG_BAN' WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, 3, 20) AS BIGINT)=?)", sanPhamId, sanPhamId);
+        return capNhat("UPDATE san_pham SET trang_thai='NGUNG_BAN' WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", sanPhamId, sanPhamId);
     }
 
     public String layTenDangNhapTheoNhanVien(long nhanVienId) {
         Object val =
                 layGiaTriDon(
-                        "SELECT t.ten_dang_nhap FROM tai_khoan t WHERE (t.ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, 3, 20) AS BIGINT)=?)",
+                        "SELECT t.ten_dang_nhap FROM tai_khoan t WHERE (t.ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, PATINDEX('%[0-9]%', t.ma_nhan_vien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                         nhanVienId, nhanVienId);
         return val == null ? null : val.toString();
     }
@@ -748,7 +748,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         String dsQuyen = QuyenVaiTroDAOImpl.macDinhTheoVaiTro(vt);
         capNhat(
                 "INSERT INTO tai_khoan(ma_nhan_vien, ten_dang_nhap, mat_khau_hash, vai_tro, quyen, trang_thai)"
-                        + " VALUES((SELECT TOP 1 ma_nhan_vien FROM nhan_vien WHERE ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT)=?), ?, ?, ?, ?, 'HOAT_DONG')",
+                        + " VALUES((SELECT TOP 1 ma_nhan_vien FROM nhan_vien WHERE ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), ?, ?, ?, ?, 'HOAT_DONG')",
                 nhanVienId,
                 nhanVienId,
                 tenDangNhap,

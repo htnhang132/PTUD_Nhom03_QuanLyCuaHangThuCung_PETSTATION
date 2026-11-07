@@ -62,7 +62,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         String sql =
                 "SELECT ma_khach_hang, ho_ten, so_dien_thoai, dia_chi, ngay_sinh, "
                         + "diem_tich_luy, hang_thanh_vien, ngay_tao, row_version "
-                        + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
+                        + "FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, id);
@@ -263,7 +263,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean capNhatDiemTichLuy(Long idKhachHang, Integer diem) {
-        String sql = "UPDATE khach_hang SET diem_tich_luy = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
+        String sql = "UPDATE khach_hang SET diem_tich_luy = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setInt(1, diem);
@@ -279,7 +279,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean capNhatHangThanhVien(Long idKhachHang, String hang) {
-        String sql = "UPDATE khach_hang SET hang_thanh_vien = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
+        String sql = "UPDATE khach_hang SET hang_thanh_vien = ? WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, hang);
@@ -295,7 +295,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean xoa(Long id) {
-        String sql = "DELETE FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
+        String sql = "DELETE FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setLong(1, id);

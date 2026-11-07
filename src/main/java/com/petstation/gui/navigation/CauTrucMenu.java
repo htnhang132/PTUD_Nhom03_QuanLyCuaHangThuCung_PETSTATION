@@ -67,9 +67,9 @@ public final class CauTrucMenu {
                             "Xử lý",
                             List.of(
                                     layMuc("Lập hóa đơn", MaManHinh.LAP_HOA_DON, "F2"),
-                                    layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA),
-                                    layMuc("Lập phiếu Spa", MaManHinh.QUAN_LY_SPA),
-                                    layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU),
+                                    layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA, "F7"),
+                                    layMuc("Lập phiếu Spa", MaManHinh.QUAN_LY_SPA, "F4"),
+                                    layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU, "F6"),
                                     PHAN_CACH,
                                     layMuc("Lập phiếu nhập kho", MaManHinh.NHAP_KHO),
                                     layMuc("Xuất hủy hàng hóa", MaManHinh.XUAT_HUY_KHO),

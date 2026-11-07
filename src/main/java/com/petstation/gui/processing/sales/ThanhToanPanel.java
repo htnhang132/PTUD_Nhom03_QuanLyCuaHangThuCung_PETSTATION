@@ -930,6 +930,20 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         if (daNhan < giaTriTam) return;
 
+        if (!caLamViec.kiemTraMo()) {
+            int luaChon = JOptionPane.showConfirmDialog(
+                    this,
+                    "Ca thu ngân hiện chưa mở. Bạn cần mở ca trước khi thanh toán và ghi nhận doanh thu.\n"
+                            + "Bạn có muốn chuyển sang màn hình Ca thu ngân để mở ca ngay không?",
+                    "Chưa mở ca làm việc",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (luaChon == JOptionPane.YES_OPTION) {
+                boDieuHuong.accept(MaManHinh.CA_THU_NGAN);
+            }
+            return;
+        }
+
         String thongBao =
                 "Xác nhận thu "
                         + TienTe.dinhDang(giaTriTam)
@@ -964,8 +978,20 @@ public final class ThanhToanPanel extends CoSoPanel {
         } catch (RuntimeException ngoaiLe) {
             dangXuLy = false;
             kiemTraDauVao();
-            HopThoai.hienThiCanhBao(
-                    this, "Chưa thanh toán: " + ngoaiLe.getMessage());
+            if (ngoaiLe.getMessage() != null && ngoaiLe.getMessage().contains("Cần mở ca")) {
+                int luaChon = JOptionPane.showConfirmDialog(
+                        this,
+                        ngoaiLe.getMessage() + "\nBạn có muốn chuyển sang màn hình Ca thu ngân để mở ca ngay không?",
+                        "Chưa mở ca làm việc",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if (luaChon == JOptionPane.YES_OPTION) {
+                    boDieuHuong.accept(MaManHinh.CA_THU_NGAN);
+                }
+            } else {
+                HopThoai.hienThiCanhBao(
+                        this, "Chưa thanh toán: " + ngoaiLe.getMessage());
+            }
         }
     }
 

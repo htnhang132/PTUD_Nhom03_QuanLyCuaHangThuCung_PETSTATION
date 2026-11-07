@@ -332,6 +332,21 @@ public final class ChinhFrame extends JFrame {
                 () -> dieuHuong(MaManHinh.TIM_KIEM_HOA_DON));
         lienKet(
                 goc,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),
+                "spa",
+                () -> dieuHuong(MaManHinh.QUAN_LY_SPA));
+        lienKet(
+                goc,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0),
+                "hotel",
+                () -> dieuHuong(MaManHinh.QUAN_LY_LUU_TRU));
+        lienKet(
+                goc,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0),
+                "returns",
+                () -> dieuHuong(MaManHinh.DOI_TRA_HANG_HOA));
+        lienKet(
+                goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
                 "pay",
                 () -> dieuHuong(MaManHinh.THANH_TOAN));

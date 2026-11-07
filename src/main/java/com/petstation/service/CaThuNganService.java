@@ -48,6 +48,10 @@ public final class CaThuNganService {
         return layHienTai() != null;
     }
 
+    public static boolean caDangMo() {
+        return new CaThuNganService().kiemTraMo();
+    }
+
     public String layTenCa() {
         Object[] dongDuLieu = layHienTai();
         return dongDuLieu == null ? "" : chuyenThanhChuoi(dongDuLieu[1]);

@@ -3,6 +3,7 @@ package com.petstation.gui.components;
 import java.awt.Component;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public final class HopThoai {
@@ -120,6 +121,18 @@ public final class HopThoai {
                         nguyHiem ? cacLuaChon[1] : cacLuaChon[0]);
         if (luaChon == 0) return dongYKhong ? JOptionPane.YES_OPTION : JOptionPane.OK_OPTION;
         return dongYKhong ? JOptionPane.NO_OPTION : JOptionPane.CANCEL_OPTION;
+    }
+
+    public static void chuanHoaCuaSo(javax.swing.JDialog dialog, Component cha) {
+        if (dialog == null) return;
+        java.awt.Window owner = cha instanceof java.awt.Window w
+                ? w
+                : (cha != null ? SwingUtilities.getWindowAncestor(cha) : null);
+        dialog.setLocationRelativeTo(owner);
+        dialog.getRootPane().registerKeyboardAction(
+                e -> dialog.dispose(),
+                javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0),
+                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private static void hienThi(Component cha, Object thongBao, String tieuDe, int kieu) {

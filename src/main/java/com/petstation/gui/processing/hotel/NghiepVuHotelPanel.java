@@ -89,14 +89,14 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             }
     }
 
-    private long cocConThieu() {
+    protected long cocConThieu() {
         if (tblBang.getSelectedRow() < 0 || moHinh.getColumnCount() < 11) return Long.MAX_VALUE;
         int row = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
         return ((Number) moHinh.getValueAt(row, 10)).longValue()
                 - ((Number) moHinh.getValueAt(row, 7)).longValue();
     }
 
-    private long cocDaThu() {
+    protected long cocDaThu() {
         if (tblBang.getSelectedRow() < 0 || moHinh.getColumnCount() < 8) return Long.MAX_VALUE;
         int row = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
         Object value = moHinh.getValueAt(row, 7);
@@ -134,7 +134,20 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         banHang.getQuyTrinh().chonHotel(0);
     }
 
-    private void thuCoc() {
+    protected void thuCoc() {
+        if (!com.petstation.service.CaThuNganService.caDangMo()) {
+            int opt = JOptionPane.showConfirmDialog(
+                    this,
+                    "Ca thu ngân hiện chưa mở. Cần mở ca để ghi nhận phiếu thu tiền cọc.\n"
+                            + "Bạn có muốn chuyển sang màn hình Ca thu ngân để mở ca ngay bây giờ không?",
+                    "Chưa mở ca làm việc",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (opt == JOptionPane.YES_OPTION) {
+                dieuHuong.accept(MaManHinh.CA_THU_NGAN);
+            }
+            return;
+        }
         long id = layDongChon();
         long[] muc = LuuTruService.layMucCoc(id);
         long thieu = muc[0] - muc[1];
@@ -160,7 +173,25 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         var dong =
                 com.petstation.gui.components.common.ThuTienDialog.nhap(
                         this, so, maHopDong);
-        if (dong != null) LuuTruService.thuCoc(id, dong, khoa);
+        if (dong != null) {
+            try {
+                LuuTruService.thuCoc(id, dong, khoa);
+            } catch (RuntimeException ex) {
+                if (ex.getMessage() != null && ex.getMessage().contains("Cần mở ca")) {
+                    int luaChon = JOptionPane.showConfirmDialog(
+                            this,
+                            ex.getMessage() + "\nBạn có muốn chuyển sang màn hình Ca thu ngân để mở ca ngay không?",
+                            "Chưa mở ca làm việc",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (luaChon == JOptionPane.YES_OPTION) {
+                        dieuHuong.accept(MaManHinh.CA_THU_NGAN);
+                    }
+                } else {
+                    throw ex;
+                }
+            }
+        }
     }
 
     private void doiCoc() {
@@ -199,8 +230,19 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     protected void quyetToan(String loai) {
-        if (!banHang.kiemTraTrong())
-            throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
+        if (!banHang.kiemTraTrong()) {
+            int luaChon = JOptionPane.showConfirmDialog(
+                    this,
+                    "Giỏ hàng hiện tại đang có sản phẩm chưa thanh toán.\nBạn có muốn làm trống giỏ hàng để chuyển sang quyết toán lưu trú không?",
+                    "Giỏ hàng đang có sản phẩm",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (luaChon == JOptionPane.YES_OPTION) {
+                banHang.xoa();
+            } else {
+                return;
+            }
+        }
         BanHangService.quyetToan(loai, layDongChon(), banHang);
         dieuHuong.accept(MaManHinh.THANH_TOAN);
     }

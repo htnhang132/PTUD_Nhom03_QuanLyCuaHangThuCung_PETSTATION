@@ -16,46 +16,46 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     public int capNhatTiepNhan(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lich_hen SET trang_thai='DANG_THUC_HIEN' WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "UPDATE lich_hen SET trang_thai='DANG_THUC_HIEN' WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public int capNhatSucKhoeThuCung(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE thu_cung SET can_nang=?, tinh_trang_suc_khoe=? WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "UPDATE thu_cung SET can_nang=?, tinh_trang_suc_khoe=? WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[1], cacThamSo[2], cacThamSo[2]);
     }
 
     public long demTrangThaiSpa(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
                 "SELECT CASE WHEN (ma_goi IS NOT NULL OR don_gia>0 OR tong_tien>0) THEN 1 ELSE 0"
-                        + " END FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " END FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public long demLichHen(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai='HOAT_DONG'",
+                "SELECT COUNT(*) FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, PATINDEX('%[0-9]%', ma_goi), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai='HOAT_DONG'",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public long khoaNhanVienDangLam(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT 1 FROM nhan_vien WITH(UPDLOCK,HOLDLOCK) WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                "SELECT 1 FROM nhan_vien WITH(UPDLOCK,HOLDLOCK) WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
                         + " dang_lam_viec=1",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public long layThoiLuongDichVu(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
-                "SELECT thoi_gian_du_kien FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "SELECT thoi_gian_du_kien FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, PATINDEX('%[0-9]%', ma_goi), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public long demLichTrung(Object... cacThamSo) {
         return ThaoTacSQL.laySo(
                 "SELECT COUNT(*) FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE"
-                        + " ((ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) OR (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) AND trang_thai NOT IN"
+                        + " ((ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) OR (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) AND trang_thai NOT IN"
                         + " ('DA_HUY','HOAN_TAT') AND bat_dau<? AND"
                         + " ket_thuc>?",
                 cacThamSo[0], cacThamSo[0],
@@ -68,22 +68,22 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         String maLichHen = String.valueOf(cacThamSo[0]);
         String maKH = String.valueOf(cacThamSo[1]);
         if (cacThamSo[1] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
             if (!r.isEmpty()) maKH = String.valueOf(r.get(0)[0]);
         }
         String maTC = String.valueOf(cacThamSo[2]);
         if (cacThamSo[2] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[2], cacThamSo[2]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[2], cacThamSo[2]);
             if (!r.isEmpty()) maTC = String.valueOf(r.get(0)[0]);
         }
         String maNV = cacThamSo[5] != null ? String.valueOf(cacThamSo[5]) : null;
         if (cacThamSo[5] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[5], cacThamSo[5]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[5], cacThamSo[5]);
             if (!r.isEmpty()) maNV = String.valueOf(r.get(0)[0]);
         }
         String maGoi = cacThamSo[6] != null ? String.valueOf(cacThamSo[6]) : null;
         if (cacThamSo[6] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[6], cacThamSo[6]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, PATINDEX('%[0-9]%', ma_goi), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[6], cacThamSo[6]);
             if (!r.isEmpty()) maGoi = String.valueOf(r.get(0)[0]);
         }
         ThaoTacSQL.capNhat(
@@ -96,8 +96,8 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
     public List<Object[]> timTiepNhan(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT ma_lich_hen, ma_nhan_vien FROM lich_hen"
-                        + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
-                        + " (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai='DA_XAC_NHAN'",
+                        + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                        + " (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai='DA_XAC_NHAN'",
                 cacThamSo[0], cacThamSo[0],
                 cacThamSo[1], cacThamSo[1]);
     }
@@ -106,17 +106,17 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         String maPhieu = String.valueOf(cacThamSo[0]);
         String maHen = cacThamSo[1] != null ? String.valueOf(cacThamSo[1]) : null;
         if (cacThamSo[1] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_lich_hen FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_lich_hen FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
             if (!r.isEmpty()) maHen = String.valueOf(r.get(0)[0]);
         }
         String maTC = String.valueOf(cacThamSo[2]);
         if (cacThamSo[2] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[2], cacThamSo[2]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[2], cacThamSo[2]);
             if (!r.isEmpty()) maTC = String.valueOf(r.get(0)[0]);
         }
         String maNV = cacThamSo[4] != null ? String.valueOf(cacThamSo[4]) : null;
         if (cacThamSo[4] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[4], cacThamSo[4]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[4], cacThamSo[4]);
             if (!r.isEmpty()) maNV = String.valueOf(r.get(0)[0]);
         }
         ThaoTacSQL.capNhat(
@@ -128,7 +128,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     public Object layTiepNhan(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon(
-                "SELECT ma_goi FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "SELECT ma_goi FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
@@ -136,7 +136,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT t.can_nang_thuc_te, p.loai, t.trang_thai FROM"
                         + " phieu_tiep_nhan_spa t WITH(UPDLOCK,HOLDLOCK) JOIN"
-                        + " thu_cung p ON p.ma_thu_cung = t.ma_thu_cung WHERE (t.ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " thu_cung p ON p.ma_thu_cung = t.ma_thu_cung WHERE (t.ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_phieu, PATINDEX('%[0-9]%', t.ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
@@ -198,7 +198,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         Object phieuSpaObj = cacThamSo[0];
         String maGoi = String.valueOf(cacThamSo[1]);
         if (cacThamSo[1] instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, PATINDEX('%[0-9]%', ma_goi), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[1], cacThamSo[1]);
             if (!r.isEmpty()) maGoi = String.valueOf(r.get(0)[0]);
         }
         String moTa = String.valueOf(cacThamSo[2]);
@@ -208,7 +208,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
                         + " mo_ta_dich_vu=CASE WHEN mo_ta_dich_vu IS NULL OR mo_ta_dich_vu=N''"
                         + " THEN ? ELSE mo_ta_dich_vu + N'; ' + ? END,"
                         + " don_gia=don_gia+?, so_luong=CASE WHEN so_luong<=0 THEN 1 ELSE so_luong"
-                        + " END, tong_tien=tong_tien+? WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " END, tong_tien=tong_tien+? WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 maGoi,
                 moTa,
                 moTa,
@@ -222,33 +222,33 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         Object phieuSpaObj = cacThamSo[0];
         return ThaoTacSQL.capNhat(
                 "UPDATE phieu_tiep_nhan_spa SET tong_tien=don_gia*COALESCE(NULLIF(so_luong,0),1)"
-                        + " WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 phieuSpaObj, phieuSpaObj);
     }
 
     public int capNhatTrangThaiSpa(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET trang_thai=? WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai=?",
+                "UPDATE phieu_tiep_nhan_spa SET trang_thai=? WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND trang_thai=?",
                 cacThamSo[0], cacThamSo[1], cacThamSo[1], cacThamSo[2]);
     }
 
     public int hoanTatLichHen(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
                 "UPDATE lich_hen SET trang_thai='HOAN_TAT' WHERE ma_lich_hen = (SELECT"
-                        + " ma_lich_hen FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))",
+                        + " ma_lich_hen FROM phieu_tiep_nhan_spa WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public int huyLichHenBanGhi(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lich_hen SET trang_thai='DA_HUY' WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
+                "UPDATE lich_hen SET trang_thai='DA_HUY' WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND"
                         + " trang_thai='DA_XAC_NHAN'",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public Object layMaLichHenThuCung(Object... cacThamSo) {
         return ThaoTacSQL.layGiaTriDon(
-                "SELECT ma_thu_cung FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "SELECT ma_thu_cung FROM lich_hen WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
 
@@ -257,20 +257,20 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
                 "SELECT COALESCE(mo_ta_dich_vu,N'Dịch vụ Spa'),"
                         + " COALESCE(NULLIF(don_gia,0),tong_tien),"
                         + " COALESCE(NULLIF(so_luong,0),1), tong_tien FROM phieu_tiep_nhan_spa"
-                        + " WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND (ma_goi IS NOT NULL OR don_gia>0 OR tong_tien>0)",
+                        + " WHERE (ma_phieu = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phieu, PATINDEX('%[0-9]%', ma_phieu), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND (ma_goi IS NOT NULL OR don_gia>0 OR tong_tien>0)",
                 cacThamSo[0], cacThamSo[0]);
     }
 
     public List<Object[]> layChiTietLichHen(long id) {
         return truyVan(
                 "SELECT l.ma_thu_cung, COALESCE(l.ma_goi, ''), COALESCE(l.ma_nhan_vien, ''), l.bat_dau FROM lich_hen l"
-                        + " WHERE (l.ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(l.ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " WHERE (l.ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(l.ma_lich_hen, PATINDEX('%[0-9]%', l.ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 id, id);
     }
 
     public List<Object[]> khoaLichHen(long id) {
         return truyVan(
-                "SELECT trang_thai FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                "SELECT trang_thai FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 id, id);
     }
 
@@ -278,7 +278,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
             long id, long nhanVien, Object thuCung, LocalDateTime ketThuc, LocalDateTime batDau) {
         return laySo(
                 "SELECT COUNT(*) FROM lich_hen WITH(UPDLOCK,HOLDLOCK) WHERE"
-                        + " (ma_lich_hen <> CAST(? AS VARCHAR) AND TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) <> TRY_CAST(? AS BIGINT)) AND ((ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) OR (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) AND"
+                        + " (ma_lich_hen <> CAST(? AS VARCHAR) AND TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) <> TRY_CAST(? AS BIGINT)) AND ((ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) OR (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) AND"
                         + " trang_thai NOT IN ('DA_HUY','HOAN_TAT')"
                         + " AND bat_dau<? AND ket_thuc>?",
                 id, id,
@@ -298,25 +298,25 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
             long id) {
         String maKH = String.valueOf(khachHang);
         if (khachHang instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", khachHang, khachHang);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_khach_hang FROM khach_hang WHERE (ma_khach_hang = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", khachHang, khachHang);
             if (!r.isEmpty()) maKH = String.valueOf(r.get(0)[0]);
         }
         String maTC = String.valueOf(thuCung);
         if (thuCung instanceof Number) {
-            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", thuCung, thuCung);
+            List<Object[]> r = ThaoTacSQL.truyVan("SELECT ma_thu_cung FROM thu_cung WHERE (ma_thu_cung = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", thuCung, thuCung);
             if (!r.isEmpty()) maTC = String.valueOf(r.get(0)[0]);
         }
         String maGoi = String.valueOf(goi);
-        List<Object[]> rGoi = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", goi, goi);
+        List<Object[]> rGoi = ThaoTacSQL.truyVan("SELECT ma_goi FROM goi_dich_vu_spa WHERE (ma_goi = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_goi, PATINDEX('%[0-9]%', ma_goi), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", goi, goi);
         if (!rGoi.isEmpty()) maGoi = String.valueOf(rGoi.get(0)[0]);
 
         String maNV = String.valueOf(nhanVien);
-        List<Object[]> rNv = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nhanVien, nhanVien);
+        List<Object[]> rNv = ThaoTacSQL.truyVan("SELECT ma_nhan_vien FROM nhan_vien WHERE (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nhanVien, nhanVien);
         if (!rNv.isEmpty()) maNV = String.valueOf(rNv.get(0)[0]);
 
         return capNhat(
                 "UPDATE lich_hen SET ma_khach_hang=?, ma_thu_cung=?, ma_goi=?, ma_nhan_vien=?, bat_dau=?, ket_thuc=?"
-                        + " WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                        + " WHERE (ma_lich_hen = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lich_hen, PATINDEX('%[0-9]%', ma_lich_hen), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
                 maKH,
                 maTC,
                 maGoi,

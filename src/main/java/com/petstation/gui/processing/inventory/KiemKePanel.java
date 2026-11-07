@@ -237,7 +237,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         "WORKSPACE KIỂM KÊ TỒN KHO THEO ĐỢT",
                         true);
         dlg.setSize(1120, 680);
-        dlg.setLocationRelativeTo(this);
+        HopThoai.chuanHoaCuaSo(dlg, dlg.getOwner());
         dlg.setLayout(new BorderLayout(0, 10));
 
         JPanel pnlHeader = new JPanel();

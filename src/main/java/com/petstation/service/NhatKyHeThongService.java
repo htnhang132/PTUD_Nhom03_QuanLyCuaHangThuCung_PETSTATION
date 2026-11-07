@@ -51,7 +51,7 @@ public final class NhatKyHeThongService {
         nhatKyHeThongDAO.them(
                 ketNoi,
                 new com.petstation.model.NhatKyHeThong(
-                        com.petstation.util.DuLieu.taoMa("SYS"),
+                        com.petstation.util.DuLieu.taoMa("LOG"),
                         tk,
                         thaoTac,
                         loaiDoiTuong,

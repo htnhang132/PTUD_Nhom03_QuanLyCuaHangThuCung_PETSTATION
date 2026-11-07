@@ -990,7 +990,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
             datDauVao(
                     chiSo,
-                    chiSo == 0 && cacTruong.get(chiSo).docChi
+                    chiSo == 0 && (cacTruong.get(chiSo).docChi || !cauHinh.maTienTo.isEmpty())
                             ? layMaTiepTheo()
                             : layMacDinhCua(chiSo));
         }
@@ -1399,21 +1399,46 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     private String layMaTiepTheo() {
         long lonNhat = 0;
         for (Object[] dongDuLieu : cacDong) {
-            String cacChuSo = String.valueOf(dongDuLieu[0]).replaceAll("\\D", "");
+            String ma = String.valueOf(dongDuLieu[0]).trim();
+            int idxGach = ma.indexOf('-');
+            if (idxGach > 0) {
+                ma = ma.substring(0, idxGach);
+            }
+            String cacChuSo = ma.replaceAll("\\D", "");
             if (!cacChuSo.isEmpty()) {
                 try {
-                    lonNhat = Math.max(lonNhat, Long.parseLong(cacChuSo));
+                    long val = Long.parseLong(cacChuSo);
+                    if (val < 1000) {
+                        lonNhat = Math.max(lonNhat, val);
+                    }
                 } catch (NumberFormatException ignored) {
                 }
             }
         }
         int soChuSo = switch (cauHinh.maTienTo) {
-            case "NV", "NCC" -> 4;
-            case "SP", "KH", "TC", "LH", "VOUCHER", "HDHT" -> 6;
-            case "SPA", "LO", "PN", "PX", "KK", "DT", "NK", "YC", "MPI" -> 8;
-            default -> 3;
+            case "CA" -> 2;
+            case "P" -> 3;
+            case "NV", "NCC", "TREOSPA", "TREODOI" -> 4;
+            case "SP", "KH", "TC", "VOUCHER", "HDHT", "KM", "TREO" -> 6;
+            case "SPA", "LO", "PN", "PNK", "PX", "PXK", "LH", "KK", "DT", "NK", "YC", "MPI", "LOG" -> 8;
+            default -> 6;
         };
-        return cauHinh.maTienTo + String.format("%0" + soChuSo + "d", lonNhat + 1);
+        long tiep = lonNhat + 1;
+        String ungVien = cauHinh.maTienTo + String.format("%0" + soChuSo + "d", tiep);
+        while (daTonTaiMa(ungVien)) {
+            tiep++;
+            ungVien = cauHinh.maTienTo + String.format("%0" + soChuSo + "d", tiep);
+        }
+        return ungVien;
+    }
+
+    private boolean daTonTaiMa(String ma) {
+        for (Object[] dongDuLieu : cacDong) {
+            if (ma.equalsIgnoreCase(String.valueOf(dongDuLieu[0]).trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void taiLai(Object[] giu) {

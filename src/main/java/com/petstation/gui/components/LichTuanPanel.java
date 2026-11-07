@@ -547,7 +547,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setLayout(new BorderLayout(0, 10));
         dlg.setSize(680, 500);
-        dlg.setLocationRelativeTo(owner);
+        HopThoai.chuanHoaCuaSo(dlg, owner);
 
         List<Muc> hienCo = LichLamViecService.layO(ngay, caLamViec);
         java.util.Set<String> maHienCo = new java.util.HashSet<>();
@@ -798,7 +798,7 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setLayout(new BorderLayout(0, 12));
         dlg.setSize(520, 320);
-        dlg.setLocationRelativeTo(owner);
+        HopThoai.chuanHoaCuaSo(dlg, owner);
 
         JPanel pnlCenter = new JPanel(new java.awt.GridLayout(2, 1, 0, 10));
         pnlCenter.setBorder(new EmptyBorder(12, 16, 12, 16));

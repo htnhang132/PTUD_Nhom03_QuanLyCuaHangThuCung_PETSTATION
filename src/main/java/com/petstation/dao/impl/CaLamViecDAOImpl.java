@@ -59,10 +59,16 @@ public final class CaLamViecDAOImpl implements CaLamViecDAO {
 
     @Override
     public List<Object[]> timHienTai(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
+        List<Object[]> kq = ThaoTacSQL.truyVan(
                 "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
                         + " ten_dang_nhap=? AND trang_thai='DANG_MO'",
                 cacThamSo);
+        if (kq.isEmpty()) {
+            kq = ThaoTacSQL.truyVan(
+                    "SELECT TOP 1 ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
+                            + " trang_thai='DANG_MO' ORDER BY mo_luc DESC");
+        }
+        return kq;
     }
 
     @Override

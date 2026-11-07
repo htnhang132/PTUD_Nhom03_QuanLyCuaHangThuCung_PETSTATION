@@ -16,7 +16,7 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
 
     public List<Object[]> layThuCung(String ma) {
         var ds = truyVan(
-                "SELECT ma_thu_cung,ngay_sinh FROM thu_cung WITH(UPDLOCK,HOLDLOCK) WHERE (ma_thu_cung=? OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=TRY_CAST(? AS BIGINT)) AND"
+                "SELECT ma_thu_cung,ngay_sinh FROM thu_cung WITH(UPDLOCK,HOLDLOCK) WHERE (ma_thu_cung=? OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)) AND"
                         + " dang_theo_doi=1",
                 ma, ma);
         for (Object[] r : ds) {
@@ -29,7 +29,7 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
         List<Object[]> dong =
                 truyVan(
                         "SELECT COALESCE(tiem_chung,N''), so_mui_tiem, ngay_tiem_gan_nhat FROM"
-                                + " thu_cung WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=?)",
+                                + " thu_cung WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                         id, id);
         if (dong.isEmpty()) return List.of();
         Object[] d = dong.get(0);
@@ -145,7 +145,7 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
         if (chuoi.length() > 500) chuoi = chuoi.substring(0, 500);
         Date ganNhat = danhSach.isEmpty() ? null : (Date) danhSach.get(0)[2];
         capNhat(
-                "UPDATE thu_cung SET tiem_chung=?, so_mui_tiem=?, ngay_tiem_gan_nhat=? WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, 3, 20) AS BIGINT)=?)",
+                "UPDATE thu_cung SET tiem_chung=?, so_mui_tiem=?, ngay_tiem_gan_nhat=? WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 chuoi.isBlank() ? null : chuoi,
                 danhSach.size(),
                 ganNhat,

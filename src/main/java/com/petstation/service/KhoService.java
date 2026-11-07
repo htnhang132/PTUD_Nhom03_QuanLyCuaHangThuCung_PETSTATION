@@ -44,7 +44,7 @@ public final class KhoService {
                         throw new IllegalArgumentException("Nhà cung cấp đã ngừng hợp tác.");
 
                     long bienLai = khoDAO.themNhapKho(
-                            taoMa("PN"), chuoi, layIdTaiKhoan(), soLuong * giaNhap, daTra);
+                            taoMa("PNK"), chuoi, layIdTaiKhoan(), soLuong * giaNhap, daTra);
 
                     List<Object[]> cacLoHang = khoDAO.timNhapKho(vungDangXet, loHang);
                     String maLo;
@@ -86,7 +86,7 @@ public final class KhoService {
 
                     long giaNhap = layGiaTri(cacLoHang.get(0)[1]) * soLuong;
 
-                    long xuatKho = khoDAO.themXuatHuy(taoMa("PX"), layIdTaiKhoan(), lyDo, giaNhap);
+                    long xuatKho = khoDAO.themXuatHuy(taoMa("PXK"), layIdTaiKhoan(), lyDo, giaNhap);
                     khoDAO.capNhatXuatHuy(xuatKho, loHang, soLuong, giaNhap);
                     if (giaNhap >= CaiDatService.ghiGioiHanHuyPheDuyet())
                         PheDuyetService.guiThaoTac(
