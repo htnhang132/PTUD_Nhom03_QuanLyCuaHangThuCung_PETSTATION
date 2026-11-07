@@ -46,7 +46,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.ScrollPaneConstants;
 
-public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
+public class QuanLyDanhMucPanel extends CoSoPanel {
     public enum Kieu {
         VAN_BAN,
         MAT_KHAU,
@@ -367,7 +367,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         lienKetBoLoc(txtTimKiem, tblBang);
         txtTimKiemChung = txtTimKiem;
         txtTimKiem.setName("timKiemDanhMuc");
-        txtTimKiem.setPreferredSize(new Dimension(150, 32));
+        txtTimKiem.setPreferredSize(new Dimension(205, 32));
         tblBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
         NutDinhDang btnThem = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.CHINH);
         btnThem.setEnabled(coTheChinhSua());
@@ -438,7 +438,37 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     private JPanel taoBieuMau() {
-        JPanel pnlBieuMau = new JPanel(new GridBagLayout());
+        class KhungBieuMauCuon extends JPanel implements javax.swing.Scrollable {
+            KhungBieuMauCuon() {
+                super(new GridBagLayout());
+            }
+
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                return getPreferredSize();
+            }
+
+            @Override
+            public int getScrollableUnitIncrement(java.awt.Rectangle r, int o, int d) {
+                return 16;
+            }
+
+            @Override
+            public int getScrollableBlockIncrement(java.awt.Rectangle r, int o, int d) {
+                return 64;
+            }
+
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return true;
+            }
+
+            @Override
+            public boolean getScrollableTracksViewportHeight() {
+                return false;
+            }
+        }
+        JPanel pnlBieuMau = new KhungBieuMauCuon();
         pnlBieuMau.setBackground(Color.WHITE);
         pnlBieuMau.setBorder(new EmptyBorder(14, 16, 14, 16));
 
@@ -1409,6 +1439,17 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
             }
             moHinh.addRow(dong);
         }
+        com.petstation.gui.components.common.DinhDangBang.canChinhDoRongCot(tblBang);
+        for (int colIdx = 0; colIdx < danhSachCacTruong.size(); colIdx++) {
+            int truongIdx = danhSachCacTruong.get(colIdx);
+            TruongDuLieu truong = cacTruong.get(truongIdx);
+            if (colIdx < tblBang.getColumnModel().getColumnCount()) {
+                javax.swing.table.TableColumn col = tblBang.getColumnModel().getColumn(colIdx);
+                if (truong.doRongToiThieu > 0) col.setMinWidth(truong.doRongToiThieu);
+                if (truong.doRongToiDa > 0) col.setMaxWidth(truong.doRongToiDa);
+                if (truong.doRongUuTien > 0) col.setPreferredWidth(truong.doRongUuTien);
+            }
+        }
         dangChon = false;
         capNhatSoKetQua();
         chonDong(giu);
@@ -1579,7 +1620,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         for (BoLocDanhMuc bo : cauHinh.cacBoLoc) {
             JComboBox<String> chon = new JComboBox<>();
             chon.setName("loc:" + bo.nhan());
-            chon.setPreferredSize(new Dimension(75, 32));
             chon.addItem("Tất cả");
             cacDong.stream()
                     .map(bo.giaTri())
@@ -1598,7 +1638,6 @@ public class QuanLyDanhMucPanel extends CoSoPanel implements HoTroThanhCongCu {
         }
         if (cauHinh.chiSoTrangThai >= 0) {
             cboTrangThai.setName("loc:Trạng thái");
-            cboTrangThai.setPreferredSize(new Dimension(85, 32));
             cboTrangThai.addItem(layNhanTrangThaiMacDinh());
             cboTrangThai.addItem("Tất cả");
             cacDong.stream()

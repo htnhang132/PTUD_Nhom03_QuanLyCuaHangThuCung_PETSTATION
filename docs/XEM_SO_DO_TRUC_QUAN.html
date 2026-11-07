@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ Đồ Luồng Nghiệp Vụ - Pet Station System</title>
+    <style>
+        :root {
+            --bg-color: #1e1f22;
+            --card-bg: #2b2d30;
+            --text-color: #bcbec4;
+            --heading-color: #ffffff;
+            --accent-color: #3574f0;
+            --border-color: #393b40;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--heading-color);
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: #8c8f96;
+            font-size: 15px;
+        }
+
+        .toc {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+        }
+
+        .toc h3 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .toc ul {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 8px;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .toc a {
+            color: #589df6;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: var(--heading-color);
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card .badge {
+            display: inline-block;
+            background-color: #2e436e;
+            color: #78a9ff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background-color: #1e1f22;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #323438;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🐾 PET STATION - BẢNG ĐỒ HỌA SƠ ĐỒ LUỒNG TẤT CẢ CHỨC NĂNG</h1>
+            <p class="subtitle">Trực quan hóa 3 tầng kiến trúc: Giao diện (Swing GUI) ➔ Nghiệp vụ (Service) ➔ Truy xuất
+                (DAO & SQL Server)</p>
+        </header>
+
+        <div class="toc">
+            <h3> Mục lục nhanh các chức năng</h3>
+            <ul>
+                <li><a href="#kt-tongthe">Kiến trúc tổng thể 3 tầng</a></li>
+                <li><a href="#tk-doanhthu">1. Thống kê Doanh thu</a></li>
+                <li><a href="#tk-hanghoa">2. Thống kê Hàng hoá</a></li>
+                <li><a href="#xl-kiemke">3. Kiểm kê tồn kho</a></li>
+                <li><a href="#xl-phanlich">4. Phân lịch nhân viên</a></li>
+                <li><a href="#tk-hoadon">5. Tra cứu Hóa đơn (K80)</a></li>
+                <li><a href="#tk-lichlamviec">6. Lịch làm việc & Xin nghỉ</a></li>
+                <li><a href="#dm-sanpham">7. Danh mục Sản phẩm</a></li>
+                <li><a href="#dm-nhanvien">8. Danh mục Nhân viên</a></li>
+                <li><a href="#ht-caidat">9. Cài đặt hệ thống</a></li>
+                <li><a href="#tk-spa">10. Thống kê Dịch vụ Spa</a></li>
+                <li><a href="#xl-doitra">11. Xử lý Đổi hàng phụ kiện</a></li>
+                <li><a href="#xl-lapphieu-spa">12. Lập phiếu tiếp nhận Spa</a></li>
+                <li><a href="#tk-phieu-spa">13. Tra cứu phiếu Spa</a></li>
+                <li><a href="#dm-dichvu-spa">14. Danh mục Spa & Ma trận giá</a></li>
+                <li><a href="#ht-dangxuat">15. Đăng xuất an toàn & Thoát</a></li>
+            </ul>
+        </div>
+
+        <!-- TỔNG THỂ -->
+        <div class="card" id="kt-tongthe">
+            <span class="badge">KIẾN TRÚC HỆ THỐNG</span>
+            <h2>Kiến Trúc Tổng Thể Toàn Bộ Ứng Dụng</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TK_PANEL[ThongKeDoanhThuPanel.java]
+                KK_PANEL[KiemKePanel.java]
+                PL_PANEL[PhanLichNhanVienPanel.java]
+                HD_PANEL[TimKiemHoaDonPanel.java]
+                SP_PANEL[DanhSachSanPhamPanel.java]
+                SPA_PANEL[LapPhieuSpaPanel.java]
+                CD_PANEL[CaiDatPanel.java]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                TK_SV[ThongKeService.java]
+                KHO_SV[KhoService.java]
+                LICH_SV[LichLamViecService.java]
+                BH_SV[BanHangService.java]
+                DM_SV[DanhMucService.java]
+                SPA_SV[SpaService.java]
+                CD_SV[CaiDatService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                TK_DAO[ThongKeDAOImpl.java]
+                KHO_DAO[KhoDAOImpl.java]
+                LICH_DAO[LichLamViecDAOImpl.java]
+                NV_DAO[NghiepVuDAOImpl.java]
+                SP_DAO[SanPhamDAOImpl.java]
+                SPA_DAO[PhieuTiepNhanSpaDAOImpl.java]
+                SQL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                HD[(hoa_don)]
+                LH[(lo_hang)]
+                LLV[(lich_lam_viec)]
+                SP[(san_pham)]
+                DB_SPA[(phieu_tiep_nhan_spa)]
+                CD[(cai_dat)]
+                end
+
+                TK_PANEL --> TK_SV
+                KK_PANEL --> KHO_SV
+                PL_PANEL --> LICH_SV
+                HD_PANEL --> BH_SV
+                SP_PANEL --> DM_SV
+                SPA_PANEL --> SPA_SV
+                CD_PANEL --> CD_SV
+
+                TK_SV --> TK_DAO
+                KHO_SV --> KHO_DAO
+                LICH_SV --> LICH_DAO
+                BH_SV --> NV_DAO
+                DM_SV --> SP_DAO
+                SPA_SV --> SPA_DAO
+                CD_SV --> SQL
+
+                TK_DAO --> SQL
+                KHO_DAO --> SQL
+                LICH_DAO --> SQL
+                NV_DAO --> SQL
+                SP_DAO --> SQL
+                SPA_DAO --> SQL
+
+                SQL --> HD & LH & LLV & SP & DB_SPA & CD
+            </div>
+        </div>
+
+        <!-- 1. DOANH THU -->
+        <div class="card" id="tk-doanhthu">
+            <span class="badge">THỐNG KÊ</span>
+            <h2>1. Thống Kê Doanh Thu (Ledger Gom 3 Nguồn Tiền)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TK_DT[ThongKeDoanhThuPanel.java]
+                BC_CHA[BaoCaoPanel.java - Lớp cha dùng chung]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                TK_SV[ThongKeService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                TK_DAO[ThongKeDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                HD[(hoa_don)]
+                HT[(hop_dong_luu_tru)]
+                DT[(phieu_doi_tra)]
+                end
+
+                TK_DT -->|Kế thừa & Cấu hình view| BC_CHA
+                BC_CHA -->|Bấm chọn kỳ / Thay đổi góc nhìn| TK_SV
+                TK_SV -->|Kiểm tra quyền xem báo cáo & Khoảng ngày| TK_DAO
+                TK_DAO -->|Thực thi truy vấn WITH ledger AS| SQL_UTIL
+                SQL_UTIL -->|Gom 3 nguồn tiền: bán hàng + cọc hotel - đổi trả| HD & HT & DT
+            </div>
+        </div>
+
+        <!-- 2. HÀNG HOÁ -->
+        <div class="card" id="tk-hanghoa">
+            <span class="badge">THỐNG KÊ</span>
+            <h2>2. Thống Kê Hàng Hóa (Cảnh Báo Cận Date & Chôn Vốn)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TK_HH[ThongKeHangHoaPanel.java]
+                BC_CHA[BaoCaoPanel.java - Lớp cha dùng chung]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                TK_SV[ThongKeService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                TK_DAO[ThongKeDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                SP[(san_pham)]
+                LH[(lo_hang)]
+                CTHD[(chi_tiet_hoa_don)]
+                end
+
+                TK_HH -->|Kế thừa & Cấu hình view| BC_CHA
+                BC_CHA -->|Chọn góc nhìn: Bán chạy / Cận date / Chôn vốn| TK_SV
+                TK_SV -->|Lấy số ngày cảnh báo HSD từ Cài đặt| TK_DAO
+                TK_DAO -->|Truy vấn DATEADD & NOT EXISTS| SQL_UTIL
+                SQL_UTIL -->|SELECT lô hàng cận date & tính vốn chôn| SP & LH & CTHD
+            </div>
+        </div>
+
+        <!-- 3. KIỂM KÊ -->
+        <div class="card" id="xl-kiemke">
+            <span class="badge">XỬ LÝ</span>
+            <h2>3. Kiểm Kê Tồn Kho (Súng Quét Barcode & Cân Bằng Kho)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                KK_PANEL[KiemKePanel.java]
+                BARCODE_TXT[txtBarcode - Sung quet ma vach]
+                RENDERER[rendererChenhLech - To mau do hoac xanh]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                KHO_SV[KhoService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                KHO_DAO[KhoDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java - Transaction]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                BB[(bien_ban_kiem_ke)]
+                CTKK[(chi_tiet_kiem_ke)]
+                LH[(lo_hang - cap nhat ton)]
+                SP[(san_pham - tong ton)]
+                end
+
+                BARCODE_TXT -->|Bắn mã vạch gửi VK_ENTER| KK_PANEL
+                KK_PANEL -->|Tự động tính chênh lệch & Tô màu| RENDERER
+                KK_PANEL -->|Bấm Lưu biên bản - Trạng thái PENDING| KHO_SV
+                KK_PANEL -->|Quản lý bấm Cân bằng kho| KHO_SV
+                KHO_SV -->|Kiểm tra quyền duyệt Quyen.XU_LY_PHE_DUYET| KHO_DAO
+                KHO_SV -->|Bọc toàn bộ trong Transaction cân bằng kho| KHO_DAO
+                KHO_DAO -->|UPDATE tồn kho lo_hang & san_pham| SQL_UTIL
+                SQL_UTIL -->|Ghi nhận biên bản APPROVED| BB & CTKK & LH & SP
+            </div>
+        </div>
+
+        <!-- 4. PHÂN LỊCH -->
+        <div class="card" id="xl-phanlich">
+            <span class="badge">XỬ LÝ</span>
+            <h2>4. Phân Lịch Nhân Viên (Ma Trận 7 Ngày x 2 Ca & Sao Chép Tuần)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                PL_PANEL[PhanLichNhanVienPanel.java]
+                TUAN_CHA[LichTuanPanel.java - Ma trận 7 ngày x 2 ca]
+                POPUP_NV[Dialog chọn nhân viên rảnh]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                LICH_SV[LichLamViecService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                LICH_DAO[LichLamViecDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                LLV[(lich_lam_viec)]
+                CLV[(ca_lam_viec)]
+                NV[(nhan_vien)]
+                end
+
+                PL_PANEL -->|Kế thừa với CheDo.SUA| TUAN_CHA
+                TUAN_CHA -->|Click ô ca trực - Chọn nhân viên| POPUP_NV
+                TUAN_CHA -->|Bấm Sao chép tuần trước| LICH_SV
+                TUAN_CHA -->|Bấm Đổi ca| LICH_SV
+                LICH_SV -->|Kiểm tra trùng ca trong ngày & Bọc Transaction| LICH_DAO
+                LICH_DAO -->|Sao chép + 7 ngày / Hoán đổi ca trực| SQL_UTIL
+                SQL_UTIL -->|INSERT & UPDATE lịch phân công| LLV & CLV & NV
+            </div>
+        </div>
+
+        <!-- 5. HÓA ĐƠN -->
+        <div class="card" id="tk-hoadon">
+            <span class="badge">TÌM KIẾM</span>
+            <h2>5. Tra Cứu Hóa Đơn (Xem Trước Phiếu Nhiệt In K80 In-Memory)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TK_HD[TimKiemHoaDonPanel.java - Gom 1 hang]
+                FILTER_BOX[txtTimKiem + BoChonNgay + Combobox]
+                HD_DOC[HoaDonDocPanel.java - Xem truoc K80]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                BH_SV[BanHangService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                NV_DAO[NghiepVuDAOImpl.java - case HOA_DON]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                HD[(hoa_don)]
+                CTHD[(chi_tiet_hoa_don)]
+                KH[(khach_hang)]
+                NV[(nhan_vien)]
+                end
+
+                FILTER_BOX -->|Gõ từ khóa / Đổi ngày / Chọn trạng thái| TK_HD
+                TK_HD -->|Lọc In-Memory bằng TableRowSorter| TK_HD
+                TK_HD -->|Click chọn 1 dòng hóa đơn| HD_DOC
+                HD_DOC -->|layChiTietBienLai soHoaDon| BH_SV
+                BH_SV -->|Đọc thông tin hóa đơn & chi tiết món| NV_DAO
+                NV_DAO -->|SELECT hóa đơn nạp 1 lần lên RAM| SQL_UTIL
+                SQL_UTIL -->|Đọc dữ liệu hóa đơn| HD & CTHD & KH & NV
+            </div>
+        </div>
+
+        <!-- 6. LỊCH LÀM VIỆC & NGHỈ -->
+        <div class="card" id="tk-lichlamviec">
+            <span class="badge">TÌM KIẾM</span>
+            <h2>6. Tra Cứu Lịch Làm Việc & Đăng Ký Nghỉ Phép Cá Nhân</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TC_LICH[TraCuuLichLamViecPanel.java - Che do Xem Toan Cua Hang]
+                CN_LICH[LichCaNhanPanel.java - Che do Ca Nhan]
+                TUAN_CHA[LichTuanPanel.java - Lop cha dung chung]
+                POPUP_NGHI[Hop thoai Dang ky nghi phep]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                LICH_SV[LichLamViecService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                LICH_DAO[LichLamViecDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                LLV[(lich_lam_viec)]
+                end
+
+                TC_LICH -->|Kế thừa với CheDo.CHI_XEM| TUAN_CHA
+                CN_LICH -->|Kế thừa với CheDo.CA_NHAN| TUAN_CHA
+                TUAN_CHA -->|Ẩn ca người khác, chỉ vẽ ca của mình| CN_LICH
+                CN_LICH -->|Bấm nút Đăng ký nghỉ| POPUP_NGHI
+                POPUP_NGHI -->|Chọn ngày, ca, nhập lý do| LICH_SV
+                LICH_SV -->|Tạo yêu cầu nghỉ trạng thái PENDING| LICH_DAO
+                LICH_DAO -->|INSERT yêu cầu nghỉ phép vào CSDL| SQL_UTIL
+                SQL_UTIL -->|Lưu vào bảng lịch| LLV
+            </div>
+        </div>
+
+        <!-- 7. SẢN PHẨM -->
+        <div class="card" id="dm-sanpham">
+            <span class="badge">DANH MỤC</span>
+            <h2>7. Danh Mục Sản Phẩm (Sinh Mã EAN-13 & Soft Delete)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                DM_SP[DanhSachSanPhamPanel.java]
+                DM_CHA[QuanLyDanhMucPanel.java - Lớp cha dùng chung]
+                BARCODE_GEN[taoBarcodeEan13 - Sinh mã 893 Check-digit]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                DM_SV[DanhMucService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                SP_DAO[SanPhamDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                SP[(san_pham)]
+                end
+
+                DM_SP -->|Kế thừa CRUD danh mục chuẩn| DM_CHA
+                DM_SP -->|Bấm Tạo Barcode - Sinh mã EAN-13| BARCODE_GEN
+                DM_CHA -->|Bấm Lưu - Kiểm tra validation| DM_SV
+                DM_CHA -->|Xóa mềm - Chuyển sang Ngừng kinh doanh| DM_SV
+                DM_SV -->|Kiểm tra quyền sửa giá - chỉ Quản lý| SP_DAO
+                DM_SV -->|Kiểm tra nếu có hóa đơn cũ - Chặn xóa cứng| SP_DAO
+                SP_DAO -->|UPSERT sản phẩm hoặc Soft Delete| SQL_UTIL
+                SQL_UTIL -->|Ghi nhận vào CSDL| SP
+            </div>
+        </div>
+
+        <!-- 8. NHÂN VIÊN -->
+        <div class="card" id="dm-nhanvien">
+            <span class="badge">DANH MỤC</span>
+            <h2>8. Danh Mục Nhân Viên (Giải Mã CCCD 18 Tuổi & BCrypt)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                DM_NV[DanhMucNhanVienPanel.java]
+                DM_CHA[QuanLyDanhMucPanel.java - Lớp cha dùng chung]
+                RESET_MK[Bấm nút Đặt lại MK]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                VALIDATION[Kiểm tra Regex Tên SDT và Giải mã CCCD 18 tuổi]
+                NV_SV[DanhMucService.java va NhanVienService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                NV_DAO[NhanVienDAOImpl.java va TaiKhoanDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                NV[(nhan_vien)]
+                TK[(tai_khoan)]
+                end
+
+                DM_NV -->|Kế thừa CRUD danh mục chuẩn| DM_CHA
+                DM_CHA -->|Bấm Lưu - datBoKiemTra| VALIDATION
+                RESET_MK -->|Khôi phục mật khẩu 123456| NV_SV
+                VALIDATION -->|Hợp lệ - Cho phép lưu| NV_DAO
+                NV_SV -->|Mã hóa BCrypt mật khẩu mới| NV_DAO
+                NV_DAO -->|UPSERT nhân viên & UPDATE mật khẩu hash| SQL_UTIL
+                SQL_UTIL -->|Lưu vào CSDL| NV & TK
+            </div>
+        </div>
+
+        <!-- 9. CÀI ĐẶT -->
+        <div class="card" id="ht-caidat">
+            <span class="badge">HỆ THỐNG</span>
+            <h2>9. Cài Đặt Hệ Thống (Dò Tìm Máy In & Key-Value DB)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                CD_PANEL[CaiDatPanel.java - 4 Tab chuc nang]
+                TAB_1[Tab 1 - Cua hang va VietQR va May in]
+                TAB_2[Tab 2 - Kho va Hang hoa va Kiem ke mu]
+                TAB_3[Tab 3 - Nhan su va Lich truc]
+                TAB_4[Tab 4 - Thu muc va Sao luu CSDL]
+                PRINT_SVC[PrintServiceLookup - Java Print]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                CD_SV[CaiDatService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                CD_DAO[CaiDatDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                CD[(cai_dat)]
+                end
+
+                CD_PANEL --> TAB_1 & TAB_2 & TAB_3 & TAB_4
+                TAB_1 -->|Dò tìm máy in vật lý USB/LAN| PRINT_SVC
+                CD_PANEL -->|Bấm Lưu cài đặt| CD_SV
+                CD_SV -->|Đọc/Ghi cấu hình động dạng Key - Value| CD_DAO
+                CD_DAO -->|UPSERT cặp khoa - gia_tri| SQL_UTIL
+                SQL_UTIL -->|Lưu cấu hình hệ thống| CD
+            </div>
+        </div>
+
+        <!-- 10. SPA STATS -->
+        <div class="card" id="tk-spa">
+            <span class="badge">THỐNG KÊ</span>
+            <h2>10. Thống Kê Dịch Vụ Spa (Doanh Thu Thực Tế & Lịch Hẹn)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TK_SPA[ThongKeSpaPanel.java]
+                BC_CHA[BaoCaoPanel.java - Lớp cha dùng chung]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                TK_SV[ThongKeService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                TK_DAO[ThongKeDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                SPA[(phieu_tiep_nhan_spa)]
+                GOI[(goi_dich_vu_spa)]
+                HD[(hoa_don)]
+                SES[(phien_lam_viec)]
+                end
+
+                TK_SPA -->|Kế thừa & Cấu hình 3 góc nhìn view| BC_CHA
+                BC_CHA -->|Bấm chọn kỳ / Thay đổi góc nhìn| TK_SV
+                TK_SV -->|Kiểm tra quyền báo cáo & Khoảng ngày| TK_DAO
+                TK_DAO -->|Thực thi truy vấn SQL| SQL_UTIL
+                SQL_UTIL -->|SELECT JOIN tính doanh thu có phân bổ chiết khấu| SPA & GOI & HD & SES
+            </div>
+        </div>
+
+        <!-- 11. ĐỔI HÀNG -->
+        <div class="card" id="xl-doitra">
+            <span class="badge">XỬ LÝ</span>
+            <h2>11. Xử Lý Đổi Hàng Phụ Kiện (Chính Sách 72h & Thu Ngân POS)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                DT_PANEL[DoiTraPanel.java]
+                DT_DLG[DoiPhuKienDialog.java]
+                POS_CART[GioHangDocPanel.java - Màn hình POS]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                DT_SV[DoiTraService.java]
+                TREO_SV[DonDoiTreoService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                DH_DAO[DoiHangDAOImpl.java]
+                PDT_DAO[PhieuDoiTraDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java - Transaction]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                DB_PDT[(phieu_doi_tra)]
+                DB_CT[(chi_tiet_doi_tra)]
+                DB_LH[(lo_hang - cong ton)]
+                DB_HD[(hoa_don - moi)]
+                end
+
+                DT_PANEL -->|Bấm nút Đổi phụ kiện| DT_DLG
+                DT_DLG -->|Chọn HĐ trong 72h & Chọn món đổi & Chọn món thay thế| DT_SV
+                DT_DLG -->|Tiếp tục thanh toán bù chênh lệch| POS_CART
+                DT_SV -->|Kiểm tra hạn 72h & Giá thay thế >= Giá cũ| DH_DAO
+                DT_SV -->|Bọc trong Transaction thanh toán| POS_CART
+                POS_CART -->|Xác nhận thanh toán bù tiền| SQL_UTIL
+                SQL_UTIL --> DB_PDT & DB_CT & DB_LH & DB_HD
+            </div>
+        </div>
+
+        <!-- 12. TIẾP NHẬN SPA -->
+        <div class="card" id="xl-lapphieu-spa">
+            <span class="badge">XỬ LÝ</span>
+            <h2>12. Lập Phiếu Tiếp Nhận Spa (Kiểm Tra Tiêm Phòng & Tính Giá Cân Nặng)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                LAP_SPA[LapPhieuSpaPanel.java]
+                LH_PANEL[LichHenSpaPanel.java - Chọn lịch hẹn]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                TP_SV[TiemPhongService.java]
+                LAP_SV[LapPhieuSpaService.java]
+                SPA_SV[SpaService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                SPA_DAO[PhieuTiepNhanSpaDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java - Transaction]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                DB_TIEP[(phieu_tiep_nhan_spa)]
+                DB_HEN[(lich_hen)]
+                DB_TIEM[(ho_so_tiem_phong)]
+                end
+
+                LH_PANEL -->|Khách có hẹn - Nạp thông tin| LAP_SPA
+                LAP_SPA -->|1. Bấm Kiểm tra hồ sơ tiêm phòng| TP_SV
+                LAP_SPA -->|2. Nhập cân nặng thực tế & Xem giá| LAP_SV
+                LAP_SPA -->|3. Bấm Lập phiếu spa| SPA_SV
+                TP_SV -->|Xác thực vắc-xin dại trong 12 tháng| LAP_SPA
+                LAP_SV -->|Tra bảng giá theo Loài & Cân nặng| SPA_DAO
+                SPA_SV -->|Thực thi tiếp nhận trong Transaction| SQL_UTIL
+                SQL_UTIL --> DB_TIEP & DB_HEN & DB_TIEM
+            </div>
+        </div>
+
+        <!-- 13. TÌM KIẾM SPA -->
+        <div class="card" id="tk-phieu-spa">
+            <span class="badge">TÌM KIẾM</span>
+            <h2>13. Tra Cứu Phiếu Spa (Mở Xử Lý Cập Nhật Tiến Độ)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                TC_SPA[TraCuuPhieuSpaPanel.java]
+                NV_SPA[NghiepVuSpaPanel.java - Lớp cha dùng chung]
+                TIEN_DO[CapNhatTienDoSpaPanel.java]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                SPA_SV[SpaService.java]
+                QUY_TRINH[QuyTrinhService.java - Điều phối ngữ cảnh]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                NV_DAO[NghiepVuDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                DB_SPA[(phieu_tiep_nhan_spa)]
+                DB_GOI[(goi_dich_vu_spa)]
+                DB_PET[(thu_cung)]
+                DB_KH[(khach_hang)]
+                end
+
+                TC_SPA -->|Kế thừa cấu trúc danh sách & Bảng| NV_SPA
+                TC_SPA -->|1. Lọc từ khóa, khoảng ngày, 5 trạng thái| NV_DAO
+                TC_SPA -->|2. Bấm nút Mở xử lý| QUY_TRINH
+                QUY_TRINH -->|Nạp mã phiếu vào Context & Chuyển giao diện| TIEN_DO
+                NV_DAO -->|Truy vấn dữ liệu phiếu Spa| SQL_UTIL
+                SQL_UTIL --> DB_SPA & DB_GOI & DB_PET & DB_KH
+            </div>
+        </div>
+
+        <!-- 14. DANH MỤC SPA -->
+        <div class="card" id="dm-dichvu-spa">
+            <span class="badge">DANH MỤC</span>
+            <h2>14. Danh Mục Dịch Vụ Spa & Ma Trận Giá Loài / Cân Nặng</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                DM_SPA[DanhMucDichVuSpaPanel.java]
+                DM_CHA[QuanLyDanhMucPanel.java - Lớp cha dùng chung]
+                SOAN_GIA[BoSoanThaoBangGia.java - Soan ma tran Loai va Kg]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                DM_SV[DanhMucService.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                DM_DAO[DanhMucDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                DB_SPA[(goi_dich_vu_spa)]
+                end
+
+                DM_SPA -->|Kế thừa CRUD danh mục chuẩn| DM_CHA
+                DM_SPA -->|Tích hợp Editor bảng giá đa chiều| SOAN_GIA
+                DM_CHA -->|Bấm Lưu - Kiểm tra validation ít nhất 1 giá > 0| DM_SV
+                DM_SV -->|Kiểm tra duy nhất tên DV & Chuẩn bị dữ liệu| DM_DAO
+                DM_DAO -->|UPSERT gói dịch vụ Spa| SQL_UTIL
+                SQL_UTIL -->|Lưu chuỗi ma trận bảng giá có cấu trúc| DB_SPA
+            </div>
+        </div>
+
+        <!-- 15. ĐĂNG XUẤT -->
+        <div class="card" id="ht-dangxuat">
+            <span class="badge">HỆ THỐNG</span>
+            <h2>15. Đăng Xuất An Toàn & Thoát Ứng Dụng (Transaction Guard)</h2>
+            <div class="mermaid">
+                flowchart TD
+                subgraph UI ["Tầng Giao Diện"]
+                CHINH[ChinhFrame.java - Màn hình chính]
+                POPUP[HopThoai.java - Hop thoai xac nhan]
+                DANG_NHAP[DangNhapFrame.java - Màn hình đăng nhập]
+                end
+
+                subgraph Service ["Tầng Nghiệp Vụ"]
+                GIO_HANG[GioHang.java - Kiểm tra đang ghi tiền]
+                LOG_SV[NhatKyHeThongService.java]
+                AUTH_SV[PhienDangNhapService.java]
+                SES_CTX[NguCanhPhien.java]
+                end
+
+                subgraph DAO ["Tầng Truy Xuất"]
+                LOG_DAO[NhatKyHeThongDAOImpl.java]
+                SQL_UTIL[ThaoTacSQL.java]
+                end
+
+                subgraph DB ["Cơ Sở Dữ Liệu SQL Server"]
+                DB_LOG[(nhat_ky_he_thong)]
+                end
+
+                CHINH -->|Bấm Đăng xuất hoặc Thoát| POPUP
+                CHINH -->|Chốt chặn 1: Kiểm tra dangGhiThanhToan| GIO_HANG
+                POPUP -->|Nếu chọn YES - Ghi nhật ký kiểm toán| LOG_SV
+                LOG_SV -->|Gọi DAO lưu CSDL| LOG_DAO
+                LOG_DAO -->|INSERT nhật ký| SQL_UTIL
+                SQL_UTIL --> DB_LOG
+                AUTH_SV -->|Xóa Session & Hủy giỏ hàng trong RAM| SES_CTX
+                CHINH -->|dispose và mở lại màn hình| DANG_NHAP
+            </div>
+        </div>
+    </div>
+
+    <!-- NẠP THƯ VIỆN MERMAID JS CHUẨN TỪ CDN -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: '#1e1f22',
+                primaryColor: '#2b2d30',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#3574f0',
+                lineColor: '#589df6',
+                secondaryColor: '#393b40',
+                tertiaryColor: '#25262a'
+            }
+        });
+    </script>
+
+</body>
+
+</html>

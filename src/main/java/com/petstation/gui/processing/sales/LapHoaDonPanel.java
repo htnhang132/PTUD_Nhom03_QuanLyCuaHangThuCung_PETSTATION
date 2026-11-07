@@ -63,9 +63,32 @@ public class LapHoaDonPanel extends CoSoPanel {
 			"Tất cả", "Thức ăn", "Phụ kiện", "Grooming", "Vệ sinh", "Thuốc", "Chuồng - Nệm", "Sức khỏe"
 	};
 
+	private static final int SO_THE_MOI_TRANG = 24;
+
 	private final GioHang banHang;
 	private final Consumer<MaManHinh> boDieuHuong;
 	private final JPanel pnlLuoi = new JPanel(new GridLayout(0, 3, 12, 12));
+	private final JPanel pnlVungSanPham = new JPanel(new CardLayout());
+	private final javax.swing.table.DefaultTableModel moHinhBangNhanh =
+			new javax.swing.table.DefaultTableModel(
+					new String[] {"Mã SP", "Tên sản phẩm", "Nhóm", "Giá bán", "Tồn"}, 0) {
+				@Override
+				public boolean isCellEditable(int r, int c) {
+					return false;
+				}
+			};
+	private JTable tblBangNhanh;
+	private final List<SanPham> danhSachDaLoc = new ArrayList<>();
+	private final JLabel lblThongTinTrang = new JLabel();
+	private final NutDinhDang btnTrangTruoc =
+			new NutDinhDang("< Trước", NutDinhDang.KieuNut.TRONG_SUOT);
+	private final NutDinhDang btnTrangSau =
+			new NutDinhDang("Sau >", NutDinhDang.KieuNut.TRONG_SUOT);
+	private final JComboBox<String> cboCheDoHienThi =
+			new JComboBox<>(new String[] {"Thẻ hình ảnh", "Bảng nhanh (POS)"});
+	private int trangHienTai = 0;
+	private boolean cheDoBangNhanh = false;
+	private final Timer bohenGioTimKiem;
 	private final JPanel pnlGioHangCacDong = new JPanel();
 	private final JLabel lblNhanTamTinh = new JLabel();
 	private final JLabel lblNhanGiamGia = new JLabel();
@@ -95,6 +118,14 @@ public class LapHoaDonPanel extends CoSoPanel {
 		this.banHang = banHang;
 		this.boDieuHuong = boDieuHuong;
 		this.pnlBoChon = new BoChonKhachHang(banHang, this::capNhatCacTong);
+		this.bohenGioTimKiem =
+				new Timer(
+						120,
+						e -> {
+							trangHienTai = 0;
+							dungLaiLuoi();
+						});
+		this.bohenGioTimKiem.setRepeats(false);
 		this.banHang.themBoLangNghe(() -> {
 			if (!java.util.Objects.equals(this.gioHang, banHang.layCacDong())) {
 				Runnable dongBo = () -> {
@@ -134,19 +165,28 @@ public class LapHoaDonPanel extends CoSoPanel {
 		.getDocument()
 		.addDocumentListener(
 				new javax.swing.event.DocumentListener() {
+					private void kichHoatLoc() {
+						trangHienTai = 0;
+						if (SwingUtilities.isEventDispatchThread() && isShowing()) {
+							bohenGioTimKiem.restart();
+						} else {
+							dungLaiLuoi();
+						}
+					}
+
 					@Override
 					public void insertUpdate(javax.swing.event.DocumentEvent suKien) {
-						dungLaiLuoi();
+						kichHoatLoc();
 					}
 
 					@Override
 					public void removeUpdate(javax.swing.event.DocumentEvent suKien) {
-						dungLaiLuoi();
+						kichHoatLoc();
 					}
 
 					@Override
 					public void changedUpdate(javax.swing.event.DocumentEvent suKien) {
-						dungLaiLuoi();
+						kichHoatLoc();
 					}
 				});
 		txtTimKiem.addActionListener(suKien -> themTheoQuet());
@@ -157,7 +197,15 @@ public class LapHoaDonPanel extends CoSoPanel {
 
 		com.petstation.gui.components.ThanhDanhSach thanh =
 				new com.petstation.gui.components.ThanhDanhSach();
-		thanh.themBoLoc(layNhomHangCacNhan());
+		themCacNutNhomHang(thanh);
+		cboCheDoHienThi.addActionListener(
+				e -> {
+					cheDoBangNhanh = cboCheDoHienThi.getSelectedIndex() == 1;
+					((CardLayout) pnlVungSanPham.getLayout())
+							.show(pnlVungSanPham, cheDoBangNhanh ? "BANG" : "THE");
+					dungLaiLuoi();
+				});
+		thanh.themBoLoc("Hiển thị:", cboCheDoHienThi);
 		pnlTren.add(thanh, BorderLayout.SOUTH);
 		pnlTrai.add(pnlTren, BorderLayout.NORTH);
 
@@ -169,7 +217,55 @@ public class LapHoaDonPanel extends CoSoPanel {
 		scrLuoiCuon.setOpaque(false);
 		scrLuoiCuon.getViewport().setOpaque(false);
 		scrLuoiCuon.getVerticalScrollBar().setUnitIncrement(18);
-		pnlTrai.add(scrLuoiCuon, BorderLayout.CENTER);
+
+		JPanel pnlPhanTrang = taoVungTrongSuot(new BorderLayout(8, 0));
+		pnlPhanTrang.setBorder(new EmptyBorder(6, 2, 0, 2));
+		lblThongTinTrang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+		lblThongTinTrang.setForeground(MauUngDung.VAN_BAN_XAM);
+		JPanel pnlNutTrang = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+		btnTrangTruoc.addActionListener(
+				e -> {
+					if (trangHienTai > 0) {
+						trangHienTai--;
+						dungLaiLuoi();
+					}
+				});
+		btnTrangSau.addActionListener(
+				e -> {
+					trangHienTai++;
+					dungLaiLuoi();
+				});
+		pnlNutTrang.add(btnTrangTruoc);
+		pnlNutTrang.add(btnTrangSau);
+		pnlPhanTrang.add(lblThongTinTrang, BorderLayout.WEST);
+		pnlPhanTrang.add(pnlNutTrang, BorderLayout.EAST);
+
+		JPanel pnlCheDoThe = taoVungTrongSuot(new BorderLayout(0, 4));
+		pnlCheDoThe.add(scrLuoiCuon, BorderLayout.CENTER);
+		pnlCheDoThe.add(pnlPhanTrang, BorderLayout.SOUTH);
+
+		JScrollPane scrBangNhanh = taoBangDinhDang(moHinhBangNhanh);
+		tblBangNhanh = layBang(scrBangNhanh);
+		tblBangNhanh.addMouseListener(
+				new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (e.getClickCount() == 2 && tblBangNhanh.getSelectedRow() >= 0) {
+							int idx =
+									tblBangNhanh.convertRowIndexToModel(
+											tblBangNhanh.getSelectedRow());
+							if (idx >= 0 && idx < danhSachDaLoc.size()) {
+								SanPham sp = danhSachDaLoc.get(idx);
+								if (sp.tonKho() > 0) themDenGioHang(sp);
+							}
+						}
+					}
+				});
+
+		pnlVungSanPham.setOpaque(false);
+		pnlVungSanPham.add(pnlCheDoThe, "THE");
+		pnlVungSanPham.add(scrBangNhanh, "BANG");
+		pnlTrai.add(pnlVungSanPham, BorderLayout.CENTER);
 
 		BoGocPanel pnlGioHang = taoGioHang();
 
@@ -243,9 +339,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 				});
 	}
 
-	private JPanel layNhomHangCacNhan() {
-		JPanel pnlDong = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		pnlDong.setOpaque(false);
+	private void themCacNutNhomHang(com.petstation.gui.components.ThanhDanhSach thanh) {
 		ButtonGroup nhom = new ButtonGroup();
 		for (String ten : CAC_NHOM_HANG) {
 			JToggleButton btnNhan = new JToggleButton(ten);
@@ -256,17 +350,17 @@ public class LapHoaDonPanel extends CoSoPanel {
 			btnNhan.addActionListener(
 					suKien -> {
 						nhomHang = ten;
+						trangHienTai = 0;
 						dungLaiLuoi();
 					});
 			nhom.add(btnNhan);
-			pnlDong.add(btnNhan);
+			thanh.themBoLoc(btnNhan);
 		}
-		return pnlDong;
 	}
 
 	private void dungLaiLuoi() {
-		pnlLuoi.removeAll();
 		String tuKhoa = txtTimKiem.getText().trim().toLowerCase(Locale.ROOT);
+		danhSachDaLoc.clear();
 		for (SanPham sanPham : danhSachSanPham) {
 			boolean vaoNhomHang =
 					nhomHang.equals("Tất cả") || sanPham.nhomHang().equals(nhomHang);
@@ -275,7 +369,37 @@ public class LapHoaDonPanel extends CoSoPanel {
 					|| sanPham.ten().toLowerCase(Locale.ROOT).contains(tuKhoa)
 					|| sanPham.ma().toLowerCase(Locale.ROOT).contains(tuKhoa)
 					|| sanPham.barcode().toLowerCase(Locale.ROOT).contains(tuKhoa);
-			if (vaoNhomHang && khop) pnlLuoi.add(laySanPhamThe(sanPham));
+			if (vaoNhomHang && khop) {
+				danhSachDaLoc.add(sanPham);
+			}
+		}
+
+		if (cheDoBangNhanh) {
+			moHinhBangNhanh.setRowCount(0);
+			for (SanPham sp : danhSachDaLoc) {
+				moHinhBangNhanh.addRow(
+						new Object[] {
+							sp.ma(),
+							sp.ten(),
+							sp.nhomHang(),
+							TienTe.dinhDang(sp.gia()),
+							sp.tonKho() <= 0 ? "Hết hàng" : sp.tonKho()
+						});
+			}
+			com.petstation.gui.components.common.DinhDangBang.canChinhDoRongCot(tblBangNhanh);
+			return;
+		}
+
+		pnlLuoi.removeAll();
+		int tongSo = danhSachDaLoc.size();
+		int tongTrang = Math.max(1, (tongSo + SO_THE_MOI_TRANG - 1) / SO_THE_MOI_TRANG);
+		if (trangHienTai >= tongTrang) trangHienTai = tongTrang - 1;
+		if (trangHienTai < 0) trangHienTai = 0;
+
+		int batDau = trangHienTai * SO_THE_MOI_TRANG;
+		int ketThuc = Math.min(tongSo, batDau + SO_THE_MOI_TRANG);
+		for (int i = batDau; i < ketThuc; i++) {
+			pnlLuoi.add(laySanPhamThe(danhSachDaLoc.get(i)));
 		}
 		if (pnlLuoi.getComponentCount() == 0) {
 			JLabel lblKhongCo = new JLabel("Không tìm thấy sản phẩm phù hợp.");
@@ -286,6 +410,21 @@ public class LapHoaDonPanel extends CoSoPanel {
 		while (pnlLuoi.getComponentCount() % soCot != 0 && pnlLuoi.getComponentCount() > 0) {
 			pnlLuoi.add(Box.createGlue());
 		}
+		lblThongTinTrang.setText(
+				tongSo == 0
+						? "0 sản phẩm"
+						: "Hiển thị "
+								+ (batDau + 1)
+								+ "–"
+								+ ketThuc
+								+ " / "
+								+ tongSo
+								+ " SP · Trang "
+								+ (trangHienTai + 1)
+								+ "/"
+								+ tongTrang);
+		btnTrangTruoc.setEnabled(trangHienTai > 0);
+		btnTrangSau.setEnabled(trangHienTai + 1 < tongTrang);
 		pnlLuoi.revalidate();
 		pnlLuoi.repaint();
 	}

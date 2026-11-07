@@ -71,62 +71,30 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                             "Đã hoàn"
                         });
 
-        BorderLayout rootLayout = (BorderLayout) getLayout();
-        Component northComp = rootLayout.getLayoutComponent(BorderLayout.NORTH);
-        if (northComp instanceof JPanel pnlNorth) {
+        if (pnlCacThaoTac instanceof com.petstation.gui.components.ThanhDanhSach thanh) {
             Component btnLamMoi = null;
             Component btnXuat = null;
-            for (Component c : pnlCacThaoTac.getComponents()) {
+            for (Component c : thanh.getComponents()) {
                 if (c instanceof JButton b) {
                     if ("Làm mới".equals(b.getText())) btnLamMoi = b;
                     else if ("Xuất Excel".equals(b.getText())) btnXuat = b;
                 }
             }
-            pnlCacThaoTac.removeAll();
-            pnlNorth.remove(pnlCacThaoTac);
-
-            JPanel pnlThanhCongCu = new JPanel(new BorderLayout(8, 0));
-            pnlThanhCongCu.setOpaque(false);
-            pnlThanhCongCu.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(226, 232, 240)),
-                            new EmptyBorder(4, 2, 6, 2)));
-
-            JPanel pnlBoLoc = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
-            pnlBoLoc.setOpaque(false);
-
-            txtTimKiem.setPreferredSize(new Dimension(170, 32));
-            pnlBoLoc.add(txtTimKiem);
-
-            pnlBoLoc.add(new JLabel("Từ ngày:"));
-            txtTuNgay.setPreferredSize(new Dimension(120, 32));
-            pnlBoLoc.add(txtTuNgay);
-
-            pnlBoLoc.add(new JLabel("Đến ngày:"));
-            txtDenNgay.setPreferredSize(new Dimension(120, 32));
-            pnlBoLoc.add(txtDenNgay);
-
-            pnlBoLoc.add(new JLabel("Phương thức:"));
-            cboPhuongThuc.setPreferredSize(new Dimension(115, 32));
-            pnlBoLoc.add(cboPhuongThuc);
-
-            pnlBoLoc.add(new JLabel("Trạng thái:"));
-            cboTrangThai.setPreferredSize(new Dimension(130, 32));
-            pnlBoLoc.add(cboTrangThai);
-
-            JPanel pnlNutPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
-            pnlNutPhai.setOpaque(false);
-            if (btnLamMoi != null) pnlNutPhai.add(btnLamMoi);
-            if (btnXuat != null) pnlNutPhai.add(btnXuat);
-
-            pnlThanhCongCu.add(pnlBoLoc, BorderLayout.CENTER);
-            pnlThanhCongCu.add(pnlNutPhai, BorderLayout.EAST);
-
-            pnlNorth.add(pnlThanhCongCu, BorderLayout.CENTER);
+            thanh.removeAll();
+            txtTimKiem.setPreferredSize(new Dimension(190, 32));
+            txtTuNgay.setPreferredSize(new Dimension(130, 32));
+            txtDenNgay.setPreferredSize(new Dimension(130, 32));
+            thanh.add(txtTimKiem);
+            thanh.themBoLoc("Từ ngày:", txtTuNgay);
+            thanh.themBoLoc("Đến ngày:", txtDenNgay);
+            thanh.themBoLoc("Phương thức:", cboPhuongThuc);
+            thanh.themBoLoc("Trạng thái:", cboTrangThai);
+            if (btnLamMoi != null) thanh.add(btnLamMoi);
+            if (btnXuat != null) thanh.add(btnXuat);
         }
 
         JPanel pnlRightDetail = new JPanel(new BorderLayout(0, 8));
-        pnlRightDetail.setPreferredSize(new Dimension(380, 0));
+        pnlRightDetail.setPreferredSize(new Dimension(340, 0));
         pnlRightDetail.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 1, 0, 0, new Color(226, 232, 240)),
@@ -162,6 +130,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         pnlActionBill.add(btnXuatHtml);
         pnlRightDetail.add(pnlActionBill, BorderLayout.SOUTH);
 
+        BorderLayout rootLayout = (BorderLayout) getLayout();
         Component centerComp = rootLayout.getLayoutComponent(BorderLayout.CENTER);
         if (centerComp != null) {
             remove(centerComp);

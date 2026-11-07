@@ -31,7 +31,7 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
 
         JPanel pnlNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));
         pnlNutBao.setOpaque(false);
-        btnChon.setPreferredSize(new Dimension(120, 26));
+        btnChon.setPreferredSize(new Dimension(142, 28));
         btnChon.setFont(com.petstation.gui.components.MauUngDung.taoPhongChu(java.awt.Font.PLAIN, 11));
         pnlNutBao.add(btnChon);
 

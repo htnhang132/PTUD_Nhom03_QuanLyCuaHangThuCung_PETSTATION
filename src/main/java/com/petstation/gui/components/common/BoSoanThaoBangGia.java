@@ -15,9 +15,9 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private final JTable bang = new JTable(model);
     private final JPanel panel = new JPanel(new BorderLayout(5, 8));
     private final JComboBox<String> loai = new JComboBox<>(new String[]{"Chó", "Mèo"});
-    private final JTextField tuKg = new JTextField("0", 5);
-    private final JTextField denKg = new JTextField("5", 5);
-    private final JTextField gia = new JTextField(10);
+    private final JTextField tuKg = new JTextField("0", 4);
+    private final JTextField denKg = new JTextField("5", 4);
+    private final JTextField gia = new JTextField(6);
     private final JButton them = new NutDinhDang("+ Thêm mức giá", NutDinhDang.KieuNut.PHU);
     private final JButton sua = new NutDinhDang("Sửa mức giá", NutDinhDang.KieuNut.PHU);
     private final JButton xoa = new NutDinhDang("Xóa mức giá", NutDinhDang.KieuNut.NGUY_HIEM);
@@ -34,6 +34,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
         gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
 
+        javax.swing.border.Border viNut = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+        them.setBorder(viNut);
+        sua.setBorder(viNut);
+        xoa.setBorder(viNut);
         JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
         nut.setOpaque(false);
         nut.add(them); nut.add(sua); nut.add(xoa);
@@ -42,7 +46,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         dau.add(nhap, BorderLayout.CENTER); dau.add(nut, BorderLayout.SOUTH);
         panel.add(dau, BorderLayout.NORTH);
         JScrollPane cuon = new JScrollPane(bang);
-        cuon.setPreferredSize(new Dimension(350, 140));
+        cuon.setPreferredSize(new Dimension(240, 140));
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         panel.add(cuon, BorderLayout.CENTER);
         them.addActionListener(e -> capNhat(false));

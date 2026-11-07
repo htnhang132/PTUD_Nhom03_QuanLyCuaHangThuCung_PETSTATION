@@ -60,8 +60,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     @Override
     public void xuLyTroGiup() {
-        HopThoai.hienThiThongBaoHopThoai(
-                this, layNoiDungTroGiup(), layTieuDeTroGiup(), JOptionPane.INFORMATION_MESSAGE);
+        HopThoaiTroGiup.hienThi(this, layTieuDeTroGiup(), layNoiDungTroGiup());
     }
 
     protected String layTieuDeTroGiup() {
@@ -119,6 +118,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         DinhDangBang.apDung(tblBang);
 
         JScrollPane scrKhungCuon = new JScrollPane(tblBang);
+        scrKhungCuon.setColumnHeaderView(tblBang.getTableHeader());
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1));
         scrKhungCuon.getViewport().setBackground(MauUngDung.THE_NEN);
 

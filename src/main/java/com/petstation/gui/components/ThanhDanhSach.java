@@ -40,13 +40,12 @@ public final class ThanhDanhSach extends JPanel {
     }
 
     public void themBoLoc(String nhan, JComponent c) {
-        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         nhom.setOpaque(false);
         JLabel label = new JLabel(nhan);
         label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         label.setForeground(MauUngDung.VAN_BAN_TOI);
         label.setLabelFor(c);
-        c.setPreferredSize(new Dimension(c.getPreferredSize().width, CAO_HANG));
         nhom.add(label);
         nhom.add(c);
         themBoLoc(nhom);
@@ -68,7 +67,46 @@ public final class ThanhDanhSach extends JPanel {
 
     @Override
     public void doLayout() {
-        chieuCaoDaTinh = sapXep(true);
+        int caoMoi = sapXep(true);
+        for (Component c : getComponents()) {
+            if (c instanceof java.awt.Container cont) {
+                cont.doLayout();
+            }
+        }
+        if (caoMoi != chieuCaoDaTinh || (getHeight() > 0 && Math.abs(getHeight() - caoMoi) > 2)) {
+            chieuCaoDaTinh = caoMoi;
+            javax.swing.SwingUtilities.invokeLater(
+                    () -> {
+                        revalidate();
+                        if (getParent() != null) getParent().revalidate();
+                    });
+        }
+    }
+
+    private static void chuanHoaKichThuocCon(Component c) {
+        if (c instanceof javax.swing.JComboBox<?> cbo) {
+            java.awt.FontMetrics fm = cbo.getFontMetrics(cbo.getFont());
+            int maxW = 96;
+            for (int i = 0; i < cbo.getItemCount(); i++) {
+                Object item = cbo.getItemAt(i);
+                if (item != null) {
+                    maxW = Math.max(maxW, fm.stringWidth(item.toString()) + 38);
+                }
+            }
+            Object sel = cbo.getSelectedItem();
+            if (sel != null) {
+                maxW = Math.max(maxW, fm.stringWidth(sel.toString()) + 38);
+            }
+            int w = Math.min(215, Math.max(96, maxW));
+            Dimension cur = cbo.getPreferredSize();
+            if (cur == null || cur.width != w || cur.height != CAO_HANG) {
+                cbo.setPreferredSize(new Dimension(w, CAO_HANG));
+            }
+        } else if (c instanceof JPanel pnl) {
+            for (Component child : pnl.getComponents()) {
+                chuanHoaKichThuocCon(child);
+            }
+        }
     }
 
     private int sapXep(boolean datViTri) {
@@ -80,7 +118,10 @@ public final class ThanhDanhSach extends JPanel {
 
         java.util.List<Component> cacPhanTu = new java.util.ArrayList<>();
         for (Component c : getComponents()) {
-            if (c.isVisible()) cacPhanTu.add(c);
+            if (c.isVisible()) {
+                chuanHoaKichThuocCon(c);
+                cacPhanTu.add(c);
+            }
         }
 
         java.awt.Insets le = getInsets();
@@ -95,8 +136,19 @@ public final class ThanhDanhSach extends JPanel {
         for (Component c : cacPhanTu) {
             Dimension d = c.getPreferredSize();
             int cw = d.width;
-            if (c instanceof JTextField && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
-                cw = 150;
+            if (c instanceof JTextField txt && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
+                String goiY = "";
+                Object ph = txt.getClientProperty("JTextField.placeholderText");
+                if (ph != null) goiY = ph.toString();
+                else if (txt.getAccessibleContext() != null
+                        && txt.getAccessibleContext().getAccessibleName() != null) {
+                    goiY = txt.getAccessibleContext().getAccessibleName();
+                }
+                int wGoiY =
+                        goiY.isEmpty()
+                                ? 190
+                                : txt.getFontMetrics(txt.getFont()).stringWidth(goiY) + 30;
+                cw = Math.max(190, Math.min(245, wGoiY));
             } else if (c instanceof AbstractButton) {
                 cw = Math.max(54, cw);
             }

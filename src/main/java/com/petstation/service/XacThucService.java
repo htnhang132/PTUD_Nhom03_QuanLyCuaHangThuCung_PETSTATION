@@ -112,7 +112,7 @@ public final class XacThucService {
                                             "Tên đăng nhập hoặc mật khẩu không đúng. Bạn còn "
                                                     + (LON_NHAT_THAT_BAI_SO_LAN_THU
                                                             - soLuongThatBai)
-                                                    + "lần thử.");
+                                                    + " lần thử.");
                                 }
 
                                 NhanVien nhanVien =

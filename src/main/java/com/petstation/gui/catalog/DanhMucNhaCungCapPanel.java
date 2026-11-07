@@ -1,11 +1,6 @@
 package com.petstation.gui.catalog;
 
-import static com.petstation.gui.components.TruongDanhMuc.*;
-
 import com.petstation.gui.components.QuanLyDanhMucPanel;
-import com.petstation.gui.components.QuanLyDanhMucPanel.CauHinh;
-import com.petstation.gui.components.QuanLyDanhMucPanel.Kieu;
-import com.petstation.gui.components.QuanLyDanhMucPanel.TruongDuLieu;
 import com.petstation.service.DanhMucService;
 
 import java.util.List;
@@ -37,8 +32,9 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Người liên hệ", Kieu.VAN_BAN),
                 TruongDuLieu.tao("Số điện thoại", Kieu.SO_DIEN_THOAI).batBuoc(),
                 TruongDuLieu.tao("Địa chỉ", Kieu.VAN_BAN).an(),
-                TruongDuLieu.tao("Mã số thuế", Kieu.VAN_BAN).kiemTraDuyNhat(),
+                TruongDuLieu.tao("Mã số thuế", Kieu.VAN_BAN).kiemTraDuyNhat().an(),
                 TruongDuLieu.tao("Điều khoản thanh toán", Kieu.HOP_CHON)
+                        .an()
                         .datLuaChon("Trả ngay", "15 ngày", "30 ngày", "45 ngày"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Đang hợp tác", "Ngừng hợp tác"),

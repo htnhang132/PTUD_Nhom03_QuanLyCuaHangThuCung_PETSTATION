@@ -149,20 +149,21 @@ public final class DinhDangBang {
 
         canChinhDoRongCot(tblBang);
 
+        if (tblBang.getClientProperty("modelResizeListener") == null
+                && tblBang.getModel() != null) {
+            tblBang.putClientProperty("modelResizeListener", true);
+            tblBang.getModel()
+                    .addTableModelListener(
+                            e -> javax.swing.SwingUtilities.invokeLater(() -> canChinhDoRongCot(tblBang)));
+        }
+
         Runnable resize = () -> {
             if (tblBang.getParent() instanceof javax.swing.JViewport vp) {
                 int vpWidth = vp.getWidth();
                 if (vpWidth <= 0)
                     return;
-                int tongUuTien = 0;
-                for (int i = 0; i < tblBang.getColumnCount(); i++) {
-                    tongUuTien += tblBang.getColumnModel().getColumn(i).getPreferredWidth();
-                }
-                if (vpWidth >= tongUuTien) {
-                    tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                } else {
-                    tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                }
+                canChinhDoRongCot(tblBang);
+                tblBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
             }
         };
 
@@ -194,113 +195,101 @@ public final class DinhDangBang {
         if (tblBang == null || tblBang.getColumnCount() == 0)
             return;
 
+        FontMetrics hfm =
+                tblBang.getTableHeader() != null
+                        ? tblBang.getTableHeader()
+                                .getFontMetrics(tblBang.getTableHeader().getFont())
+                        : tblBang.getFontMetrics(tblBang.getFont());
+        FontMetrics cfm = tblBang.getFontMetrics(tblBang.getFont());
+        javax.swing.table.TableModel model = tblBang.getModel();
+        int soDongKiemTra = model == null ? 0 : Math.min(model.getRowCount(), 25);
+
+        int tongToiThieu = 0;
         for (int chiSo = 0; chiSo < tblBang.getColumnCount(); chiSo++) {
             TableColumn cot = tblBang.getColumnModel().getColumn(chiSo);
+            int modelCol = cot.getModelIndex();
             String tieuDe = String.valueOf(cot.getHeaderValue()).trim();
             String ten = tieuDe.toLowerCase(java.util.Locale.ROOT);
-            int rongTieuDe = 100;
-            if (tblBang.getTableHeader() != null) {
-                FontMetrics fm = tblBang.getTableHeader().getFontMetrics(tblBang.getTableHeader().getFont());
-                if (fm != null) {
-                    rongTieuDe = fm.stringWidth(tieuDe) + 36;
+            int rongTieuDe = hfm != null ? hfm.stringWidth(tieuDe) + 22 : 90;
+
+            int rongDuLieu = 0;
+            for (int r = 0; r < soDongKiemTra; r++) {
+                if (modelCol < 0 || modelCol >= model.getColumnCount()) break;
+                Object val;
+                try {
+                    val = model.getValueAt(r, modelCol);
+                } catch (RuntimeException ignored) {
+                    break;
+                }
+                if (val == null) continue;
+                String s = val.toString();
+                if (val instanceof java.sql.Timestamp t) {
+                    s = t.toLocalDateTime()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                } else if (val instanceof java.sql.Date d) {
+                    s = d.toLocalDate()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                } else if (laTien(ten) && val instanceof Number n) {
+                    s = com.petstation.util.TienTe.dinhDang(Math.round(n.doubleValue()));
+                } else if (kiemTraCotTrangThai(tblBang, chiSo)
+                        || ten.contains("thanh toán")
+                        || ten.contains("phương thức")) {
+                    s = tenTrangThai(s);
+                }
+                if (cfm != null && !s.startsWith("<html>")) {
+                    rongDuLieu = Math.max(rongDuLieu, cfm.stringWidth(s) + 22);
                 }
             }
 
-            if (ten.equals("stt") || ten.equals("#")) {
-                cot.setMinWidth(45);
-                cot.setMaxWidth(65);
-                cot.setPreferredWidth(55);
-            } else if (ten.equals("mã")
-                    || ten.startsWith("mã ")
-                    || ten.endsWith(" mã")
-                    || ten.equals("id")
-                    || ten.equals("code")
-                    || ten.equals("sku")
-                    || ten.equals("barcode")) {
-                cot.setMinWidth(80);
-                cot.setMaxWidth(130);
-                cot.setPreferredWidth(105);
-            } else if (ten.contains("điện thoại") || ten.contains("sđt") || ten.equals("phone")) {
-                cot.setMinWidth(100);
-                cot.setMaxWidth(135);
-                cot.setPreferredWidth(120);
-            } else if (ten.equals("giới tính")) {
-                cot.setMinWidth(65);
-                cot.setMaxWidth(95);
-                cot.setPreferredWidth(75);
-            } else if (ten.equals("hạng") || ten.contains("hạng thẻ") || ten.equals("loại")) {
-                cot.setMinWidth(75);
-                cot.setMaxWidth(115);
-                cot.setPreferredWidth(90);
-            } else if (ten.equals("đvt") || ten.contains("đơn vị tính") || ten.equals("đơn vị")) {
-                cot.setMinWidth(65);
-                cot.setMaxWidth(95);
-                cot.setPreferredWidth(80);
-            } else if (ten.equals("số lượng")
-                    || ten.equals("sl")
-                    || ten.contains("cân nặng")
-                    || ten.contains("số lượt")
-                    || ten.equals("đã dùng")) {
-                cot.setMinWidth(70);
-                cot.setMaxWidth(Math.max(110, rongTieuDe));
-                cot.setPreferredWidth(Math.max(85, rongTieuDe));
-            } else if (ten.contains("sau trả") || ten.contains("số bán")) {
-                cot.setMinWidth(90);
-                cot.setMaxWidth(Math.max(130, rongTieuDe));
-                cot.setPreferredWidth(Math.max(110, rongTieuDe));
-            } else if (ten.contains("thời gian")
-                    || ten.contains("ngày")
-                    || ten.contains("lúc")
-                    || ten.contains("hạn dùng")
-                    || ten.contains("bắt đầu")
-                    || ten.contains("kết thúc")) {
-                cot.setMinWidth(Math.max(100, rongTieuDe));
-                cot.setMaxWidth(Math.max(145, rongTieuDe + 40));
-                cot.setPreferredWidth(Math.max(125, rongTieuDe + 10));
-            } else if (ten.contains("trạng thái") || ten.equals("tiến độ")) {
-                cot.setMinWidth(110);
-                cot.setMaxWidth(Math.max(155, rongTieuDe));
-                cot.setPreferredWidth(Math.max(135, rongTieuDe));
-            } else if (laTien(ten)) {
-                cot.setMinWidth(100);
-                cot.setMaxWidth(Math.max(150, rongTieuDe));
-                cot.setPreferredWidth(Math.max(125, rongTieuDe));
-            } else if (ten.contains("phương thức") || ten.contains("hình thức")) {
-                cot.setMinWidth(100);
-                cot.setMaxWidth(Math.max(150, rongTieuDe));
-                cot.setPreferredWidth(Math.max(125, rongTieuDe));
-            } else if (ten.contains("email")) {
-                cot.setMinWidth(130);
-                cot.setPreferredWidth(180);
-            } else if (ten.contains("địa chỉ")) {
-                cot.setMinWidth(160);
-                cot.setPreferredWidth(280);
-            } else if (ten.contains("ghi chú")
-                    || ten.contains("mô tả")
-                    || ten.contains("lý do")
-                    || ten.contains("nội dung")
-                    || ten.contains("tính trạng")
-                    || ten.contains("dị ứng")
-                    || ten.contains("tính cách")) {
-                cot.setMinWidth(160);
-                cot.setPreferredWidth(280);
-            } else if (ten.contains("tên")
-                    || ten.contains("sản phẩm")
-                    || ten.contains("hàng hóa")
-                    || ten.contains("khách hàng")
-                    || ten.contains("chủ nuôi")
-                    || ten.contains("dịch vụ")
-                    || ten.contains("nhân viên")) {
-                cot.setMinWidth(160);
-                cot.setPreferredWidth(260);
+            boolean laCotVanBanDai =
+                    ten.contains("tên")
+                            || ten.contains("sản phẩm")
+                            || ten.contains("hàng hóa")
+                            || ten.contains("khách hàng")
+                            || ten.contains("chủ nuôi")
+                            || ten.contains("dịch vụ")
+                            || ten.contains("nhân viên")
+                            || ten.contains("thu ngân")
+                            || ten.contains("người")
+                            || ten.contains("nhà cung cấp")
+                            || ten.contains("ghi chú")
+                            || ten.contains("mô tả")
+                            || ten.contains("lý do")
+                            || ten.contains("nội dung")
+                            || ten.contains("hành động")
+                            || ten.contains("địa chỉ")
+                            || ten.contains("bảng giá")
+                            || ten.contains("điều khoản")
+                            || ten.contains("chương trình");
+
+            int canThiet = Math.max(rongTieuDe, rongDuLieu);
+            int toiThieu;
+            int uuTien;
+            if (!laCotVanBanDai && canThiet <= 165) {
+                toiThieu = canThiet;
+                uuTien = canThiet + 6;
             } else {
-                cot.setMinWidth(Math.max(90, rongTieuDe));
-                cot.setPreferredWidth(Math.max(150, rongTieuDe + 20));
+                toiThieu = Math.max(85, Math.min(130, rongTieuDe));
+                uuTien = Math.max(toiThieu + 40, Math.min(310, Math.max(rongTieuDe, rongDuLieu)));
             }
 
+            cot.setMinWidth(toiThieu);
             cot.setMaxWidth(Integer.MAX_VALUE);
             cot.setResizable(true);
-            cot.setPreferredWidth(Math.max(cot.getPreferredWidth(), rongTieuDe));
+            cot.setPreferredWidth(uuTien);
+            tongToiThieu += toiThieu;
+        }
+
+        int rongKhung =
+                (tblBang.getParent() != null && tblBang.getParent().getWidth() > 200)
+                        ? tblBang.getParent().getWidth()
+                        : tblBang.getWidth();
+        if (rongKhung > 200 && tongToiThieu > rongKhung - 6) {
+            double tiLe = (double) (rongKhung - 6) / tongToiThieu;
+            for (int chiSo = 0; chiSo < tblBang.getColumnCount(); chiSo++) {
+                TableColumn cot = tblBang.getColumnModel().getColumn(chiSo);
+                cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLe)));
+            }
         }
     }
 

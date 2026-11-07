@@ -36,12 +36,12 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> cacTruong() {
         return List.of(
-                TruongDuLieu.tao("Mã DV", Kieu.VAN_BAN).chiDoc().datDoRong(70, 90, 0),
-                TruongDuLieu.tao("Tên dịch vụ", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat().datDoRong(130, 170, 0),
+                TruongDuLieu.tao("Mã DV", Kieu.VAN_BAN).chiDoc().datDoRong(88, 108, 0),
+                TruongDuLieu.tao("Tên dịch vụ", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat().datDoRong(180, 260, 0),
                 TruongDuLieu.tao("Mô tả", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Thời gian (phút)", Kieu.SO_NGUYEN).batBuoc().datDoRong(105, 130, 0),
+                TruongDuLieu.tao("Thời gian (phút)", Kieu.SO_NGUYEN).batBuoc().datDoRong(95, 115, 0),
                 TruongDuLieu.tao("Bảng giá theo loài / cân nặng", Kieu.TUY_CHINH)
-                        .datDoRong(140, 180, 0)
+                        .datDoRong(130, 165, 0)
                         .datBoSoanThao(BoSoanThaoBangGia::new)
                         .hienThi(
                                 v -> {
@@ -49,7 +49,7 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
                                     return gia < 0 ? "—" : "Từ " + TienTe.dinhDang(gia);
                                 }),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
-                        .datDoRong(100, 120, 0)
+                        .datDoRong(95, 118, 0)
                         .datLuaChon("Đang hoạt động", "Ngừng hoạt động"));
     }
 }

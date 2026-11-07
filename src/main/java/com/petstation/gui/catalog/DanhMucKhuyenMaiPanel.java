@@ -1,11 +1,8 @@
 package com.petstation.gui.catalog;
 
-import static com.petstation.gui.components.TruongDanhMuc.*;
+import static com.petstation.gui.components.TruongDanhMuc.docNgay;
 
 import com.petstation.gui.components.QuanLyDanhMucPanel;
-import com.petstation.gui.components.QuanLyDanhMucPanel.CauHinh;
-import com.petstation.gui.components.QuanLyDanhMucPanel.Kieu;
-import com.petstation.gui.components.QuanLyDanhMucPanel.TruongDuLieu;
 import com.petstation.service.DanhMucService;
 import com.petstation.util.TienTe;
 
@@ -71,13 +68,14 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                         .batBuoc()
                         .hienThi(
                                 v -> {
-                                    if (v == null || v.isBlank()) return "—";
+                                    if (v == null || v.isBlank())
+                                        return "—";
                                     long so = TienTe.doc(v);
                                     return so <= 100 ? so + "%" : TienTe.dinhDang(so);
                                 }),
                 TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).an().datMacDinh("0"),
-                TruongDuLieu.tao("Từ ngày", Kieu.NGAY).batBuoc(),
-                TruongDuLieu.tao("Đến ngày", Kieu.NGAY).batBuoc(),
+                TruongDuLieu.tao("Từ ngày", Kieu.NGAY).batBuoc().an(),
+                TruongDuLieu.tao("Đến ngày", Kieu.NGAY).batBuoc().an(),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Chưa áp dụng", "Đang áp dụng", "Ngừng áp dụng"));
     }
