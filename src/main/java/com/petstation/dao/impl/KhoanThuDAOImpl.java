@@ -40,7 +40,7 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
                 if (!rPhien.isEmpty()) maPhien = String.valueOf(rPhien.get(0)[0]);
             }
 
-            String tenDangNhapThu = com.petstation.service.PhienDangNhapService.layTenDangNhap();
+            String tenDangNhapThu = com.petstation.util.BoiCanhDangNhap.layTenDangNhap();
             if (tenDangNhapThu == null || tenDangNhapThu.isBlank()) {
                 if (nguoi != 0) {
                     List<Object[]> rUser = truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)", nguoi, nguoi);

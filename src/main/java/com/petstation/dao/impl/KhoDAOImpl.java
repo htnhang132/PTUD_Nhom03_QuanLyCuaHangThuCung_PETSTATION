@@ -2,7 +2,7 @@ package com.petstation.dao.impl;
 
 import com.petstation.dao.KhoDAO;
 import com.petstation.database.ThaoTacSQL;
-import com.petstation.service.PhienDangNhapService;
+import com.petstation.util.BoiCanhDangNhap;
 import com.petstation.util.DuLieu;
 
 import java.util.List;
@@ -83,7 +83,7 @@ public final class KhoDAOImpl implements KhoDAO {
                 maNcc = String.valueOf(rows.get(0)[0]);
             }
         }
-        String tenDangNhap = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         ThaoTacSQL.capNhat(
                 "INSERT INTO phieu_nhap_kho(ma_phieu_nhap, ma_nha_cung_cap, ten_dang_nhap, ngay_nhap, tong_tien, trang_thai, da_tra) "
                         + "VALUES(?, ?, ?, CAST(GETDATE() AS DATE), ?, 'DA_NHAP', ?)",
@@ -171,7 +171,7 @@ public final class KhoDAOImpl implements KhoDAO {
 
     public long themXuatHuy(Object... cacThamSo) {
         String maPhieu = String.valueOf(cacThamSo[0]);
-        String tenDangNhap = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         ThaoTacSQL.capNhat(
                 "INSERT INTO phieu_xuat_kho(ma_phieu_xuat, ten_dang_nhap, loai_xuat, ly_do, tong_gia_tri, trang_thai) "
                         + "VALUES(?, ?, 'XUAT_HUY', ?, ?, 'CHO_XUAT')",
@@ -230,7 +230,7 @@ public final class KhoDAOImpl implements KhoDAO {
 
     public long themKiemKe(Object... cacThamSo) {
         String maBienBan = String.valueOf(cacThamSo[0]);
-        String tenDangNhap = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         ThaoTacSQL.capNhat(
                 "INSERT INTO bien_ban_kiem_ke(ma_bien_ban, ten_dang_nhap, ky_kiem_ke, trang_thai) VALUES(?, ?, ?, ?)",
                 maBienBan,

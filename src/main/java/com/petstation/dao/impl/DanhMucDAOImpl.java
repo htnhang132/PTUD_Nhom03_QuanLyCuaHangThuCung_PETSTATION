@@ -6,7 +6,7 @@ import static com.petstation.util.DuLieu.*;
 import com.petstation.dao.DanhMucDAO;
 import com.petstation.model.LoaiDanhMuc;
 import com.petstation.model.VaiTro;
-import com.petstation.service.PhienDangNhapService;
+import com.petstation.util.BoiCanhDangNhap;
 import com.petstation.util.DuLieu;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -476,7 +476,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                     throw new IllegalArgumentException(
                             "Tài khoản mới cần mật khẩu ít nhất 8 ký tự.");
                 if (truoc != null
-                        && khoa.equals(PhienDangNhapService.layTenDangNhap())
+                        && khoa.equals(BoiCanhDangNhap.layTenDangNhap())
                         && (!"Hoạt động".equals(giaTri2[3])
                                 || !nguoiThucHienVaiTro.equals(docVaiTro(giaTri2[2]))))
                     throw new IllegalArgumentException(

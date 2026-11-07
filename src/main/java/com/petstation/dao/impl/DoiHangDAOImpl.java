@@ -4,7 +4,7 @@ import static com.petstation.database.ThaoTacSQL.*;
 import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.DoiHangDAO;
-import com.petstation.service.PhienDangNhapService;
+import com.petstation.util.BoiCanhDangNhap;
 import com.petstation.util.DuLieu;
 
 import java.util.List;
@@ -99,7 +99,7 @@ public final class DoiHangDAOImpl implements DoiHangDAO {
         List<Object[]> rHd = truyVan("SELECT ma_hoa_don FROM hoa_don WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", hoaDon, hoaDon);
         if (!rHd.isEmpty()) maHoaDon = String.valueOf(rHd.get(0)[0]);
 
-        String tenDangNhap = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         capNhat(
                 "INSERT INTO"
                     + " phieu_doi_tra(ma_phieu,ma_hoa_don,ten_dang_nhap,chenh_lech,trang_thai,ly_do,loai_phieu,gia_tri_duoc_doi,khoa_thao_tac)"

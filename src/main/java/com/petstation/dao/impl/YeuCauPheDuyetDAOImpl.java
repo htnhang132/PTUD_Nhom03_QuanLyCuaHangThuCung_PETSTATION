@@ -2,7 +2,7 @@ package com.petstation.dao.impl;
 
 import com.petstation.dao.YeuCauPheDuyetDAO;
 import com.petstation.database.ThaoTacSQL;
-import com.petstation.service.PhienDangNhapService;
+import com.petstation.util.BoiCanhDangNhap;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     }
 
     public int capNhatGuiThaoTac(Object... cacThamSo) {
-        String tenDangNhapGui = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhapGui = BoiCanhDangNhap.layTenDangNhap();
         if (tenDangNhapGui == null || tenDangNhapGui.isBlank()) {
             if (cacThamSo[2] instanceof Number) {
                 List<Object[]> r = ThaoTacSQL.truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[2], cacThamSo[2]);
@@ -77,7 +77,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     }
 
     public int capNhatDuyet(Object... cacThamSo) {
-        String tenDangNhapXuLy = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhapXuLy = BoiCanhDangNhap.layTenDangNhap();
         if (tenDangNhapXuLy == null || tenDangNhapXuLy.isBlank()) {
             if (cacThamSo[0] instanceof Number) {
                 List<Object[]> r = ThaoTacSQL.truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[0], cacThamSo[0]);
@@ -109,7 +109,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     }
 
     public int danhDauYeuCauTuChoi(Object... cacThamSo) {
-        String tenDangNhapXuLy = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhapXuLy = BoiCanhDangNhap.layTenDangNhap();
         if (tenDangNhapXuLy == null || tenDangNhapXuLy.isBlank()) {
             if (cacThamSo[0] instanceof Number) {
                 List<Object[]> r = ThaoTacSQL.truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", cacThamSo[0], cacThamSo[0]);
@@ -132,7 +132,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
             long nguoiXuLyId,
             String noiDung,
             String maYeuCau) {
-        String tenDangNhapXuLy = PhienDangNhapService.layTenDangNhap();
+        String tenDangNhapXuLy = BoiCanhDangNhap.layTenDangNhap();
         if (tenDangNhapXuLy == null || tenDangNhapXuLy.isBlank()) {
             List<Object[]> r = ThaoTacSQL.truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiXuLyId, nguoiXuLyId);
             if (!r.isEmpty()) tenDangNhapXuLy = String.valueOf(r.get(0)[0]);

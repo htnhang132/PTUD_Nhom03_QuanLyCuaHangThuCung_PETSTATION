@@ -43,7 +43,7 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         ThongKeService::layCongNoNhaCungCap)
                                 .chiQuanLy()),
                 false,
-                true);
+                false);
     }
 
     @Override

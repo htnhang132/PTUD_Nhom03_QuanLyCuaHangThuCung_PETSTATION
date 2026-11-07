@@ -41,7 +41,7 @@ public final class ThanhCongCuChinh extends JPanel {
         setBackground(MauUngDung.BE_MAT_XEN_KE);
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN));
 
-        btnNutQuayLai = taoNut("Quay lại", "Alt+←", BieuTuongNet.Kieu.QUAY_LAI);
+        btnNutQuayLai = taoNut("Quay lại", "Alt+Left", BieuTuongNet.Kieu.QUAY_LAI);
         btnNutQuayLai.addActionListener(suKien -> diQuayLai.run());
         btnNutQuayLai.setEnabled(false);
         add(btnNutQuayLai);

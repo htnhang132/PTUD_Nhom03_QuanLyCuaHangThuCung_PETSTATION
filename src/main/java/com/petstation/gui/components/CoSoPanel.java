@@ -43,7 +43,8 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     @Override
     public void xuLyIn() {
-        if (tblChinhBang == null) return;
+        if (tblChinhBang == null)
+            return;
         try {
             tblChinhBang.print(
                     JTable.PrintMode.FIT_WIDTH,
@@ -103,13 +104,12 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     protected JScrollPane taoBangDinhDang(String[] cacCot, Object[][] duLieu) {
-        DefaultTableModel moHinh =
-                new DefaultTableModel(duLieu, cacCot) {
-                    @Override
-                    public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
-                        return false;
-                    }
-                };
+        DefaultTableModel moHinh = new DefaultTableModel(duLieu, cacCot) {
+            @Override
+            public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
+                return false;
+            }
+        };
         return taoBangDinhDang(moHinh);
     }
 
@@ -122,7 +122,8 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1));
         scrKhungCuon.getViewport().setBackground(MauUngDung.THE_NEN);
 
-        if (tblChinhBang == null) tblChinhBang = tblBang;
+        if (tblChinhBang == null)
+            tblChinhBang = tblBang;
         if (txtChuaRangBuocTimKiem != null) {
             lienKetBoLoc(txtChuaRangBuocTimKiem, tblBang);
             txtChuaRangBuocTimKiem = null;
@@ -130,8 +131,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return scrKhungCuon;
     }
 
-    protected static final String NHAT_XOA_GHI_CHU =
-            "Bản ghi sẽ chuyển sang \"Ngừng hoạt động\" (xóa mềm), vẫn giữ lịch sử giao dịch.";
+    protected static final String NHAT_XOA_GHI_CHU = "Bản ghi sẽ chuyển sang \"Ngừng hoạt động\" (xóa mềm), vẫn giữ lịch sử giao dịch.";
 
     protected static JTable layBang(JScrollPane scrCuon) {
         return (JTable) scrCuon.getViewport().getView();
@@ -146,9 +146,10 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                                 String tuKhoa = txtTimKiem.getText().trim();
 
                                 @SuppressWarnings("unchecked")
-                                TableRowSorter<TableModel> boSapXep =
-                                        (TableRowSorter<TableModel>) tblBang.getRowSorter();
-                                if (boSapXep == null) return;
+                                TableRowSorter<TableModel> boSapXep = (TableRowSorter<TableModel>) tblBang
+                                        .getRowSorter();
+                                if (boSapXep == null)
+                                    return;
                                 boSapXep.setRowFilter(
                                         tuKhoa.isEmpty()
                                                 ? null
@@ -176,31 +177,30 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     protected JTextField taoOTimKiem(String goiYNhap) {
-        JTextField txtTruongDangXet =
-                new JTextField() {
-                    @Override
-                    protected void paintComponent(Graphics doHoa) {
-                        super.paintComponent(doHoa);
-                        if (getText().isEmpty() && !isFocusOwner()) {
-                            Graphics2D doHoa2 = (Graphics2D) doHoa.create();
-                            doHoa2.setRenderingHint(
-                                    RenderingHints.KEY_TEXT_ANTIALIASING,
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                            doHoa2.setColor(MauUngDung.VO_HIEU_HOA);
-                            doHoa2.setFont(getFont());
+        JTextField txtTruongDangXet = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics doHoa) {
+                super.paintComponent(doHoa);
+                if (getText().isEmpty() && !isFocusOwner()) {
+                    Graphics2D doHoa2 = (Graphics2D) doHoa.create();
+                    doHoa2.setRenderingHint(
+                            RenderingHints.KEY_TEXT_ANTIALIASING,
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                    doHoa2.setColor(MauUngDung.VO_HIEU_HOA);
+                    doHoa2.setFont(getFont());
 
-                            Insets vao = getInsets();
-                            doHoa2.drawString(
-                                    goiYNhap,
-                                    vao.left,
-                                    (getHeight()
-                                                    + doHoa2.getFontMetrics().getAscent()
-                                                    - doHoa2.getFontMetrics().getDescent())
-                                            / 2);
-                            doHoa2.dispose();
-                        }
-                    }
-                };
+                    Insets vao = getInsets();
+                    doHoa2.drawString(
+                            goiYNhap,
+                            vao.left,
+                            (getHeight()
+                                    + doHoa2.getFontMetrics().getAscent()
+                                    - doHoa2.getFontMetrics().getDescent())
+                                    / 2);
+                    doHoa2.dispose();
+                }
+            }
+        };
         txtTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
         txtTruongDangXet.setPreferredSize(new Dimension(280, 36));
@@ -221,25 +221,25 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                         txtTruongDangXet.repaint();
                     }
                 });
-        if (txtChinhTimKiem == null) txtChinhTimKiem = txtTruongDangXet;
+        if (txtChinhTimKiem == null)
+            txtChinhTimKiem = txtTruongDangXet;
         txtChuaRangBuocTimKiem = txtTruongDangXet;
         return txtTruongDangXet;
     }
 
     protected JLabel layNhan(String vanBan, Color nen, Color chu) {
-        JLabel lblDongDangXet =
-                new JLabel(vanBan) {
-                    @Override
-                    protected void paintComponent(Graphics doHoa) {
-                        Graphics2D doHoa2 = (Graphics2D) doHoa.create();
-                        doHoa2.setRenderingHint(
-                                RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        doHoa2.setColor(nen);
-                        doHoa2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                        doHoa2.dispose();
-                        super.paintComponent(doHoa);
-                    }
-                };
+        JLabel lblDongDangXet = new JLabel(vanBan) {
+            @Override
+            protected void paintComponent(Graphics doHoa) {
+                Graphics2D doHoa2 = (Graphics2D) doHoa.create();
+                doHoa2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                doHoa2.setColor(nen);
+                doHoa2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                doHoa2.dispose();
+                super.paintComponent(doHoa);
+            }
+        };
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
         lblDongDangXet.setForeground(chu);
         lblDongDangXet.setBorder(new EmptyBorder(3, 8, 3, 8));
@@ -257,7 +257,8 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     protected JPanel taoHangNgang(Component... cacThanhPhan) {
         JPanel pnlVungDangXet = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         pnlVungDangXet.setOpaque(false);
-        for (Component giaTriDangXet : cacThanhPhan) pnlVungDangXet.add(giaTriDangXet);
+        for (Component giaTriDangXet : cacThanhPhan)
+            pnlVungDangXet.add(giaTriDangXet);
         return pnlVungDangXet;
     }
 

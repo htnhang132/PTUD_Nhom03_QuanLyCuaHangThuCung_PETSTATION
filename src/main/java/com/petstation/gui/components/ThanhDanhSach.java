@@ -78,7 +78,8 @@ public final class ThanhDanhSach extends JPanel {
             javax.swing.SwingUtilities.invokeLater(
                     () -> {
                         revalidate();
-                        if (getParent() != null) getParent().revalidate();
+                        if (getParent() != null)
+                            getParent().revalidate();
                     });
         }
     }
@@ -114,7 +115,8 @@ public final class ThanhDanhSach extends JPanel {
         if (rong <= 0 && getParent() != null && getParent().getWidth() > 0) {
             rong = getParent().getWidth();
         }
-        if (rong <= 0) rong = 960;
+        if (rong <= 0)
+            rong = 960;
 
         java.util.List<Component> cacPhanTu = new java.util.ArrayList<>();
         for (Component c : getComponents()) {
@@ -139,15 +141,15 @@ public final class ThanhDanhSach extends JPanel {
             if (c instanceof JTextField txt && ("timKiemDanhMuc".equals(c.getName()) || cw >= 140)) {
                 String goiY = "";
                 Object ph = txt.getClientProperty("JTextField.placeholderText");
-                if (ph != null) goiY = ph.toString();
+                if (ph != null)
+                    goiY = ph.toString();
                 else if (txt.getAccessibleContext() != null
                         && txt.getAccessibleContext().getAccessibleName() != null) {
                     goiY = txt.getAccessibleContext().getAccessibleName();
                 }
-                int wGoiY =
-                        goiY.isEmpty()
-                                ? 190
-                                : txt.getFontMetrics(txt.getFont()).stringWidth(goiY) + 30;
+                int wGoiY = goiY.isEmpty()
+                        ? 190
+                        : txt.getFontMetrics(txt.getFont()).stringWidth(goiY) + 30;
                 cw = Math.max(190, Math.min(245, wGoiY));
             } else if (c instanceof AbstractButton) {
                 cw = Math.max(54, cw);
@@ -166,6 +168,7 @@ public final class ThanhDanhSach extends JPanel {
 
         return y + caoHang + le.bottom;
     }
+
     public static JPanel tieuDe(JLabel title, JLabel count) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         p.setOpaque(false);

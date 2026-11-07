@@ -13,15 +13,11 @@ import java.awt.BorderLayout;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 
 public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
-    private final JCheckBox chkTheoNgay =
-        new JCheckBox("Lọc theo ngày", true);
-
     private final BoChonKhoangNgay khoangNgay =
         new BoChonKhoangNgay();
 
@@ -54,16 +50,10 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
         txtTimKiem.setToolTipText(
             "Lọc nhanh mã phiếu, tên khách, thú cưng trong kết quả");
 
-        chkTheoNgay.setOpaque(false);
         khoangNgay.chonKy("30 ngày qua");
-        khoangNgay.setVisible(true);
-
-        chkTheoNgay.addActionListener(e -> {
-            khoangNgay.setVisible(chkTheoNgay.isSelected());
+        khoangNgay.addPropertyChangeListener("dateRange", e -> {
             ghiNhanBoLoc();
             taiLaiNen();
-            revalidate();
-            repaint();
         });
 
         cboTrangThai.addActionListener(e -> {
@@ -71,11 +61,10 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
             taiLaiNen();
         });
 
-        pnlCacThaoTac.add(chkTheoNgay);
         pnlCacThaoTac.add(khoangNgay);
         pnlCacThaoTac.add(cboTrangThai);
 
-        themNut(pnlCacThaoTac, "Tìm kiếm", this::ghiNhanBoLoc);
+        ghiNhanBoLoc();
 
         JPanel pnlThaoTacPhieu = new ThanhDanhSach();
         pnlThaoTacPhieu.setBorder(BorderFactory.createEmptyBorder());
@@ -108,28 +97,16 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     }
 
     private void ghiNhanBoLoc() {
-        LocalDate tuNgay = null;
-        LocalDate denNgay = null;
+        LocalDate tuNgay = khoangNgay.layNgayBatDau();
+        LocalDate denNgay = khoangNgay.layNgayKetThuc();
 
-        if (chkTheoNgay.isSelected()) {
-            tuNgay = khoangNgay.layNgayBatDau();
-            denNgay = khoangNgay.layNgayKetThuc();
-
-            if (tuNgay == null || denNgay == null) {
-                throw new IllegalArgumentException(
-                    "Vui lòng chọn đủ khoảng ngày.");
-            }
-
-            if (tuNgay.isAfter(denNgay)) {
-                throw new IllegalArgumentException(
-                    "Ngày bắt đầu không được sau ngày kết thúc.");
-            }
+        if (tuNgay != null && denNgay != null && tuNgay.isAfter(denNgay)) {
+            return;
         }
 
-        boLoc = new BoLoc(
-            tuNgay,
-            denNgay,
-            MA_TRANG_THAI[cboTrangThai.getSelectedIndex()]);
+        int idx = cboTrangThai.getSelectedIndex();
+        String trangThai = (idx >= 0 && idx < MA_TRANG_THAI.length) ? MA_TRANG_THAI[idx] : "";
+        boLoc = new BoLoc(tuNgay, denNgay, trangThai);
     }
 
     @Override
@@ -150,14 +127,10 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     @Override
     protected void datLaiBoLoc() {
         txtTimKiem.setText("");
-
-        chkTheoNgay.setSelected(true);
         khoangNgay.chonKy("30 ngày qua");
-        khoangNgay.setVisible(true);
-
         cboTrangThai.setSelectedIndex(0);
-        boLoc = null;
-
+        ghiNhanBoLoc();
+        taiLaiNen();
         revalidate();
         repaint();
     }

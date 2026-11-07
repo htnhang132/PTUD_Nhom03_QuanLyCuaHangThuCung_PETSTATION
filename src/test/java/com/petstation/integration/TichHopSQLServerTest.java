@@ -1710,7 +1710,7 @@ class TichHopSQLServerTest {
                                     .findFirst()
                                     .orElseThrow();
                     Object[] moi = cu.clone();
-                    moi[10] = "images/products/SP-TA-001.jpg";
+                    moi[10] = "images/products/SP000001.jpg";
                     moi[11] = "Thương hiệu kiểm thử";
                     moi[12] = "Gói 100g";
                     moi[13] = "Chó";
@@ -1741,7 +1741,7 @@ class TichHopSQLServerTest {
         trenLuongSwing(
                 () -> {
                     capNhat(
-                            "UPDATE san_pham SET anh='images/products/SP-TA-001.jpg' WHERE id=?",
+                            "UPDATE san_pham SET anh='images/products/SP000001.jpg' WHERE id=?",
                             sanPham);
                     GioHang gio = com.petstation.service.GioHangService.tao();
                     var pos = new com.petstation.gui.processing.sales.LapHoaDonPanel(gio, id -> {});
@@ -1810,7 +1810,7 @@ class TichHopSQLServerTest {
                                                                             .common.AnhSanPhamPanel)
                                             .findFirst()
                                             .orElseThrow();
-                    assertThat(xem.layDuongDan()).isEqualTo("images/products/SP-TA-001.jpg");
+                    assertThat(xem.layDuongDan()).isEqualTo("images/products/SP000001.jpg");
                     bang.clearSelection();
                     assertThat(xem.layDuongDan()).isEmpty();
                 });

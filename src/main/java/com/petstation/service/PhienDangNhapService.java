@@ -15,16 +15,23 @@ public final class PhienDangNhapService {
             throw new IllegalStateException("Phiên đã thay đổi; hãy mở lại chức năng.");
         PhienDangNhap cu = phienCongViec.get();
         phienCongViec.set(phien);
+        com.petstation.util.BoiCanhDangNhap.phienCongViec().set(phien);
         try {
             return viec.call();
         } finally {
-            if (cu == null) phienCongViec.remove();
-            else phienCongViec.set(cu);
+            if (cu == null) {
+                phienCongViec.remove();
+                com.petstation.util.BoiCanhDangNhap.phienCongViec().remove();
+            } else {
+                phienCongViec.set(cu);
+                com.petstation.util.BoiCanhDangNhap.phienCongViec().set(cu);
+            }
         }
     }
 
     public static void datPhienDangNhap(PhienDangNhap giaTri) {
         phienDangNhap = giaTri;
+        com.petstation.util.BoiCanhDangNhap.datPhien(giaTri);
         if (giaTri == null) {
             DieuHuongBanGhiService.xoa();
             PheDuyetService.xoaBoLangNghe();

@@ -163,6 +163,8 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     static long timGiaTheoCanNang(String bangGia, String loaiThuCung, double canNang) {
         boolean laCho = "Chó".equalsIgnoreCase(loaiThuCung) || "DOG".equalsIgnoreCase(loaiThuCung);
+        boolean laMeo = "Mèo".equalsIgnoreCase(loaiThuCung) || "CAT".equalsIgnoreCase(loaiThuCung);
+        if (!laCho && !laMeo) return -1;
         long donGiaChon = -1;
         double maxTu = -1;
         for (String muc : bangGia.split(";")) {

@@ -4,7 +4,7 @@ import static com.petstation.database.ThaoTacSQL.*;
 
 import com.petstation.dao.PhieuSpaTreoDAO;
 import com.petstation.model.PhieuSpaTreo;
-import com.petstation.service.PhienDangNhapService;
+import com.petstation.util.BoiCanhDangNhap;
 import com.petstation.util.DuLieu;
 import java.util.List;
 
@@ -14,7 +14,7 @@ public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
         String maPhieu = (ma == null || ma.isBlank()) ? DuLieu.taoMa("TREO") : ma;
         String tenDangNhap = null;
         try {
-            tenDangNhap = PhienDangNhapService.layTenDangNhap();
+            tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         } catch (Exception ignored) {}
         if (tenDangNhap == null || tenDangNhap.isBlank()) {
             List<Object[]> rTk = truyVan("SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ten_dang_nhap, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiLap, nguoiLap);

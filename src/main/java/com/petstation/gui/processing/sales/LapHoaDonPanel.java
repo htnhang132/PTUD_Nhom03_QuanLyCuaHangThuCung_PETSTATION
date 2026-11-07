@@ -37,30 +37,30 @@ public class LapHoaDonPanel extends CoSoPanel {
 			long gia,
 			int tonKho,
 			String anh,
-			String barcode) {}
+			String barcode) {
+	}
 
 	private static List<SanPham> laySanPham() {
 		List<SanPham> ra = new ArrayList<>();
 		for (Object[] dongDuLieu : BanHangService.layCoTheBanCacSanPham()) {
-			String barcode =
-					dongDuLieu.length > 6 && dongDuLieu[6] != null
+			String barcode = dongDuLieu.length > 6 && dongDuLieu[6] != null
 					? String.valueOf(dongDuLieu[6]).trim()
-							: "";
-					ra.add(
-							new SanPham(
-									String.valueOf(dongDuLieu[0]),
-									String.valueOf(dongDuLieu[1]),
-									String.valueOf(dongDuLieu[2]),
-									((Number) dongDuLieu[3]).longValue(),
-									((Number) dongDuLieu[4]).intValue(),
-									dongDuLieu[5] == null ? "" : String.valueOf(dongDuLieu[5]),
-											barcode));
+					: "";
+			ra.add(
+					new SanPham(
+							String.valueOf(dongDuLieu[0]),
+							String.valueOf(dongDuLieu[1]),
+							String.valueOf(dongDuLieu[2]),
+							((Number) dongDuLieu[3]).longValue(),
+							((Number) dongDuLieu[4]).intValue(),
+							dongDuLieu[5] == null ? "" : String.valueOf(dongDuLieu[5]),
+							barcode));
 		}
 		return ra;
 	}
 
 	private static final String[] CAC_NHOM_HANG = {
-			"Tất cả", "Thức ăn", "Phụ kiện", "Grooming", "Vệ sinh", "Thuốc", "Chuồng - Nệm", "Sức khỏe"
+			"Tất cả", "Thức ăn", "Phụ kiện", "Chuồng - Nệm", "Vệ sinh", "Grooming", "Thuốc & Sức khỏe"
 	};
 
 	private static final int SO_THE_MOI_TRANG = 24;
@@ -69,23 +69,20 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private final Consumer<MaManHinh> boDieuHuong;
 	private final JPanel pnlLuoi = new JPanel(new GridLayout(0, 3, 12, 12));
 	private final JPanel pnlVungSanPham = new JPanel(new CardLayout());
-	private final javax.swing.table.DefaultTableModel moHinhBangNhanh =
-			new javax.swing.table.DefaultTableModel(
-					new String[] {"Mã SP", "Tên sản phẩm", "Nhóm", "Giá bán", "Tồn"}, 0) {
-				@Override
-				public boolean isCellEditable(int r, int c) {
-					return false;
-				}
-			};
+	private final javax.swing.table.DefaultTableModel moHinhBangNhanh = new javax.swing.table.DefaultTableModel(
+			new String[] { "Mã SP", "Tên sản phẩm", "Nhóm", "Giá bán", "Tồn" }, 0) {
+		@Override
+		public boolean isCellEditable(int r, int c) {
+			return false;
+		}
+	};
 	private JTable tblBangNhanh;
 	private final List<SanPham> danhSachDaLoc = new ArrayList<>();
 	private final JLabel lblThongTinTrang = new JLabel();
-	private final NutDinhDang btnTrangTruoc =
-			new NutDinhDang("< Trước", NutDinhDang.KieuNut.TRONG_SUOT);
-	private final NutDinhDang btnTrangSau =
-			new NutDinhDang("Sau >", NutDinhDang.KieuNut.TRONG_SUOT);
-	private final JComboBox<String> cboCheDoHienThi =
-			new JComboBox<>(new String[] {"Thẻ hình ảnh", "Bảng nhanh (POS)"});
+	private final NutDinhDang btnTrangTruoc = new NutDinhDang("< Trước", NutDinhDang.KieuNut.TRONG_SUOT);
+	private final NutDinhDang btnTrangSau = new NutDinhDang("Sau >", NutDinhDang.KieuNut.TRONG_SUOT);
+	private final JComboBox<String> cboCheDoHienThi = new JComboBox<>(
+			new String[] { "Thẻ hình ảnh", "Bảng nhanh (POS)" });
 	private int trangHienTai = 0;
 	private boolean cheDoBangNhanh = false;
 	private final Timer bohenGioTimKiem;
@@ -93,23 +90,18 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private final JLabel lblNhanTamTinh = new JLabel();
 	private final JLabel lblNhanGiamGia = new JLabel();
 	private final JLabel lblNhanTong = new JLabel();
-	private final JLabel lblTrongGioHang =
-			new JLabel("Chưa có sản phẩm. Bấm vào thẻ sản phẩm hoặc quét mã.");
+	private final JLabel lblTrongGioHang = new JLabel("Chưa có sản phẩm. Bấm vào thẻ sản phẩm hoặc quét mã.");
 	private final JTextField txtTimKiem;
 	private final BoChonKhachHang pnlBoChon;
 	private final JLabel lblNhanKhuyenMai = new JLabel("—");
-	private final NutDinhDang btnNutThanhToan =
-			new NutDinhDang("Thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
-	private final NutDinhDang btnNutTreo =
-			new NutDinhDang("Lưu đơn nháp (F7)", NutDinhDang.KieuNut.PHU);
-	private final NutDinhDang btnNutLay =
-			new NutDinhDang("Mở đơn nháp (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
+	private final NutDinhDang btnNutThanhToan = new NutDinhDang("Thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
+	private final NutDinhDang btnNutTreo = new NutDinhDang("Lưu đơn nháp (F7)", NutDinhDang.KieuNut.PHU);
+	private final NutDinhDang btnNutLay = new NutDinhDang("Mở đơn nháp (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
 	private final List<GioHang.DongHang> gioHang = new ArrayList<>();
 	private final Deque<String> lichSuThem = new ArrayDeque<>();
 
 	private List<SanPham> danhSachSanPham = new ArrayList<>();
-	private final JLabel lblTrangThaiQuet =
-			new JLabel("Sẵn sàng nhận mã vạch từ điện thoại.");
+	private final JLabel lblTrangThaiQuet = new JLabel("Sẵn sàng nhận mã vạch từ điện thoại.");
 	private final JLabel lblKetNoiUsb = new JLabel("USB: chưa khởi tạo.");
 	private BarcodeUsbServer barcodeUsbServer;
 	private String nhomHang = "Tất cả";
@@ -118,13 +110,12 @@ public class LapHoaDonPanel extends CoSoPanel {
 		this.banHang = banHang;
 		this.boDieuHuong = boDieuHuong;
 		this.pnlBoChon = new BoChonKhachHang(banHang, this::capNhatCacTong);
-		this.bohenGioTimKiem =
-				new Timer(
-						120,
-						e -> {
-							trangHienTai = 0;
-							dungLaiLuoi();
-						});
+		this.bohenGioTimKiem = new Timer(
+				120,
+				e -> {
+					trangHienTai = 0;
+					dungLaiLuoi();
+				});
 		this.bohenGioTimKiem.setRepeats(false);
 		this.banHang.themBoLangNghe(() -> {
 			if (!java.util.Objects.equals(this.gioHang, banHang.layCacDong())) {
@@ -162,41 +153,40 @@ public class LapHoaDonPanel extends CoSoPanel {
 		txtTimKiem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
 		txtTimKiem.setToolTipText("Có thể nhập mã sản phẩm, barcode hoặc tên sản phẩm.");
 		txtTimKiem
-		.getDocument()
-		.addDocumentListener(
-				new javax.swing.event.DocumentListener() {
-					private void kichHoatLoc() {
-						trangHienTai = 0;
-						if (SwingUtilities.isEventDispatchThread() && isShowing()) {
-							bohenGioTimKiem.restart();
-						} else {
-							dungLaiLuoi();
-						}
-					}
+				.getDocument()
+				.addDocumentListener(
+						new javax.swing.event.DocumentListener() {
+							private void kichHoatLoc() {
+								trangHienTai = 0;
+								if (SwingUtilities.isEventDispatchThread() && isShowing()) {
+									bohenGioTimKiem.restart();
+								} else {
+									dungLaiLuoi();
+								}
+							}
 
-					@Override
-					public void insertUpdate(javax.swing.event.DocumentEvent suKien) {
-						kichHoatLoc();
-					}
+							@Override
+							public void insertUpdate(javax.swing.event.DocumentEvent suKien) {
+								kichHoatLoc();
+							}
 
-					@Override
-					public void removeUpdate(javax.swing.event.DocumentEvent suKien) {
-						kichHoatLoc();
-					}
+							@Override
+							public void removeUpdate(javax.swing.event.DocumentEvent suKien) {
+								kichHoatLoc();
+							}
 
-					@Override
-					public void changedUpdate(javax.swing.event.DocumentEvent suKien) {
-						kichHoatLoc();
-					}
-				});
+							@Override
+							public void changedUpdate(javax.swing.event.DocumentEvent suKien) {
+								kichHoatLoc();
+							}
+						});
 		txtTimKiem.addActionListener(suKien -> themTheoQuet());
 
 		JPanel pnlTrai = taoVungTrongSuot(new BorderLayout(0, 10));
 		JPanel pnlTren = taoVungTrongSuot(new BorderLayout(0, 8));
 		pnlTren.add(taoKhuVucQuet(), BorderLayout.NORTH);
 
-		com.petstation.gui.components.ThanhDanhSach thanh =
-				new com.petstation.gui.components.ThanhDanhSach();
+		com.petstation.gui.components.ThanhDanhSach thanh = new com.petstation.gui.components.ThanhDanhSach();
 		themCacNutNhomHang(thanh);
 		cboCheDoHienThi.addActionListener(
 				e -> {
@@ -251,12 +241,12 @@ public class LapHoaDonPanel extends CoSoPanel {
 					@Override
 					public void mouseClicked(MouseEvent e) {
 						if (e.getClickCount() == 2 && tblBangNhanh.getSelectedRow() >= 0) {
-							int idx =
-									tblBangNhanh.convertRowIndexToModel(
-											tblBangNhanh.getSelectedRow());
+							int idx = tblBangNhanh.convertRowIndexToModel(
+									tblBangNhanh.getSelectedRow());
 							if (idx >= 0 && idx < danhSachDaLoc.size()) {
 								SanPham sp = danhSachDaLoc.get(idx);
-								if (sp.tonKho() > 0) themDenGioHang(sp);
+								if (sp.tonKho() > 0)
+									themDenGioHang(sp);
 							}
 						}
 					}
@@ -329,14 +319,14 @@ public class LapHoaDonPanel extends CoSoPanel {
 		KeyStroke phim = KeyStroke.getKeyStroke(khoa);
 		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(phim, ten);
 		getActionMap()
-		.put(
-				ten,
-				new AbstractAction() {
-					@Override
-					public void actionPerformed(java.awt.event.ActionEvent suKien) {
-						thaoTac.actionPerformed(suKien);
-					}
-				});
+				.put(
+						ten,
+						new AbstractAction() {
+							@Override
+							public void actionPerformed(java.awt.event.ActionEvent suKien) {
+								thaoTac.actionPerformed(suKien);
+							}
+						});
 	}
 
 	private void themCacNutNhomHang(com.petstation.gui.components.ThanhDanhSach thanh) {
@@ -362,10 +352,8 @@ public class LapHoaDonPanel extends CoSoPanel {
 		String tuKhoa = txtTimKiem.getText().trim().toLowerCase(Locale.ROOT);
 		danhSachDaLoc.clear();
 		for (SanPham sanPham : danhSachSanPham) {
-			boolean vaoNhomHang =
-					nhomHang.equals("Tất cả") || sanPham.nhomHang().equals(nhomHang);
-			boolean khop =
-					tuKhoa.isEmpty()
+			boolean vaoNhomHang = nhomHang.equals("Tất cả") || sanPham.nhomHang().equals(nhomHang);
+			boolean khop = tuKhoa.isEmpty()
 					|| sanPham.ten().toLowerCase(Locale.ROOT).contains(tuKhoa)
 					|| sanPham.ma().toLowerCase(Locale.ROOT).contains(tuKhoa)
 					|| sanPham.barcode().toLowerCase(Locale.ROOT).contains(tuKhoa);
@@ -379,11 +367,11 @@ public class LapHoaDonPanel extends CoSoPanel {
 			for (SanPham sp : danhSachDaLoc) {
 				moHinhBangNhanh.addRow(
 						new Object[] {
-							sp.ma(),
-							sp.ten(),
-							sp.nhomHang(),
-							TienTe.dinhDang(sp.gia()),
-							sp.tonKho() <= 0 ? "Hết hàng" : sp.tonKho()
+								sp.ma(),
+								sp.ten(),
+								sp.nhomHang(),
+								TienTe.dinhDang(sp.gia()),
+								sp.tonKho() <= 0 ? "Hết hàng" : sp.tonKho()
 						});
 			}
 			com.petstation.gui.components.common.DinhDangBang.canChinhDoRongCot(tblBangNhanh);
@@ -393,8 +381,10 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlLuoi.removeAll();
 		int tongSo = danhSachDaLoc.size();
 		int tongTrang = Math.max(1, (tongSo + SO_THE_MOI_TRANG - 1) / SO_THE_MOI_TRANG);
-		if (trangHienTai >= tongTrang) trangHienTai = tongTrang - 1;
-		if (trangHienTai < 0) trangHienTai = 0;
+		if (trangHienTai >= tongTrang)
+			trangHienTai = tongTrang - 1;
+		if (trangHienTai < 0)
+			trangHienTai = 0;
 
 		int batDau = trangHienTai * SO_THE_MOI_TRANG;
 		int ketThuc = Math.min(tongSo, batDau + SO_THE_MOI_TRANG);
@@ -437,7 +427,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlThe.setPreferredSize(new Dimension(180, 310));
 		pnlThe.setCursor(
 				hetHang
-				? Cursor.getDefaultCursor()
+						? Cursor.getDefaultCursor()
 						: Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		pnlThe.getAccessibleContext().setAccessibleName(sanPham.ten());
 
@@ -452,19 +442,18 @@ public class LapHoaDonPanel extends CoSoPanel {
 		JLabel lblGia = new JLabel(TienTe.dinhDang(sanPham.gia()));
 		lblGia.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
 		lblGia.setForeground(hetHang ? MauUngDung.VO_HIEU_HOA : MauUngDung.DO_THUONG_HIEU);
-		JLabel lblTonKho =
-				new JLabel(
-						hetHang
+		JLabel lblTonKho = new JLabel(
+				hetHang
 						? "Hết hàng"
-								: sanPham.tonKho() <= 5
+						: sanPham.tonKho() <= 5
 								? "Còn " + sanPham.tonKho()
 								: "Tồn " + sanPham.tonKho());
 		lblTonKho.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
 		lblTonKho.setForeground(
 				hetHang
-				? MauUngDung.VAN_BAN_NGUY_HIEM
+						? MauUngDung.VAN_BAN_NGUY_HIEM
 						: sanPham.tonKho() <= 5
-						? MauUngDung.CAM
+								? MauUngDung.CAM
 								: MauUngDung.VAN_BAN_XAM);
 		pnlDuoi.add(lblGia, BorderLayout.WEST);
 		pnlDuoi.add(lblTonKho, BorderLayout.EAST);
@@ -495,13 +484,15 @@ public class LapHoaDonPanel extends CoSoPanel {
 		thanhPhan.addMouseListener(thaoTac);
 		thanhPhan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		if (thanhPhan instanceof Container vung) {
-			for (Component con : vung.getComponents()) ganThaoTacThe(con, thaoTac);
+			for (Component con : vung.getComponents())
+				ganThaoTacThe(con, thaoTac);
 		}
 	}
 
 	private void themTheoQuet() {
 		String tuKhoa = txtTimKiem.getText().trim();
-		if (tuKhoa.isEmpty()) return;
+		if (tuKhoa.isEmpty())
+			return;
 
 		try {
 			danhSachSanPham = laySanPham();
@@ -512,27 +503,24 @@ public class LapHoaDonPanel extends CoSoPanel {
 			return;
 		}
 
-		List<SanPham> timThay =
-				danhSachSanPham.stream()
+		List<SanPham> timThay = danhSachSanPham.stream()
 				.filter(
 						sp -> sp.barcode().equalsIgnoreCase(tuKhoa)
-						|| sp.ma().equalsIgnoreCase(tuKhoa))
+								|| sp.ma().equalsIgnoreCase(tuKhoa))
 				.toList();
 
 		if (timThay.isEmpty() && tuKhoa.matches("\\d{6}")) {
-			timThay =
-					danhSachSanPham.stream()
+			timThay = danhSachSanPham.stream()
 					.filter(
 							sp -> (!sp.barcode().isBlank()
 									&& sp.barcode().endsWith(tuKhoa))
-							|| sp.ma().endsWith(tuKhoa))
+									|| sp.ma().endsWith(tuKhoa))
 					.toList();
 		}
 
 		if (timThay.isEmpty()) {
 			String tuKhoaTen = tuKhoa.toLowerCase(Locale.ROOT);
-			timThay =
-					danhSachSanPham.stream()
+			timThay = danhSachSanPham.stream()
 					.filter(sp -> sp.ten().toLowerCase(Locale.ROOT).contains(tuKhoaTen))
 					.toList();
 		}
@@ -620,8 +608,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlDuoi.add(tinhTongDong("Tổng cộng", lblNhanTong, true));
 		pnlDuoi.add(Box.createVerticalStrut(10));
 
-		NutDinhDang btnXoaNut =
-				new NutDinhDang("Xóa giỏ", NutDinhDang.KieuNut.NGUY_HIEM);
+		NutDinhDang btnXoaNut = new NutDinhDang("Xóa giỏ", NutDinhDang.KieuNut.NGUY_HIEM);
 		btnXoaNut.addActionListener(suKien -> xoaGioHang(true));
 		btnNutThanhToan.addActionListener(suKien -> quyetToan());
 
@@ -666,7 +653,8 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private boolean themDenGioHang(SanPham sanPham) {
 		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
 			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-			if (!dongDangXet.ma().equals(sanPham.ma())) continue;
+			if (!dongDangXet.ma().equals(sanPham.ma()))
+				continue;
 
 			if (dongDangXet.soLuong() >= sanPham.tonKho()) {
 				HopThoai.hienThiThongBaoHopThoai(
@@ -699,16 +687,17 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private void layThayDoiSoLuong(String ma, int chenhLech) {
 		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
 			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-			if (!dongDangXet.ma().equals(ma)) continue;
+			if (!dongDangXet.ma().equals(ma))
+				continue;
 
-			int tonKho =
-					laySanPham().stream()
+			int tonKho = laySanPham().stream()
 					.filter(sanPham -> sanPham.ma().equals(ma))
 					.mapToInt(SanPham::tonKho)
 					.findFirst()
 					.orElse(Integer.MAX_VALUE);
 			int soLuong = dongDangXet.soLuong() + chenhLech;
-			if (soLuong > tonKho) return;
+			if (soLuong > tonKho)
+				return;
 			if (soLuong <= 0) {
 				gioHang.remove(chiSo);
 			} else {
@@ -728,10 +717,10 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private void datSoLuong(String ma, int soLuongMoi) {
 		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
 			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-			if (!dongDangXet.ma().equals(ma)) continue;
+			if (!dongDangXet.ma().equals(ma))
+				continue;
 
-			int tonKho =
-					laySanPham().stream()
+			int tonKho = laySanPham().stream()
 					.filter(sanPham -> sanPham.ma().equals(ma))
 					.mapToInt(SanPham::tonKho)
 					.findFirst()
@@ -787,11 +776,10 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 118));
 
 		JPanel pnlThongTin = taoVungTrongSuot(new BorderLayout());
-		JLabel lblTen =
-				new JLabel(
-						"<html><body style='width:175px'>"
-								+ dong.ten().replace("&", "&amp;").replace("<", "&lt;")
-								+ "</body></html>");
+		JLabel lblTen = new JLabel(
+				"<html><body style='width:175px'>"
+						+ dong.ten().replace("&", "&amp;").replace("<", "&lt;")
+						+ "</body></html>");
 		lblTen.setToolTipText(dong.ten());
 		lblTen.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
 		JLabel lblDonVi = new JLabel(TienTe.dinhDang(dong.donGia()));
@@ -835,8 +823,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlSoLuong.add(txtSoLuong);
 		pnlSoLuong.add(btnCong);
 
-		JLabel lblSoTien =
-				new JLabel(TienTe.dinhDang(dong.docSoTien()), SwingConstants.RIGHT);
+		JLabel lblSoTien = new JLabel(TienTe.dinhDang(dong.docSoTien()), SwingConstants.RIGHT);
 		lblSoTien.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
 		lblSoTien.setPreferredSize(new Dimension(84, 20));
 
@@ -864,31 +851,31 @@ public class LapHoaDonPanel extends CoSoPanel {
 		lblNhanTamTinh.setText(TienTe.dinhDang(banHang.tinhTamTinh()));
 		lblNhanGiamGia.setText(
 				banHang.tinhGiamGia() == 0
-				? "0₫"
+						? "0₫"
 						: "−" + TienTe.dinhDang(banHang.tinhGiamGia()));
 		lblNhanTong.setText(TienTe.dinhDang(banHang.tinhTong()));
 		GioHang.KhuyenMai khuyenMai = banHang.layKhuyenMaiTotNhat();
 		lblNhanKhuyenMai.setText(
 				khuyenMai == null
-				? "—"
+						? "—"
 						: khuyenMai.ten() + ": −" + TienTe.dinhDang(khuyenMai.soTien()));
 		lblNhanKhuyenMai.setToolTipText(
 				khuyenMai == null
-				? "Chưa có khuyến mãi phù hợp"
+						? "Chưa có khuyến mãi phù hợp"
 						: khuyenMai.ma() + " - " + khuyenMai.ten());
 		btnNutThanhToan.setEnabled(!gioHang.isEmpty());
 	}
 
 	private void xoaGioHang(boolean xacNhan) {
-		if (gioHang.isEmpty()) return;
+		if (gioHang.isEmpty())
+			return;
 		if (xacNhan
 				&& HopThoai.hienThiXacNhanHopThoai(
 						this,
 						"Xóa toàn bộ " + gioHang.size() + " dòng trong giỏ hàng?",
 						"Xóa giỏ hàng",
 						JOptionPane.YES_NO_OPTION,
-						JOptionPane.WARNING_MESSAGE)
-				!= JOptionPane.YES_OPTION) {
+						JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
 			return;
 		}
 		gioHang.clear();
@@ -934,11 +921,13 @@ public class LapHoaDonPanel extends CoSoPanel {
 
 	@Override
 	public void xuLyHoanTac() {
-		if (lichSuThem.isEmpty()) return;
+		if (lichSuThem.isEmpty())
+			return;
 		String ma = lichSuThem.pop();
 		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
 			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
-			if (!dongDangXet.ma().equals(ma)) continue;
+			if (!dongDangXet.ma().equals(ma))
+				continue;
 			if (dongDangXet.soLuong() <= 1) {
 				gioHang.remove(chiSo);
 			} else {
@@ -986,11 +975,9 @@ public class LapHoaDonPanel extends CoSoPanel {
 
 		BarcodeUsbServer serverTam = null;
 		try {
-			serverTam =
-					new BarcodeUsbServer(
-							barcode ->
-							SwingUtilities.invokeLater(
-									() -> xuLyBarcodeTuDienThoai(barcode)));
+			serverTam = new BarcodeUsbServer(
+					barcode -> SwingUtilities.invokeLater(
+							() -> xuLyBarcodeTuDienThoai(barcode)));
 			serverTam.start();
 			barcodeUsbServer = serverTam;
 
@@ -1002,7 +989,8 @@ public class LapHoaDonPanel extends CoSoPanel {
 			lblKetNoiUsb.setToolTipText(
 					"Nhập mã ghép nối hiển thị tại đây vào ứng dụng PetStation Scanner.");
 		} catch (Exception loi) {
-			if (serverTam != null) serverTam.close();
+			if (serverTam != null)
+				serverTam.close();
 			barcodeUsbServer = null;
 			lblKetNoiUsb.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
 			lblKetNoiUsb.setText("USB Scanner chưa khởi động: " + loi.getMessage());
@@ -1010,7 +998,8 @@ public class LapHoaDonPanel extends CoSoPanel {
 	}
 
 	private void dongBarcodeUsbServer() {
-		if (barcodeUsbServer == null) return;
+		if (barcodeUsbServer == null)
+			return;
 		barcodeUsbServer.close();
 		barcodeUsbServer = null;
 	}
@@ -1026,7 +1015,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		if (!isShowing()) {
 			capNhatTrangThaiQuet(
 					"Đã nhận mã " + barcode
-					+ " nhưng màn hình Lập hóa đơn chưa mở. Không tự thêm hàng.",
+							+ " nhưng màn hình Lập hóa đơn chưa mở. Không tự thêm hàng.",
 					MauUngDung.VAN_BAN_NGUY_HIEM);
 			return;
 		}
@@ -1061,8 +1050,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 					}
 
 					danhSachSanPham = sanPhamMoi;
-					List<SanPham> ketQua =
-							danhSachSanPham.stream()
+					List<SanPham> ketQua = danhSachSanPham.stream()
 							.filter(sp -> sp.barcode().equals(barcode))
 							.toList();
 

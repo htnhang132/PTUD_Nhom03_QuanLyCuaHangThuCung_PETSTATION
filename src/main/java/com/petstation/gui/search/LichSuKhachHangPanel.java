@@ -50,7 +50,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     }
 
     private final NutDinhDang btnHienThi =
-            new NutDinhDang("Xem lịch sử ▸", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Xem lịch sử", NutDinhDang.KieuNut.CHINH);
 
     public LichSuKhachHangPanel() {
         setLayout(new BorderLayout());
@@ -116,7 +116,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         pnlChiTiet.setOpaque(false);
 
         NutDinhDang btnQuayLai =
-                new NutDinhDang("◀ Chọn khách khác", NutDinhDang.KieuNut.TRONG_SUOT);
+                new NutDinhDang("Chọn khách khác", NutDinhDang.KieuNut.TRONG_SUOT);
         btnQuayLai.addActionListener(suKien -> cacThe.show(pnlGoc, CHON));
 
         JPanel pnlQuayLaiThanh = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));

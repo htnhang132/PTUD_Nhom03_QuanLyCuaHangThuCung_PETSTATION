@@ -43,7 +43,8 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
                     chon.setAcceptAllFileFilterUsed(false);
                     chon.setFileFilter(
                             new FileNameExtensionFilter("Ảnh JPG, PNG", "jpg", "jpeg", "png"));
-                    if (chon.showOpenDialog(pnlAnh) != JFileChooser.APPROVE_OPTION) return;
+                    if (chon.showOpenDialog(pnlAnh) != JFileChooser.APPROVE_OPTION)
+                        return;
                     dangTai = true;
                     btnChon.setEnabled(false);
                     long lanChon = phienBan;
@@ -57,7 +58,8 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
                         protected void done() {
                             try {
                                 String moi = get();
-                                if (duocSua && phienBan == lanChon) dat(moi);
+                                if (duocSua && phienBan == lanChon)
+                                    dat(moi);
                             } catch (Exception loi) {
                                 JOptionPane.showMessageDialog(
                                         pnlAnh,
@@ -83,7 +85,8 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
 
     @Override
     public String lay() {
-        if (dangTai) throw new IllegalStateException("Vui lòng chờ ảnh tải xong.");
+        if (dangTai)
+            throw new IllegalStateException("Vui lòng chờ ảnh tải xong.");
         return duongDan;
     }
 

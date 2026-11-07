@@ -24,10 +24,10 @@ public final class ThanhQuyTrinh extends JPanel {
     private MaManHinh hienTaiManHinh;
 
     private final NutDinhDang btnTruoc =
-            new NutDinhDang("‹ Bước trước", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("Bước trước", NutDinhDang.KieuNut.TRONG_SUOT);
 
     private final NutDinhDang btnTiepTheo =
-            new NutDinhDang("Bước tiếp ›", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Bước tiếp", NutDinhDang.KieuNut.CHINH);
 
     private final JPanel pnlDieuHuong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
 
@@ -94,7 +94,7 @@ public final class ThanhQuyTrinh extends JPanel {
         pnlDieuHuong.setVisible(truongDangXet.tuanTu());
         btnTruoc.setVisible(truongDangXet.layTruocDo(manHinh).isPresent());
         btnTiepTheo.setText(
-                truongDangXet.kiemTraCuoiCung(manHinh) ? "Thanh toán ›" : "Bước tiếp ▶");
+                truongDangXet.kiemTraCuoiCung(manHinh) ? "Thanh toán" : "Bước tiếp");
         setVisible(true);
         revalidate();
         repaint();

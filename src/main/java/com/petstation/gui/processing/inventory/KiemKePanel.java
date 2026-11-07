@@ -536,7 +536,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
 
                                     String tenSP = moHinhWs.getValueAt(i, 2).toString();
                                     lblBarcodeStatus.setText(
-                                            "✓ " + tenSP + " (Tồn TT: " + (tonHienTai + 1) + ")");
+                                            "[OK] " + tenSP + " (Tồn TT: " + (tonHienTai + 1) + ")");
                                     lblBarcodeStatus.setForeground(new Color(22, 163, 74));
                                     timThay = true;
                                     break;
@@ -544,7 +544,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                             }
 
                             if (!timThay) {
-                                lblBarcodeStatus.setText("⚠ Không tìm thấy SP có Barcode: " + code);
+                                lblBarcodeStatus.setText("[!] Không tìm thấy SP có Barcode: " + code);
                                 lblBarcodeStatus.setForeground(new Color(220, 38, 38));
                             }
 

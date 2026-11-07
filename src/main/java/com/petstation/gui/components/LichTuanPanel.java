@@ -199,13 +199,13 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                 });
         NutDinhDang btnIn = new NutDinhDang("In lịch", NutDinhDang.KieuNut.TRONG_SUOT);
         btnIn.addActionListener(suKien -> inLichLamViec());
-        NutDinhDang btnQuayLai = new NutDinhDang("‹ Trở về", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnQuayLai = new NutDinhDang("Tuần trước", NutDinhDang.KieuNut.TRONG_SUOT);
         btnQuayLai.addActionListener(
                 suKien -> {
                     thuHai = thuHai.minusWeeks(1);
                     dungLai();
                 });
-        NutDinhDang btnTiepTheo = new NutDinhDang("Tiếp ›", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnTiepTheo = new NutDinhDang("Tuần sau", NutDinhDang.KieuNut.TRONG_SUOT);
         btnTiepTheo.addActionListener(
                 suKien -> {
                     thuHai = thuHai.plusWeeks(1);
