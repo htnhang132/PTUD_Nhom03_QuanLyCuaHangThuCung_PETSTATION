@@ -3,23 +3,16 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class PhieuTiepNhanSpa implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maPhieu;
-
     private LichHen lichHen;
-
     private ThuCung thuCung;
-
     private GoiDichVuSpa goiDichVu;
-
     private NhanVien nhanVien;
-
     private HoaDon hoaDon;
-
     private String moTaDichVu;
     private long donGia;
     private int soLuong;
@@ -41,11 +34,6 @@ public class PhieuTiepNhanSpa implements Serializable {
         setMaPhieu(maPhieu);
     }
 
-    public PhieuTiepNhanSpa(long id) {
-        this();
-        setId(id);
-    }
-
     public PhieuTiepNhanSpa(
             String maPhieu,
             LichHen lichHen,
@@ -61,6 +49,7 @@ public class PhieuTiepNhanSpa implements Serializable {
             String ghiChu,
             String anh,
             HoaDon hoaDon) {
+        this();
         setMaPhieu(maPhieu);
         setLichHen(lichHen);
         setThuCung(thuCung);
@@ -77,80 +66,13 @@ public class PhieuTiepNhanSpa implements Serializable {
         setHoaDon(hoaDon);
     }
 
-    public PhieuTiepNhanSpa(
-            long id,
-            String maPhieu,
-            LichHen lichHen,
-            ThuCung thuCung,
-            GoiDichVuSpa goiDichVu,
-            String moTaDichVu,
-            long donGia,
-            int soLuong,
-            double canNangThucTe,
-            String trangThai,
-            LocalDateTime taoLuc,
-            NhanVien nhanVien,
-            String ghiChu,
-            String anh,
-            HoaDon hoaDon) {
-        this(maPhieu, lichHen, thuCung, goiDichVu, moTaDichVu, donGia, soLuong, canNangThucTe, trangThai, taoLuc, nhanVien, ghiChu, anh, hoaDon);
-        setId(id);
-    }
-
-    public PhieuTiepNhanSpa(
-            long id,
-            String maPhieu,
-            Long lichHenId,
-            long thuCungId,
-            long goiId,
-            String moTaDichVu,
-            long donGia,
-            int soLuong,
-            double canNangThucTe,
-            long tongTien,
-            String trangThai,
-            LocalDateTime taoLuc,
-            Long nhanVienId,
-            String ghiChu,
-            String anh,
-            Long hoaDonId) {
-        this(
-                id,
-                maPhieu,
-                lichHenId == null ? null : new LichHen(lichHenId),
-                new ThuCung(thuCungId),
-                new GoiDichVuSpa(goiId),
-                moTaDichVu,
-                donGia,
-                soLuong,
-                canNangThucTe,
-                trangThai,
-                taoLuc,
-                nhanVienId == null ? null : new NhanVien(nhanVienId),
-                ghiChu,
-                anh,
-                hoaDonId == null ? null : new HoaDon(hoaDonId));
-        this.tongTien = Math.max(0L, tongTien);
-    }
-
     public long tinhTongTien() {
         long thanhTien = (long) Math.max(0, soLuong) * Math.max(0L, donGia);
         return thanhTien > 0 ? thanhTien : Math.max(0L, this.tongTien);
     }
 
     public boolean kiemTraDaThanhToan() {
-        return hoaDon != null && (hoaDon.getSoHoaDon() != null || (hoaDon.getId() != null && hoaDon.getId() > 0));
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maPhieu);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maPhieu == null || this.maPhieu.isBlank()) && id > 0) {
-            this.maPhieu = DuLieu.taoMaTuId("SPA", 8, id);
-        }
+        return hoaDon != null && hoaDon.getMaHoaDon() != null && !hoaDon.getMaHoaDon().isBlank();
     }
 
     public String getMaPhieu() {
@@ -169,12 +91,12 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.lichHen = lichHen;
     }
 
-    public Long getLichHenId() {
-        return lichHen == null ? null : lichHen.getId();
+    public String getMaLichHen() {
+        return lichHen == null ? null : lichHen.getMaLichHen();
     }
 
-    public void setLichHenId(Long lichHenId) {
-        this.lichHen = lichHenId == null ? null : new LichHen(lichHenId);
+    public void setMaLichHen(String maLichHen) {
+        this.lichHen = (maLichHen == null || maLichHen.isBlank()) ? null : new LichHen(maLichHen);
     }
 
     public ThuCung getThuCung() {
@@ -185,12 +107,12 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.thuCung = thuCung;
     }
 
-    public long getThuCungId() {
-        return thuCung == null ? 0L : thuCung.getId();
+    public String getMaThuCung() {
+        return thuCung == null ? null : thuCung.getMaThuCung();
     }
 
-    public void setThuCungId(long thuCungId) {
-        this.thuCung = new ThuCung(thuCungId);
+    public void setMaThuCung(String maThuCung) {
+        this.thuCung = (maThuCung == null || maThuCung.isBlank()) ? null : new ThuCung(maThuCung);
     }
 
     public GoiDichVuSpa getGoiDichVu() {
@@ -201,12 +123,12 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.goiDichVu = goiDichVu;
     }
 
-    public long getGoiId() {
-        return goiDichVu == null ? 0L : goiDichVu.getId();
+    public String getMaGoi() {
+        return goiDichVu == null ? null : goiDichVu.getMaGoi();
     }
 
-    public void setGoiId(long goiId) {
-        this.goiDichVu = new GoiDichVuSpa(goiId);
+    public void setMaGoi(String maGoi) {
+        this.goiDichVu = (maGoi == null || maGoi.isBlank()) ? null : new GoiDichVuSpa(maGoi);
     }
 
     public String getMoTaDichVu() {
@@ -251,7 +173,7 @@ public class PhieuTiepNhanSpa implements Serializable {
         return tinhTongTien();
     }
 
-    void napTongTienSnapshot(long tongTien) {
+    public void setTongTien(long tongTien) {
         this.tongTien = Math.max(0L, tongTien);
     }
 
@@ -279,12 +201,12 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.nhanVien = nhanVien;
     }
 
-    public Long getNhanVienId() {
-        return nhanVien == null ? null : nhanVien.getId();
+    public String getMaNhanVien() {
+        return nhanVien == null ? null : nhanVien.getMaNhanVien();
     }
 
-    public void setNhanVienId(Long nhanVienId) {
-        this.nhanVien = nhanVienId == null ? null : new NhanVien(nhanVienId);
+    public void setMaNhanVien(String maNhanVien) {
+        this.nhanVien = (maNhanVien == null || maNhanVien.isBlank()) ? null : new NhanVien(maNhanVien);
     }
 
     public String getGhiChu() {
@@ -311,28 +233,12 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.hoaDon = hoaDon;
     }
 
-    public Long getHoaDonId() {
-        return hoaDon == null ? null : hoaDon.getId();
-    }
-
-    public void setHoaDonId(Long hoaDonId) {
-        this.hoaDon = hoaDonId == null ? null : new HoaDon(hoaDonId);
-    }
-
     public String getMaHoaDon() {
         return hoaDon == null ? null : hoaDon.getMaHoaDon();
     }
 
     public void setMaHoaDon(String maHoaDon) {
         this.hoaDon = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
-    }
-
-    public String getSoHoaDon() {
-        return getMaHoaDon();
-    }
-
-    public void setSoHoaDon(String soHoaDon) {
-        setMaHoaDon(soHoaDon);
     }
 
     @Override
@@ -352,7 +258,7 @@ public class PhieuTiepNhanSpa implements Serializable {
 
     @Override
     public String toString() {
-        return "PhieuTiepNhanSpa{" + "maPhieu='" + maPhieu + '\'' + ", thuCungId=" + getThuCungId()
-                + ", goiId=" + getGoiId() + ", tongTien=" + tinhTongTien() + ", trangThai='" + trangThai + '\'' + '}';
+        return "PhieuTiepNhanSpa{" + "maPhieu='" + maPhieu + '\'' + ", thuCung=" + (thuCung != null ? thuCung.getMaThuCung() : null)
+                + ", goi=" + (goiDichVu != null ? goiDichVu.getMaGoi() : null) + ", tongTien=" + tinhTongTien() + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

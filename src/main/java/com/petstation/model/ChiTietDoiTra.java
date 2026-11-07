@@ -2,26 +2,18 @@ package com.petstation.model;
 
 import java.io.Serializable;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class ChiTietDoiTra implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private PhieuDoiTra phieuDoiTra;
-
     private ChiTietHoaDon chiTietHoaDon;
-
     private LoHang loHang;
     private int soLuong;
     private long tienHoan;
 
     public ChiTietDoiTra() {
         this.soLuong = 1;
-    }
-
-    public ChiTietDoiTra(long id) {
-        this();
-        setId(id);
     }
 
     public ChiTietDoiTra(
@@ -37,49 +29,11 @@ public class ChiTietDoiTra implements Serializable {
         this.tienHoan = Math.max(0L, tienHoan);
     }
 
-    public ChiTietDoiTra(
-            long id,
-            PhieuDoiTra phieuDoiTra,
-            ChiTietHoaDon chiTietHoaDon,
-            LoHang loHang,
-            int soLuong,
-            long tienHoan) {
-        this(phieuDoiTra, chiTietHoaDon, loHang, soLuong, tienHoan);
-        setId(id);
-    }
-
-    public ChiTietDoiTra(
-            long id,
-            long phieuDoiTraId,
-            long chiTietHoaDonId,
-            Long loHangId,
-            int soLuong,
-            long tienHoan) {
-        this(
-                id,
-                new PhieuDoiTra(phieuDoiTraId),
-                new ChiTietHoaDon(chiTietHoaDonId),
-                loHangId == null ? null : new LoHang(loHangId),
-                soLuong,
-                tienHoan);
-    }
-
     public long tinhTienHoan() {
         if (chiTietHoaDon != null && chiTietHoaDon.getDonGia() > 0 && soLuong > 0) {
             return (long) soLuong * chiTietHoaDon.getDonGia();
         }
         return Math.max(0L, this.tienHoan);
-    }
-
-    public Long getId() {
-        String key = (phieuDoiTra != null ? phieuDoiTra.getMaPhieu() : "") + "_"
-                + (chiTietHoaDon != null ? chiTietHoaDon.getMaChiTietHoaDon() : "") + "_"
-                + (loHang != null ? loHang.getMaLo() : "");
-        return DuLieu.layIdCauNoiObj(this, key);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
     }
 
     public PhieuDoiTra getPhieuDoiTra() {
@@ -90,12 +44,12 @@ public class ChiTietDoiTra implements Serializable {
         this.phieuDoiTra = phieuDoiTra;
     }
 
-    public long getPhieuDoiTraId() {
-        return phieuDoiTra == null ? 0L : phieuDoiTra.getId();
+    public String getMaPhieuDoiTra() {
+        return phieuDoiTra == null ? null : phieuDoiTra.getMaPhieu();
     }
 
-    public void setPhieuDoiTraId(long phieuDoiTraId) {
-        this.phieuDoiTra = new PhieuDoiTra(phieuDoiTraId);
+    public void setMaPhieuDoiTra(String maPhieu) {
+        this.phieuDoiTra = (maPhieu == null || maPhieu.isBlank()) ? null : new PhieuDoiTra(maPhieu);
     }
 
     public ChiTietHoaDon getChiTietHoaDon() {
@@ -106,14 +60,6 @@ public class ChiTietDoiTra implements Serializable {
         this.chiTietHoaDon = chiTietHoaDon;
     }
 
-    public long getChiTietHoaDonId() {
-        return chiTietHoaDon == null ? 0L : chiTietHoaDon.getId();
-    }
-
-    public void setChiTietHoaDonId(long chiTietHoaDonId) {
-        this.chiTietHoaDon = new ChiTietHoaDon(chiTietHoaDonId);
-    }
-
     public LoHang getLoHang() {
         return this.loHang;
     }
@@ -122,12 +68,12 @@ public class ChiTietDoiTra implements Serializable {
         this.loHang = loHang;
     }
 
-    public Long getLoHangId() {
-        return loHang == null ? null : loHang.getId();
+    public String getMaLo() {
+        return loHang == null ? null : loHang.getMaLo();
     }
 
-    public void setLoHangId(Long loHangId) {
-        this.loHang = loHangId == null ? null : new LoHang(loHangId);
+    public void setMaLo(String maLo) {
+        this.loHang = (maLo == null || maLo.isBlank()) ? null : new LoHang(maLo);
     }
 
     public int getSoLuong() {
@@ -144,7 +90,7 @@ public class ChiTietDoiTra implements Serializable {
         return tinhTienHoan();
     }
 
-    void napTienHoanSnapshot(long tienHoan) {
+    public void setTienHoan(long tienHoan) {
         this.tienHoan = Math.max(0L, tienHoan);
     }
 
@@ -167,7 +113,8 @@ public class ChiTietDoiTra implements Serializable {
 
     @Override
     public String toString() {
-        return "ChiTietDoiTra{" + "phieuDoiTraId=" + getPhieuDoiTraId() + ", chiTietHoaDonId="
-                + getChiTietHoaDonId() + ", soLuong=" + soLuong + ", tienHoan=" + tinhTienHoan() + '}';
+        return "ChiTietDoiTra{" + "phieuDoiTra=" + (phieuDoiTra != null ? phieuDoiTra.getMaPhieu() : null)
+                + ", chiTietHoaDon=" + (chiTietHoaDon != null ? chiTietHoaDon.getMaChiTietHoaDon() : null)
+                + ", soLuong=" + soLuong + ", tienHoan=" + tinhTienHoan() + '}';
     }
 }

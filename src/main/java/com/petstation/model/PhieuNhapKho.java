@@ -5,19 +5,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class PhieuNhapKho implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maPhieuNhap;
-
     private NhaCungCap nhaCungCap;
-
     private TaiKhoan nguoiLap;
-
     private List<ChiTietPhieuNhap> danhSachChiTiet = new ArrayList<>();
-
     private LocalDateTime ngayNhap;
     private long tongTien;
     private String trangThai;
@@ -34,11 +29,6 @@ public class PhieuNhapKho implements Serializable {
         setMaPhieuNhap(maPhieuNhap);
     }
 
-    public PhieuNhapKho(long id) {
-        this();
-        setId(id);
-    }
-
     public PhieuNhapKho(
             String maPhieuNhap,
             NhaCungCap nhaCungCap,
@@ -47,6 +37,7 @@ public class PhieuNhapKho implements Serializable {
             String trangThai,
             String ghiChu,
             long daTra) {
+        this();
         setMaPhieuNhap(maPhieuNhap);
         setNhaCungCap(nhaCungCap);
         setNguoiLap(nguoiLap);
@@ -54,41 +45,6 @@ public class PhieuNhapKho implements Serializable {
         setTrangThai(trangThai);
         setGhiChu(ghiChu);
         setDaTra(daTra);
-    }
-
-    public PhieuNhapKho(
-            long id,
-            String maPhieuNhap,
-            NhaCungCap nhaCungCap,
-            TaiKhoan nguoiLap,
-            LocalDateTime ngayNhap,
-            String trangThai,
-            String ghiChu,
-            long daTra) {
-        this(maPhieuNhap, nhaCungCap, nguoiLap, ngayNhap, trangThai, ghiChu, daTra);
-        setId(id);
-    }
-
-    public PhieuNhapKho(
-            long id,
-            String maPhieuNhap,
-            long nhaCungCapId,
-            long nguoiLapId,
-            LocalDateTime ngayNhap,
-            long tongTien,
-            String trangThai,
-            String ghiChu,
-            long daTra) {
-        this(
-                id,
-                maPhieuNhap,
-                new NhaCungCap(nhaCungCapId),
-                new TaiKhoan(nguoiLapId),
-                ngayNhap,
-                trangThai,
-                ghiChu,
-                daTra);
-        this.tongTien = Math.max(0L, tongTien);
     }
 
     public long tinhTongTien() {
@@ -108,7 +64,7 @@ public class PhieuNhapKho implements Serializable {
         return tinhTongTien();
     }
 
-    public void napTongTienSnapshot(long tongTien) {
+    public void setTongTien(long tongTien) {
         this.tongTien = Math.max(0L, tongTien);
     }
 
@@ -132,17 +88,6 @@ public class PhieuNhapKho implements Serializable {
         }
         chiTiet.setPhieuNhap(this);
         this.danhSachChiTiet.add(chiTiet);
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, getMaPhieuNhap());
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maPhieuNhap == null || this.maPhieuNhap.isBlank()) && id > 0) {
-            this.maPhieuNhap = DuLieu.taoMaTuId("PN", 8, id);
-        }
     }
 
     public String getMaPhieuNhap() {
@@ -185,14 +130,6 @@ public class PhieuNhapKho implements Serializable {
         setMaNhaCungCap(maNcc);
     }
 
-    public long getNhaCungCapId() {
-        return nhaCungCap == null ? 0L : nhaCungCap.getId();
-    }
-
-    public void setNhaCungCapId(long nhaCungCapId) {
-        this.nhaCungCap = new NhaCungCap(nhaCungCapId);
-    }
-
     public TaiKhoan getNguoiLap() {
         return this.nguoiLap;
     }
@@ -201,12 +138,12 @@ public class PhieuNhapKho implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public long getNguoiLapId() {
-        return nguoiLap == null ? 0L : nguoiLap.getId();
+    public String getTenDangNhapNguoiLap() {
+        return nguoiLap == null ? null : nguoiLap.getTenDangNhap();
     }
 
-    public void setNguoiLapId(long nguoiLapId) {
-        this.nguoiLap = new TaiKhoan(nguoiLapId);
+    public void setTenDangNhapNguoiLap(String tenDangNhap) {
+        this.nguoiLap = (tenDangNhap == null || tenDangNhap.isBlank()) ? null : new TaiKhoan(tenDangNhap);
     }
 
     public List<ChiTietPhieuNhap> getDanhSachChiTiet() {

@@ -51,7 +51,6 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                 throw new TruyCapDuLieuException("Creating customer failed, no rows affected.");
             }
 
-            khachHang.setId(DuLieu.layIdCauNoi(khachHang, ma));
             return khachHang;
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException("Error creating customer: " + loi.getMessage(), loi);
@@ -243,7 +242,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         String sql =
                 "UPDATE khach_hang SET ho_ten = ?, so_dien_thoai = ?, dia_chi = ?, "
                         + "ngay_sinh = ?, diem_tich_luy = ?, hang_thanh_vien = ? "
-                        + "WHERE (ma_khach_hang = ? OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
+                        + "WHERE ma_khach_hang = ?";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, khachHang.getHoTen());
@@ -255,7 +254,6 @@ public class KhachHangDAOImpl implements KhachHangDAO {
             cauLenh.setInt(5, khachHang.getDiemTichLuy());
             cauLenh.setString(6, khachHang.getHangThanhVien());
             cauLenh.setString(7, khachHang.getMaKhachHang());
-            cauLenh.setLong(8, khachHang.getId());
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -377,7 +375,6 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         KhachHang khachHang = new KhachHang();
         String maKhachHang = tapKetQua.getString("ma_khach_hang");
         khachHang.setMaKhachHang(maKhachHang);
-        khachHang.setId(DuLieu.layIdCauNoi(khachHang, maKhachHang));
         khachHang.setHoTen(tapKetQua.getString("ho_ten"));
         khachHang.setSoDienThoai(tapKetQua.getString("so_dien_thoai"));
         khachHang.setDiaChi(tapKetQua.getString("dia_chi"));

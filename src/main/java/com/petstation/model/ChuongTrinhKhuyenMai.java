@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -47,26 +46,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         setNguon(nguon);
         setTrangThai(trangThai);
         setDonToiThieu(donToiThieu);
-    }
-
-    public ChuongTrinhKhuyenMai(long id) {
-        this();
-        setId(id);
-    }
-
-    public ChuongTrinhKhuyenMai(
-            long id,
-            String maChuongTrinh,
-            String ten,
-            String loaiGiam,
-            double giaTri,
-            LocalDateTime batDau,
-            LocalDateTime ketThuc,
-            String nguon,
-            String trangThai,
-            long donToiThieu) {
-        this(maChuongTrinh, ten, loaiGiam, giaTri, batDau, ketThuc, nguon, trangThai, donToiThieu);
-        setId(id);
     }
 
     public boolean kiemTraDangHieuLuc() {
@@ -160,19 +139,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         if (donToiThieu < 0)
             throw new IllegalArgumentException("Đơn tối thiểu không được âm.");
         this.donToiThieu = donToiThieu;
-    }
-
-    public long getId() {
-        return DuLieu.layIdCauNoi(this, maChuongTrinh);
-    }
-
-    public void setId(long id) {
-        if (id < 0)
-            throw new IllegalArgumentException("Mã định danh khuyến mãi không hợp lệ.");
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maChuongTrinh == null || this.maChuongTrinh.isBlank()) && id > 0) {
-            this.maChuongTrinh = DuLieu.taoMaTuId("KM", 6, id);
-        }
     }
 
     @Override

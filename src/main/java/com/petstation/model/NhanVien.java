@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
@@ -45,25 +44,6 @@ public class NhanVien implements Serializable {
         setViTri(viTri);
         setNgayBatDau(ngayBatDau);
         setHoatDong(hoatDong);
-    }
-
-    public NhanVien(long id) {
-        this();
-        setId(id);
-    }
-
-    public NhanVien(
-            long id,
-            String maNhanVien,
-            String hoTen,
-            LocalDate ngaySinh,
-            String soDienThoai,
-            String diaChi,
-            String viTri,
-            LocalDate ngayBatDau,
-            boolean hoatDong) {
-        this(maNhanVien, hoTen, ngaySinh, soDienThoai, diaChi, viTri, ngayBatDau, hoatDong);
-        setId(id);
     }
 
     public int tinhTuoi() {
@@ -150,18 +130,6 @@ public class NhanVien implements Serializable {
 
     public void setHoatDong(boolean hoatDong) {
         this.hoatDong = hoatDong;
-    }
-
-    public long getId() {
-        return DuLieu.layIdCauNoi(this, maNhanVien);
-    }
-
-    public void setId(long id) {
-        if (id < 0) throw new IllegalArgumentException("Mã định danh nhân viên không hợp lệ.");
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maNhanVien == null || this.maNhanVien.isBlank()) && id > 0) {
-            this.maNhanVien = DuLieu.taoMaTuId("NV", 4, id);
-        }
     }
 
     @Override

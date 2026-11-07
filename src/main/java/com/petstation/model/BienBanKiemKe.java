@@ -5,17 +5,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class BienBanKiemKe implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maBienBan;
-
     private TaiKhoan nguoiLap;
-
     private List<ChiTietKiemKe> danhSachChiTiet = new ArrayList<>();
-
     private String kyKiemKe;
     private String trangThai;
     private LocalDateTime taoLuc;
@@ -30,43 +26,18 @@ public class BienBanKiemKe implements Serializable {
         setMaBienBan(maBienBan);
     }
 
-    public BienBanKiemKe(long id) {
-        this();
-        setId(id);
-    }
-
     public BienBanKiemKe(
             String soBienBan,
             TaiKhoan nguoiLap,
             String kyKiemKe,
             String trangThai,
             LocalDateTime taoLuc) {
+        this();
         setSoBienBan(soBienBan);
         setNguoiLap(nguoiLap);
         setKyKiemKe(kyKiemKe);
         setTrangThai(trangThai);
         setTaoLuc(taoLuc);
-    }
-
-    public BienBanKiemKe(
-            long id,
-            String soBienBan,
-            TaiKhoan nguoiLap,
-            String kyKiemKe,
-            String trangThai,
-            LocalDateTime taoLuc) {
-        this(soBienBan, nguoiLap, kyKiemKe, trangThai, taoLuc);
-        setId(id);
-    }
-
-    public BienBanKiemKe(
-            long id,
-            String soBienBan,
-            long nguoiLapId,
-            String kyKiemKe,
-            String trangThai,
-            LocalDateTime taoLuc) {
-        this(id, soBienBan, new TaiKhoan(nguoiLapId), kyKiemKe, trangThai, taoLuc);
     }
 
     public int tinhSoLoLechKho() {
@@ -84,17 +55,6 @@ public class BienBanKiemKe implements Serializable {
 
     public int getSoLoLechKho() {
         return tinhSoLoLechKho();
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, getMaBienBan());
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maBienBan == null || this.maBienBan.isBlank()) && id > 0) {
-            this.maBienBan = DuLieu.taoMaTuId("KK", 8, id);
-        }
     }
 
     public String getMaBienBan() {
@@ -121,12 +81,12 @@ public class BienBanKiemKe implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public long getNguoiLapId() {
-        return nguoiLap == null ? 0L : nguoiLap.getId();
+    public String getTenDangNhapNguoiLap() {
+        return nguoiLap == null ? null : nguoiLap.getTenDangNhap();
     }
 
-    public void setNguoiLapId(long nguoiLapId) {
-        this.nguoiLap = new TaiKhoan(nguoiLapId);
+    public void setTenDangNhapNguoiLap(String tenDangNhap) {
+        this.nguoiLap = (tenDangNhap == null || tenDangNhap.isBlank()) ? null : new TaiKhoan(tenDangNhap);
     }
 
     public List<ChiTietKiemKe> getDanhSachChiTiet() {
@@ -178,6 +138,7 @@ public class BienBanKiemKe implements Serializable {
 
     @Override
     public String toString() {
-        return "BienBanKiemKe{" + "maBienBan='" + getMaBienBan() + '\'' + ", nguoiLapId=" + getNguoiLapId() + ", kyKiemKe='" + kyKiemKe + '\'' + ", trangThai='" + trangThai + '\'' + '}';
+        return "BienBanKiemKe{" + "maBienBan='" + getMaBienBan() + '\'' + ", nguoiLap=" + (nguoiLap != null ? nguoiLap.getTenDangNhap() : null)
+                + ", kyKiemKe='" + kyKiemKe + '\'' + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

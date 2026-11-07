@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -9,9 +8,7 @@ public class LichLamViec implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maLichLamViec;
-
     private NhanVien nhanVien;
-
     private CaLamViec caLamViec;
     private LocalDate ngayLam;
     private String trangThai;
@@ -42,32 +39,6 @@ public class LichLamViec implements Serializable {
         setLoai(loai);
     }
 
-    public LichLamViec(long id) {
-        this();
-        setId(id);
-    }
-
-    public LichLamViec(
-            long id,
-            NhanVien nhanVien,
-            CaLamViec caLamViec,
-            LocalDate ngayLam,
-            String trangThai,
-            String loai) {
-        this(DuLieu.taoMaTuId("LLV", 6, id), nhanVien, caLamViec, ngayLam, trangThai, loai);
-        setId(id);
-    }
-
-    public LichLamViec(
-            long id,
-            long nhanVienId,
-            long caLamViecId,
-            LocalDate ngayLam,
-            String trangThai,
-            String loai) {
-        this(id, new NhanVien(nhanVienId), new CaLamViec(caLamViecId), ngayLam, trangThai, loai);
-    }
-
     public boolean kiemTraNgayLamHomNay() {
         return ngayLam != null && ngayLam.equals(LocalDate.now());
     }
@@ -81,38 +52,50 @@ public class LichLamViec implements Serializable {
         String nl = ngayLam != null ? ngayLam.toString() : "";
         return (nv.isEmpty() && ca.isEmpty() && nl.isEmpty()) ? null : (nv + "_" + nl + "_" + ca);
     }
+
     public void setMaLichLamViec(String maLichLamViec) {
         this.maLichLamViec = maLichLamViec == null ? null : maLichLamViec.trim();
     }
 
-    public NhanVien getNhanVien() { return this.nhanVien; }
-    public void setNhanVien(NhanVien nhanVien) { this.nhanVien = nhanVien; }
-
-    public CaLamViec getCaLamViec() { return this.caLamViec; }
-    public void setCaLamViec(CaLamViec caLamViec) { this.caLamViec = caLamViec; }
-
-    public LocalDate getNgayLam() { return this.ngayLam; }
-    public void setNgayLam(LocalDate ngayLam) { this.ngayLam = ngayLam; }
-
-    public String getTrangThai() { return this.trangThai; }
-    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-
-    public String getLoai() { return this.loai; }
-    public void setLoai(String loai) { this.loai = loai; }
-
-    public long getId() { return DuLieu.layIdCauNoi(this, maLichLamViec); }
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maLichLamViec == null || this.maLichLamViec.isBlank()) && id > 0) {
-            this.maLichLamViec = DuLieu.taoMaTuId("LLV", 6, id);
-        }
+    public NhanVien getNhanVien() {
+        return this.nhanVien;
     }
 
-    public long getNhanVienId() { return nhanVien == null ? 0L : nhanVien.getId(); }
-    public void setNhanVienId(long nhanVienId) { this.nhanVien = new NhanVien(nhanVienId); }
+    public void setNhanVien(NhanVien nhanVien) {
+        this.nhanVien = nhanVien;
+    }
 
-    public long getCaLamViecId() { return caLamViec == null ? 0L : caLamViec.getId(); }
-    public void setCaLamViecId(long caLamViecId) { this.caLamViec = new CaLamViec(caLamViecId); }
+    public CaLamViec getCaLamViec() {
+        return this.caLamViec;
+    }
+
+    public void setCaLamViec(CaLamViec caLamViec) {
+        this.caLamViec = caLamViec;
+    }
+
+    public LocalDate getNgayLam() {
+        return this.ngayLam;
+    }
+
+    public void setNgayLam(LocalDate ngayLam) {
+        this.ngayLam = ngayLam;
+    }
+
+    public String getTrangThai() {
+        return this.trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public String getLoai() {
+        return this.loai;
+    }
+
+    public void setLoai(String loai) {
+        this.loai = loai;
+    }
 
     @Override
     public boolean equals(Object o) {

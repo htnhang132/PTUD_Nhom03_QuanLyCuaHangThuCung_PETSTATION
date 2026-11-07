@@ -2,17 +2,13 @@ package com.petstation.model;
 
 import java.io.Serializable;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class ChiTietHoaDon implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private HoaDon hoaDon;
-
     private SanPham sanPham;
-
     private LoHang loHang;
-
     private int soLuong;
     private long donGia;
     private long giamGia;
@@ -28,11 +24,6 @@ public class ChiTietHoaDon implements Serializable {
         this();
     }
 
-    public ChiTietHoaDon(long id) {
-        this();
-        setId(id);
-    }
-
     public ChiTietHoaDon(
             HoaDon hoaDon,
             SanPham sanPham,
@@ -43,6 +34,7 @@ public class ChiTietHoaDon implements Serializable {
             double thueGtgt,
             String maDichVu,
             String tenHang) {
+        this();
         setHoaDon(hoaDon);
         setSanPham(sanPham);
         setLoHang(loHang);
@@ -66,45 +58,6 @@ public class ChiTietHoaDon implements Serializable {
             String maDichVu,
             String tenHang) {
         this(hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
-    }
-
-    public ChiTietHoaDon(
-            long id,
-            HoaDon hoaDon,
-            SanPham sanPham,
-            LoHang loHang,
-            int soLuong,
-            long donGia,
-            long giamGia,
-            double thueGtgt,
-            String maDichVu,
-            String tenHang) {
-        this(hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
-        setId(id);
-    }
-
-    public ChiTietHoaDon(
-            long id,
-            long hoaDonId,
-            Long sanPhamId,
-            Long loHangId,
-            int soLuong,
-            long donGia,
-            long giamGia,
-            double thueGtgt,
-            String maDichVu,
-            String tenHang) {
-        this(
-                id,
-                new HoaDon(hoaDonId),
-                sanPhamId == null ? null : new SanPham(sanPhamId),
-                loHangId == null ? null : new LoHang(loHangId),
-                soLuong,
-                donGia,
-                giamGia,
-                thueGtgt,
-                maDichVu,
-                tenHang);
     }
 
     public long tinhThanhTienTruocGiam() {
@@ -135,14 +88,6 @@ public class ChiTietHoaDon implements Serializable {
         return tinhThanhTien();
     }
 
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, getMaChiTietHoaDon());
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-    }
-
     public String getMaChiTietHoaDon() {
         String hd = (hoaDon != null && hoaDon.getMaHoaDon() != null) ? hoaDon.getMaHoaDon() : "";
         String sp = (sanPham != null && sanPham.getMaSanPham() != null) ? sanPham.getMaSanPham() : (maDichVu != null ? maDichVu : "");
@@ -169,14 +114,6 @@ public class ChiTietHoaDon implements Serializable {
         this.hoaDon = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
     }
 
-    public long getHoaDonId() {
-        return hoaDon == null ? 0L : hoaDon.getId();
-    }
-
-    public void setHoaDonId(long hoaDonId) {
-        this.hoaDon = new HoaDon(hoaDonId);
-    }
-
     public SanPham getSanPham() {
         return this.sanPham;
     }
@@ -193,14 +130,6 @@ public class ChiTietHoaDon implements Serializable {
         this.sanPham = (maSanPham == null || maSanPham.isBlank()) ? null : new SanPham(maSanPham);
     }
 
-    public Long getSanPhamId() {
-        return sanPham == null ? null : sanPham.getId();
-    }
-
-    public void setSanPhamId(Long sanPhamId) {
-        this.sanPham = sanPhamId == null ? null : new SanPham(sanPhamId);
-    }
-
     public LoHang getLoHang() {
         return this.loHang;
     }
@@ -215,14 +144,6 @@ public class ChiTietHoaDon implements Serializable {
 
     public void setMaLo(String maLo) {
         this.loHang = (maLo == null || maLo.isBlank()) ? null : new LoHang(maLo);
-    }
-
-    public Long getLoHangId() {
-        return loHang == null ? null : loHang.getId();
-    }
-
-    public void setLoHangId(Long loHangId) {
-        this.loHang = loHangId == null ? null : new LoHang(loHangId);
     }
 
     public int getSoLuong() {

@@ -32,8 +32,8 @@ class PhieuSpaTreoSQLTest {
                 capNhat("INSERT INTO tai_khoan(ma_nhan_vien,ten_dang_nhap,mat_khau_hash,vai_tro)"
                     + " VALUES(?,?,?,'NHAN_VIEN_SPA_HOTEL')", maNhanVien, ma, "test-hash");
                 long tk = com.petstation.util.DuLieu.layIdCauNoi(null, ma);
-                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk); taiKhoan.setTenDangNhap(ma);
-                NhanVien nhanVien = new NhanVien(); nhanVien.setId(nv); nhanVien.setMaNhanVien(maNhanVien);
+                TaiKhoan taiKhoan = new TaiKhoan(ma);
+                NhanVien nhanVien = new NhanVien(maNhanVien);
                 PhienDangNhapService.datPhienDangNhap(new PhienDangNhap(taiKhoan, nhanVien, EnumSet.allOf(Quyen.class)));
                 maKhach = "KH" + ma; maThu = "TC" + ma; maGoi = "GOI" + ma;
                 capNhat("INSERT INTO khach_hang(ma_khach_hang,ho_ten,so_dien_thoai) VALUES(?,N'Test Spa',?)",

@@ -4,13 +4,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class ThuCung implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maThuCung;
-
     private KhachHang khachHang;
     private String ten;
     private String loai;
@@ -37,11 +35,6 @@ public class ThuCung implements Serializable {
         setMaThuCung(maThuCung);
     }
 
-    public ThuCung(long id) {
-        this();
-        setId(id);
-    }
-
     public ThuCung(
             String maThuCung,
             KhachHang khachHang,
@@ -60,6 +53,7 @@ public class ThuCung implements Serializable {
             String tiemChung,
             int soMuiTiem,
             LocalDate ngayTiemGanNhat) {
+        this();
         setMaThuCung(maThuCung);
         setKhachHang(khachHang);
         setTen(ten);
@@ -77,69 +71,6 @@ public class ThuCung implements Serializable {
         setTiemChung(tiemChung);
         setSoMuiTiem(soMuiTiem);
         setNgayTiemGanNhat(ngayTiemGanNhat);
-    }
-
-    public ThuCung(
-            long id,
-            String maThuCung,
-            KhachHang khachHang,
-            String ten,
-            String loai,
-            String giong,
-            String gioiTinh,
-            String mauLong,
-            double canNang,
-            String tinhTrangSucKhoe,
-            String diUngBenhLy,
-            String anh,
-            boolean dangTheoDoi,
-            LocalDate ngaySinh,
-            String tinhCach,
-            String tiemChung,
-            int soMuiTiem,
-            LocalDate ngayTiemGanNhat) {
-        this(maThuCung, khachHang, ten, loai, giong, gioiTinh, mauLong, canNang, tinhTrangSucKhoe, diUngBenhLy, anh, dangTheoDoi, ngaySinh, tinhCach, tiemChung, soMuiTiem, ngayTiemGanNhat);
-        setId(id);
-    }
-
-    public ThuCung(
-            long id,
-            String maThuCung,
-            long khachHangId,
-            String ten,
-            String loai,
-            String giong,
-            String gioiTinh,
-            String mauLong,
-            double canNang,
-            String tinhTrangSucKhoe,
-            String diUngBenhLy,
-            String anh,
-            boolean dangTheoDoi,
-            LocalDate ngaySinh,
-            String tinhCach,
-            String tiemChung,
-            int soMuiTiem,
-            LocalDate ngayTiemGanNhat) {
-        this(
-                id,
-                maThuCung,
-                new KhachHang(khachHangId),
-                ten,
-                loai,
-                giong,
-                gioiTinh,
-                mauLong,
-                canNang,
-                tinhTrangSucKhoe,
-                diUngBenhLy,
-                anh,
-                dangTheoDoi,
-                ngaySinh,
-                tinhCach,
-                tiemChung,
-                soMuiTiem,
-                ngayTiemGanNhat);
     }
 
     public int tinhTuoiTheoNam() {
@@ -161,17 +92,6 @@ public class ThuCung implements Serializable {
         return soMuiTiem > 0 || (tiemChung != null && !tiemChung.isBlank());
     }
 
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maThuCung);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maThuCung == null || this.maThuCung.isBlank()) && id > 0) {
-            this.maThuCung = DuLieu.taoMaTuId("TC", 6, id);
-        }
-    }
-
     public String getMaThuCung() {
         return this.maThuCung;
     }
@@ -188,12 +108,12 @@ public class ThuCung implements Serializable {
         this.khachHang = khachHang;
     }
 
-    public long getKhachHangId() {
-        return (khachHang == null || khachHang.getId() == null) ? 0L : khachHang.getId();
+    public String getMaKhachHang() {
+        return khachHang == null ? null : khachHang.getMaKhachHang();
     }
 
-    public void setKhachHangId(long khachHangId) {
-        this.khachHang = new KhachHang(khachHangId);
+    public void setMaKhachHang(String maKhachHang) {
+        this.khachHang = (maKhachHang == null || maKhachHang.isBlank()) ? null : new KhachHang(maKhachHang);
     }
 
     public String getTen() {
@@ -337,7 +257,7 @@ public class ThuCung implements Serializable {
 
     @Override
     public String toString() {
-        return "ThuCung{" + "maThuCung='" + maThuCung + '\'' + ", khachHangId=" + getKhachHangId()
+        return "ThuCung{" + "maThuCung='" + maThuCung + '\'' + ", khachHang=" + (khachHang != null ? khachHang.getMaKhachHang() : null)
                 + ", ten='" + ten + '\'' + ", loai='" + loai + '\'' + ", canNang=" + canNang + '}';
     }
 }

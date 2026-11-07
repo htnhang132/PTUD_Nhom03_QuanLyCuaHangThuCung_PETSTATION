@@ -4,6 +4,7 @@ import com.petstation.gui.components.*;
 import com.petstation.model.*;
 import com.petstation.model.MaManHinh;
 import com.petstation.service.QuyTrinhService;
+import com.petstation.util.DuLieu;
 import com.petstation.util.TienTe;
 
 import java.awt.*;
@@ -157,7 +158,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
 
     private JButton taoThe(PhongHotel phong) {
         JButton the = new JButton();
-        the.setName("phong:" + phong.getId());
+        the.setName("phong:" + phong.getMa());
         the.setLayout(new BorderLayout(0, 10));
         the.setBackground(Color.WHITE);
         the.setBorder(
@@ -262,13 +263,13 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                             + ". Chưa thể đặt hoặc nhận phòng.");
             return;
         }
-        gio.getQuyTrinh().chonPhongHotel(phong.getId(), phong.getMa());
+        gio.getQuyTrinh().chonPhongHotel(DuLieu.layIdCauNoi(phong, phong.getMa()), phong.getMa());
         if (phong.getTrangThai().equals("DANG_O")) {
             if (phong.getDangO() == null) {
                 HopThoai.hienThiCanhBao(this, "Chưa tìm thấy hợp đồng đang ở. Hãy làm mới sơ đồ.");
                 return;
             }
-            gio.getQuyTrinh().chonHotel(phong.getDangO().getId());
+            gio.getQuyTrinh().chonHotel(DuLieu.layIdCauNoi(phong.getDangO(), phong.getDangO().getMaHopDong()));
             dieuHuong.accept(MaManHinh.NHAT_KY_CHAM_SOC);
         } else {
             gio.getQuyTrinh().chonHotel(0);

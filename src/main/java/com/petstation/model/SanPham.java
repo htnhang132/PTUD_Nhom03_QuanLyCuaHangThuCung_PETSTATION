@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,19 +52,6 @@ public class SanPham implements Serializable {
         setTenSanPham(tenSanPham);
         setNhomHang(nhomHang);
         setDonVi(donVi);
-        setGiaBan(giaBan);
-    }
-
-    public SanPham(Long id) {
-        this();
-        setId(id);
-    }
-
-    public SanPham(Long id, String maSanPham, String tenSanPham, BigDecimal giaBan) {
-        this();
-        setId(id);
-        setMaSanPham(maSanPham);
-        setTenSanPham(tenSanPham);
         setGiaBan(giaBan);
     }
 
@@ -265,20 +251,6 @@ public class SanPham implements Serializable {
 
     public void setDanhSachLoHang(List<LoHang> danhSachLoHang) {
         this.danhSachLoHang = danhSachLoHang == null ? new ArrayList<>() : new ArrayList<>(danhSachLoHang);
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, maSanPham);
-    }
-
-    public void setId(Long id) {
-        if (id != null && id < 0) {
-            throw new IllegalArgumentException("Mã định danh sản phẩm không hợp lệ.");
-        }
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maSanPham == null || this.maSanPham.isBlank()) && id != null && id > 0) {
-            this.maSanPham = DuLieu.taoMaTuId("SP", 6, id);
-        }
     }
 
     @Override

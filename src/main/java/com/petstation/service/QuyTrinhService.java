@@ -70,42 +70,38 @@ public final class QuyTrinhService {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var lich = quyTrinhDAO.layLichPhong();
         return quyTrinhDAO.layPhongChiTiet().stream()
-                .map(
+                .<com.petstation.model.PhongHotel>map(
                         p -> {
-                            long id = ((Number) p[0]).longValue();
+                            String maPhong = p[0] != null ? p[0].toString() : "";
                             var cacLich =
                                     lich.stream()
-                                            .filter(l -> ((Number) l[0]).longValue() == id)
+                                            .filter(l -> l[0] != null && l[0].toString().equals(maPhong))
                                             .toList();
                             java.util.function.Function<
                                             Object[], com.petstation.model.PhongHotel.LichPhong>
                                     doi =
                                             l ->
-                                                    new com.petstation.model.PhongHotel
-                                                            .LichPhong(
-                                                            ((Number) l[1]).longValue(),
-                                                            l[2].toString(),
-                                                            l[3].toString(),
-                                                            ((java.sql.Timestamp) l[4])
-                                                                    .toLocalDateTime(),
-                                                            ((java.sql.Timestamp) l[5])
-                                                                    .toLocalDateTime());
+                                                    new com.petstation.model.PhongHotel.LichPhong(
+                                                            l[1] != null ? l[1].toString() : "",
+                                                            l[2] != null ? l[2].toString() : "",
+                                                            l[3] != null ? l[3].toString() : "",
+                                                            l[4] != null ? ((java.sql.Timestamp) l[4]).toLocalDateTime() : null,
+                                                            l[5] != null ? ((java.sql.Timestamp) l[5]).toLocalDateTime() : null);
                             var dangO =
                                     cacLich.stream()
-                                            .filter(l -> l[6].equals("DANG_O"))
+                                            .filter(l -> "DANG_O".equals(l[6]))
                                             .map(doi)
                                             .findFirst()
                                             .orElse(null);
                             return new com.petstation.model.PhongHotel(
-                                    id,
-                                    p[1].toString(),
-                                    p[2].toString(),
-                                    ((Number) p[3]).longValue(),
-                                    p[4].toString(),
-                                    ((Number) p[5]).intValue(),
+                                    maPhong,
+                                    p[1] != null ? p[1].toString() : "",
+                                    p[2] != null ? ((Number) p[2]).longValue() : 0L,
+                                    p[3] != null ? p[3].toString() : "",
+                                    p[4] != null ? ((Number) p[4]).intValue() : 1,
                                     dangO,
                                     cacLich.stream()
-                                            .filter(l -> l[6].equals("DA_DAT"))
+                                            .filter(l -> "DA_DAT".equals(l[6]))
                                             .map(doi)
                                             .toList());
                         })

@@ -5,21 +5,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class PhieuDoiTra implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maPhieu;
-
     private HoaDon hoaDonGoc;
-
     private TaiKhoan nguoiLap;
-
     private HoaDon hoaDonThayThe;
-
     private List<ChiTietDoiTra> danhSachChiTiet = new ArrayList<>();
-
     private long chenhLech;
     private String trangThai;
     private LocalDateTime taoLuc;
@@ -38,11 +32,6 @@ public class PhieuDoiTra implements Serializable {
         setMaPhieu(maPhieu);
     }
 
-    public PhieuDoiTra(long id) {
-        this();
-        setId(id);
-    }
-
     public PhieuDoiTra(
             String maPhieu,
             HoaDon hoaDonGoc,
@@ -55,6 +44,7 @@ public class PhieuDoiTra implements Serializable {
             HoaDon hoaDonThayThe,
             long giaTriDuocDoi,
             String khoaThaoTac) {
+        this();
         setMaPhieu(maPhieu);
         setHoaDonGoc(hoaDonGoc);
         setNguoiLap(nguoiLap);
@@ -68,51 +58,6 @@ public class PhieuDoiTra implements Serializable {
         setKhoaThaoTac(khoaThaoTac);
     }
 
-    public PhieuDoiTra(
-            long id,
-            String maPhieu,
-            HoaDon hoaDonGoc,
-            TaiKhoan nguoiLap,
-            long chenhLech,
-            String trangThai,
-            LocalDateTime taoLuc,
-            String lyDo,
-            String loaiPhieu,
-            HoaDon hoaDonThayThe,
-            long giaTriDuocDoi,
-            String khoaThaoTac) {
-        this(maPhieu, hoaDonGoc, nguoiLap, chenhLech, trangThai, taoLuc, lyDo, loaiPhieu, hoaDonThayThe, giaTriDuocDoi, khoaThaoTac);
-        setId(id);
-    }
-
-    public PhieuDoiTra(
-            long id,
-            String maPhieu,
-            long hoaDonId,
-            long nguoiLapId,
-            long chenhLech,
-            String trangThai,
-            LocalDateTime taoLuc,
-            String lyDo,
-            String loaiPhieu,
-            Long hoaDonThayTheId,
-            long giaTriDuocDoi,
-            String khoaThaoTac) {
-        this(
-                id,
-                maPhieu,
-                new HoaDon(hoaDonId),
-                new TaiKhoan(nguoiLapId),
-                chenhLech,
-                trangThai,
-                taoLuc,
-                lyDo,
-                loaiPhieu,
-                hoaDonThayTheId == null ? null : new HoaDon(hoaDonThayTheId),
-                giaTriDuocDoi,
-                khoaThaoTac);
-    }
-
     public long tinhTongGiaTriHoan() {
         if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
             long tong = 0L;
@@ -124,17 +69,6 @@ public class PhieuDoiTra implements Serializable {
             return tong;
         }
         return Math.max(0L, this.giaTriDuocDoi);
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maPhieu);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maPhieu == null || this.maPhieu.isBlank()) && id > 0) {
-            this.maPhieu = DuLieu.taoMaTuId("DT", 8, id);
-        }
     }
 
     public String getMaPhieu() {
@@ -153,12 +87,12 @@ public class PhieuDoiTra implements Serializable {
         this.hoaDonGoc = hoaDonGoc;
     }
 
-    public long getHoaDonId() {
-        return hoaDonGoc == null ? 0L : hoaDonGoc.getId();
+    public String getMaHoaDonGoc() {
+        return hoaDonGoc == null ? null : hoaDonGoc.getMaHoaDon();
     }
 
-    public void setHoaDonId(long hoaDonId) {
-        this.hoaDonGoc = new HoaDon(hoaDonId);
+    public void setMaHoaDonGoc(String maHoaDon) {
+        this.hoaDonGoc = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
     }
 
     public TaiKhoan getNguoiLap() {
@@ -169,12 +103,12 @@ public class PhieuDoiTra implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public long getNguoiLapId() {
-        return nguoiLap == null ? 0L : nguoiLap.getId();
+    public String getTenDangNhapNguoiLap() {
+        return nguoiLap == null ? null : nguoiLap.getTenDangNhap();
     }
 
-    public void setNguoiLapId(long nguoiLapId) {
-        this.nguoiLap = new TaiKhoan(nguoiLapId);
+    public void setTenDangNhapNguoiLap(String tenDangNhap) {
+        this.nguoiLap = (tenDangNhap == null || tenDangNhap.isBlank()) ? null : new TaiKhoan(tenDangNhap);
     }
 
     public List<ChiTietDoiTra> getDanhSachChiTiet() {
@@ -233,12 +167,12 @@ public class PhieuDoiTra implements Serializable {
         this.hoaDonThayThe = hoaDonThayThe;
     }
 
-    public Long getHoaDonThayTheId() {
-        return hoaDonThayThe == null ? null : hoaDonThayThe.getId();
+    public String getMaHoaDonThayThe() {
+        return hoaDonThayThe == null ? null : hoaDonThayThe.getMaHoaDon();
     }
 
-    public void setHoaDonThayTheId(Long hoaDonThayTheId) {
-        this.hoaDonThayThe = hoaDonThayTheId == null ? null : new HoaDon(hoaDonThayTheId);
+    public void setMaHoaDonThayThe(String maHoaDon) {
+        this.hoaDonThayThe = (maHoaDon == null || maHoaDon.isBlank()) ? null : new HoaDon(maHoaDon);
     }
 
     public long getGiaTriDuocDoi() {
@@ -276,7 +210,7 @@ public class PhieuDoiTra implements Serializable {
 
     @Override
     public String toString() {
-        return "PhieuDoiTra{" + "maPhieu='" + maPhieu + '\'' + ", hoaDonId=" + getHoaDonId()
+        return "PhieuDoiTra{" + "maPhieu='" + maPhieu + '\'' + ", hoaDonGoc=" + (hoaDonGoc != null ? hoaDonGoc.getMaHoaDon() : null)
                 + ", chenhLech=" + chenhLech + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

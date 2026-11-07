@@ -5,19 +5,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class HoaDon implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maHoaDon;
-
     private PhienLamViec phienLamViec;
-
     private TaiKhoan taiKhoan;
-
     private KhachHang khachHang;
-
     private Voucher voucher;
 
     private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
@@ -48,11 +43,6 @@ public class HoaDon implements Serializable {
         setMaHoaDon(maHoaDon);
     }
 
-    public HoaDon(long id) {
-        this();
-        setId(id);
-    }
-
     public HoaDon(
             String maHoaDon,
             PhienLamViec phienLamViec,
@@ -81,68 +71,6 @@ public class HoaDon implements Serializable {
         setGiamGia(giamGia);
         setDiemDung(diemDung);
         setGhiChu(ghiChu);
-    }
-
-    public HoaDon(
-            long id,
-            String maHoaDon,
-            PhienLamViec phienLamViec,
-            TaiKhoan taiKhoan,
-            KhachHang khachHang,
-            Voucher voucher,
-            String hinhThucThanhToan,
-            long tienKhachDua,
-            String trangThai,
-            LocalDateTime taoLuc,
-            LocalDateTime thanhToanLuc,
-            long giamGia,
-            int diemDung,
-            String ghiChu) {
-        this(maHoaDon, phienLamViec, taiKhoan, khachHang, voucher, hinhThucThanhToan, tienKhachDua, trangThai, taoLuc, thanhToanLuc, giamGia, diemDung, ghiChu);
-        setId(id);
-    }
-
-    public HoaDon(
-            long id,
-            String maHoaDon,
-            Long phienLamViecId,
-            Long taiKhoanId,
-            Long khachHangId,
-            long tongTien,
-            String hinhThucThanhToan,
-            long tienKhachDua,
-            long tienThoi,
-            int diemCong,
-            String trangThai,
-            LocalDateTime taoLuc,
-            LocalDateTime thanhToanLuc,
-            String idempotencyKey,
-            long tamTinh,
-            long giamGia,
-            int diemDung,
-            String maVoucher,
-            String ghiChu,
-            String chiTietThanhToan) {
-        setMaHoaDon(maHoaDon);
-        setId(id);
-        setPhienLamViecId(phienLamViecId);
-        setTaiKhoanId(taiKhoanId);
-        setKhachHangId(khachHangId);
-        this.tongTien = Math.max(0L, tongTien);
-        setHinhThucThanhToan(hinhThucThanhToan);
-        setTienKhachDua(tienKhachDua);
-        this.tienThoi = Math.max(0L, tienThoi);
-        this.diemCong = Math.max(0, diemCong);
-        setTrangThai(trangThai);
-        setTaoLuc(taoLuc);
-        setThanhToanLuc(thanhToanLuc);
-        setIdempotencyKey(idempotencyKey);
-        this.tamTinh = Math.max(0L, tamTinh);
-        setGiamGia(giamGia);
-        setDiemDung(diemDung);
-        setMaVoucher(maVoucher);
-        setGhiChu(ghiChu);
-        setChiTietThanhToan(chiTietThanhToan);
     }
 
     public long tinhTamTinh() {
@@ -220,135 +148,48 @@ public class HoaDon implements Serializable {
         this.danhSachChiTiet.add(chiTiet);
     }
 
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, getMaHoaDon());
-    }
-
-
-
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maHoaDon == null || this.maHoaDon.isBlank()) && id > 0) {
-            this.maHoaDon = DuLieu.taoMaTuId("HD", 10, id);
-        }
-    }
-
-
     public String getMaHoaDon() {
         return this.maHoaDon;
     }
-
-
 
     public void setMaHoaDon(String maHoaDon) {
         this.maHoaDon = maHoaDon == null ? null : maHoaDon.trim();
     }
 
-
-    public String getSoHoaDon() {
-        return getMaHoaDon();
-    }
-
-
-    public String soHoaDon() {
-        return getMaHoaDon();
-    }
-
-    public void setSoHoaDon(String soHoaDon) {
-        setMaHoaDon(soHoaDon);
-    }
-
-
     public PhienLamViec getPhienLamViec() {
         return this.phienLamViec;
     }
-
 
     public void setPhienLamViec(PhienLamViec phienLamViec) {
         this.phienLamViec = phienLamViec;
     }
 
-
-    public Long getPhienLamViecId() {
-        return phienLamViec == null ? null : phienLamViec.getId();
-    }
-
-
-    public Long phienLamViecId() {
-        return getPhienLamViecId();
-    }
-
-    public void setPhienLamViecId(Long phienLamViecId) {
-        this.phienLamViec = phienLamViecId == null ? null : new PhienLamViec(phienLamViecId);
-    }
-
-
     public TaiKhoan getTaiKhoan() {
         return this.taiKhoan;
     }
-
 
     public void setTaiKhoan(TaiKhoan taiKhoan) {
         this.taiKhoan = taiKhoan;
     }
 
-
-    public Long getTaiKhoanId() {
-        return taiKhoan == null ? null : taiKhoan.getId();
-    }
-
-
-    public Long taiKhoanId() {
-        return getTaiKhoanId();
-    }
-
-    public void setTaiKhoanId(Long taiKhoanId) {
-        this.taiKhoan = taiKhoanId == null ? null : new TaiKhoan(taiKhoanId);
-    }
-
-
     public KhachHang getKhachHang() {
         return this.khachHang;
     }
-
 
     public void setKhachHang(KhachHang khachHang) {
         this.khachHang = khachHang;
     }
 
-
-    public Long getKhachHangId() {
-        return khachHang == null ? null : khachHang.getId();
-    }
-
-
-    public Long khachHangId() {
-        return getKhachHangId();
-    }
-
-    public void setKhachHangId(Long khachHangId) {
-        this.khachHang = khachHangId == null ? null : new KhachHang(khachHangId);
-    }
-
-
     public Voucher getVoucher() {
         return this.voucher;
     }
-
 
     public void setVoucher(Voucher voucher) {
         this.voucher = voucher;
     }
 
-
     public String getMaVoucher() {
         return voucher == null ? null : voucher.getMaVoucher();
-    }
-
-
-    public String maVoucher() {
-        return getMaVoucher();
     }
 
     public void setMaVoucher(String maVoucher) {
@@ -361,11 +202,9 @@ public class HoaDon implements Serializable {
         }
     }
 
-
     public List<ChiTietHoaDon> getDanhSachChiTiet() {
         return this.danhSachChiTiet;
     }
-
 
     public void setDanhSachChiTiet(List<ChiTietHoaDon> danhSachChiTiet) {
         this.danhSachChiTiet = danhSachChiTiet == null ? new ArrayList<>() : new ArrayList<>(danhSachChiTiet);
@@ -375,117 +214,87 @@ public class HoaDon implements Serializable {
         return this.hinhThucThanhToan;
     }
 
-
-
     public void setHinhThucThanhToan(String hinhThucThanhToan) {
         this.hinhThucThanhToan = hinhThucThanhToan;
     }
-
 
     public long getTienKhachDua() {
         return this.tienKhachDua;
     }
 
-
-
     public void setTienKhachDua(long tienKhachDua) {
         if (tienKhachDua < 0)
-            throw new IllegalArgumentException("Tiá»n khĂ¡ch Ä‘Æ°a khĂ´ng Ä‘Æ°á»£c Ă¢m.");
+            throw new IllegalArgumentException("Tiền khách đưa không được âm.");
         this.tienKhachDua = tienKhachDua;
     }
-
 
     public String getTrangThai() {
         return this.trangThai;
     }
 
-
-
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
     }
-
 
     public LocalDateTime getTaoLuc() {
         return this.taoLuc;
     }
 
-
-
     public void setTaoLuc(LocalDateTime taoLuc) {
         this.taoLuc = taoLuc;
     }
-
 
     public LocalDateTime getThanhToanLuc() {
         return this.thanhToanLuc;
     }
 
-
-
     public void setThanhToanLuc(LocalDateTime thanhToanLuc) {
         this.thanhToanLuc = thanhToanLuc;
     }
-
 
     public String getIdempotencyKey() {
         return this.idempotencyKey;
     }
 
-
-
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
     }
-
 
     public long getGiamGia() {
         return this.giamGia;
     }
 
-
-
     public void setGiamGia(long giamGia) {
         if (giamGia < 0)
-            throw new IllegalArgumentException("Giáº£m giĂ¡ hĂ³a Ä‘Æ¡n khĂ´ng Ä‘Æ°á»£c Ă¢m.");
+            throw new IllegalArgumentException("Giảm giá hóa đơn không được âm.");
         this.giamGia = giamGia;
     }
-
 
     public int getDiemDung() {
         return this.diemDung;
     }
 
-
-
     public void setDiemDung(int diemDung) {
         if (diemDung < 0)
-            throw new IllegalArgumentException("Äiá»ƒm dĂ¹ng khĂ´ng Ä‘Æ°á»£c Ă¢m.");
+            throw new IllegalArgumentException("Điểm dùng không được âm.");
         this.diemDung = diemDung;
     }
-
 
     public String getGhiChu() {
         return this.ghiChu;
     }
 
-
-
     public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
     }
-
 
     public String getChiTietThanhToan() {
         return this.chiTietThanhToan;
     }
 
-
-
     public void setChiTietThanhToan(String chiTietThanhToan) {
         this.chiTietThanhToan = chiTietThanhToan;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -504,7 +313,8 @@ public class HoaDon implements Serializable {
 
     @Override
     public String toString() {
-        return "HoaDon{" + "maHoaDon='" + getMaHoaDon() + '\'' + ", khachHangId=" + getKhachHangId()
+        return "HoaDon{" + "maHoaDon='" + getMaHoaDon() + '\''
+                + ", khachHang=" + (khachHang != null ? khachHang.getMaKhachHang() : null)
                 + ", tamTinh=" + tinhTamTinh() + ", giamGia=" + giamGia + ", tongTien=" + tinhTongTien()
                 + ", trangThai='" + trangThai + '\'' + '}';
     }

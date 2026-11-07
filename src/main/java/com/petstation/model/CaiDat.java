@@ -27,24 +27,12 @@ public class CaiDat implements Serializable {
         setNgayCapNhat(ngayCapNhat);
     }
 
-    public CaiDat(String maCaiDat, String giaTri, Long nguoiCapNhatId, LocalDateTime ngayCapNhat) {
-        this(maCaiDat, giaTri, nguoiCapNhatId == null ? null : new TaiKhoan(nguoiCapNhatId), ngayCapNhat);
-    }
-
     public String getMaCaiDat() {
         return this.maCaiDat;
     }
 
     public void setMaCaiDat(String maCaiDat) {
         this.maCaiDat = maCaiDat == null ? null : maCaiDat.trim();
-    }
-
-    public String getKhoa() {
-        return getMaCaiDat();
-    }
-
-    public void setKhoa(String khoa) {
-        setMaCaiDat(khoa);
     }
 
     public String getGiaTri() {
@@ -63,14 +51,6 @@ public class CaiDat implements Serializable {
         this.nguoiCapNhat = nguoiCapNhat;
     }
 
-    public Long getNguoiCapNhatId() {
-        return nguoiCapNhat == null ? null : nguoiCapNhat.getId();
-    }
-
-    public void setNguoiCapNhatId(Long nguoiCapNhatId) {
-        this.nguoiCapNhat = nguoiCapNhatId == null ? null : new TaiKhoan(nguoiCapNhatId);
-    }
-
     public LocalDateTime getNgayCapNhat() {
         return this.ngayCapNhat;
     }
@@ -85,17 +65,17 @@ public class CaiDat implements Serializable {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        CaiDat that = (CaiDat) o;
-        return Objects.equals(this.maCaiDat, that.maCaiDat);
+        CaiDat caiDat = (CaiDat) o;
+        return Objects.equals(this.getMaCaiDat(), caiDat.getMaCaiDat());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.maCaiDat);
+        return Objects.hash(getMaCaiDat());
     }
 
     @Override
     public String toString() {
-        return "CaiDat{" + "maCaiDat='" + maCaiDat + '\'' + ", giaTri='" + giaTri + '\'' + '}';
+        return "CaiDat{" + "maCaiDat='" + getMaCaiDat() + '\'' + ", giaTri='" + giaTri + '\'' + '}';
     }
 }

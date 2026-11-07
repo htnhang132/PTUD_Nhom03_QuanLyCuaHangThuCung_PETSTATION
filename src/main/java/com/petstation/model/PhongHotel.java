@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,24 +44,6 @@ public class PhongHotel implements Serializable {
         setDatTruoc(datTruoc);
     }
 
-    public PhongHotel(long id) {
-        this();
-        setId(id);
-    }
-
-    public PhongHotel(
-            long id,
-            String ma,
-            String loai,
-            long gia,
-            String trangThai,
-            int sucChua,
-            LichPhong dangO,
-            List<LichPhong> datTruoc) {
-        this(ma, loai, gia, trangThai, sucChua, dangO, datTruoc);
-        setId(id);
-    }
-
     public String getNhanTrangThai() {
         return switch (trangThai != null ? trangThai : "") {
             case "TRONG" -> "Trống";
@@ -81,41 +62,74 @@ public class PhongHotel implements Serializable {
         return Math.max(0, soDem) * gia;
     }
 
-    public String getMa() { return this.ma; }
-    public String getMaPhong() { return this.ma; }
-    public void setMa(String ma) { this.ma = ma == null ? null : ma.trim(); }
-    public void setMaPhong(String maPhong) { setMa(maPhong); }
+    public String getMa() {
+        return this.ma;
+    }
 
-    public String getLoai() { return this.loai; }
-    public void setLoai(String loai) { this.loai = loai; }
+    public String getMaPhong() {
+        return this.ma;
+    }
 
-    public long getGia() { return this.gia; }
+    public void setMa(String ma) {
+        this.ma = ma == null ? null : ma.trim();
+    }
+
+    public void setMaPhong(String maPhong) {
+        setMa(maPhong);
+    }
+
+    public String getLoai() {
+        return this.loai;
+    }
+
+    public void setLoai(String loai) {
+        this.loai = loai;
+    }
+
+    public long getGia() {
+        return this.gia;
+    }
+
     public void setGia(long gia) {
         if (gia < 0) throw new IllegalArgumentException("Giá phòng không được âm.");
         this.gia = gia;
     }
 
-    public String getTrangThai() { return this.trangThai; }
-    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-
-    public int getSucChua() { return this.sucChua; }
-    public void setSucChua(int sucChua) {
-        if (sucChua < 0) throw new IllegalArgumentException("Sức chứa phòng không được âm.");
-        this.sucChua = sucChua;
+    public String getTrangThai() {
+        return this.trangThai;
     }
 
-    public LichPhong getDangO() { return this.dangO; }
-    public void setDangO(LichPhong dangO) { this.dangO = dangO; }
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
 
-    public List<LichPhong> getDatTruoc() { return this.datTruoc; }
-    public void setDatTruoc(List<LichPhong> datTruoc) { this.datTruoc = datTruoc; }
+    public int getSucChua() {
+        return this.sucChua;
+    }
 
-    public long getId() { return DuLieu.layIdCauNoi(this, ma); }
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.ma == null || this.ma.isBlank()) && id > 0) {
-            this.ma = DuLieu.taoMaTuId("PH", 8, id);
-        }
+    public void setSucChua(int sucChua) {
+        if (sucChua < 0) throw new IllegalArgumentException("Sức chứa phòng không được âm.");
+        this.sucChua = forcePositive(sucChua);
+    }
+
+    private int forcePositive(int val) {
+        return Math.max(1, val);
+    }
+
+    public LichPhong getDangO() {
+        return this.dangO;
+    }
+
+    public void setDangO(LichPhong dangO) {
+        this.dangO = dangO;
+    }
+
+    public List<LichPhong> getDatTruoc() {
+        return this.datTruoc;
+    }
+
+    public void setDatTruoc(List<LichPhong> datTruoc) {
+        this.datTruoc = datTruoc;
     }
 
     @Override
@@ -151,10 +165,6 @@ public class PhongHotel implements Serializable {
             this.maHopDong = maHopDong;
         }
 
-        public LichPhong(long id) {
-            setId(id);
-        }
-
         public LichPhong(String maHopDong, String thuCung, String khachHang, LocalDateTime ngayVao, LocalDateTime ngayRa) {
             this.maHopDong = maHopDong;
             this.thuCung = thuCung;
@@ -163,33 +173,45 @@ public class PhongHotel implements Serializable {
             this.ngayRa = ngayRa;
         }
 
-        public LichPhong(long id, String thuCung, String khachHang, LocalDateTime ngayVao, LocalDateTime ngayRa) {
-            this(DuLieu.taoMaTuId("HDHT", 6, id), thuCung, khachHang, ngayVao, ngayRa);
-            setId(id);
+        public String getMaHopDong() {
+            return this.maHopDong;
         }
 
-        public String getMaHopDong() { return this.maHopDong; }
-        public void setMaHopDong(String maHopDong) { this.maHopDong = maHopDong; }
-
-        public long getId() { return DuLieu.layIdCauNoi(this, maHopDong); }
-        public void setId(long id) {
-            DuLieu.luuIdCauNoi(this, id);
-            if ((this.maHopDong == null || this.maHopDong.isBlank()) && id > 0) {
-                this.maHopDong = DuLieu.taoMaTuId("HDHT", 6, id);
-            }
+        public void setMaHopDong(String maHopDong) {
+            this.maHopDong = maHopDong;
         }
 
-        public String getThuCung() { return this.thuCung; }
-        public void setThuCung(String thuCung) { this.thuCung = thuCung; }
+        public String getThuCung() {
+            return this.thuCung;
+        }
 
-        public String getKhachHang() { return this.khachHang; }
-        public void setKhachHang(String khachHang) { this.khachHang = khachHang; }
+        public void setThuCung(String thuCung) {
+            this.thuCung = thuCung;
+        }
 
-        public LocalDateTime getNgayVao() { return this.ngayVao; }
-        public void setNgayVao(LocalDateTime ngayVao) { this.ngayVao = ngayVao; }
+        public String getKhachHang() {
+            return this.khachHang;
+        }
 
-        public LocalDateTime getNgayRa() { return this.ngayRa; }
-        public void setNgayRa(LocalDateTime ngayRa) { this.ngayRa = ngayRa; }
+        public void setKhachHang(String khachHang) {
+            this.khachHang = khachHang;
+        }
+
+        public LocalDateTime getNgayVao() {
+            return this.ngayVao;
+        }
+
+        public void setNgayVao(LocalDateTime ngayVao) {
+            this.ngayVao = ngayVao;
+        }
+
+        public LocalDateTime getNgayRa() {
+            return this.ngayRa;
+        }
+
+        public void setNgayRa(LocalDateTime ngayRa) {
+            this.ngayRa = ngayRa;
+        }
 
         @Override
         public boolean equals(Object o) {

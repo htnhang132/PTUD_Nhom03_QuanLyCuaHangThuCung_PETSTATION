@@ -4,13 +4,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class LoHang implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maLo;
-
     private SanPham sanPham;
     private String soLo;
     private LocalDate ngaySanXuat;
@@ -32,11 +30,6 @@ public class LoHang implements Serializable {
         setMaLo(maLo);
     }
 
-    public LoHang(long id) {
-        this();
-        setId(id);
-    }
-
     public LoHang(
             String maLo,
             SanPham sanPham,
@@ -49,6 +42,7 @@ public class LoHang implements Serializable {
             int soLuongTon,
             LocalDate ngayKiemKe,
             String trangThai) {
+        this();
         setMaLo(maLo);
         setSanPham(sanPham);
         setSoLo(soLo);
@@ -60,51 +54,6 @@ public class LoHang implements Serializable {
         setSoLuongTon(soLuongTon);
         setNgayKiemKe(ngayKiemKe);
         setTrangThai(trangThai);
-    }
-
-    public LoHang(
-            long id,
-            String maLo,
-            SanPham sanPham,
-            String soLo,
-            LocalDate ngaySanXuat,
-            LocalDate ngayNhap,
-            LocalDate hanSuDung,
-            long giaNhap,
-            int soLuongNhap,
-            int soLuongTon,
-            LocalDate ngayKiemKe,
-            String trangThai) {
-        this(maLo, sanPham, soLo, ngaySanXuat, ngayNhap, hanSuDung, giaNhap, soLuongNhap, soLuongTon, ngayKiemKe, trangThai);
-        setId(id);
-    }
-
-    public LoHang(
-            long id,
-            String maLo,
-            long sanPhamId,
-            String soLo,
-            LocalDate ngaySanXuat,
-            LocalDate ngayNhap,
-            LocalDate hanSuDung,
-            long giaNhap,
-            int soLuongNhap,
-            int soLuongTon,
-            LocalDate ngayKiemKe,
-            String trangThai) {
-        this(
-                id,
-                maLo,
-                new SanPham(sanPhamId),
-                soLo,
-                ngaySanXuat,
-                ngayNhap,
-                hanSuDung,
-                giaNhap,
-                soLuongNhap,
-                soLuongTon,
-                ngayKiemKe,
-                trangThai);
     }
 
     public long tinhGiaTriTonKho() {
@@ -133,17 +82,6 @@ public class LoHang implements Serializable {
         return conLai >= 0 && conLai <= soNgayCanhBao;
     }
 
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maLo);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maLo == null || this.maLo.isBlank()) && id > 0) {
-            this.maLo = DuLieu.taoMaTuId("LO", 8, id);
-        }
-    }
-
     public String getMaLo() {
         return this.maLo;
     }
@@ -160,12 +98,12 @@ public class LoHang implements Serializable {
         this.sanPham = sanPham;
     }
 
-    public long getSanPhamId() {
-        return (sanPham == null || sanPham.getId() == null) ? 0L : sanPham.getId();
+    public String getMaSanPham() {
+        return sanPham == null ? null : sanPham.getMaSanPham();
     }
 
-    public void setSanPhamId(long sanPhamId) {
-        this.sanPham = new SanPham(sanPhamId);
+    public void setMaSanPham(String maSanPham) {
+        this.sanPham = (maSanPham == null || maSanPham.isBlank()) ? null : new SanPham(maSanPham);
     }
 
     public String getSoLo() {
@@ -263,7 +201,7 @@ public class LoHang implements Serializable {
 
     @Override
     public String toString() {
-        return "LoHang{" + "maLo='" + maLo + '\'' + ", sanPhamId=" + getSanPhamId() + ", soLo='" + soLo
+        return "LoHang{" + "maLo='" + maLo + '\'' + ", sanPham=" + (sanPham != null ? sanPham.getMaSanPham() : null) + ", soLo='" + soLo
                 + '\'' + ", hanSuDung=" + hanSuDung + ", soLuongTon=" + soLuongTon + ", trangThai='" + trangThai + '\''
                 + '}';
     }

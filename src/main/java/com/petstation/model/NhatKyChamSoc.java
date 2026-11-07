@@ -3,19 +3,14 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class NhatKyChamSoc implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maNhatKy;
-
     private HopDongLuuTru hopDong;
-
     private PhieuTiepNhanSpa phieuSpa;
-
     private NhanVien nhanVien;
-
     private LocalDateTime thoiGian;
     private String anUong;
     private String veSinh;
@@ -35,11 +30,6 @@ public class NhatKyChamSoc implements Serializable {
         setMaNhatKy(maNhatKy);
     }
 
-    public NhatKyChamSoc(long id) {
-        this();
-        setId(id);
-    }
-
     public NhatKyChamSoc(
             String maNhatKy,
             HopDongLuuTru hopDong,
@@ -54,6 +44,7 @@ public class NhatKyChamSoc implements Serializable {
             String anhTruoc,
             String anhSau,
             String tepDinhKem) {
+        this();
         setMaNhatKy(maNhatKy);
         setHopDong(hopDong);
         setPhieuSpa(phieuSpa);
@@ -69,70 +60,8 @@ public class NhatKyChamSoc implements Serializable {
         setTepDinhKem(tepDinhKem);
     }
 
-    public NhatKyChamSoc(
-            long id,
-            String maNhatKy,
-            HopDongLuuTru hopDong,
-            PhieuTiepNhanSpa phieuSpa,
-            NhanVien nhanVien,
-            LocalDateTime thoiGian,
-            String anUong,
-            String veSinh,
-            String tinhTrang,
-            String huongDanThuoc,
-            String daThucHien,
-            String anhTruoc,
-            String anhSau,
-            String tepDinhKem) {
-        this(maNhatKy, hopDong, phieuSpa, nhanVien, thoiGian, anUong, veSinh, tinhTrang, huongDanThuoc, daThucHien, anhTruoc, anhSau, tepDinhKem);
-        setId(id);
-    }
-
-    public NhatKyChamSoc(
-            long id,
-            String maNhatKy,
-            Long hopDongId,
-            Long spaId,
-            long nhanVienId,
-            LocalDateTime thoiGian,
-            String anUong,
-            String veSinh,
-            String tinhTrang,
-            String huongDanThuoc,
-            String daThucHien,
-            String anhTruoc,
-            String anhSau,
-            String tepDinhKem) {
-        this(
-                id,
-                maNhatKy,
-                hopDongId == null ? null : new HopDongLuuTru(hopDongId),
-                spaId == null ? null : new PhieuTiepNhanSpa(spaId),
-                new NhanVien(nhanVienId),
-                thoiGian,
-                anUong,
-                veSinh,
-                tinhTrang,
-                huongDanThuoc,
-                daThucHien,
-                anhTruoc,
-                anhSau,
-                tepDinhKem);
-    }
-
     public boolean kiemTraCoHinhAnhDoiChung() {
         return (anhTruoc != null && !anhTruoc.isBlank()) || (anhSau != null && !anhSau.isBlank());
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
-            this.maNhatKy = DuLieu.taoMaTuId("NK", 8, id);
-        }
     }
 
     public String getMaNhatKy() {
@@ -151,12 +80,12 @@ public class NhatKyChamSoc implements Serializable {
         this.hopDong = hopDong;
     }
 
-    public Long getHopDongId() {
-        return hopDong == null ? null : hopDong.getId();
+    public String getMaHopDong() {
+        return hopDong == null ? null : hopDong.getMaHopDong();
     }
 
-    public void setHopDongId(Long hopDongId) {
-        this.hopDong = hopDongId == null ? null : new HopDongLuuTru(hopDongId);
+    public void setMaHopDong(String maHopDong) {
+        this.hopDong = (maHopDong == null || maHopDong.isBlank()) ? null : new HopDongLuuTru(maHopDong);
     }
 
     public PhieuTiepNhanSpa getPhieuSpa() {
@@ -167,12 +96,12 @@ public class NhatKyChamSoc implements Serializable {
         this.phieuSpa = phieuSpa;
     }
 
-    public Long getSpaId() {
-        return phieuSpa == null ? null : phieuSpa.getId();
+    public String getMaPhieuSpa() {
+        return phieuSpa == null ? null : phieuSpa.getMaPhieu();
     }
 
-    public void setSpaId(Long spaId) {
-        this.phieuSpa = spaId == null ? null : new PhieuTiepNhanSpa(spaId);
+    public void setMaPhieuSpa(String maPhieuSpa) {
+        this.phieuSpa = (maPhieuSpa == null || maPhieuSpa.isBlank()) ? null : new PhieuTiepNhanSpa(maPhieuSpa);
     }
 
     public NhanVien getNhanVien() {
@@ -183,12 +112,12 @@ public class NhatKyChamSoc implements Serializable {
         this.nhanVien = nhanVien;
     }
 
-    public long getNhanVienId() {
-        return nhanVien == null ? 0L : nhanVien.getId();
+    public String getMaNhanVien() {
+        return nhanVien == null ? null : nhanVien.getMaNhanVien();
     }
 
-    public void setNhanVienId(long nhanVienId) {
-        this.nhanVien = new NhanVien(nhanVienId);
+    public void setMaNhanVien(String maNhanVien) {
+        this.nhanVien = (maNhanVien == null || maNhanVien.isBlank()) ? null : new NhanVien(maNhanVien);
     }
 
     public LocalDateTime getThoiGian() {
@@ -280,7 +209,9 @@ public class NhatKyChamSoc implements Serializable {
 
     @Override
     public String toString() {
-        return "NhatKyChamSoc{" + "maNhatKy='" + maNhatKy + '\'' + ", hopDongId=" + getHopDongId()
-                + ", spaId=" + getSpaId() + ", nhanVienId=" + getNhanVienId() + '}';
+        return "NhatKyChamSoc{" + "maNhatKy='" + maNhatKy + '\''
+                + ", hopDong=" + (hopDong != null ? hopDong.getMaHopDong() : null)
+                + ", phieuSpa=" + (phieuSpa != null ? phieuSpa.getMaPhieu() : null)
+                + ", nhanVien=" + (nhanVien != null ? nhanVien.getMaNhanVien() : null) + '}';
     }
 }

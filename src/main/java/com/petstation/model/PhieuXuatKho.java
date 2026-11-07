@@ -5,17 +5,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class PhieuXuatKho implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maPhieuXuat;
-
     private TaiKhoan nguoiLap;
-
     private List<ChiTietPhieuXuat> danhSachChiTiet = new ArrayList<>();
-
     private String loaiXuat;
     private String lyDo;
     private long tongGiaTri;
@@ -32,11 +28,6 @@ public class PhieuXuatKho implements Serializable {
         setMaPhieuXuat(maPhieuXuat);
     }
 
-    public PhieuXuatKho(long id) {
-        this();
-        setId(id);
-    }
-
     public PhieuXuatKho(
             String maPhieuXuat,
             TaiKhoan nguoiLap,
@@ -44,37 +35,13 @@ public class PhieuXuatKho implements Serializable {
             String lyDo,
             String trangThai,
             LocalDateTime taoLuc) {
+        this();
         setMaPhieuXuat(maPhieuXuat);
         setNguoiLap(nguoiLap);
         setLoaiXuat(loaiXuat);
         setLyDo(lyDo);
         setTrangThai(trangThai);
         setTaoLuc(taoLuc);
-    }
-
-    public PhieuXuatKho(
-            long id,
-            String maPhieuXuat,
-            TaiKhoan nguoiLap,
-            String loaiXuat,
-            String lyDo,
-            String trangThai,
-            LocalDateTime taoLuc) {
-        this(maPhieuXuat, nguoiLap, loaiXuat, lyDo, trangThai, taoLuc);
-        setId(id);
-    }
-
-    public PhieuXuatKho(
-            long id,
-            String maPhieuXuat,
-            long nguoiLapId,
-            String loaiXuat,
-            String lyDo,
-            long tongGiaTri,
-            String trangThai,
-            LocalDateTime taoLuc) {
-        this(id, maPhieuXuat, new TaiKhoan(nguoiLapId), loaiXuat, lyDo, trangThai, taoLuc);
-        this.tongGiaTri = Math.max(0L, tongGiaTri);
     }
 
     public long tinhTongGiaTri() {
@@ -94,15 +61,8 @@ public class PhieuXuatKho implements Serializable {
         return tinhTongGiaTri();
     }
 
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, getMaPhieuXuat());
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maPhieuXuat == null || this.maPhieuXuat.isBlank()) && id > 0) {
-            this.maPhieuXuat = DuLieu.taoMaTuId("PX", 8, id);
-        }
+    public void setTongGiaTri(long tongGiaTri) {
+        this.tongGiaTri = Math.max(0L, tongGiaTri);
     }
 
     public String getMaPhieuXuat() {
@@ -129,12 +89,12 @@ public class PhieuXuatKho implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public Long getNguoiLapId() {
-        return nguoiLap == null ? null : nguoiLap.getId();
+    public String getTenDangNhapNguoiLap() {
+        return nguoiLap == null ? null : nguoiLap.getTenDangNhap();
     }
 
-    public void setNguoiLapId(Long nguoiLapId) {
-        this.nguoiLap = nguoiLapId == null ? null : new TaiKhoan(nguoiLapId);
+    public void setTenDangNhapNguoiLap(String tenDangNhap) {
+        this.nguoiLap = (tenDangNhap == null || tenDangNhap.isBlank()) ? null : new TaiKhoan(tenDangNhap);
     }
 
     public List<ChiTietPhieuXuat> getDanhSachChiTiet() {
@@ -201,7 +161,7 @@ public class PhieuXuatKho implements Serializable {
 
     @Override
     public String toString() {
-        return "PhieuXuatKho{" + "maPhieuXuat='" + getMaPhieuXuat() + '\'' + ", nguoiLapId=" + getNguoiLapId()
+        return "PhieuXuatKho{" + "maPhieuXuat='" + getMaPhieuXuat() + '\'' + ", nguoiLap=" + (nguoiLap != null ? nguoiLap.getTenDangNhap() : null)
                 + ", loaiXuat='" + loaiXuat + '\'' + ", tongGiaTri=" + tinhTongGiaTri() + '}';
     }
 }

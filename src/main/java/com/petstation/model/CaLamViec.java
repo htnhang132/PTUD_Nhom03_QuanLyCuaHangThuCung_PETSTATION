@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalTime;
@@ -42,23 +41,6 @@ public class CaLamViec implements Serializable {
         setHeSoLuong(heSoLuong);
     }
 
-    public CaLamViec(long id) {
-        this();
-        setId(id);
-    }
-
-    public CaLamViec(
-            long id,
-            String maCa,
-            String tenCa,
-            LocalTime gioBatDau,
-            LocalTime gioKetThuc,
-            int soNhanSuToiThieu,
-            double heSoLuong) {
-        this(maCa, tenCa, gioBatDau, gioKetThuc, soNhanSuToiThieu, heSoLuong);
-        setId(id);
-    }
-
     public double tinhSoGioLam() {
         if (gioBatDau == null || gioKetThuc == null) {
             return 0.0;
@@ -94,14 +76,6 @@ public class CaLamViec implements Serializable {
         this.heSoLuong = heSoLuong;
     }
 
-    public long getId() { return DuLieu.layIdCauNoi(this, maCa); }
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maCa == null || this.maCa.isBlank()) && id > 0) {
-            this.maCa = DuLieu.taoMaTuId("CA", 2, id);
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -117,6 +91,7 @@ public class CaLamViec implements Serializable {
 
     @Override
     public String toString() {
-        return "CaLamViec{" + "maCa='" + maCa + '\'' + ", tenCa='" + tenCa + '\'' + ", gioBatDau=" + gioBatDau + ", gioKetThuc=" + gioKetThuc + '}';
+        return "CaLamViec{" + "maCa='" + maCa + '\'' + ", tenCa='" + tenCa + '\''
+                + ", gioBatDau=" + gioBatDau + ", gioKetThuc=" + gioKetThuc + '}';
     }
 }

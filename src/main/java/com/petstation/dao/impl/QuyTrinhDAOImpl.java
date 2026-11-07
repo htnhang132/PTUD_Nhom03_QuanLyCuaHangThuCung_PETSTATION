@@ -50,30 +50,15 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
     }
 
     public java.util.List<Object[]> layPhongChiTiet() {
-        List<Object[]> rows = truyVan(
-                "SELECT ma_phong AS ma_khoa, ma_phong, loai_phong, gia_dem, trang_thai, suc_chua FROM phong_hotel ORDER BY ma_phong");
-        for (Object[] r : rows) {
-            if (r[0] != null) {
-                r[0] = DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
-            }
-        }
-        return rows;
+        return truyVan(
+                "SELECT ma_phong, loai_phong, gia_dem, trang_thai, suc_chua FROM phong_hotel ORDER BY ma_phong");
     }
 
     public java.util.List<Object[]> layLichPhong() {
-        List<Object[]> rows = truyVan(
+        return truyVan(
                 "SELECT h.ma_phong, h.ma_hop_dong, t.ten, k.ho_ten, h.ngay_vao, h.ngay_ra_du_kien, h.trang_thai "
                         + "FROM hop_dong_luu_tru h JOIN thu_cung t ON t.ma_thu_cung=h.ma_thu_cung JOIN "
                         + "khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE h.trang_thai "
                         + "IN('DA_DAT','DANG_O') ORDER BY h.ngay_vao, h.ma_hop_dong");
-        for (Object[] r : rows) {
-            if (r[0] != null) {
-                r[0] = DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
-            }
-            if (r[1] != null) {
-                r[1] = DuLieu.layIdCauNoi(null, String.valueOf(r[1]));
-            }
-        }
-        return rows;
     }
 }

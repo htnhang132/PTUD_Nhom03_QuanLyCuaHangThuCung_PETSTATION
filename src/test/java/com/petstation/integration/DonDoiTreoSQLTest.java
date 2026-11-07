@@ -35,8 +35,8 @@ class DonDoiTreoSQLTest {
                 capNhat("INSERT INTO tai_khoan(ma_nhan_vien,ten_dang_nhap,mat_khau_hash,vai_tro)"
                     + " VALUES(?,?,?,'NHAN_VIEN_BAN_HANG')", maNhanVien, ma, "test-hash");
                 long tk = com.petstation.util.DuLieu.layIdCauNoi(null, ma);
-                TaiKhoan taiKhoan = new TaiKhoan(); taiKhoan.setId(tk); taiKhoan.setTenDangNhap(ma);
-                NhanVien nhanVien = new NhanVien(); nhanVien.setId(nv); nhanVien.setMaNhanVien(maNhanVien);
+                TaiKhoan taiKhoan = new TaiKhoan(ma);
+                NhanVien nhanVien = new NhanVien(maNhanVien);
                 PhienDangNhapService.datPhienDangNhap(new PhienDangNhap(taiKhoan,
                     nhanVien, EnumSet.allOf(Quyen.class)));
                 maHang = "SP" + ma;

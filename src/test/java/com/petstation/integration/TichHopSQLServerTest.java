@@ -101,28 +101,28 @@ class TichHopSQLServerTest {
                         maNhanVien,
                         org.mindrot.jbcrypt.BCrypt.hashpw(
                                 "Integration@123", org.mindrot.jbcrypt.BCrypt.gensalt(4)));
+        NhanVien nvQuanLy =
+                new NhanVien(
+                        maNhanVien,
+                        "Integration Manager",
+                        null,
+                        "IT" + hauTo,
+                        null,
+                        "Cửa hàng trưởng",
+                        LocalDate.now(),
+                        true);
         quanLy =
                 new PhienDangNhap(
                         new TaiKhoan(
-                                taiKhoan,
-                                nhanVien,
                                 maNhanVien,
+                                nvQuanLy,
                                 "hash",
                                 VaiTro.QUAN_LY_CUA_HANG,
                                 TrangThaiTaiKhoan.HOAT_DONG,
                                 0,
                                 null,
                                 false),
-                        new NhanVien(
-                                nhanVien,
-                                maNhanVien,
-                                "Integration Manager",
-                                null,
-                                "IT" + hauTo,
-                                null,
-                                "Cửa hàng trưởng",
-                                LocalDate.now(),
-                                true),
+                        nvQuanLy,
                         EnumSet.allOf(Quyen.class));
         datPhienDangNhap(quanLy);
         khachHang =
@@ -874,9 +874,8 @@ class TichHopSQLServerTest {
         datPhienDangNhap(
                 new PhienDangNhap(
                         new TaiKhoan(
-                                tk.getId(),
-                                tk.getIdNhanVien(),
                                 tk.getTenDangNhap(),
+                                quanLy.getNhanVien(),
                                 tk.getMaBamMatKhau(),
                                 vaiTro,
                                 tk.getTrangThai(),
@@ -1838,7 +1837,7 @@ class TichHopSQLServerTest {
                                                     500000,
                                                     "",
                                                     CaThuNganService.HinhThucBanGiao.BAN_GIAO,
-                                                    quanLy.getTaiKhoan().getId()));
+                                                    com.petstation.util.DuLieu.layIdCauNoi(quanLy.getTaiKhoan(), quanLy.getTaiKhoan().getTenDangNhap())));
                     long id = ca.layId();
                     ca.dong(
                             499000,
@@ -2121,7 +2120,7 @@ class TichHopSQLServerTest {
                                     .orElseThrow();
                     map.moPhong(phong);
                     assertThat(chuyen.get(chuyen.size() - 1)).isEqualTo(MaManHinh.DAT_PHONG_LUU_TRU);
-                    assertThat(gio.getQuyTrinh().getPhongHotel()).isEqualTo(phong.getId());
+                    assertThat(gio.getQuyTrinh().getPhongHotel()).isEqualTo(com.petstation.util.DuLieu.layIdCauNoi(phong, phong.getMa()));
                     assertThat(gio.getQuyTrinh().getMaPhongHotel()).isEqualTo(maPhong);
                     LuuTruService.kiemTraVao(id);
                     phong =
@@ -2543,9 +2542,8 @@ class TichHopSQLServerTest {
                     datPhienDangNhap(
                             new PhienDangNhap(
                                     new TaiKhoan(
-                                            taiKhoan,
-                                            nhanVien,
                                             maNhanVien,
+                                            quanLy.getNhanVien(),
                                             "hash",
                                             VaiTro.NHAN_VIEN_SPA_HOTEL,
                                             TrangThaiTaiKhoan.HOAT_DONG,

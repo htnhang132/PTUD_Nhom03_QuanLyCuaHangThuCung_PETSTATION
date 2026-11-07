@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -45,47 +44,6 @@ public class TaiKhoan implements Serializable {
         setSoLanDangNhapSai(soLanDangNhapSai);
         setKhoaDenLuc(khoaDenLuc);
         setBatBuocDoiMatKhau(batBuocDoiMatKhau);
-    }
-
-    public TaiKhoan(long id) {
-        this();
-        setId(id);
-    }
-
-    public TaiKhoan(
-            long id,
-            NhanVien nhanVien,
-            String tenDangNhap,
-            String maBamMatKhau,
-            VaiTro vaiTro,
-            TrangThaiTaiKhoan trangThai,
-            int soLanDangNhapSai,
-            LocalDateTime khoaDenLuc,
-            boolean batBuocDoiMatKhau) {
-        this(tenDangNhap, nhanVien, maBamMatKhau, vaiTro, trangThai, soLanDangNhapSai, khoaDenLuc, batBuocDoiMatKhau);
-        setId(id);
-    }
-
-    public TaiKhoan(
-            long id,
-            long idNhanVien,
-            String tenDangNhap,
-            String maBamMatKhau,
-            VaiTro vaiTro,
-            TrangThaiTaiKhoan trangThai,
-            int soLanDangNhapSai,
-            LocalDateTime khoaDenLuc,
-            boolean batBuocDoiMatKhau) {
-        this(
-                id,
-                new NhanVien(idNhanVien),
-                tenDangNhap,
-                maBamMatKhau,
-                vaiTro,
-                trangThai,
-                soLanDangNhapSai,
-                khoaDenLuc,
-                batBuocDoiMatKhau);
     }
 
     public boolean isTamThoiDaKhoa(LocalDateTime hienTai) {
@@ -164,29 +122,6 @@ public class TaiKhoan implements Serializable {
 
     public void setBatBuocDoiMatKhau(boolean batBuocDoiMatKhau) {
         this.batBuocDoiMatKhau = batBuocDoiMatKhau;
-    }
-
-    public long getId() {
-        if (nhanVien != null && nhanVien.getId() > 0) {
-            return nhanVien.getId();
-        }
-        return DuLieu.layIdCauNoi(this, tenDangNhap);
-    }
-
-    public void setId(long id) {
-        if (id < 0) throw new IllegalArgumentException("Mã định danh tài khoản không hợp lệ.");
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.tenDangNhap == null || this.tenDangNhap.isBlank()) && id > 0) {
-            this.tenDangNhap = DuLieu.taoMaTuId("TK", 4, id);
-        }
-    }
-
-    public long getIdNhanVien() {
-        return nhanVien == null ? 0L : nhanVien.getId();
-    }
-
-    public void setIdNhanVien(long idNhanVien) {
-        this.nhanVien = new NhanVien(idNhanVien);
     }
 
     @Override

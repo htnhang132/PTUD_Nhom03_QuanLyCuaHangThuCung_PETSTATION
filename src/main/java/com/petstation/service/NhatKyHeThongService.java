@@ -47,11 +47,12 @@ public final class NhatKyHeThongService {
             String maDoiTuong,
             String giaTriCu,
             String giaTriMoi) throws Exception {
+        com.petstation.model.TaiKhoan tk = layPhienHienTai() != null ? layPhien().getTaiKhoan() : (layTenDangNhap() != null ? new com.petstation.model.TaiKhoan(layTenDangNhap()) : null);
         nhatKyHeThongDAO.them(
                 ketNoi,
                 new com.petstation.model.NhatKyHeThong(
-                        0,
-                        layIdTaiKhoan(),
+                        com.petstation.util.DuLieu.taoMa("SYS"),
+                        tk,
                         thaoTac,
                         loaiDoiTuong,
                         maDoiTuong,

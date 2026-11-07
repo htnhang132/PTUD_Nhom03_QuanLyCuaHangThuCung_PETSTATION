@@ -3,13 +3,11 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class NhatKyHeThong implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maNhatKy;
-
     private TaiKhoan nguoiThucHien;
     private String thaoTac;
     private String kieuThucThe;
@@ -28,11 +26,6 @@ public class NhatKyHeThong implements Serializable {
         setMaNhatKy(maNhatKy);
     }
 
-    public NhatKyHeThong(long id) {
-        this();
-        setId(id);
-    }
-
     public NhatKyHeThong(
             String maNhatKy,
             TaiKhoan nguoiThucHien,
@@ -43,6 +36,7 @@ public class NhatKyHeThong implements Serializable {
             String giaTriMoi,
             String ghiChu,
             LocalDateTime thoiDiemXayRa) {
+        this();
         setMaNhatKy(maNhatKy);
         setNguoiThucHien(nguoiThucHien);
         setThaoTac(thaoTac);
@@ -52,53 +46,6 @@ public class NhatKyHeThong implements Serializable {
         setGiaTriMoi(giaTriMoi);
         setGhiChu(ghiChu);
         setThoiDiemXayRa(thoiDiemXayRa);
-    }
-
-    public NhatKyHeThong(
-            long id,
-            TaiKhoan nguoiThucHien,
-            String thaoTac,
-            String kieuThucThe,
-            String idThucThe,
-            String giaTriCu,
-            String giaTriMoi,
-            String ghiChu,
-            LocalDateTime thoiDiemXayRa) {
-        this(DuLieu.taoMaTuId("SYS", 8, id), nguoiThucHien, thaoTac, kieuThucThe, idThucThe, giaTriCu, giaTriMoi, ghiChu, thoiDiemXayRa);
-        setId(id);
-    }
-
-    public NhatKyHeThong(
-            long id,
-            Long idNguoiThucHienTaiKhoan,
-            String thaoTac,
-            String kieuThucThe,
-            String idThucThe,
-            String giaTriCu,
-            String giaTriMoi,
-            String ghiChu,
-            LocalDateTime thoiDiemXayRa) {
-        this(
-                id,
-                idNguoiThucHienTaiKhoan == null ? null : new TaiKhoan(idNguoiThucHienTaiKhoan),
-                thaoTac,
-                kieuThucThe,
-                idThucThe,
-                giaTriCu,
-                giaTriMoi,
-                ghiChu,
-                thoiDiemXayRa);
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
-            this.maNhatKy = DuLieu.taoMaTuId("SYS", 8, id);
-        }
     }
 
     public String getMaNhatKy() {
@@ -117,12 +64,12 @@ public class NhatKyHeThong implements Serializable {
         this.nguoiThucHien = nguoiThucHien;
     }
 
-    public Long getIdNguoiThucHienTaiKhoan() {
-        return nguoiThucHien == null ? null : nguoiThucHien.getId();
+    public String getTenDangNhapNguoiThucHien() {
+        return nguoiThucHien == null ? null : nguoiThucHien.getTenDangNhap();
     }
 
-    public void setIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) {
-        this.nguoiThucHien = idNguoiThucHienTaiKhoan == null ? null : new TaiKhoan(idNguoiThucHienTaiKhoan);
+    public void setTenDangNhapNguoiThucHien(String tenDangNhap) {
+        this.nguoiThucHien = (tenDangNhap == null || tenDangNhap.isBlank()) ? null : new TaiKhoan(tenDangNhap);
     }
 
     public String getThaoTac() {
@@ -198,7 +145,7 @@ public class NhatKyHeThong implements Serializable {
 
     @Override
     public String toString() {
-        return "NhatKyHeThong{" + "maNhatKy='" + maNhatKy + '\'' + ", idNguoiThucHienTaiKhoan=" + getIdNguoiThucHienTaiKhoan()
+        return "NhatKyHeThong{" + "maNhatKy='" + maNhatKy + '\'' + ", nguoiThucHien=" + (nguoiThucHien != null ? nguoiThucHien.getTenDangNhap() : null)
                 + ", thaoTac='" + thaoTac + '\'' + ", kieuThucThe='" + kieuThucThe + '\'' + '}';
     }
 }

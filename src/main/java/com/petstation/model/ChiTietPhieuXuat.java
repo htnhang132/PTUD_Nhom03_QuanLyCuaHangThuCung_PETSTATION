@@ -2,24 +2,17 @@ package com.petstation.model;
 
 import java.io.Serializable;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class ChiTietPhieuXuat implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private PhieuXuatKho phieuXuat;
-
     private LoHang loHang;
     private int soLuong;
     private long giaTri;
 
     public ChiTietPhieuXuat() {
         this.soLuong = 1;
-    }
-
-    public ChiTietPhieuXuat(long id) {
-        this();
-        setId(id);
     }
 
     public ChiTietPhieuXuat(PhieuXuatKho phieuXuat, LoHang loHang, int soLuong, long giaTri) {
@@ -29,29 +22,11 @@ public class ChiTietPhieuXuat implements Serializable {
         this.giaTri = Math.max(0L, giaTri);
     }
 
-    public ChiTietPhieuXuat(long id, PhieuXuatKho phieuXuat, LoHang loHang, int soLuong, long giaTri) {
-        this(phieuXuat, loHang, soLuong, giaTri);
-        setId(id);
-    }
-
-    public ChiTietPhieuXuat(long id, long phieuXuatId, long loHangId, int soLuong, long giaTri) {
-        this(id, new PhieuXuatKho(phieuXuatId), new LoHang(loHangId), soLuong, giaTri);
-    }
-
     public long tinhGiaTriXuat() {
         if (loHang != null && loHang.getGiaNhap() > 0 && soLuong > 0) {
             return (long) soLuong * loHang.getGiaNhap();
         }
         return Math.max(0L, this.giaTri);
-    }
-
-    public Long getId() {
-        String key = (phieuXuat != null ? phieuXuat.getSoPhieu() : "") + "_" + (loHang != null ? loHang.getMaLo() : "");
-        return DuLieu.layIdCauNoiObj(this, key);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
     }
 
     public PhieuXuatKho getPhieuXuat() {
@@ -62,12 +37,12 @@ public class ChiTietPhieuXuat implements Serializable {
         this.phieuXuat = phieuXuat;
     }
 
-    public long getPhieuXuatId() {
-        return phieuXuat == null ? 0L : phieuXuat.getId();
+    public String getMaPhieuXuat() {
+        return phieuXuat == null ? null : phieuXuat.getMaPhieuXuat();
     }
 
-    public void setPhieuXuatId(long phieuXuatId) {
-        this.phieuXuat = new PhieuXuatKho(phieuXuatId);
+    public void setMaPhieuXuat(String maPhieuXuat) {
+        this.phieuXuat = (maPhieuXuat == null || maPhieuXuat.isBlank()) ? null : new PhieuXuatKho(maPhieuXuat);
     }
 
     public LoHang getLoHang() {
@@ -78,12 +53,12 @@ public class ChiTietPhieuXuat implements Serializable {
         this.loHang = loHang;
     }
 
-    public long getLoHangId() {
-        return loHang == null ? 0L : loHang.getId();
+    public String getMaLo() {
+        return loHang == null ? null : loHang.getMaLo();
     }
 
-    public void setLoHangId(long loHangId) {
-        this.loHang = new LoHang(loHangId);
+    public void setMaLo(String maLo) {
+        this.loHang = (maLo == null || maLo.isBlank()) ? null : new LoHang(maLo);
     }
 
     public int getSoLuong() {
@@ -100,7 +75,7 @@ public class ChiTietPhieuXuat implements Serializable {
         return tinhGiaTriXuat();
     }
 
-    void napGiaTriSnapshot(long giaTri) {
+    public void setGiaTri(long giaTri) {
         this.giaTri = Math.max(0L, giaTri);
     }
 
@@ -122,7 +97,8 @@ public class ChiTietPhieuXuat implements Serializable {
 
     @Override
     public String toString() {
-        return "ChiTietPhieuXuat{" + "phieuXuatId=" + getPhieuXuatId() + ", loHangId=" + getLoHangId()
+        return "ChiTietPhieuXuat{" + "phieuXuat=" + (phieuXuat != null ? phieuXuat.getMaPhieuXuat() : null)
+                + ", loHang=" + (loHang != null ? loHang.getMaLo() : null)
                 + ", soLuong=" + soLuong + ", giaTri=" + tinhGiaTriXuat() + '}';
     }
 }

@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,33 +48,6 @@ public class KhachHang implements Serializable {
         setDiemTichLuy(diemTichLuy);
         setHangThanhVien(hangThanhVien);
         setThoiDiemTao(thoiDiemTao);
-    }
-
-    public KhachHang(Long id) {
-        this();
-        setId(id);
-    }
-
-    public KhachHang(Long id, String maKhachHang, String hoTen, String soDienThoai) {
-        this();
-        setId(id);
-        setMaKhachHang(maKhachHang);
-        setHoTen(hoTen);
-        setSoDienThoai(soDienThoai);
-    }
-
-    public KhachHang(
-            Long id,
-            String maKhachHang,
-            String hoTen,
-            String soDienThoai,
-            String diaChi,
-            LocalDate ngaySinh,
-            Integer diemTichLuy,
-            String hangThanhVien,
-            LocalDateTime thoiDiemTao) {
-        this(maKhachHang, hoTen, soDienThoai, diaChi, ngaySinh, diemTichLuy, hangThanhVien, thoiDiemTao);
-        setId(id);
     }
 
     public int tinhTuoi() {
@@ -169,20 +141,6 @@ public class KhachHang implements Serializable {
 
     public void setPhienBanBanGhi(byte[] phienBanBanGhi) {
         this.phienBanBanGhi = phienBanBanGhi;
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, maKhachHang);
-    }
-
-    public void setId(Long id) {
-        if (id != null && id < 0) {
-            throw new IllegalArgumentException("Mã định danh không hợp lệ.");
-        }
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maKhachHang == null || this.maKhachHang.isBlank()) && id != null && id > 0) {
-            this.maKhachHang = DuLieu.taoMaTuId("KH", 6, id);
-        }
     }
 
     @Override

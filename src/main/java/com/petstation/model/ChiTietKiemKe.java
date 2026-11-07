@@ -2,23 +2,17 @@ package com.petstation.model;
 
 import java.io.Serializable;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class ChiTietKiemKe implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private BienBanKiemKe bienBan;
-
     private LoHang loHang;
     private int tonHeThong;
     private int tonThucTe;
     private String nguyenNhan;
 
     public ChiTietKiemKe() {
-    }
-
-    public ChiTietKiemKe(long id) {
-        setId(id);
     }
 
     public ChiTietKiemKe(
@@ -34,27 +28,6 @@ public class ChiTietKiemKe implements Serializable {
         setNguyenNhan(nguyenNhan);
     }
 
-    public ChiTietKiemKe(
-            long id,
-            BienBanKiemKe bienBan,
-            LoHang loHang,
-            int tonHeThong,
-            int tonThucTe,
-            String nguyenNhan) {
-        this(bienBan, loHang, tonHeThong, tonThucTe, nguyenNhan);
-        setId(id);
-    }
-
-    public ChiTietKiemKe(
-            long id,
-            long bienBanId,
-            long loHangId,
-            int tonHeThong,
-            int tonThucTe,
-            String nguyenNhan) {
-        this(id, new BienBanKiemKe(bienBanId), new LoHang(loHangId), tonHeThong, tonThucTe, nguyenNhan);
-    }
-
     public int tinhChenhLech() {
         return tonThucTe - tonHeThong;
     }
@@ -67,15 +40,6 @@ public class ChiTietKiemKe implements Serializable {
         return tonThucTe != tonHeThong;
     }
 
-    public Long getId() {
-        String key = (bienBan != null ? bienBan.getSoBienBan() : "") + "_" + (loHang != null ? loHang.getMaLo() : "");
-        return DuLieu.layIdCauNoiObj(this, key);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-    }
-
     public BienBanKiemKe getBienBan() {
         return this.bienBan;
     }
@@ -84,12 +48,12 @@ public class ChiTietKiemKe implements Serializable {
         this.bienBan = bienBan;
     }
 
-    public long getBienBanId() {
-        return bienBan == null ? 0L : bienBan.getId();
+    public String getMaBienBan() {
+        return bienBan == null ? null : bienBan.getMaBienBan();
     }
 
-    public void setBienBanId(long bienBanId) {
-        this.bienBan = new BienBanKiemKe(bienBanId);
+    public void setMaBienBan(String maBienBan) {
+        this.bienBan = (maBienBan == null || maBienBan.isBlank()) ? null : new BienBanKiemKe(maBienBan);
     }
 
     public LoHang getLoHang() {
@@ -100,12 +64,12 @@ public class ChiTietKiemKe implements Serializable {
         this.loHang = loHang;
     }
 
-    public long getLoHangId() {
-        return loHang == null ? 0L : loHang.getId();
+    public String getMaLo() {
+        return loHang == null ? null : loHang.getMaLo();
     }
 
-    public void setLoHangId(long loHangId) {
-        this.loHang = new LoHang(loHangId);
+    public void setMaLo(String maLo) {
+        this.loHang = (maLo == null || maLo.isBlank()) ? null : new LoHang(maLo);
     }
 
     public int getTonHeThong() {
@@ -154,7 +118,8 @@ public class ChiTietKiemKe implements Serializable {
 
     @Override
     public String toString() {
-        return "ChiTietKiemKe{" + "bienBanId=" + getBienBanId() + ", loHangId=" + getLoHangId()
+        return "ChiTietKiemKe{" + "bienBan=" + (bienBan != null ? bienBan.getMaBienBan() : null)
+                + ", loHang=" + (loHang != null ? loHang.getMaLo() : null)
                 + ", tonHeThong=" + tonHeThong + ", tonThucTe=" + tonThucTe + ", chenhLech=" + tinhChenhLech() + '}';
     }
 }

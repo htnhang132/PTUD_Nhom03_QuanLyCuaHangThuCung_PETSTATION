@@ -4,21 +4,15 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import com.petstation.util.DuLieu;
 
 public class LichHen implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String maLichHen;
-
     private KhachHang khachHang;
-
     private ThuCung thuCung;
-
     private NhanVien nhanVien;
-
     private GoiDichVuSpa dichVu;
-
     private String loaiDichVu;
     private LocalDateTime batDau;
     private LocalDateTime ketThuc;
@@ -34,11 +28,6 @@ public class LichHen implements Serializable {
         setMaLichHen(maLichHen);
     }
 
-    public LichHen(long id) {
-        this();
-        setId(id);
-    }
-
     public LichHen(
             String maLichHen,
             KhachHang khachHang,
@@ -50,6 +39,7 @@ public class LichHen implements Serializable {
             String ghiChu,
             NhanVien nhanVien,
             GoiDichVuSpa dichVu) {
+        this();
         setMaLichHen(maLichHen);
         setKhachHang(khachHang);
         setThuCung(thuCung);
@@ -62,64 +52,11 @@ public class LichHen implements Serializable {
         setDichVu(dichVu);
     }
 
-    public LichHen(
-            long id,
-            String maLichHen,
-            KhachHang khachHang,
-            ThuCung thuCung,
-            String loaiDichVu,
-            LocalDateTime batDau,
-            LocalDateTime ketThuc,
-            String trangThai,
-            String ghiChu,
-            NhanVien nhanVien,
-            GoiDichVuSpa dichVu) {
-        this(maLichHen, khachHang, thuCung, loaiDichVu, batDau, ketThuc, trangThai, ghiChu, nhanVien, dichVu);
-        setId(id);
-    }
-
-    public LichHen(
-            long id,
-            String maLichHen,
-            long khachHangId,
-            long thuCungId,
-            String loaiDichVu,
-            LocalDateTime batDau,
-            LocalDateTime ketThuc,
-            String trangThai,
-            String ghiChu,
-            Long nhanVienId,
-            Long dichVuId) {
-        this(
-                id,
-                maLichHen,
-                new KhachHang(khachHangId),
-                new ThuCung(thuCungId),
-                loaiDichVu,
-                batDau,
-                ketThuc,
-                trangThai,
-                ghiChu,
-                nhanVienId == null ? null : new NhanVien(nhanVienId),
-                dichVuId == null ? null : new GoiDichVuSpa(dichVuId));
-    }
-
     public long tinhThoiLuongPhut() {
         if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau)) {
             return 0L;
         }
         return Duration.between(batDau, ketThuc).toMinutes();
-    }
-
-    public Long getId() {
-        return DuLieu.layIdCauNoiObj(this, this.maLichHen);
-    }
-
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maLichHen == null || this.maLichHen.isBlank()) && id > 0) {
-            this.maLichHen = DuLieu.taoMaTuId("LH", 6, id);
-        }
     }
 
     public String getMaLichHen() {
@@ -138,12 +75,12 @@ public class LichHen implements Serializable {
         this.khachHang = khachHang;
     }
 
-    public long getKhachHangId() {
-        return (khachHang == null || khachHang.getId() == null) ? 0L : khachHang.getId();
+    public String getMaKhachHang() {
+        return khachHang == null ? null : khachHang.getMaKhachHang();
     }
 
-    public void setKhachHangId(long khachHangId) {
-        this.khachHang = new KhachHang(khachHangId);
+    public void setMaKhachHang(String maKhachHang) {
+        this.khachHang = (maKhachHang == null || maKhachHang.isBlank()) ? null : new KhachHang(maKhachHang);
     }
 
     public ThuCung getThuCung() {
@@ -154,12 +91,12 @@ public class LichHen implements Serializable {
         this.thuCung = thuCung;
     }
 
-    public long getThuCungId() {
-        return thuCung == null ? 0L : thuCung.getId();
+    public String getMaThuCung() {
+        return thuCung == null ? null : thuCung.getMaThuCung();
     }
 
-    public void setThuCungId(long thuCungId) {
-        this.thuCung = new ThuCung(thuCungId);
+    public void setMaThuCung(String maThuCung) {
+        this.thuCung = (maThuCung == null || maThuCung.isBlank()) ? null : new ThuCung(maThuCung);
     }
 
     public String getLoaiDichVu() {
@@ -210,12 +147,12 @@ public class LichHen implements Serializable {
         this.nhanVien = nhanVien;
     }
 
-    public Long getNhanVienId() {
-        return nhanVien == null ? null : nhanVien.getId();
+    public String getMaNhanVien() {
+        return nhanVien == null ? null : nhanVien.getMaNhanVien();
     }
 
-    public void setNhanVienId(Long nhanVienId) {
-        this.nhanVien = nhanVienId == null ? null : new NhanVien(nhanVienId);
+    public void setMaNhanVien(String maNhanVien) {
+        this.nhanVien = (maNhanVien == null || maNhanVien.isBlank()) ? null : new NhanVien(maNhanVien);
     }
 
     public GoiDichVuSpa getDichVu() {
@@ -226,12 +163,12 @@ public class LichHen implements Serializable {
         this.dichVu = dichVu;
     }
 
-    public Long getDichVuId() {
-        return dichVu == null ? null : dichVu.getId();
+    public String getMaDichVu() {
+        return dichVu == null ? null : dichVu.getMaGoi();
     }
 
-    public void setDichVuId(Long dichVuId) {
-        this.dichVu = dichVuId == null ? null : new GoiDichVuSpa(dichVuId);
+    public void setMaDichVu(String maDichVu) {
+        this.dichVu = (maDichVu == null || maDichVu.isBlank()) ? null : new GoiDichVuSpa(maDichVu);
     }
 
     @Override
@@ -251,7 +188,7 @@ public class LichHen implements Serializable {
 
     @Override
     public String toString() {
-        return "LichHen{" + "maLichHen='" + maLichHen + '\'' + ", khachHangId=" + getKhachHangId()
-                + ", thuCungId=" + getThuCungId() + ", trangThai='" + trangThai + '\'' + '}';
+        return "LichHen{" + "maLichHen='" + maLichHen + '\'' + ", khachHang=" + (khachHang != null ? khachHang.getMaKhachHang() : null)
+                + ", thuCung=" + (thuCung != null ? thuCung.getMaThuCung() : null) + ", trangThai='" + trangThai + '\'' + '}';
     }
 }

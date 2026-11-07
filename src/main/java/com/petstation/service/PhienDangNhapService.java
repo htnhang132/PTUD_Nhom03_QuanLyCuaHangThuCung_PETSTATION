@@ -56,7 +56,8 @@ public final class PhienDangNhapService {
     }
 
     public static long layIdTaiKhoan() {
-        return layPhien().getTaiKhoan().getId();
+        var tk = layPhien().getTaiKhoan();
+        return com.petstation.util.DuLieu.layIdCauNoi(tk, tk != null ? tk.getTenDangNhap() : null);
     }
 
     public static String layTenDangNhap() {
@@ -64,7 +65,8 @@ public final class PhienDangNhapService {
     }
 
     public static long layIdNhanVien() {
-        return layPhien().getNhanVien().getId();
+        var nv = layPhien().getNhanVien();
+        return com.petstation.util.DuLieu.layIdCauNoi(nv, nv != null ? nv.getMaNhanVien() : null);
     }
 
     public static void yeuCau(com.petstation.model.Quyen quyen) {

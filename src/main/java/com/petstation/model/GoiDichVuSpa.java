@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -45,25 +44,6 @@ public class GoiDichVuSpa implements Serializable {
         setTrangThai(trangThai);
     }
 
-    public GoiDichVuSpa(long id) {
-        this();
-        setId(id);
-    }
-
-    public GoiDichVuSpa(
-            long id,
-            String maGoi,
-            String tenGoi,
-            String moTa,
-            int thoiGianDuKien,
-            String chungLoaiApDung,
-            long donGiaGoc,
-            String bangGia,
-            String trangThai) {
-        this(maGoi, tenGoi, moTa, thoiGianDuKien, chungLoaiApDung, donGiaGoc, bangGia, trangThai);
-        setId(id);
-    }
-
     public double tinhThoiGianTheoGio() {
         return Math.max(0, thoiGianDuKien) / 60.0;
     }
@@ -101,14 +81,6 @@ public class GoiDichVuSpa implements Serializable {
 
     public String getTrangThai() { return this.trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-
-    public long getId() { return DuLieu.layIdCauNoi(this, maGoi); }
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maGoi == null || this.maGoi.isBlank()) && id > 0) {
-            this.maGoi = DuLieu.taoMaTuId("SPA", 8, id);
-        }
-    }
 
     @Override
     public boolean equals(Object o) {

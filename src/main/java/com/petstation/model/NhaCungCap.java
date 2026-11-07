@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -51,27 +50,6 @@ public class NhaCungCap implements Serializable {
         setDieuKhoan(dieuKhoan);
     }
 
-    public NhaCungCap(long id) {
-        this();
-        setId(id);
-    }
-
-    public NhaCungCap(
-            long id,
-            String maNhaCungCap,
-            String ten,
-            String soDienThoai,
-            String diaChi,
-            String nguoiDaiDien,
-            String nhomMatHang,
-            String ghiChu,
-            String trangThai,
-            String maSoThue,
-            String dieuKhoan) {
-        this(maNhaCungCap, ten, soDienThoai, diaChi, nguoiDaiDien, nhomMatHang, ghiChu, trangThai, maSoThue, dieuKhoan);
-        setId(id);
-    }
-
     public boolean kiemTraDangHopTac() {
         return trangThai == null
                 || "DANG_HOP_TAC".equalsIgnoreCase(trangThai)
@@ -95,39 +73,76 @@ public class NhaCungCap implements Serializable {
         setMaNhaCungCap(maNcc);
     }
 
-    public String getTen() { return this.ten; }
-    public void setTen(String ten) { this.ten = ten == null ? null : ten.trim(); }
+    public String getTen() {
+        return this.ten;
+    }
 
-    public String getSoDienThoai() { return this.soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim(); }
+    public void setTen(String ten) {
+        this.ten = ten == null ? null : ten.trim();
+    }
 
-    public String getDiaChi() { return this.diaChi; }
-    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
+    public String getSoDienThoai() {
+        return this.soDienThoai;
+    }
 
-    public String getNguoiDaiDien() { return this.nguoiDaiDien; }
-    public void setNguoiDaiDien(String nguoiDaiDien) { this.nguoiDaiDien = nguoiDaiDien; }
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim();
+    }
 
-    public String getNhomMatHang() { return this.nhomMatHang; }
-    public void setNhomMatHang(String nhomMatHang) { this.nhomMatHang = nhomMatHang; }
+    public String getDiaChi() {
+        return this.diaChi;
+    }
 
-    public String getGhiChu() { return this.ghiChu; }
-    public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
 
-    public String getTrangThai() { return this.trangThai; }
-    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+    public String getNguoiDaiDien() {
+        return this.nguoiDaiDien;
+    }
 
-    public String getMaSoThue() { return this.maSoThue; }
-    public void setMaSoThue(String maSoThue) { this.maSoThue = maSoThue; }
+    public void setNguoiDaiDien(String nguoiDaiDien) {
+        this.nguoiDaiDien = nguoiDaiDien;
+    }
 
-    public String getDieuKhoan() { return this.dieuKhoan; }
-    public void setDieuKhoan(String dieuKhoan) { this.dieuKhoan = dieuKhoan; }
+    public String getNhomMatHang() {
+        return this.nhomMatHang;
+    }
 
-    public long getId() { return DuLieu.layIdCauNoi(this, maNhaCungCap); }
-    public void setId(long id) {
-        DuLieu.luuIdCauNoi(this, id);
-        if ((this.maNhaCungCap == null || this.maNhaCungCap.isBlank()) && id > 0) {
-            this.maNhaCungCap = DuLieu.taoMaTuId("NCC", 4, id);
-        }
+    public void setNhomMatHang(String nhomMatHang) {
+        this.nhomMatHang = nhomMatHang;
+    }
+
+    public String getGhiChu() {
+        return this.ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
+        this.ghiChu = ghiChu;
+    }
+
+    public String getTrangThai() {
+        return this.trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public String getMaSoThue() {
+        return this.maSoThue;
+    }
+
+    public void setMaSoThue(String maSoThue) {
+        this.maSoThue = maSoThue;
+    }
+
+    public String getDieuKhoan() {
+        return this.dieuKhoan;
+    }
+
+    public void setDieuKhoan(String dieuKhoan) {
+        this.dieuKhoan = dieuKhoan;
     }
 
     @Override
