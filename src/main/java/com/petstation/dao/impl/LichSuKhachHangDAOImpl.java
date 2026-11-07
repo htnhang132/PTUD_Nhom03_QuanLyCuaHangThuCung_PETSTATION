@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC lịch sử khách hàng DAO. */
 public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
     private static final DateTimeFormatter DINH_DANG_ISO =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
@@ -83,7 +82,6 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
 
             soBanGhi++;
 
-            // Giữ cả trường rỗng, ví dụ ID hóa đơn khi đổi voucher.
             String[] c = phan.split("\\|", -1);
 
             if (c.length != 5) {
@@ -91,7 +89,7 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
                         "Lịch sử điểm sai định dạng tại bản ghi " + soBanGhi);
             }
 
-            try {    
+            try {
                 boolean ngayODau =
                         c[0].trim().matches("\\d{4}-\\d{2}-\\d{2} .*");
 
@@ -129,7 +127,6 @@ public final class LichSuKhachHangDAOImpl implements LichSuKhachHangDAO {
             }
         }
 
-        // Giữ cách hiển thị đảo thứ tự bản ghi như code hiện tại.
         Collections.reverse(kq);
         return kq;
     }

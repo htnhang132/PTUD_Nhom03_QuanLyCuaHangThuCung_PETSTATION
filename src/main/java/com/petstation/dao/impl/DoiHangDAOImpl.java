@@ -9,7 +9,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Đổi hàng mới được phân biệt với các phiếu hoàn tiền lịch sử. */
 public final class DoiHangDAOImpl implements DoiHangDAO {
     public DoiHangDAOImpl() {}
 

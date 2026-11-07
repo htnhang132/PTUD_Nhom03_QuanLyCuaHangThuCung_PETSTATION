@@ -6,7 +6,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC bán hàng DAO. */
 public final class HoaDonDAOImpl implements HoaDonDAO {
     public List<Object[]> layNguonBienLai(String soHoaDon) {
         return ThaoTacSQL.truyVan(

@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/** Biểu mẫu đặt/sửa phòng có chọn ngày giờ và xem trước giá, cọc. */
 public final class DatPhongHotelDialog {
     private final Component parent;
     private final Long hopDongId;
@@ -79,7 +78,6 @@ public final class DatPhongHotelDialog {
         dialog.setLocationRelativeTo(parent);
     }
 
-    /** Mở biểu mẫu và trả về ID hợp đồng vừa tạo/sửa; null khi người dùng đóng. */
     public static Long mo(Component parent, Long hopDongId, String maPhongMacDinh) {
         DatPhongHotelDialog form = new DatPhongHotelDialog(parent, hopDongId, maPhongMacDinh);
         form.dialog.setVisible(true);
@@ -177,10 +175,6 @@ public final class DatPhongHotelDialog {
         return false;
     }
 
-    /**
-     * Giữ nguyên lựa chọn cũ khi bản ghi đã không còn nằm trong danh sách chọn mới.
-     * Không tự thay thú cưng/phòng bằng phần tử đầu tiên của JComboBox.
-     */
     private static void chonHoacThemGiaTriCu(
             JComboBox<BieuMauSQL.LuaChon> combo, String giaTri, String nhan) {
         if (!chonGiaTri(combo, giaTri)) {

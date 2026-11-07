@@ -3,7 +3,6 @@ package com.petstation.dao;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Thao tác dữ liệu cho TiemPhong; service gọi qua hợp đồng này. */
 public interface TiemPhongDAO {
     List<Object[]> layThuCung(String ma);
 

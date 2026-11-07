@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC Spa DAO. */
 public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
     public PhieuTiepNhanSpaDAOImpl() {}
 
@@ -331,7 +330,6 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         LocalDate tuNgay,
         LocalDate denNgay,
         String trangThai) {
-
         String sql = """
                 SELECT t.ma_phieu AS ma_khoa, t.ma_phieu, k.ho_ten, p.ten,
                        t.can_nang_thuc_te, COALESCE(n.ho_ten, N''),

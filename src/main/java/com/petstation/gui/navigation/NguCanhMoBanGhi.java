@@ -8,7 +8,6 @@ import java.awt.*;
 
 import javax.swing.*;
 
-/** Yêu cầu mở bản ghi được giữ qua bước mở ca và qua lần tải dữ liệu nền. */
 public final class NguCanhMoBanGhi {
     private NguCanhMoBanGhi() {}
 

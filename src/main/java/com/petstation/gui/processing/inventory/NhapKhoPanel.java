@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho nhập kho vùng hiển thị. */
 public final class NhapKhoPanel extends NghiepVuKhoPanel {
     public NhapKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.PHIEU_NHAP_KHO, banHang, dieuHuong);

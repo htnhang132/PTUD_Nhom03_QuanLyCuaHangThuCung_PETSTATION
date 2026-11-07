@@ -19,17 +19,19 @@ import com.petstation.model.Quyen;
 import java.time.*;
 import java.util.*;
 
-/**
- * Kiểm tra và lưu thanh toán, phân bổ tồn kho, điểm thưởng và hóa đơn dịch vụ trong cùng giao dịch.
- */
 public final class BanHangService {
-    private static final HoaDonDAO banHangDAO = new HoaDonDAOImpl();
-    private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
-    private static final KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
+    private static HoaDonDAO banHangDAO = new HoaDonDAOImpl();
+    private static DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
+    private static KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
 
     private BanHangService() {}
 
-    /** Nguồn và khoản đã cấn trừ vẫn đọc được khi in lại sau khi khởi động ứng dụng. */
+    public static void cauHinhDAO(HoaDonDAO hoaDon, DoiHangDAO doiHang, KhoanThuDAO khoanThu) {
+        if (hoaDon != null) banHangDAO = hoaDon;
+        if (doiHang != null) doiHangDAO = doiHang;
+        if (khoanThu != null) khoanThuDAO = khoanThu;
+    }
+
     public record NguonBienLai(String loai, String ma, long daCanTru, String hoaDonGoc) {}
 
     public static NguonBienLai layNguonBienLai(String soHoaDon) {
@@ -67,16 +69,16 @@ public final class BanHangService {
                     if (hienCo != null) return layBienLai(chuyenThanhChuoi(hienCo));
                     if (banHang.kiemTraTrong())
                         throw new IllegalArgumentException("Hóa đơn chưa có hàng.");
-                    // Ca làm việc.
+
                     long caLamViec = banHangDAO.demThanhToan(layIdTaiKhoan());
                     if (caLamViec == 0)
                         throw new IllegalStateException("Cần mở ca trước khi thanh toán.");
-                    // Khóa ca thu ngân để xử lý tuần tự các yêu cầu đồng thời từ cùng tài khoản.
+
                     hienCo = banHangDAO.timHoaDonTheoKhoaThu(banHang.layKhoaThanhToan());
                     if (hienCo != null) return layBienLai(chuyenThanhChuoi(hienCo));
                     if (banHangDAO.demNgayDaChot() > 0)
                         throw new IllegalStateException("Ngày đã chốt, không thể ghi giao dịch.");
-                    // Khách hàng.
+
                     long phieuDoi =
                             "DOI_HANG".equals(banHang.layKieuNguon())
                                     ? DoiTraService.chuanBi(banHang)
@@ -89,7 +91,6 @@ public final class BanHangService {
                                             "ma_khach_hang",
                                             banHang.layMaKhachHang());
                     if (khachHang != null) {
-                        // Các khách hàng.
                         List<Object[]> cacKhachHang = banHangDAO.timThanhToan(khachHang);
                         if (cacKhachHang.isEmpty() || !Boolean.TRUE.equals(cacKhachHang.get(0)[1]))
                             throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
@@ -99,7 +100,6 @@ public final class BanHangService {
                     } else if (banHang.layDiemDaDung() > 0)
                         throw new IllegalArgumentException("Chưa chọn khách hàng để dùng điểm.");
                     if (!banHang.layMaVoucher().isBlank()) {
-                        // Lỗi.
                         String loi = banHang.apDungVoucher(banHang.layMaVoucher());
                         if (loi != null) throw new IllegalArgumentException(loi);
                         if (banHangDAO.ghiNhanSuDungVoucher(
@@ -112,7 +112,7 @@ public final class BanHangService {
                                     "Voucher đã hết hạn, hết lượt hoặc không áp dụng cho hóa đơn"
                                             + " này.");
                     }
-                    // Tổng.
+
                     long tong = banHang.tinhTong();
                     DongThuTien.kiemTra(khoanThu, tong);
                     PhuongThuc phuongThuc =
@@ -122,16 +122,16 @@ public final class BanHangService {
                     long daNhan = khoanThu.stream().mapToLong(DongThuTien::khachDua).sum();
                     long tienThua = khoanThu.stream().mapToLong(DongThuTien::tienThua).sum();
                     String khong = taoMa("HD");
-                    // Hiện tại.
+
                     LocalDateTime hienTai = LocalDateTime.now();
-                    // Được tích.
+
                     long duocTich =
                             khachHang == null
                                     ? 0
                                     : phieuDoi > 0
                                             ? DoiTraService.tinhDiemCong(banHang)
                                             : tong / CaiDatService.laySoTienChoMoiDiemTichLuy();
-                    // Hóa đơn (hợp nhất đơn hàng).
+
                     long hoaDon =
                             banHangDAO.themHoaDon(
                                     khong,
@@ -153,11 +153,10 @@ public final class BanHangService {
                         if (dong.soLuong() <= 0 || dong.donGia() < 0)
                             throw new IllegalArgumentException(
                                     "Số lượng hoặc đơn giá không hợp lệ.");
-                        // Sản phẩm.
+
                         Long sanPham = null;
                         if (banHang.layKieuNguon().isBlank()
                                 || "DOI_HANG".equals(banHang.layKieuNguon())) {
-                            // Các sản phẩm.
                             List<Object[]> cacSanPham = banHangDAO.khoaSanPhamDeBan(dong.ma());
                             if (cacSanPham.isEmpty() || !"DANG_BAN".equals(cacSanPham.get(0)[2]))
                                 throw new IllegalArgumentException(
@@ -169,7 +168,7 @@ public final class BanHangService {
                                                 + dong.ma()
                                                 + " đã đổi. Hãy nạp lại giỏ hàng.");
                         }
-                        // Mục.
+
                         long muc =
                                 banHangDAO.themDongDonHang(
                                         hoaDon,
@@ -179,10 +178,8 @@ public final class BanHangService {
                                         dong.soLuong(),
                                         dong.donGia());
                         if (sanPham != null) {
-                            // Còn lại.
                             int conLai = dong.soLuong();
                             for (Object[] loHang : banHangDAO.layLoTheoFEFO(sanPham)) {
-                                // Số lượng.
                                 int soLuong = Math.min(conLai, ((Number) loHang[1]).intValue());
                                 if (soLuong <= 0) continue;
                                 if (banHangDAO.truTonLo(soLuong, loHang[0], soLuong) != 1)
@@ -203,7 +200,6 @@ public final class BanHangService {
                         capNhatHang(khachHang);
                     }
                     if ("SPA".equals(banHang.layKieuNguon())) {
-                        // Số tiền.
                         long soTien = banHangDAO.layTienSpaChoThanhToan(banHang.layIdNguon());
                         if (soTien != banHang.tinhTamTinh())
                             throw new IllegalStateException(
@@ -211,7 +207,6 @@ public final class BanHangService {
                         if (banHangDAO.ganHoaDonSpa(hoaDon, banHang.layIdNguon()) != 1)
                             throw new IllegalStateException("Phiếu Spa đã thanh toán.");
                     } else if ("HOTEL".equals(banHang.layKieuNguon()) || "LUU_TRU".equals(banHang.layKieuNguon())) {
-                        // Dự kiến.
                         long duKien = LuuTruService.tinhTienLuuTruConLai(banHang.layIdNguon());
                         if (duKien != banHang.tinhTamTinh())
                             throw new IllegalStateException(
@@ -235,13 +230,12 @@ public final class BanHangService {
     }
 
     static void capNhatHang(long khachHang) {
-        // Chi tiêu.
         long chiTieu = banHangDAO.demCapNhatHang(khachHang);
-        // Các hạng.
+
         long[] cacHang = CaiDatService.layHangChiTieu();
-        // Các tên.
+
         String[] cacTen = {"Đồng", "Bạc", "Vàng", "Bạch Kim", "Kim Cương"};
-        // Hạng.
+
         int hang = 0;
         while (hang < cacHang.length && chiTieu >= cacHang[hang]) hang++;
         banHangDAO.capNhatCapNhatHang(cacTen[hang], khachHang);
@@ -251,7 +245,7 @@ public final class BanHangService {
         List<Object[]> cacDong = banHangDAO.timBienLai(khong);
         if (cacDong.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy hóa đơn " + khong);
-        // Dòng dữ liệu.
+
         Object[] dongDuLieu = cacDong.get(0);
         List<GioHang.DongHang> cacDong2 = new ArrayList<>();
         for (Object[] dongDangXet : banHangDAO.layDongBienLai(dongDuLieu[1]))
@@ -286,7 +280,6 @@ public final class BanHangService {
                     "Chỉ treo đơn bán sản phẩm; phiếu Spa/Hotel vẫn được giữ trong màn xử lý.");
         return thucHienGiaoDich(
                 ketNoi -> {
-                    // Id.
                     long id =
                             banHangDAO.themTreo(
                                     taoMa("TREO"),
@@ -326,10 +319,9 @@ public final class BanHangService {
                         throw new IllegalArgumentException("Đơn treo có sản phẩm đã ngừng bán.");
                     banHang.xoa();
                     banHang.datCacDong(cacDong);
-                    // Các khách hàng.
+
                     List<Object[]> cacKhachHang = banHangDAO.layKhachCuaGioTreo(id);
                     if (!cacKhachHang.isEmpty()) {
-                        // Khóa đang xét.
                         Object[] khoaDangXet = cacKhachHang.get(0);
                         banHang.datKhachHang(
                                 chuyenThanhChuoi(khoaDangXet[0]),
@@ -355,7 +347,7 @@ public final class BanHangService {
 
     public static void quyetToan(String loai, long id, GioHang banHang) {
         List<GioHang.DongHang> cacDong = new ArrayList<>();
-        // Khách hàng.
+
         Object khachHang;
         if (loai.equals("SPA")) {
             yeuCau(Quyen.QUAN_LY_SPA);
@@ -371,7 +363,7 @@ public final class BanHangService {
             khachHang = banHangDAO.layKhachCuaPhieuSpa(id);
         } else if (loai.equals("HOTEL") || loai.equals("LUU_TRU")) {
             yeuCau(Quyen.QUAN_LY_LUU_TRU);
-            // Còn phải thu.
+
             long conPhaiThu = LuuTruService.tinhTienLuuTruConLai(id);
             cacDong.add(
                     new GioHang.DongHang(
@@ -381,10 +373,9 @@ public final class BanHangService {
         banHang.xoa();
         banHang.datCacDong(cacDong);
         banHang.datNguon(loai, id);
-        // Các khách hàng.
+
         List<Object[]> cacKhachHang = banHangDAO.timQuyetToan(khachHang);
         if (!cacKhachHang.isEmpty()) {
-            // Dòng dữ liệu.
             Object[] dongDuLieu = cacKhachHang.get(0);
             banHang.datKhachHang(
                     chuyenThanhChuoi(dongDuLieu[0]),
@@ -394,7 +385,6 @@ public final class BanHangService {
     }
 
     static void huyHoaDon(long hoaDon) {
-        // Các hóa đơn.
         List<Object[]> cacHoaDon = banHangDAO.timHuyHoaDon(hoaDon);
         if (cacHoaDon.isEmpty()) throw new IllegalArgumentException("Hóa đơn đã hủy.");
         if (doiHangDAO.laHoaDonThayThe(hoaDon))
@@ -406,12 +396,11 @@ public final class BanHangService {
         if (banHangDAO.demHuyHoaDon(hoaDon) > 0 || banHangDAO.demHopDongGanHoaDon(hoaDon) > 0)
             throw new IllegalArgumentException(
                     "Hóa đơn dịch vụ đã hoàn thành không thể hủy trực tiếp.");
-        // Chiều cao.
+
         Object[] chieuCao = cacHoaDon.get(0);
         for (Object[] loHang : banHangDAO.layPhanBoCanHoanTon(chieuCao[0]))
             banHangDAO.capNhatHuyHoaDon(loHang[1], loHang[0]);
         if (chieuCao[4] != null) {
-            // Cũ.
             long cu = banHangDAO.khoaDiemKhachHang(chieuCao[4]),
                     tiepTheo = Math.max(0, cu - layGiaTri(chieuCao[1]) + layGiaTri(chieuCao[2]));
             banHangDAO.hoanDiemKhachHang(tiepTheo, chieuCao[4]);

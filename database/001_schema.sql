@@ -25,7 +25,7 @@ GO
 
 -- 1. Dọn dẹp ràng buộc khóa ngoại và bảng cũ nếu đã tồn tại
 DECLARE @dropFkSql NVARCHAR(MAX) = N'';
-SELECT @dropFkSql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) 
+SELECT @dropFkSql += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name)
                    + N' DROP CONSTRAINT ' + QUOTENAME(f.name) + N';' + CHAR(13)
 FROM sys.foreign_keys f
 JOIN sys.tables t ON f.parent_object_id = t.object_id
@@ -47,9 +47,8 @@ GO
 BEGIN TRANSACTION;
 BEGIN TRY
 
--- ==================== KHỞI TẠO CÁC BẢNG (TABLES) ====================
 
--- 1. BẢNG CA LÀM VIỆC (PK: ma_ca)
+-- 1. Bảng ca làm việc
 CREATE TABLE dbo.[ca_lam_viec] (
     [ma_ca] VARCHAR(20) NOT NULL,
     [ten_ca] NVARCHAR(60) NOT NULL,
@@ -61,7 +60,7 @@ CREATE TABLE dbo.[ca_lam_viec] (
     CONSTRAINT [CK_ca_lam_viec_1] CHECK ([so_nhan_su_toi_thieu]>(0))
 );
 
--- 2. BẢNG CHƯƠNG TRÌNH KHUYẾN MÃI (PK: ma_chuong_trinh)
+-- 2. Bảng chương trình khuyến mãi
 CREATE TABLE dbo.[chuong_trinh_khuyen_mai] (
     [ma_chuong_trinh] VARCHAR(30) NOT NULL,
     [ten] NVARCHAR(180) NOT NULL,
@@ -80,7 +79,7 @@ CREATE TABLE dbo.[chuong_trinh_khuyen_mai] (
     CONSTRAINT [CK_km_ngay] CHECK ([ket_thuc]>[bat_dau])
 );
 
--- 3. BẢNG GÓI DỊCH VỤ SPA (PK: ma_goi)
+-- 3. Bảng gói dịch vụ spa
 CREATE TABLE dbo.[goi_dich_vu_spa] (
     [ma_goi] VARCHAR(30) NOT NULL,
     [ten_goi] NVARCHAR(180) NOT NULL,
@@ -96,7 +95,7 @@ CREATE TABLE dbo.[goi_dich_vu_spa] (
     CONSTRAINT [CK_goi_dich_vu_spa_trang_thai] CHECK ([trang_thai] IN ('HOAT_DONG', 'NGUNG_HOAT_DONG'))
 );
 
--- 4. BẢNG KHÁCH HÀNG (PK: ma_khach_hang)
+-- 4. Bảng khách hàng
 CREATE TABLE dbo.[khach_hang] (
     [ma_khach_hang] VARCHAR(20) NOT NULL,
     [ho_ten] NVARCHAR(120) NOT NULL,
@@ -116,7 +115,7 @@ CREATE TABLE dbo.[khach_hang] (
     CONSTRAINT [CK_khach_hang_1] CHECK ([diem_tich_luy]>=(0))
 );
 
--- 5. BẢNG NHÀ CUNG CẤP (PK: ma_nha_cung_cap - Đồng nhất tiền tố ma_)
+-- 5. Bảng nhà cung cấp
 CREATE TABLE dbo.[nha_cung_cap] (
     [ma_nha_cung_cap] VARCHAR(20) NOT NULL,
     [ten] NVARCHAR(160) NOT NULL,
@@ -132,7 +131,7 @@ CREATE TABLE dbo.[nha_cung_cap] (
     CONSTRAINT [CK_nha_cung_cap_trang_thai] CHECK ([trang_thai] IN ('DANG_HOP_TAC', 'NGUNG_HOP_TAC'))
 );
 
--- 6. BẢNG NHÂN VIÊN (PK: ma_nhan_vien)
+-- 6. Bảng nhân viên
 CREATE TABLE dbo.[nhan_vien] (
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
     [ho_ten] NVARCHAR(120) NOT NULL,
@@ -149,7 +148,7 @@ CREATE TABLE dbo.[nhan_vien] (
     CONSTRAINT [UQ_nhan_vien_phone] UNIQUE NONCLUSTERED ([so_dien_thoai])
 );
 
--- 7. BẢNG LỊCH LÀM VIỆC (PK phức hợp: ma_nhan_vien, ngay_lam, ma_ca - Bảng liên kết 2 bảng cha nhan_vien và ca_lam_viec)
+-- 7. Bảng lịch làm việc
 CREATE TABLE dbo.[lich_lam_viec] (
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
     [ngay_lam] DATE NOT NULL,
@@ -161,7 +160,7 @@ CREATE TABLE dbo.[lich_lam_viec] (
     CONSTRAINT [CK_lich_trang_thai] CHECK ([trang_thai] IN ('DANG_MO', 'DA_KHOA', 'DA_HUY'))
 );
 
--- 8. BẢNG PHÒNG HOTEL (PK: ma_phong)
+-- 8. Bảng phòng hotel
 CREATE TABLE dbo.[phong_hotel] (
     [ma_phong] VARCHAR(20) NOT NULL,
     [ten_phong] NVARCHAR(80) NULL,
@@ -178,7 +177,7 @@ CREATE TABLE dbo.[phong_hotel] (
     CONSTRAINT [CK_phong_hotel_trang_thai] CHECK ([trang_thai] IN ('TRONG', 'DANG_O', 'DANG_DON', 'BAO_TRI'))
 );
 
--- 9. BẢNG SẢN PHẨM / DỊCH VỤ (PK: ma_san_pham)
+-- 9. Bảng sản phẩm / dịch vụ
 CREATE TABLE dbo.[san_pham] (
     [ma_san_pham] VARCHAR(30) NOT NULL,
     [barcode] VARCHAR(80) NULL,
@@ -208,7 +207,7 @@ CREATE TABLE dbo.[san_pham] (
     CONSTRAINT [CK_san_pham_trang_thai] CHECK ([trang_thai] IN ('DANG_BAN', 'NGUNG_BAN'))
 );
 
--- 10. BẢNG LÔ HÀNG (PK: ma_lo, FK: ma_san_pham)
+-- 10. Bảng lô hàng
 CREATE TABLE dbo.[lo_hang] (
     [ma_lo] VARCHAR(40) NOT NULL,
     [ma_san_pham] VARCHAR(30) NOT NULL,
@@ -228,7 +227,7 @@ CREATE TABLE dbo.[lo_hang] (
     CONSTRAINT [CK_lo_hang_trang_thai] CHECK ([trang_thai] IN ('SAN_SANG', 'HET_HAN', 'TAM_KHOA', 'HET_HANG'))
 );
 
--- 11. BẢNG TÀI KHOẢN (PK: ma_nhan_vien - Quan hệ 1-1 lấy khóa của nhan_vien làm PK; ten_dang_nhap là UNIQUE)
+-- 11. Bảng tài khoản
 CREATE TABLE dbo.[tai_khoan] (
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
@@ -246,7 +245,7 @@ CREATE TABLE dbo.[tai_khoan] (
     CONSTRAINT [CK_tai_khoan_vai_tro] CHECK ([vai_tro] IN ('QUAN_LY_CUA_HANG', 'NHAN_VIEN_BAN_HANG', 'NHAN_VIEN_KHO', 'NHAN_VIEN_SPA_HOTEL'))
 );
 
--- 12. BẢNG BIÊN BẢN KIỂM KÊ (PK: ma_bien_ban - Đồng nhất tiền tố ma_)
+-- 12. Bảng biên bản kiểm kê
 CREATE TABLE dbo.[bien_ban_kiem_ke] (
     [ma_bien_ban] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
@@ -257,7 +256,7 @@ CREATE TABLE dbo.[bien_ban_kiem_ke] (
     CONSTRAINT [CK_bien_ban_kiem_ke_trang_thai] CHECK ([trang_thai] IN ('DANG_KIEM', 'CHO_DUYET', 'DA_DUYET', 'TU_CHOI'))
 );
 
--- 13. BẢNG CÀI ĐẶT HỆ THỐNG (PK: ma_cai_dat - Đồng nhất tiền tố ma_)
+-- 13. Bảng cài đặt hệ thống
 CREATE TABLE dbo.[cai_dat] (
     [ma_cai_dat] VARCHAR(100) NOT NULL,
     [gia_tri] NVARCHAR(1000) NOT NULL,
@@ -266,18 +265,18 @@ CREATE TABLE dbo.[cai_dat] (
     CONSTRAINT [PK_cai_dat] PRIMARY KEY CLUSTERED ([ma_cai_dat])
 );
 
--- 14. BẢNG CHI TIẾT KIỂM KÊ (PK phức hợp: ma_bien_ban, ma_lo - Lấy mã bảng cha bien_ban_kiem_ke và lo_hang)
+-- 14. Bảng chi tiết kiểm kê
 CREATE TABLE dbo.[chi_tiet_kiem_ke] (
     [ma_bien_ban] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NOT NULL,
     [ton_he_thong] INT NOT NULL,
     [ton_thuc_te] INT NOT NULL,
-    [chenh_lech] AS ([ton_thuc_te] - [ton_he_thong]), -- Thuộc tính dẫn xuất tự tính
+    [chenh_lech] AS ([ton_thuc_te] - [ton_he_thong]),
     [nguyen_nhan] NVARCHAR(1000) NULL,
     CONSTRAINT [PK_chi_tiet_kiem_ke] PRIMARY KEY CLUSTERED ([ma_bien_ban], [ma_lo])
 );
 
--- 15. BẢNG NHẬT KÝ HỆ THỐNG (PK: ma_nhat_ky, FK: ten_dang_nhap)
+-- 15. Bảng nhật ký hệ thống
 CREATE TABLE dbo.[nhat_ky_he_thong] (
     [ma_nhat_ky] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NULL,
@@ -294,7 +293,7 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     CONSTRAINT [PK_nhat_ky_he_thong] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
 );
 
--- 16. BẢNG PHIÊN LÀM VIỆC (PK: ma_phien, FK: ten_dang_nhap, ma_ca)
+-- 16. Bảng phiên làm việc
 CREATE TABLE dbo.[phien_lam_viec] (
     [ma_phien] VARCHAR(30) NOT NULL,
     [ma_ca] VARCHAR(20) NULL,
@@ -315,7 +314,7 @@ CREATE TABLE dbo.[phien_lam_viec] (
     CONSTRAINT [CK_phien_trang_thai] CHECK ([trang_thai] IN ('DANG_MO', 'DA_KHOA', 'DA_BAN_GIAO', 'CHO_DUYET', 'DA_DOI_SOAT'))
 );
 
--- 17. BẢNG HÓA ĐƠN (PK: ma_hoa_don - Đồng nhất tiền tố ma_)
+-- 17. Bảng hóa đơn
 CREATE TABLE dbo.[hoa_don] (
     [ma_hoa_don] VARCHAR(40) NOT NULL,
     [ma_phien] VARCHAR(30) NULL,
@@ -341,7 +340,7 @@ CREATE TABLE dbo.[hoa_don] (
     CONSTRAINT [CK_hoa_don_trang_thai] CHECK ([trang_thai] IN ('DA_THANH_TOAN', 'DA_HUY', 'CHO_THANH_TOAN', 'GIO_TREO'))
 );
 
--- 18. BẢNG CHI TIẾT HÓA ĐƠN (PK phức hợp: ma_hoa_don, ma_san_pham - Lấy mã bảng cha hoa_don và san_pham làm khóa, không tạo thêm khóa nhân tạo)
+-- 18. Bảng chi tiết hóa đơn
 CREATE TABLE dbo.[chi_tiet_hoa_don] (
     [ma_hoa_don] VARCHAR(40) NOT NULL,
     [ma_san_pham] VARCHAR(30) NOT NULL,
@@ -352,14 +351,14 @@ CREATE TABLE dbo.[chi_tiet_hoa_don] (
     [thue_gtgt] DECIMAL(5,2) NOT NULL DEFAULT ((0)),
     [ma_dich_vu] VARCHAR(40) NULL,
     [ten_hang] NVARCHAR(180) NULL,
-    [thanh_tien] AS (([so_luong] * [don_gia]) - [giam_gia]), -- Thuộc tính dẫn xuất tự tính
+    [thanh_tien] AS (([so_luong] * [don_gia]) - [giam_gia]),
     CONSTRAINT [PK_chi_tiet_hoa_don] PRIMARY KEY CLUSTERED ([ma_hoa_don], [ma_san_pham]),
     CONSTRAINT [CK_chi_tiet_hoa_don_1] CHECK ([giam_gia]>=(0)),
     CONSTRAINT [CK_chi_tiet_hoa_don_2] CHECK ([so_luong]>(0)),
     CONSTRAINT [CK_chi_tiet_hoa_don_gia] CHECK ([don_gia]>=(0))
 );
 
--- 19. BẢNG PHIẾU ĐỔI TRẢ (PK: ma_phieu - Đồng nhất tiền tố ma_hoa_don)
+-- 19. Bảng phiếu đổi trả
 CREATE TABLE dbo.[phieu_doi_tra] (
     [ma_phieu] VARCHAR(30) NOT NULL,
     [ma_hoa_don] VARCHAR(40) NOT NULL,
@@ -377,7 +376,7 @@ CREATE TABLE dbo.[phieu_doi_tra] (
     CONSTRAINT [CK_phieu_doi_tra_loai_phieu] CHECK ([loai_phieu] IN ('DOI_HANG', 'TRA_HANG', 'TRA_HANG_CU'))
 );
 
--- 20. BẢNG CHI TIẾT ĐỔI TRẢ (PK phức hợp: ma_phieu, ma_hoa_don, ma_san_pham, ma_lo - Lấy mã bảng cha phieu_doi_tra và chi_tiet_hoa_don)
+-- 20. Bảng chi tiết đổi trả
 CREATE TABLE dbo.[chi_tiet_doi_tra] (
     [ma_phieu] VARCHAR(30) NOT NULL,
     [ma_hoa_don] VARCHAR(40) NOT NULL,
@@ -390,7 +389,7 @@ CREATE TABLE dbo.[chi_tiet_doi_tra] (
     CONSTRAINT [CK_chi_tiet_doi_tra_2] CHECK ([tien_hoan]>=(0))
 );
 
--- 21. BẢNG PHIẾU NHẬP KHO (PK: ma_phieu_nhap - Đồng nhất tiền tố ma_)
+-- 21. Bảng phiếu nhập kho
 CREATE TABLE dbo.[phieu_nhap_kho] (
     [ma_phieu_nhap] VARCHAR(30) NOT NULL,
     [ma_nha_cung_cap] VARCHAR(20) NOT NULL,
@@ -406,7 +405,7 @@ CREATE TABLE dbo.[phieu_nhap_kho] (
     CONSTRAINT [CK_phieu_nhap_kho_trang_thai] CHECK ([trang_thai] IN ('CHO_NHAP', 'DA_NHAP', 'DA_HUY'))
 );
 
--- 22. BẢNG CHI TIẾT PHIẾU NHẬP (PK phức hợp: ma_phieu_nhap, ma_san_pham, ma_lo - Đồng nhất tiền tố ma_)
+-- 22. Bảng chi tiết phiếu nhập
 CREATE TABLE dbo.[chi_tiet_phieu_nhap] (
     [ma_phieu_nhap] VARCHAR(30) NOT NULL,
     [ma_san_pham] VARCHAR(30) NOT NULL,
@@ -414,13 +413,13 @@ CREATE TABLE dbo.[chi_tiet_phieu_nhap] (
     [han_su_dung] DATE NULL,
     [so_luong] INT NOT NULL,
     [gia_nhap] DECIMAL(18,2) NOT NULL,
-    [thanh_tien] AS ([so_luong] * [gia_nhap]), -- Thuộc tính dẫn xuất tự tính
+    [thanh_tien] AS ([so_luong] * [gia_nhap]),
     CONSTRAINT [PK_chi_tiet_phieu_nhap] PRIMARY KEY CLUSTERED ([ma_phieu_nhap], [ma_san_pham], [ma_lo]),
     CONSTRAINT [CK_chi_tiet_phieu_nhap_1] CHECK ([gia_nhap]>(0)),
     CONSTRAINT [CK_chi_tiet_phieu_nhap_2] CHECK ([so_luong]>(0))
 );
 
--- 23. BẢNG PHIẾU XUẤT KHO (PK: ma_phieu_xuat - Đồng nhất tiền tố ma_)
+-- 23. Bảng phiếu xuất kho
 CREATE TABLE dbo.[phieu_xuat_kho] (
     [ma_phieu_xuat] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
@@ -434,7 +433,7 @@ CREATE TABLE dbo.[phieu_xuat_kho] (
     CONSTRAINT [CK_phieu_xuat_kho_trang_thai] CHECK ([trang_thai] IN ('CHO_XUAT', 'DA_XUAT', 'TU_CHOI', 'DA_HUY'))
 );
 
--- 24. BẢNG CHI TIẾT PHIẾU XUẤT (PK phức hợp: ma_phieu_xuat, ma_lo)
+-- 24. Bảng chi tiết phiếu xuất
 CREATE TABLE dbo.[chi_tiet_phieu_xuat] (
     [ma_phieu_xuat] VARCHAR(30) NOT NULL,
     [ma_lo] VARCHAR(40) NOT NULL,
@@ -445,7 +444,7 @@ CREATE TABLE dbo.[chi_tiet_phieu_xuat] (
     CONSTRAINT [CK_chi_tiet_phieu_xuat_2] CHECK ([so_luong]>(0))
 );
 
--- 25. BẢNG THÚ CƯNG (PK: ma_thu_cung, FK: ma_khach_hang)
+-- 25. Bảng thú cưng
 CREATE TABLE dbo.[thu_cung] (
     [ma_thu_cung] VARCHAR(20) NOT NULL,
     [ma_khach_hang] VARCHAR(20) NOT NULL,
@@ -469,7 +468,7 @@ CREATE TABLE dbo.[thu_cung] (
     CONSTRAINT [CK_thu_cung_2] CHECK ([loai] IN (N'Chó', N'Mèo'))
 );
 
--- 26. BẢNG HỢP ĐỒNG LƯU TRÚ (PK: ma_hop_dong, FK: ma_khach_hang, ma_thu_cung, ma_phong, ma_hoa_don)
+-- 26. Bảng hợp đồng lưu trú
 CREATE TABLE dbo.[hop_dong_luu_tru] (
     [ma_hop_dong] VARCHAR(30) NOT NULL,
     [ma_khach_hang] VARCHAR(20) NOT NULL,
@@ -497,7 +496,7 @@ CREATE TABLE dbo.[hop_dong_luu_tru] (
     CONSTRAINT [CK_hop_dong_luu_tru_trang_thai] CHECK ([trang_thai] IN ('DA_DAT', 'DANG_O', 'DA_TRA_PHONG', 'DA_HUY'))
 );
 
--- 27. BẢNG LỊCH HẸN (PK: ma_lich_hen, FK: ma_khach_hang, ma_thu_cung, ma_nhan_vien, ma_goi)
+-- 27. Bảng lịch hẹn
 CREATE TABLE dbo.[lich_hen] (
     [ma_lich_hen] VARCHAR(30) NOT NULL,
     [ma_khach_hang] VARCHAR(20) NOT NULL,
@@ -513,7 +512,7 @@ CREATE TABLE dbo.[lich_hen] (
     CONSTRAINT [CK_lich_hen_trang_thai] CHECK ([trang_thai] IN ('DA_XAC_NHAN', 'DANG_THUC_HIEN', 'HOAN_TAT', 'DA_HUY'))
 );
 
--- 28. BẢNG NHẬT KÝ CHĂM SÓC (PK: ma_nhat_ky, FK: ma_hop_dong, ma_phieu_spa, ma_nhan_vien)
+-- 28. Bảng nhật ký chăm sóc
 CREATE TABLE dbo.[nhat_ky_cham_soc] (
     [ma_nhat_ky] VARCHAR(30) NOT NULL,
     [ma_hop_dong] VARCHAR(30) NULL,
@@ -531,7 +530,7 @@ CREATE TABLE dbo.[nhat_ky_cham_soc] (
     CONSTRAINT [PK_nhat_ky_cham_soc] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
 );
 
--- 29. BẢNG PHIẾU TIẾP NHẬN SPA (PK: ma_phieu, FK: ma_lich_hen, ma_thu_cung, ma_goi, ma_nhan_vien, ma_hoa_don)
+-- 29. Bảng phiếu tiếp nhận spa
 CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     [ma_phieu] VARCHAR(30) NOT NULL,
     [ma_lich_hen] VARCHAR(30) NULL,
@@ -553,7 +552,7 @@ CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     CONSTRAINT [CK_phieu_tiep_nhan_spa_trang_thai] CHECK ([trang_thai] IN ('TIEP_NHAN', 'DANG_THUC_HIEN', 'HOAN_TAT', 'DA_THANH_TOAN', 'DA_HUY'))
 );
 
--- 30. BẢNG VOUCHER (PK: ma_voucher, FK: ma_khach_hang)
+-- 30. Bảng voucher
 CREATE TABLE dbo.[voucher] (
     [ma_voucher] VARCHAR(40) NOT NULL,
     [ma_khach_hang] VARCHAR(20) NULL,
@@ -573,7 +572,7 @@ CREATE TABLE dbo.[voucher] (
     CONSTRAINT [CK_voucher_trang_thai] CHECK ([trang_thai] IN ('CON_HAN', 'DA_DUNG', 'HET_HAN', 'DA_HUY'))
 );
 
--- 31. BẢNG YÊU CẦU PHÊ DUYỆT (PK: ma_yeu_cau, FK: ten_dang_nhap_gui, ten_dang_nhap_xu_ly)
+-- 31. Bảng yêu cầu phê duyệt
 CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     [ma_yeu_cau] VARCHAR(30) NOT NULL,
     [loai] VARCHAR(50) NOT NULL,
@@ -598,7 +597,7 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
         CHECK ([trang_thai] IN ('CHO_DUYET', 'DA_DUYET', 'TU_CHOI', 'CAN_THEM_THONG_TIN', 'DA_HUY'))
 );
 
--- 32. BẢNG LỊCH SỬ THU CỌC HOTEL (PK phức hợp: ma_hop_dong, khoa_thu_coc, phuong_thuc)
+-- 32. Bảng lịch sử thu cọc hotel
 CREATE TABLE dbo.[lich_su_thu_coc_hotel] (
     [ma_hop_dong] VARCHAR(30) NOT NULL,
     [khoa_thu_coc] VARCHAR(90) NOT NULL,
@@ -615,7 +614,7 @@ CREATE TABLE dbo.[lich_su_thu_coc_hotel] (
     CONSTRAINT [CK_lich_su_thu_coc_hotel_tien_thua] CHECK ([tien_thua]>=(0))
 );
 
--- 33. BẢNG PHIẾU SPA TREO (PK: ma_phieu, FK: ten_dang_nhap)
+-- 33. Bảng phiếu spa treo
 CREATE TABLE dbo.[phieu_spa_treo] (
     [ma_phieu] VARCHAR(30) NOT NULL,
     [ten_dang_nhap] VARCHAR(80) NOT NULL,
@@ -631,7 +630,6 @@ CREATE TABLE dbo.[phieu_spa_treo] (
     CONSTRAINT [PK_phieu_spa_treo] PRIMARY KEY CLUSTERED ([ma_phieu])
 );
 
--- ==================== KHÓA NGOẠI (FOREIGN KEYS) ====================
 ALTER TABLE dbo.[lich_lam_viec] ADD CONSTRAINT [FK_lich_lam_viec_nhan_vien] FOREIGN KEY ([ma_nhan_vien]) REFERENCES dbo.[nhan_vien] ([ma_nhan_vien]);
 ALTER TABLE dbo.[lich_lam_viec] ADD CONSTRAINT [FK_lich_lam_viec_ca_lam_viec] FOREIGN KEY ([ma_ca]) REFERENCES dbo.[ca_lam_viec] ([ma_ca]);
 
@@ -714,7 +712,6 @@ ALTER TABLE dbo.[lich_su_thu_coc_hotel] ADD CONSTRAINT [FK_lich_su_thu_coc_hotel
 
 ALTER TABLE dbo.[phieu_spa_treo] ADD CONSTRAINT [FK_phieu_spa_treo_tai_khoan] FOREIGN KEY ([ten_dang_nhap]) REFERENCES dbo.[tai_khoan] ([ten_dang_nhap]);
 
--- ==================== CHỈ MỤC TỐI ƯU HÓA TRA CỨU (INDEXES) ====================
 CREATE INDEX [IX_hoa_don_phien_trang_thai] ON dbo.[hoa_don] ([ma_phien], [trang_thai]);
 CREATE INDEX [IX_hoa_don_thoi_gian] ON dbo.[hoa_don] ([thanh_toan_luc] DESC);
 CREATE UNIQUE INDEX [UX_hoa_don_idempotency] ON dbo.[hoa_don] ([idempotency_key]) WHERE ([idempotency_key] IS NOT NULL AND [idempotency_key]<>'');

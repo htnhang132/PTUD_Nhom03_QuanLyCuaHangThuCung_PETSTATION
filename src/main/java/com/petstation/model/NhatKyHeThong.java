@@ -5,20 +5,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Nhật ký hệ thống khớp bảng [nhat_ky_he_thong] trong SQL Server.
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã nhật ký (maNhatKy). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với TaiKhoan (người thực hiện).
- * - Equals/hashCode theo khóa chính maNhatKy.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class NhatKyHeThong implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Nhật ký hệ thống */
     private String maNhatKy;
-    /** Quan hệ kết hợp: Tài khoản thực hiện thao tác (có thể null nếu thao tác hệ thống). */
+
     private TaiKhoan nguoiThucHien;
     private String thaoTac;
     private String kieuThucThe;
@@ -28,24 +19,20 @@ public class NhatKyHeThong implements Serializable {
     private String ghiChu;
     private LocalDateTime thoiDiemXayRa;
 
-    /** Constructor mặc định. */
     public NhatKyHeThong() {
         this.thoiDiemXayRa = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maNhatKy. */
     public NhatKyHeThong(String maNhatKy) {
         this();
         setMaNhatKy(maNhatKy);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public NhatKyHeThong(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính maNhatKy. */
     public NhatKyHeThong(
             String maNhatKy,
             TaiKhoan nguoiThucHien,
@@ -67,7 +54,6 @@ public class NhatKyHeThong implements Serializable {
         setThoiDiemXayRa(thoiDiemXayRa);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public NhatKyHeThong(
             long id,
             TaiKhoan nguoiThucHien,
@@ -82,7 +68,6 @@ public class NhatKyHeThong implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public NhatKyHeThong(
             long id,
             Long idNguoiThucHienTaiKhoan,
@@ -104,8 +89,6 @@ public class NhatKyHeThong implements Serializable {
                 ghiChu,
                 thoiDiemXayRa);
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
@@ -129,8 +112,6 @@ public class NhatKyHeThong implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaNhatKy() {
         return this.maNhatKy;
@@ -319,8 +300,6 @@ public class NhatKyHeThong implements Serializable {
     public void datThoiDiemXayRa(LocalDateTime thoiDiemXayRa) {
         setThoiDiemXayRa(thoiDiemXayRa);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

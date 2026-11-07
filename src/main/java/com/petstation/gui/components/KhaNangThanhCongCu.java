@@ -1,15 +1,5 @@
 package com.petstation.gui.components;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho thanh công cụ khả năng.
- *
- * @param coTheTao có thể tạo
- * @param coTheLuu có thể lưu
- * @param coTheTim có thể tìm
- * @param coTheIn có thể in
- * @param coTheHoanTac có thể hoàn tác
- * @param coTheTroGiup có thể trợ giúp
- */
 public record KhaNangThanhCongCu(
         boolean coTheTao,
         boolean coTheLuu,

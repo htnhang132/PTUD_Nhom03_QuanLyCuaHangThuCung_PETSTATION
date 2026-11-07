@@ -4,9 +4,7 @@ import com.petstation.model.PhienDangNhap;
 
 import java.util.Optional;
 
-/** Lưu và kiểm tra phiên đăng nhập đang hoạt động trong ứng dụng. */
 public final class NguCanhPhienService {
-    /** Phiên đăng nhập. */
     private PhienDangNhap phienDangNhap;
 
     public synchronized void batDau(PhienDangNhap phienDangNhap) {
@@ -18,7 +16,6 @@ public final class NguCanhPhienService {
     }
 
     public synchronized PhienDangNhap yeuCauHienTai() {
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
         if (phienDangNhap == null) {
             throw new PhanQuyenException("Phiên đăng nhập đã hết hạn.");
         }

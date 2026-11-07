@@ -4,36 +4,24 @@ import java.io.Serializable;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Chi tiết phiếu xuất kho khớp bảng [chi_tiet_phieu_xuat].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính phức hợp là cặp (phieuXuat, loHang). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với PhieuXuatKho và LoHang.
- * - Phương thức tính giá trị xuất dẫn xuất và equals/hashCode theo khóa chính.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class ChiTietPhieuXuat implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Quan hệ kết hợp: Dòng chi tiết thuộc về một Phiếu xuất kho. */
     private PhieuXuatKho phieuXuat;
-    /** Quan hệ kết hợp: Lô hàng được xuất kho. */
+
     private LoHang loHang;
     private int soLuong;
     private long giaTri;
 
-    /** Constructor mặc định. */
     public ChiTietPhieuXuat() {
         this.soLuong = 1;
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public ChiTietPhieuXuat(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng PhieuXuatKho và LoHang. */
     public ChiTietPhieuXuat(PhieuXuatKho phieuXuat, LoHang loHang, int soLuong, long giaTri) {
         setPhieuXuat(phieuXuat);
         setLoHang(loHang);
@@ -41,28 +29,21 @@ public class ChiTietPhieuXuat implements Serializable {
         this.giaTri = Math.max(0L, giaTri);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public ChiTietPhieuXuat(long id, PhieuXuatKho phieuXuat, LoHang loHang, int soLuong, long giaTri) {
         this(phieuXuat, loHang, soLuong, giaTri);
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public ChiTietPhieuXuat(long id, long phieuXuatId, long loHangId, int soLuong, long giaTri) {
         this(id, new PhieuXuatKho(phieuXuatId), new LoHang(loHangId), soLuong, giaTri);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính giá trị dòng xuất kho theo giá vốn lô hàng (thuộc tính dẫn xuất). */
     public long tinhGiaTriXuat() {
         if (loHang != null && loHang.getGiaNhap() > 0 && soLuong > 0) {
             return (long) soLuong * loHang.getGiaNhap();
         }
         return Math.max(0L, this.giaTri);
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         String key = (phieuXuat != null ? phieuXuat.getSoPhieu() : "") + "_" + (loHang != null ? loHang.getMaLo() : "");
@@ -85,8 +66,6 @@ public class ChiTietPhieuXuat implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public PhieuXuatKho getPhieuXuat() {
         return this.phieuXuat;
@@ -194,12 +173,9 @@ public class ChiTietPhieuXuat implements Serializable {
         return tinhGiaTriXuat();
     }
 
-    /** Phương thức nội bộ gán snapshot từ CSDL (không cung cấp setter công khai vì thuộc tính dẫn xuất). */
     void napGiaTriSnapshot(long giaTri) {
         this.giaTri = Math.max(0L, giaTri);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

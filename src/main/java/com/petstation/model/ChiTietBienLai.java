@@ -3,7 +3,6 @@ package com.petstation.model;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** Thông tin in bổ sung; số dư điểm lịch sử để null nếu không xác định được. */
 public class ChiTietBienLai implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -102,8 +101,8 @@ public class ChiTietBienLai implements Serializable {
     public void datHoaDonGoc(String hoaDonGoc) { this.hoaDonGoc = hoaDonGoc; }
 
     public int tongSoLuong() {
-        return bienLai != null && bienLai.cacDong() != null 
-            ? bienLai.cacDong().stream().mapToInt(GioHang.DongHang::soLuong).sum() 
+        return bienLai != null && bienLai.cacDong() != null
+            ? bienLai.cacDong().stream().mapToInt(GioHang.DongHang::soLuong).sum()
             : 0;
     }
 

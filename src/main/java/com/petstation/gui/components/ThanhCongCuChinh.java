@@ -17,9 +17,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-/** Cung cấp giao diện và xử lý tương tác cho màn hình thanh công cụ. */
 public final class ThanhCongCuChinh extends JPanel {
-    /** Cung cấp giao diện và xử lý tương tác cho thao tác. */
     public enum ThaoTac {
         MOI,
         LUU,
@@ -29,16 +27,12 @@ public final class ThanhCongCuChinh extends JPanel {
         TRO_GIUP
     }
 
-    /** Các nút. */
     private final Map<ThaoTac, JButton> cacNut = new EnumMap<>(ThaoTac.class);
 
-    /** Các gợi ý khi rê chuột. */
     private final Map<ThaoTac, String> cacGoiYKhiReChuot = new EnumMap<>(ThaoTac.class);
 
-    /** Hoạt động vùng hiển thị. */
     private HoTroThanhCongCu hoatDongVungHienThi;
 
-    /** Nút quay lại. */
     private final JButton btnNutQuayLai;
 
     public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai) {
@@ -51,7 +45,7 @@ public final class ThanhCongCuChinh extends JPanel {
         btnNutQuayLai.addActionListener(suKien -> diQuayLai.run());
         btnNutQuayLai.setEnabled(false);
         add(btnNutQuayLai);
-        // Trang chính.
+
         JButton btnTrangChinh = taoNut("Màn hình chính", "Alt+Home", BieuTuongNet.Kieu.TRANG_CHINH);
         btnTrangChinh.addActionListener(suKien -> diTrangChinh.run());
         add(btnTrangChinh);
@@ -62,7 +56,7 @@ public final class ThanhCongCuChinh extends JPanel {
 
     public void datHoatDongVungHienThi(JPanel pnlVungHienThi) {
         hoatDongVungHienThi = pnlVungHienThi instanceof HoTroThanhCongCu hoTro ? hoTro : null;
-        // Khả năng.
+
         KhaNangThanhCongCu khaNang =
                 hoatDongVungHienThi == null
                         ? KhaNangThanhCongCu.taoRong()
@@ -84,7 +78,6 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     public void kichHoat(ThaoTac thaoTac) {
-        // Nút.
         JButton btnNut = cacNut.get(thaoTac);
         if (btnNut == null || !btnNut.isEnabled() || hoatDongVungHienThi == null) return;
         switch (thaoTac) {
@@ -99,7 +92,6 @@ public final class ThanhCongCuChinh extends JPanel {
 
     private void themThaoTac(
             ThaoTac thaoTac, String nhan, String phimTat, BieuTuongNet.Kieu kieuBieuTuong) {
-        // Nút.
         JButton btnNut = taoNut(nhan, phimTat, kieuBieuTuong);
         btnNut.addActionListener(suKien -> kichHoat(thaoTac));
         cacNut.put(thaoTac, btnNut);
@@ -108,17 +100,10 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     private JButton taoNut(String nhan, String phimTat, BieuTuongNet.Kieu kieuBieuTuong) {
-        // Nút.
         JButton btnNut =
                 new JButton(nhan, new BieuTuongNet(kieuBieuTuong, 20, MauUngDung.NAU)) {
-                    /**
-                     * Vẽ thành phần trong lớp xử lý giao diện.
-                     *
-                     * @param doHoa đồ họa
-                     */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
-                        // Đồ họa.
                         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
                         if (isEnabled() && getModel().isRollover()) {
                             doHoa2.setColor(MauUngDung.DO_NHAT);
@@ -147,7 +132,6 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     private JSeparator layDuongPhanCach() {
-        // Phân cách.
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);
         phanCach.setPreferredSize(new Dimension(7, 30));
         phanCach.setForeground(MauUngDung.VIEN);
@@ -155,7 +139,6 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     private void datDuocBat(ThaoTac thaoTac, boolean duocBat) {
-        // Nút.
         JButton btnNut = cacNut.get(thaoTac);
         if (btnNut == null) return;
         btnNut.setEnabled(duocBat);

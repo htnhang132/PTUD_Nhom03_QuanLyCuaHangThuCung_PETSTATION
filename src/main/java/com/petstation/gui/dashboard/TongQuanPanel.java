@@ -35,41 +35,21 @@ import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho tổng quan vùng hiển thị.
- *
- * <p>Màn hình chính: lối tắt việc hằng ngày theo quyền, số liệu thật của ca/kho/phê duyệt, biểu đồ
- * doanh thu 7 ngày.
- */
 public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
 
-    /** Có thể truy cập. */
     private final Predicate<MaManHinh> coTheTruyCap;
 
-    /** Ca làm việc. */
     private final CaThuNganService caLamViec;
 
-    /** Các phím tắt. */
     private final JPanel pnlCacPhimTat = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
 
-    /** Các chỉ số. */
     private final JPanel pnlCacChiSo = new JPanel(new GridLayout(1, 4, 14, 0));
 
-    /** Biểu đồ. */
     private final BieuDoCot bieuDo = new BieuDoCot();
 
-    /** Trên mô hình. */
     private final DefaultTableModel trenMoHinh =
             new DefaultTableModel(new String[] {"#", "Sản phẩm", "Đã bán", "Doanh thu"}, 0) {
-                /**
-                 * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                 *
-                 * @param dongDuLieu dòng dữ liệu
-                 * @param giaTriDangXet giá trị đang xét
-                 * @return kết quả kiểm tra điều kiện xử lý
-                 */
                 @Override
                 public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                     return false;
@@ -85,18 +65,17 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         this.caLamViec = caLamViec;
         setLayout(new BorderLayout(0, 14));
 
-        // Đầu.
         JPanel pnlDau = taoVungTrongSuot(new BorderLayout());
-        // Tiêu đề.
+
         JLabel lblTieuDe = taoTieuDeMuc("Tổng quan hôm nay");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 22));
-        // Ngày.
+
         String ngay =
                 LocalDate.now()
                         .format(
                                 DateTimeFormatter.ofPattern(
                                         "EEEE, dd/MM/yyyy", new Locale("vi", "VN")));
-        // Nhãn ngày.
+
         JLabel lblNhanNgay = new JLabel(ngay.substring(0, 1).toUpperCase() + ngay.substring(1));
         lblNhanNgay.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         lblNhanNgay.setForeground(MauUngDung.VAN_BAN_XAM);
@@ -105,47 +84,44 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
 
         pnlCacPhimTat.setOpaque(false);
         pnlCacChiSo.setOpaque(false);
-        // Trên.
+
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout(0, 12));
         pnlTren.add(pnlDau, BorderLayout.NORTH);
         pnlTren.add(pnlCacPhimTat, BorderLayout.CENTER);
         pnlTren.add(pnlCacChiSo, BorderLayout.SOUTH);
         add(pnlTren, BorderLayout.NORTH);
 
-        // Biểu đồ thẻ.
         JPanel pnlBieuDoThe = new JPanel(new BorderLayout(0, 6));
         pnlBieuDoThe.setBackground(Color.WHITE);
         pnlBieuDoThe.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.VIEN),
                         new EmptyBorder(12, 14, 10, 14)));
-        // Kiểu cột.
+
         JLabel lblKieuCot = new JLabel("Doanh thu 7 ngày qua");
         lblKieuCot.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         pnlBieuDoThe.add(lblKieuCot, BorderLayout.NORTH);
         pnlBieuDoThe.add(bieuDo, BorderLayout.CENTER);
 
-        // Bảng.
         JTable tblBang = new JTable(trenMoHinh);
         DinhDangBang.apDung(tblBang);
         tblBang.setAutoCreateRowSorter(false);
         tblBang.getColumnModel().getColumn(0).setPreferredWidth(36);
         tblBang.getColumnModel().getColumn(1).setPreferredWidth(190);
         tblBang.getColumnModel().getColumn(3).setPreferredWidth(120);
-        // Khung cuộn.
+
         JScrollPane scrKhungCuon = new JScrollPane(tblBang);
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         scrKhungCuon.getViewport().setBackground(Color.WHITE);
-        // Trên thẻ.
+
         JPanel pnlTrenThe = new JPanel(new BorderLayout(0, 6));
         pnlTrenThe.setOpaque(false);
-        // Gợi ý.
+
         JLabel lblGoiY = new JLabel("Sản phẩm bán chạy");
         lblGoiY.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         pnlTrenThe.add(lblGoiY, BorderLayout.NORTH);
         pnlTrenThe.add(scrKhungCuon, BorderLayout.CENTER);
 
-        // Giữa.
         JPanel pnlGiua = new JPanel(new GridLayout(1, 2, 14, 0));
         pnlGiua.setOpaque(false);
         pnlGiua.add(pnlBieuDoThe);
@@ -157,7 +133,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
 
     private void themPhimTat(String vanBan, MaManHinh dich, NutDinhDang.KieuNut kieu) {
         if (!coTheTruyCap.test(dich)) return;
-        // Giá trị sau.
+
         NutDinhDang btnGiaTriSau = new NutDinhDang(vanBan, kieu);
         btnGiaTriSau.setPreferredSize(new Dimension(Math.max(110, vanBan.length() * 9 + 28), 42));
         btnGiaTriSau.addActionListener(suKien -> boDieuHuong.accept(dich));
@@ -174,7 +150,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                 MaManHinh.CA_THU_NGAN,
                 NutDinhDang.KieuNut.TRONG_SUOT);
         themPhimTat("Lập phiếu nhập kho", MaManHinh.NHAP_KHO, NutDinhDang.KieuNut.TRONG_SUOT);
-        // Đang chờ.
+
         long dangCho = PheDuyetService.demChoDuyet();
         themPhimTat(
                 dangCho > 0 ? "Phê duyệt (" + dangCho + ")" : "Phê duyệt",
@@ -184,7 +160,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlCacPhimTat.repaint();
 
         pnlCacChiSo.removeAll();
-        // Doanh thu.
+
         long doanhThu =
                 caLamViec.layDoanhThuTienMat()
                         + caLamViec.layDoanhThuChuyenKhoan()
@@ -217,13 +193,12 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlCacChiSo.revalidate();
         pnlCacChiSo.repaint();
 
-        // Số ngày.
         String[] soNgay = new String[7];
-        // Các giá trị.
+
         double[] cacGiaTri = new double[7];
-        // Doanh thu theo ngày.
+
         java.util.Map<java.time.LocalDate, Double> doanhThuTheoNgay = new java.util.HashMap<>();
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
+
         if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CHUNG)
                 || PhienDangNhapService.layPhien()
                         .kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CA)) {
@@ -232,7 +207,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                         ((java.sql.Date) dong[0]).toLocalDate(), ((Number) dong[1]).doubleValue());
         }
         for (int chiSo = 0; chiSo < 7; chiSo++) {
-            // Ngày.
             java.time.LocalDate ngay = LocalDate.now().minusDays(6 - chiSo);
             soNgay[chiSo] = ngay.format(DateTimeFormatter.ofPattern("dd/MM"));
             cacGiaTri[chiSo] = doanhThuTheoNgay.getOrDefault(ngay, 0.0);
@@ -240,9 +214,9 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         bieuDo.datDuLieu(soNgay, cacGiaTri, true, "");
 
         trenMoHinh.setRowCount(0);
-        // Hạng.
+
         int hang = 1;
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
+
         if (PhienDangNhapService.layPhien().kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CHUNG)
                 || PhienDangNhapService.layPhien()
                         .kiemTraCo(com.petstation.model.Quyen.XEM_BAO_CAO_CA)) {
@@ -260,7 +234,6 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     private static long layThapTonKho() {
-        // Số phần tử.
         long soPhanTu = 0;
         for (Object[] vungDangXet : DanhMucService.laySanPham()) {
             if (TienTe.doc(String.valueOf(vungDangXet[8]))

@@ -5,7 +5,6 @@ import com.petstation.dao.impl.LichSuKhachHangDAOImpl;
 
 import java.util.List;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho lịch sử khách hàng dịch vụ. */
 public final class LichSuKhachHangService {
     private static final LichSuKhachHangDAO lichSuKhachHangDAO = new LichSuKhachHangDAOImpl();
 

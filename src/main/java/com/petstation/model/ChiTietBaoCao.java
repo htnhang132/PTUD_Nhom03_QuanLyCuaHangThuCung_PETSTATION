@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/** Dữ liệu chứng từ và cột dùng để đối chiếu nhóm trên biểu đồ với bảng chi tiết. */
 public class ChiTietBaoCao implements Serializable {
     private static final long serialVersionUID = 1L;
 

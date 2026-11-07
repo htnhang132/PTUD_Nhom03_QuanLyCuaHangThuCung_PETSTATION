@@ -8,11 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Optional;
 
-/** Thực hiện truy vấn JDBC cho JDBC nhân viên DAO. */
 public final class NhanVienDAOImpl implements NhanVienDAO {
     @Override
     public Optional<NhanVien> timTheoId(Connection ketNoi, String maNhanVien) throws Exception {
-        // SQL.
         String sql =
                 """
                 SELECT ma_nhan_vien, ho_ten, ngay_sinh, so_dien_thoai, dia_chi,
@@ -23,7 +21,6 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, maNhanVien);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (!ketQua.next()) {
                     return Optional.empty();
                 }

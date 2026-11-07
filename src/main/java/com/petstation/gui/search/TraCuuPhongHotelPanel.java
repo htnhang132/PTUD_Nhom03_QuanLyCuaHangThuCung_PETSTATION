@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Sơ đồ phòng dùng ID ổn định, thông tin hover được nạp cùng dữ liệu phòng. */
 public final class TraCuuPhongHotelPanel extends CoSoPanel {
     private final GioHang gio;
     private final Consumer<MaManHinh> dieuHuong;
@@ -44,13 +43,14 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                 BorderLayout.NORTH);
         ThanhDanhSach loc = new ThanhDanhSach();
         txtLoc.setName("timPhong");
+        txtLoc.putClientProperty("JTextField.placeholderText", "Tìm mã phòng...");
         txtLoc.setPreferredSize(new Dimension(190, 34));
         cboLoai.setName("loaiPhong");
         cboTrangThai.setName("trangThaiPhong");
         loc.add(txtLoc);
         loc.themBoLoc("Loại:", cboLoai);
         loc.themBoLoc("Trạng thái:", cboTrangThai);
-        JButton xoa = new JButton("Xóa bộ lọc");
+        JButton xoa = new NutDinhDang("Xóa bộ lọc", NutDinhDang.KieuNut.TRONG_SUOT);
         xoa.addActionListener(
                 e -> {
                     txtLoc.setText("");
@@ -59,11 +59,11 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                     loc();
                 });
         loc.themBoLoc(xoa);
-        JButton moi = new JButton("Làm mới");
+        JButton moi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
         moi.setToolTipText("Đọc lại trạng thái phòng từ SQL Server");
         moi.addActionListener(e -> nap());
         loc.add(moi);
-        JButton in = new JButton("In sơ đồ");
+        JButton in = new NutDinhDang("In sơ đồ", NutDinhDang.KieuNut.PHU);
         in.addActionListener(e -> inSoDo());
         loc.add(in);
 
@@ -244,7 +244,6 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         return the;
     }
 
-    /** Nhãn bên trong thẻ cũng nhận thao tác như toàn bộ nút phòng. */
     private static void ganChuotChoNoiDung(Container cha, MouseAdapter chuot) {
         for (Component con : cha.getComponents()) {
             con.addMouseListener(chuot);

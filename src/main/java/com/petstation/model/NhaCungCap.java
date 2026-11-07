@@ -4,14 +4,9 @@ import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Thực thể Nhà cung cấp khớp bảng [nha_cung_cap].
- * Khóa chính: maNhaCungCap (alias: maNcc).
- */
 public class NhaCungCap implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã nhà cung cấp (ví dụ: NCC0001). */
     private String maNhaCungCap;
     private String ten;
     private String soDienThoai;
@@ -23,18 +18,15 @@ public class NhaCungCap implements Serializable {
     private String maSoThue;
     private String dieuKhoan;
 
-    /** Constructor mặc định. */
     public NhaCungCap() {
         this.trangThai = "Đang hợp tác";
     }
 
-    /** Constructor chỉ có khóa chính. */
     public NhaCungCap(String maNhaCungCap) {
         this();
         setMaNhaCungCap(maNhaCungCap);
     }
 
-    /** Constructor đầy đủ thuộc tính thường. */
     public NhaCungCap(
             String maNhaCungCap,
             String ten,
@@ -59,7 +51,6 @@ public class NhaCungCap implements Serializable {
         setDieuKhoan(dieuKhoan);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public NhaCungCap(long id) {
         this();
         setId(id);
@@ -81,17 +72,12 @@ public class NhaCungCap implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra nhà cung cấp có đang trong trạng thái hợp tác hay không (dẫn xuất). */
     public boolean kiemTraDangHopTac() {
         return trangThai == null
                 || "DANG_HOP_TAC".equalsIgnoreCase(trangThai)
                 || "Đang hợp tác".equalsIgnoreCase(trangThai)
                 || (!"Ngừng hợp tác".equalsIgnoreCase(trangThai) && !"NGUNG_HOP_TAC".equalsIgnoreCase(trangThai));
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaNhaCungCap() {
         return this.maNhaCungCap;
@@ -113,7 +99,6 @@ public class NhaCungCap implements Serializable {
         setMaNhaCungCap(maNhaCungCap);
     }
 
-    // Alias maNcc tương thích ngược
     public String getMaNcc() {
         return getMaNhaCungCap();
     }
@@ -188,8 +173,6 @@ public class NhaCungCap implements Serializable {
     public void setDieuKhoan(String dieuKhoan) { this.dieuKhoan = dieuKhoan; }
     public void datDieuKhoan(String dieuKhoan) { setDieuKhoan(dieuKhoan); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maNhaCungCap); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -200,8 +183,6 @@ public class NhaCungCap implements Serializable {
         }
     }
     public void datId(long id) { setId(id); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maNhaCungCap) ====================
 
     @Override
     public boolean equals(Object o) {

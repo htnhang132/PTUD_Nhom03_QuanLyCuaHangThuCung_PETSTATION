@@ -18,10 +18,6 @@ public final class ChamSocService {
 
     private ChamSocService() {}
 
-    /**
-     * Kiểm tra thư mục ảnh là SMB/UNC dùng chung và máy hiện tại có quyền đọc/ghi.
-     * Ví dụ: \\\\PETSTATION-NAS\\DuLieuPetStation\\cham-soc
-     */
     public static void kiemTraThuMucAnhDungChung() {
         layThuMucAnhDungChung();
     }

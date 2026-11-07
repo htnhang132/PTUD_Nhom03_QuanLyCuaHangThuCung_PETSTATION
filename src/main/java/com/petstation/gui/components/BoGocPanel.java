@@ -4,15 +4,11 @@ import java.awt.*;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho bo góc vùng hiển thị. */
 public class BoGocPanel extends JPanel {
-    /** Bán kính. */
     private int banKinh;
 
-    /** Nền. */
     private Color nen;
 
-    /** Có bóng. */
     private boolean coBong;
 
     public BoGocPanel(int banKinh, Color nen) {
@@ -28,7 +24,6 @@ public class BoGocPanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics doHoa) {
-        // Đồ họa 2.
         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
         doHoa2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 

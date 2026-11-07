@@ -44,51 +44,35 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-/** Cửa sổ chính tổ chức menu chức năng, thanh công cụ và điều hướng giữa các màn hình. */
 public final class ChinhFrame extends JFrame {
-    /** Đổi kích thước cạnh. */
     private static final int DOI_KICH_THUOC_CANH = 5;
 
-    /** Lịch sử lớn nhất. */
     private static final int LICH_SU_LON_NHAT = 30;
 
-    /** Ngữ cảnh. */
     private final KhoiTaoUngDung nguCanh;
 
-    /** Phiên đăng nhập. */
     private final PhienDangNhap phienDangNhap;
 
-    /** Màn hình bố cục. */
     private final CardLayout manHinhBoCuc = new CardLayout();
 
-    /** Làm việc vùng. */
     private final JPanel pnlLamViecVung = new JPanel(manHinhBoCuc);
 
-    /** Màn hình bộ nhớ đệm. */
     private final Map<MaManHinh, JPanel> manHinhBoNhoDem = new EnumMap<>(MaManHinh.class);
 
-    /** Màn hình bộ đăng ký. */
     private final DangKyManHinh manHinhBoDangKy;
 
-    /** Thanh công cụ. */
     private final ThanhCongCuChinh pnlThanhCongCu;
 
-    /** Thanh trạng thái. */
     private final ThanhTrangThai pnlThanhTrangThai;
 
-    /** Thanh menu. */
     private final ThanhMenuChinh pnlThanhMenu;
 
-    /** Thanh quy trình. */
     private final ThanhQuyTrinh pnlThanhQuyTrinh;
 
-    /** Gốc. */
     private final JPanel pnlGoc = new JPanel(new BorderLayout());
 
-    /** Lịch sử. */
     private final Deque<MaManHinh> lichSu = new ArrayDeque<>();
 
-    /** Hiện tại. */
     private MaManHinh hienTai;
 
     public ChinhFrame(KhoiTaoUngDung nguCanh) {
@@ -116,7 +100,6 @@ public final class ChinhFrame extends JFrame {
                 new ThanhMenuChinh(
                         manHinhBoDangKy, this::dieuHuong, this::dangXuat, this::yeuCauThoat);
 
-        // Trên.
         JPanel pnlTren = new JPanel();
         pnlTren.setLayout(new BoxLayout(pnlTren, BoxLayout.Y_AXIS));
         pnlTren.add(new ThanhTieuDe(this, this::dieuHuong, this::yeuCauThoat));
@@ -126,7 +109,6 @@ public final class ChinhFrame extends JFrame {
 
         pnlLamViecVung.setBackground(MauUngDung.NEN_KEM);
 
-        // Viền 5px là vùng kéo đổi kích thước (cửa sổ không dùng viền hệ thống).
         pnlGoc.setBackground(new Color(0x8C, 0x7A, 0x6E));
         pnlGoc.setBorder(
                 BorderFactory.createEmptyBorder(
@@ -137,9 +119,8 @@ public final class ChinhFrame extends JFrame {
         ThayDoiKichThuocCuaSo.thietLap(this, pnlGoc);
         addWindowStateListener(
                 suKien -> {
-                    // Phóng to.
                     boolean phongTo = (suKien.getNewState() & MAXIMIZED_BOTH) == MAXIMIZED_BOTH;
-                    // Cạnh.
+
                     int canh = phongTo ? 0 : DOI_KICH_THUOC_CANH;
                     pnlGoc.setBorder(BorderFactory.createEmptyBorder(canh, canh, canh, canh));
                 });
@@ -151,11 +132,6 @@ public final class ChinhFrame extends JFrame {
         dangKyCuaSoCacPhimTat();
         addWindowListener(
                 new java.awt.event.WindowAdapter() {
-                    /**
-                     * Lấy cửa sổ kết ca trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent suKien) {
                         yeuCauThoat();
@@ -168,7 +144,6 @@ public final class ChinhFrame extends JFrame {
                         () -> {
                             if (manHinhBoDangKy.layCaLamViec().kiemTraMo()
                                     && dangChoSauCaLamViec != null) {
-                                // Đích.
                                 MaManHinh dich = dangChoSauCaLamViec;
                                 dangChoSauCaLamViec = null;
                                 manHinhBoDangKy.layCaLamViec().datTieuDeDangCho("");
@@ -191,12 +166,6 @@ public final class ChinhFrame extends JFrame {
         }
     }
 
-    /**
-     * Đường quay lại riêng của màn hình thanh toán.
-     *
-     * <p>Không gọi chuyenBuoc(): đây là thao tác hủy bước thanh toán để quay về nơi đã mở nó,
-     * không phải thao tác nhảy bước trên thanh tiến trình.
-     */
     private void quayLaiTuThanhToan(MaManHinh dich) {
         var gio = manHinhBoDangKy.layGioHang();
         String nguon = gio.layKieuNguon();
@@ -217,12 +186,8 @@ public final class ChinhFrame extends JFrame {
             return;
         }
 
-        // Đơn quyết toán Hotel/Spa là giỏ tạm được dựng từ hồ sơ nghiệp vụ.
-        // Xóa giỏ tạm để người dùng có thể mở lại bước quyết toán sau khi quay về.
-        // Không xóa NguCanhQuyTrinh nên hợp đồng/phiếu đang chọn vẫn được giữ nguyên.
         if (quayLaiHotel || quayLaiSpa) gio.xoa();
 
-        // Gọi dieuHuong trực tiếp, không qua bộ kiểm tra chuyển bước của thanh tiến trình.
         dieuHuong(dich);
     }
 
@@ -232,11 +197,9 @@ public final class ChinhFrame extends JFrame {
             return;
         }
 
-        // Định nghĩa.
         DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(id);
         if (dinhNghia == null) return;
         try {
-            // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
             if (dinhNghia.quyen() != null) {
                 nguCanh.layPhanQuyenDichVu().yeuCau(dinhNghia.quyen());
             }
@@ -262,7 +225,6 @@ public final class ChinhFrame extends JFrame {
         }
     }
 
-    /** Đang chờ sau ca làm việc. */
     private MaManHinh dangChoSauCaLamViec;
 
     private void nhacNhapMoCaLamViec(MaManHinh idDich, DinhNghiaManHinh dich) {
@@ -274,8 +236,7 @@ public final class ChinhFrame extends JFrame {
                             + "\".\nHãy nhờ Cửa hàng trưởng mở ca.");
             return;
         }
-        // Đi thẳng tới màn Mở ca (không hỏi lại) và nhớ chức năng đang muốn vào để tự quay về sau
-        // khi mở ca.
+
         dangChoSauCaLamViec = idDich;
         manHinhBoDangKy.layCaLamViec().datTieuDeDangCho(dich.tieuDe());
         hienThi(MaManHinh.CA_THU_NGAN, manHinhBoDangKy.layDinhNghia(MaManHinh.CA_THU_NGAN), true);
@@ -298,12 +259,11 @@ public final class ChinhFrame extends JFrame {
             }
         }
         hienTai = id;
-        // Màn hình.
+
         JPanel pnlManHinh =
                 manHinhBoNhoDem.computeIfAbsent(
                         id,
                         khoa -> {
-                            // Đã tạo.
                             JPanel pnlDaTao = manHinhBoDangKy.tao(khoa);
                             pnlLamViecVung.add(pnlDaTao, khoa.name());
                             return pnlDaTao;
@@ -337,9 +297,8 @@ public final class ChinhFrame extends JFrame {
 
     private void diQuayLai() {
         while (!lichSu.isEmpty()) {
-            // Trước đó.
             MaManHinh truocDo = lichSu.pop();
-            // Định nghĩa.
+
             DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(truocDo);
             if (dinhNghia != null && manHinhBoDangKy.coTheTruyCap(truocDo)) {
                 hienThi(truocDo, dinhNghia, false);
@@ -350,7 +309,6 @@ public final class ChinhFrame extends JFrame {
     }
 
     private void dangKyCuaSoCacPhimTat() {
-        // Gốc.
         JRootPane goc = getRootPane();
         lienKet(
                 goc,
@@ -429,11 +387,6 @@ public final class ChinhFrame extends JFrame {
                 .put(
                         ten,
                         new AbstractAction() {
-                            /**
-                             * Lấy thao tác đã thực hiện trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
                             @Override
                             public void actionPerformed(ActionEvent suKien) {
                                 lenh.run();

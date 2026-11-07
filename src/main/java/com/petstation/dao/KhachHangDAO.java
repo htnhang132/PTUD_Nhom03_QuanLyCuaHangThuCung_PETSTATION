@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/** Thao tác dữ liệu cho KhachHang; service gọi qua hợp đồng này. */
 public interface KhachHangDAO {
     KhachHang tao(KhachHang khachHang);
 

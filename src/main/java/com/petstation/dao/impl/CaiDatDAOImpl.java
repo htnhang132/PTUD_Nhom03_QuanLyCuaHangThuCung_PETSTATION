@@ -3,7 +3,6 @@ package com.petstation.dao.impl;
 import com.petstation.dao.CaiDatDAO;
 import com.petstation.database.ThaoTacSQL;
 
-/** Thực hiện truy vấn JDBC cho JDBC cài đặt DAO. */
 public final class CaiDatDAOImpl implements CaiDatDAO {
     public CaiDatDAOImpl() {}
 

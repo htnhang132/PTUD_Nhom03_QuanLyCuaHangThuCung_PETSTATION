@@ -12,39 +12,28 @@ import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho lịch làm việc dịch vụ. */
 public final class LichLamViecService {
     private static final LichLamViecDAO lichLamViecDAO = new LichLamViecDAOImpl();
 
-    /** Các ca làm việc theo chuẩn OOAD (2 ca/ngày: Ca sáng CA01, Ca chiều CA02). */
     public static final String[] CAC_CA_LAM_VIEC = {"Ca sáng", "Ca chiều"};
 
-    /** Khung giờ các ca làm việc. */
     public static final String[] CA_LAM_VIEC_CAC_THOI_GIAN = {
         "07:30 – 14:30", "14:30 – 21:30"
     };
 
-    /** Số nhân viên tối thiểu mỗi ca. */
     public static final int[] NHO_NHAT_NHAN_VIEN = {2, 2};
 
-    /** Các mã ca làm việc trong CSDL. */
     private static final String[] CAC_MA = {"CA01", "CA02"};
 
-    /** Các bộ lắng nghe. */
     private static final List<Runnable> CAC_BO_LANG_NGHE = new ArrayList<>();
 
-    /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho mục. */
     public static final class Muc {
-        /** Ngày. */
         public final LocalDate ngay;
 
-        /** Ca làm việc. */
         public final int caLamViec;
 
-        /** Mã nhân viên. */
         public final String maNhanVien;
 
-        /** Loại. */
         public String loai;
 
         Muc(LocalDate ngay, int caLamViec, String ma, String loai) {

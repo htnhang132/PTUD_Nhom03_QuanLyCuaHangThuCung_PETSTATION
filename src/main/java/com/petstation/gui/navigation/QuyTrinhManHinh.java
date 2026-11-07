@@ -5,20 +5,7 @@ import com.petstation.model.MaManHinh;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho màn hình các quy trình.
- *
- * <p>Các quy trình nhiều bước; thanh luồng ở khung chính hiển thị bước hiện tại.
- */
 public final class QuyTrinhManHinh {
-    /**
-     * Cung cấp giao diện và xử lý tương tác cho quy trình.
-     *
-     * @param ten tên
-     * @param cacBuoc các bước
-     * @param cacNhan các nhãn
-     * @param tuanTu tuần tự
-     */
     public record QuyTrinh(
             String ten, List<MaManHinh> cacBuoc, List<String> cacNhan, boolean tuanTu) {
         public int layChiSoCua(MaManHinh id) {
@@ -27,7 +14,6 @@ public final class QuyTrinhManHinh {
         }
 
         public Optional<MaManHinh> layTiepTheo(MaManHinh id) {
-            // Chỉ số.
             int chiSo = layChiSoCua(id);
             return chiSo >= 0 && chiSo + 1 < cacBuoc.size()
                     ? Optional.of(cacBuoc.get(chiSo + 1))
@@ -35,7 +21,6 @@ public final class QuyTrinhManHinh {
         }
 
         public Optional<MaManHinh> layTruocDo(MaManHinh id) {
-            // Chỉ số.
             int chiSo = layChiSoCua(id);
             return chiSo > 0 ? Optional.of(cacBuoc.get(chiSo - 1)) : Optional.empty();
         }
@@ -45,7 +30,6 @@ public final class QuyTrinhManHinh {
         }
     }
 
-    /** Các quy trình. */
     private static final List<QuyTrinh> CAC_QUY_TRINH =
             List.of(
                     new QuyTrinh(

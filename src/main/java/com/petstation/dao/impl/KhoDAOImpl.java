@@ -7,7 +7,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC kho DAO. */
 public final class KhoDAOImpl implements KhoDAO {
     public KhoDAOImpl() {}
 
@@ -327,4 +326,3 @@ public final class KhoDAOImpl implements KhoDAO {
         return rows;
     }
 }
-

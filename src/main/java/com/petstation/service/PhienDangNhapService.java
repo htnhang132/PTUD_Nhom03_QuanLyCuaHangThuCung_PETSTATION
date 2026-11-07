@@ -2,16 +2,13 @@ package com.petstation.service;
 
 import com.petstation.model.PhienDangNhap;
 
-/** Cung cấp phiên hiện tại và các kiểm tra quyền dùng chung cho nghiệp vụ. */
 public final class PhienDangNhapService {
     private PhienDangNhapService() {}
 
-    /** Phiên đăng nhập. */
     private static volatile PhienDangNhap phienDangNhap;
 
     private static final ThreadLocal<PhienDangNhap> phienCongViec = new ThreadLocal<>();
 
-    /** Công việc nền giữ danh tính người khởi tạo, không nhận nhầm phiên mới khi đăng xuất. */
     public static <T> T trongPhien(PhienDangNhap phien, java.util.concurrent.Callable<T> viec)
             throws Exception {
         if (phien == null || phienDangNhap != phien)
@@ -45,7 +42,7 @@ public final class PhienDangNhapService {
     public static PhienDangNhap layPhien() {
         PhienDangNhap nen = phienCongViec.get();
         if (nen != null) return nen;
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
+
         if (phienDangNhap == null)
             throw new IllegalStateException("Bạn cần đăng nhập để thực hiện thao tác này.");
         return phienDangNhap;
@@ -64,7 +61,6 @@ public final class PhienDangNhapService {
     }
 
     public static void yeuCau(com.petstation.model.Quyen quyen) {
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
         if (!layPhien().kiemTraCo(quyen))
             throw new com.petstation.service.PhanQuyenException(
                     "Bạn không có quyền thực hiện thao tác này.");

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-/** Khoảng báo cáo bao gồm cả ngày bắt đầu và ngày kết thúc. */
 public class KhoangNgay implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -39,12 +38,11 @@ public class KhoangNgay implements Serializable {
         LocalDate homNay = LocalDate.now();
         return new KhoangNgay(homNay.minusDays(Math.max(1, soNgay) - 1L), homNay);
     }
-    
-    /** Cận trên loại trừ dùng cho cột SQL có thành phần giờ. */
+
     public LocalDate layCanTren() {
         return denNgay.plusDays(1);
     }
-    
+
     public long demSoNgay() {
         return java.time.temporal.ChronoUnit.DAYS.between(tuNgay, denNgay) + 1;
     }

@@ -5,7 +5,6 @@ import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC thống kê DAO. */
 public final class ThongKeDAOImpl implements ThongKeDAO {
     public ThongKeDAOImpl() {}
 
@@ -80,7 +79,6 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 cacThamSo);
     }
 
-    /** Tổng thu thực tế: hóa đơn, cọc Hotel mới và hoàn tiền lịch sử. */
     public List<Object[]> layDoanhThuTheoNgay(
             java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
         String loc = taiKhoan == null ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, 3, 20) AS BIGINT) = " + taiKhoan + ")";

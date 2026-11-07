@@ -5,7 +5,6 @@ import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC lịch làm việc DAO. */
 public final class LichLamViecDAOImpl implements LichLamViecDAO {
     public LichLamViecDAOImpl() {}
 

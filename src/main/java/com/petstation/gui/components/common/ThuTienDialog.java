@@ -15,10 +15,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- * Hộp thoại thu tiền theo phương thức. QR chỉ cho xác nhận khi đã tạo được mã;
- * thẻ ngân hàng yêu cầu nhân viên kiểm tra giao dịch thành công trên máy POS.
- */
 public final class ThuTienDialog {
     private ThuTienDialog() {}
 
@@ -76,7 +72,6 @@ public final class ThuTienDialog {
         pnlChinh.add(pnlHuongDan, BorderLayout.CENTER);
         pnlChinh.add(chkDaNhanTien, BorderLayout.SOUTH);
 
-        // Giới hạn chiều cao vùng nội dung để nút xác nhận/hủy luôn nằm ngoài vùng cuộn.
         JScrollPane scrNoiDung = new JScrollPane(pnlChinh);
         scrNoiDung.setBorder(BorderFactory.createEmptyBorder());
         scrNoiDung.setPreferredSize(new Dimension(470, 440));
@@ -102,7 +97,6 @@ public final class ThuTienDialog {
 
         Runnable capNhatGiaoDien =
                 () -> {
-                    // Không cho dùng xác nhận của phương thức trước cho phương thức mới.
                     chkDaNhanTien.setSelected(false);
                     qrHopLe[0] = false;
                     loiTaoQr[0] = "";
@@ -220,7 +214,7 @@ public final class ThuTienDialog {
                             null,
                             cacNut,
                             cacNut[0]);
-            // Nút 0 là xác nhận; nút Hủy hoặc đóng hộp thoại đều không ghi nhận khoản thu.
+
             if (luaChon != 0) return null;
 
             try {
@@ -255,10 +249,6 @@ public final class ThuTienDialog {
         }
     }
 
-    /**
-     * Sử dụng nguyên mã hợp đồng làm nội dung chuyển khoản VietQR.
-     * Mã hợp đồng phải gồm chữ/số không dấu và tối đa 25 ký tự theo giới hạn trường QR.
-     */
     private static String taoThamChieuQR(String maHopDong) {
         if (maHopDong == null || maHopDong.isBlank()) {
             throw new IllegalArgumentException("Không tìm thấy mã hợp đồng lưu trú.");

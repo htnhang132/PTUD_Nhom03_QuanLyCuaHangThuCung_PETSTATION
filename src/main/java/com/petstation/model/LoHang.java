@@ -6,21 +6,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Lô hàng hóa khớp bảng [lo_hang].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã lô (maLo). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với đối tượng SanPham (thay vì sanPhamId nguyên thủy).
- * - Có các phương thức tính thuộc tính dẫn xuất (giá trị tồn kho, số ngày còn hạn, kiểm tra hết hạn FEFO).
- * - Kiểm tra ràng buộc trong setter và equals/hashCode theo khóa chính maLo.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class LoHang implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Lô hàng */
     private String maLo;
-    /** Quan hệ kết hợp (Association): Lô hàng thuộc về một Sản phẩm. */
+
     private SanPham sanPham;
     private String soLo;
     private LocalDate ngaySanXuat;
@@ -32,25 +22,21 @@ public class LoHang implements Serializable {
     private LocalDate ngayKiemKe;
     private String trangThai;
 
-    /** Constructor mặc định. */
     public LoHang() {
         this.ngayNhap = LocalDate.now();
         this.trangThai = "SAN_SANG";
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maLo. */
     public LoHang(String maLo) {
         this();
         setMaLo(maLo);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public LoHang(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng SanPham và khóa chính maLo. */
     public LoHang(
             String maLo,
             SanPham sanPham,
@@ -76,7 +62,6 @@ public class LoHang implements Serializable {
         setTrangThai(trangThai);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public LoHang(
             long id,
             String maLo,
@@ -94,7 +79,6 @@ public class LoHang implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ với sanPhamId. */
     public LoHang(
             long id,
             String maLo,
@@ -123,25 +107,14 @@ public class LoHang implements Serializable {
                 trangThai);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính giá trị tồn kho hiện tại của lô hàng (thuộc tính dẫn xuất: soLuongTon * giaNhap).
-     */
     public long tinhGiaTriTonKho() {
         return (long) Math.max(0, soLuongTon) * Math.max(0L, giaNhap);
     }
 
-    /**
-     * Tính số lượng đã xuất khỏi lô (thuộc tính dẫn xuất: soLuongNhap - soLuongTon).
-     */
     public int tinhSoLuongDaXuat() {
         return Math.max(0, soLuongNhap - soLuongTon);
     }
 
-    /**
-     * Tính số ngày còn hạn sử dụng tính từ hôm nay (thuộc tính dẫn xuất từ hanSuDung).
-     */
     public long tinhSoNgayConHan() {
         if (hanSuDung == null) {
             return Long.MAX_VALUE;
@@ -149,24 +122,16 @@ public class LoHang implements Serializable {
         return ChronoUnit.DAYS.between(LocalDate.now(), hanSuDung);
     }
 
-    /**
-     * Kiểm tra lô hàng đã hết hạn sử dụng hay chưa (dẫn xuất phục vụ chặn xuất kho FEFO).
-     */
     public boolean kiemTraHetHan() {
         return hanSuDung != null && hanSuDung.isBefore(LocalDate.now());
     }
 
-    /**
-     * Kiểm tra lô hàng có nằm trong diện cảnh báo cận date hay không (dẫn xuất).
-     */
     public boolean kiemTraCanDate(int soNgayCanhBao) {
         if (hanSuDung == null)
             return false;
         long conLai = tinhSoNgayConHan();
         return conLai >= 0 && conLai <= soNgayCanhBao;
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maLo);
@@ -190,8 +155,6 @@ public class LoHang implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaLo() {
         return this.maLo;
@@ -434,8 +397,6 @@ public class LoHang implements Serializable {
     public void datTrangThai(String trangThai) {
         setTrangThai(trangThai);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

@@ -17,11 +17,16 @@ import com.petstation.model.Quyen;
 import java.time.*;
 import java.util.*;
 
-/** Quản lý đặt phòng, hợp đồng lưu trú, chăm sóc và quyết toán tiền Hotel. */
 public final class LuuTruService {
-    private static final HoaDonDAO banHangDAO = new HoaDonDAOImpl();
-    private static final KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
-    private static final HopDongLuuTruDAO luuTruDAO = new HopDongLuuTruDAOImpl();
+    private static HoaDonDAO banHangDAO = new HoaDonDAOImpl();
+    private static KhoanThuDAO khoanThuDAO = new KhoanThuDAOImpl();
+    private static HopDongLuuTruDAO luuTruDAO = new HopDongLuuTruDAOImpl();
+
+    public static void cauHinhDAO(HoaDonDAO hoaDon, KhoanThuDAO khoanThu, HopDongLuuTruDAO luuTru) {
+        if (hoaDon != null) banHangDAO = hoaDon;
+        if (khoanThu != null) khoanThuDAO = khoanThu;
+        if (luuTru != null) luuTruDAO = luuTru;
+    }
 
     public static long datPhong(
             String maThuCung,
@@ -33,7 +38,6 @@ public final class LuuTruService {
         return datPhong(maThuCung, maPhong, batDau, ketThuc, tienCoc, ghiChu, false);
     }
 
-    /** Chỉ ghi hợp đồng khi nhân viên xác nhận đã nhận đủ cọc. */
     public static long datPhong(
             String maThuCung,
             String maPhong,
@@ -191,7 +195,6 @@ public final class LuuTruService {
                 / 2;
     }
 
-    /** Trả về thông tin dự kiến: số ngày, tổng tiền phòng, cọc 50%, giá mỗi ngày. */
     public static long[] tinhTienPhongDuKien(
             String maPhong, LocalDateTime batDau, LocalDateTime ketThuc) {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
@@ -210,7 +213,6 @@ public final class LuuTruService {
         return new long[] {soNgay, tong, coc, gia};
     }
 
-    /** Thông tin để mở biểu mẫu sửa; chỉ hợp đồng DA_DAT mới được sửa. */
     public static Object[] layThongTinDatPhong(long id) {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var dong = luuTruDAO.layDatPhongSua(id);
@@ -221,7 +223,6 @@ public final class LuuTruService {
         return dong.get(0);
     }
 
-    /** Sửa đặt phòng nhưng giữ nguyên số cọc đã thực thu và lịch sử thu cọc. */
     public static void suaDatPhong(
             long id,
             String maThuCung,
@@ -289,7 +290,6 @@ public final class LuuTruService {
                                     : layGiaTri(duLieuCu[7]) == 1;
                     long cocDaThu = daNhanCoc ? layGiaTri(duLieuCu[6]) : 0;
 
-                    // Không làm mất tiền cọc đã thu nếu lịch/giá mới có cọc thấp hơn.
                     long cocYeuCauMoi = Math.max(cocMoi, cocDaThu);
 
                     if (luuTruDAO.capNhatDatPhong(
@@ -315,7 +315,6 @@ public final class LuuTruService {
                 });
     }
 
-    /** Hủy hợp đồng chưa nhận phòng; hợp đồng đã thu cọc phải được hoàn/đối soát trước. */
     public static void huyDatPhong(long id, String lyDo) {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (id <= 0 || lyDo == null || lyDo.isBlank() || lyDo.trim().length() > 1000)
@@ -355,7 +354,6 @@ public final class LuuTruService {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Phòng.
                     Object phong = luuTruDAO.layNhanPhong(hopDongLuuTru);
                     if (phong == null)
                         throw new IllegalArgumentException("Hợp đồng không còn chờ nhận phòng.");
@@ -391,11 +389,11 @@ public final class LuuTruService {
         List<Object[]> cacDong = luuTruDAO.timHotelConPhaiThu(hopDongLuuTru);
         if (cacDong.isEmpty())
             throw new IllegalArgumentException("Hợp đồng chưa nhận phòng hoặc đã quyết toán.");
-        // Dòng dữ liệu.
+
         Object[] dongDuLieu = cacDong.get(0);
         LocalDateTime batDau = ((java.sql.Timestamp) dongDuLieu[0]).toLocalDateTime(),
                 ketThuc = ((java.sql.Timestamp) dongDuLieu[1]).toLocalDateTime();
-        // Trễ.
+
         long tre =
                 LocalDateTime.now().isAfter(ketThuc)
                         ? tinhSoNgay(ketThuc, LocalDateTime.now())

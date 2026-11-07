@@ -11,20 +11,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/** Ghi và tra cứu nhật ký hệ thống theo người dùng, sự kiện và kết quả. */
 public final class NhatKyHeThongService {
     private static final NhatKyHeThongDAO nhatKyHeThongDAO = new NhatKyHeThongDAOImpl();
 
-    /**
-     * Điều phối nghiệp vụ và kiểm tra dữ liệu cho mục.
-     *
-     * @param thoiGian thời gian
-     * @param nguoiDung người dùng
-     * @param thaoTac thao tác
-     * @param doiTuong đối tượng
-     * @param kieu kiểu
-     * @param ketQua kết quả
-     */
     public record Muc(
             LocalDateTime thoiGian,
             String nguoiDung,
@@ -37,10 +26,8 @@ public final class NhatKyHeThongService {
         }
     }
 
-    /** Các bộ lắng nghe. */
     private static final List<Runnable> CAC_BO_LANG_NGHE = new ArrayList<>();
 
-    /** Người dùng. */
     private static String nguoiDung = "Hệ thống";
 
     private NhatKyHeThongService() {}
@@ -52,7 +39,7 @@ public final class NhatKyHeThongService {
     public static String layNguoiDung() {
         return layPhienHienTai() == null ? nguoiDung : layPhien().layTenHienThi();
     }
-    
+
     public static void ghiThayDoi(
             java.sql.Connection ketNoi,
             String thaoTac,
@@ -60,7 +47,6 @@ public final class NhatKyHeThongService {
             String maDoiTuong,
             String giaTriCu,
             String giaTriMoi) throws Exception {
-
         nhatKyHeThongDAO.them(
                 ketNoi,
                 new com.petstation.model.NhatKyHeThong(
@@ -91,7 +77,6 @@ public final class NhatKyHeThongService {
     }
 
     private static String layKieuCua(String thaoTac) {
-        // Giá trị đầu.
         String giaTriDau = thaoTac.toLowerCase();
         if (giaTriDau.contains("đăng nhập") || giaTriDau.contains("đăng xuất")) return "LOGIN";
         if (giaTriDau.startsWith("thêm")
@@ -117,15 +102,34 @@ public final class NhatKyHeThongService {
 
     public static List<Muc> layCacMuc() {
         List<Muc> ketQua = new ArrayList<>();
-        for (Object[] dongDuLieu : nhatKyHeThongDAO.timCacMuc())
+        for (Object[] dongDuLieu : nhatKyHeThongDAO.timCacMuc()) {
+            String kieuRaw = chuyenThanhChuoi(dongDuLieu[4]);
+            String kieuChuan =
+                    switch (kieuRaw.toUpperCase(Locale.ROOT)) {
+                        case "DANG_NHAP", "DANG_XUAT" -> "LOGIN";
+                        case "BAN_HANG", "THANH_TOAN", "DOI_TRA" -> "PAYMENT";
+                        case "NHAP_KHO", "XUAT_KHO", "KIEM_KE" -> "INVENTORY";
+                        case "SPA", "HOTEL", "THEM_MOI" -> "CREATE";
+                        case "MO_CA", "DONG_CA" -> "SYSTEM";
+                        default -> kieuRaw;
+                    };
+            String ketQuaRaw = chuyenThanhChuoi(dongDuLieu[5]);
+            String ketQuaChuan =
+                    switch (ketQuaRaw.toUpperCase(Locale.ROOT)) {
+                        case "THANH_CONG", "SUCCESS" -> "Thành công";
+                        case "THAT_BAI", "FAILED", "ERROR" -> "Thất bại";
+                        case "CANH_BAO", "WARNING" -> "Cảnh báo";
+                        default -> ketQuaRaw;
+                    };
             ketQua.add(
                     new Muc(
                             ((java.sql.Timestamp) dongDuLieu[0]).toLocalDateTime(),
                             chuyenThanhChuoi(dongDuLieu[1]),
                             chuyenThanhChuoi(dongDuLieu[2]),
                             chuyenThanhChuoi(dongDuLieu[3]),
-                            chuyenThanhChuoi(dongDuLieu[4]),
-                            chuyenThanhChuoi(dongDuLieu[5])));
+                            kieuChuan,
+                            ketQuaChuan));
+        }
         return ketQua;
     }
 

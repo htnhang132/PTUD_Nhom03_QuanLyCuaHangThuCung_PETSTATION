@@ -17,32 +17,20 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho in hóa đơn vùng hiển thị.
- *
- * <p>Xem trước và in hóa đơn vừa thanh toán.
- */
 public final class InHoaDonPanel extends CoSoPanel {
-    /** Chiều rộng. */
     private static final int CHIEU_RONG = 40;
 
-    /** Bán hàng. */
     private final GioHang banHang;
 
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
 
-    /** Các thẻ. */
     private final CardLayout cacThe = new CardLayout();
 
-    /** Gốc. */
     private final JPanel pnlGoc = new JPanel(cacThe);
 
-    /** Xem trước. */
     private final com.petstation.gui.components.common.HoaDonDocPanel pnlHoaDon =
             new com.petstation.gui.components.common.HoaDonDocPanel();
 
-    /** Biểu ngữ. */
     private final JLabel lblBieuNgu = new JLabel();
 
     public InHoaDonPanel(GioHang banHang, Consumer<MaManHinh> boDieuHuong) {
@@ -50,7 +38,6 @@ public final class InHoaDonPanel extends CoSoPanel {
         this.boDieuHuong = boDieuHuong;
         setLayout(new BorderLayout(0, 14));
 
-        // Tiêu đề.
         JLabel lblTieuDe = taoTieuDeMuc("Xem hóa đơn");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
         add(lblTieuDe, BorderLayout.NORTH);
@@ -63,7 +50,6 @@ public final class InHoaDonPanel extends CoSoPanel {
         lblBieuNgu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         lblBieuNgu.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        // Cuộn.
         JScrollPane scrCuon =
                 new JScrollPane(
                         pnlHoaDon,
@@ -71,14 +57,14 @@ public final class InHoaDonPanel extends CoSoPanel {
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         scrCuon.setPreferredSize(new Dimension(460, 0));
-        // Giấy.
+
         JPanel pnlGiay = new JPanel(new BorderLayout());
         pnlGiay.setOpaque(false);
         pnlGiay.setBorder(new EmptyBorder(0, 0, 0, 0));
-        // Ở giữa.
+
         JPanel pnlOGiua = new JPanel(new GridBagLayout());
         pnlOGiua.setOpaque(false);
-        // Ràng buộc lưới.
+
         GridBagConstraints rangBuocLuoi = new GridBagConstraints();
         rangBuocLuoi.fill = GridBagConstraints.VERTICAL;
         rangBuocLuoi.weightx = 0;
@@ -87,39 +73,36 @@ public final class InHoaDonPanel extends CoSoPanel {
         pnlOGiua.add(scrCuon, rangBuocLuoi);
         pnlGiay.add(pnlOGiua, BorderLayout.CENTER);
 
-        // In.
         NutDinhDang btnIn = new NutDinhDang("In hóa đơn (Ctrl+P)", NutDinhDang.KieuNut.PHU);
         btnIn.addActionListener(suKien -> xuLyIn());
-        // Tiếp theo.
+
         NutDinhDang btnTiepTheo =
                 new NutDinhDang("Lập hóa đơn mới (F2)", NutDinhDang.KieuNut.CHINH);
         btnTiepTheo.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
-        // Gợi ý.
+
         JLabel lblGoiY =
                 new JLabel(
                         "Xem lại hóa đơn bên trên. Nút In mở hộp thoại máy in (có thể chọn \"Lưu"
                                 + " thành PDF\").");
         lblGoiY.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
-        // Các thao tác.
+
         JPanel pnlCacThaoTac = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         pnlCacThaoTac.setOpaque(false);
         pnlCacThaoTac.add(btnTiepTheo);
         pnlCacThaoTac.add(btnIn);
-        // Dưới.
+
         JPanel pnlDuoi = taoVungTrongSuot(new BorderLayout(0, 6));
         pnlDuoi.add(pnlCacThaoTac, BorderLayout.CENTER);
         pnlDuoi.add(lblGoiY, BorderLayout.SOUTH);
         lblGoiY.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Biểu mẫu.
         JPanel pnlBieuMau = taoVungTrongSuot(new BorderLayout(0, 12));
         pnlBieuMau.add(lblBieuNgu, BorderLayout.NORTH);
         pnlBieuMau.add(pnlGiay, BorderLayout.CENTER);
         pnlBieuMau.add(pnlDuoi, BorderLayout.SOUTH);
         pnlGoc.add(pnlBieuMau, "receipt");
 
-        // Đi.
         NutDinhDang btnDi = new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
         btnDi.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         pnlGoc.add(
@@ -133,14 +116,13 @@ public final class InHoaDonPanel extends CoSoPanel {
     }
 
     private void lamMoi() {
-        // Dòng dữ liệu.
         GioHang.BienLai dongDuLieu = banHang.layBienLaiCuoi();
         if (dongDuLieu == null) {
             cacThe.show(pnlGoc, "empty");
             return;
         }
         cacThe.show(pnlGoc, "receipt");
-        // Thay đổi.
+
         String thayDoi =
                 dongDuLieu.phuongThuc() == PhuongThuc.TIEN_MAT
                         ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.thayDoi())
@@ -157,7 +139,7 @@ public final class InHoaDonPanel extends CoSoPanel {
 
     public static String hienThi(GioHang.BienLai dongDuLieu) {
         var nguon = com.petstation.service.BanHangService.layNguonBienLai(dongDuLieu.soHoaDon());
-        // Bộ ghép chuỗi.
+
         StringBuilder boGhepChuoi = new StringBuilder();
         boGhepChuoi
                 .append(layGiua(com.petstation.service.CaiDatService.lay("STORE_NAME")))
@@ -224,7 +206,7 @@ public final class InHoaDonPanel extends CoSoPanel {
                     .append('\n');
         }
         boGhepChuoi.append(layCap("TỔNG CỘNG", TienTe.dinhDang(dongDuLieu.tong()))).append('\n');
-        // Phương thức.
+
         String phuongThuc =
                 switch (dongDuLieu.phuongThuc()) {
                     case TIEN_MAT -> "Tiền mặt";
@@ -252,7 +234,6 @@ public final class InHoaDonPanel extends CoSoPanel {
         return boGhepChuoi.toString();
     }
 
-    /** Bản xem và in dùng cùng bảng hàng, tên đầy đủ được xuống dòng tự nhiên. */
     public static String hienThiHTML(GioHang.BienLai bienLai) {
         var nguon = com.petstation.service.BanHangService.layNguonBienLai(bienLai.soHoaDon());
         StringBuilder html =
@@ -355,7 +336,6 @@ public final class InHoaDonPanel extends CoSoPanel {
     }
 
     private static String layGiua(String chuoi) {
-        // Đệm.
         int dem = Math.max(0, (CHIEU_RONG - chuoi.length()) / 2);
         return " ".repeat(dem) + chuoi;
     }
@@ -365,7 +345,6 @@ public final class InHoaDonPanel extends CoSoPanel {
     }
 
     private static String layCap(String trai, String phai) {
-        // Khoảng cách.
         int khoangCach = Math.max(1, CHIEU_RONG - trai.length() - phai.length());
         return trai + " ".repeat(khoangCach) + phai;
     }

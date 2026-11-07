@@ -6,21 +6,11 @@ import java.time.Period;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Hồ sơ thú cưng khớp bảng [thu_cung].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã thú cưng (maThuCung). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với đối tượng KhachHang (chủ nuôi).
- * - Có các phương thức tính tuổi dẫn xuất (theo năm / theo tháng).
- * - Kiểm tra ràng buộc trong setter và equals/hashCode theo khóa chính maThuCung.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class ThuCung implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Thú cưng */
     private String maThuCung;
-    /** Quan hệ kết hợp (Association): Thú cưng thuộc sở hữu của một Khách hàng. */
+
     private KhachHang khachHang;
     private String ten;
     private String loai;
@@ -38,24 +28,20 @@ public class ThuCung implements Serializable {
     private int soMuiTiem;
     private LocalDate ngayTiemGanNhat;
 
-    /** Constructor mặc định. */
     public ThuCung() {
         this.dangTheoDoi = true;
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maThuCung. */
     public ThuCung(String maThuCung) {
         this();
         setMaThuCung(maThuCung);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public ThuCung(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng KhachHang và khóa chính maThuCung. */
     public ThuCung(
             String maThuCung,
             KhachHang khachHang,
@@ -93,7 +79,6 @@ public class ThuCung implements Serializable {
         setNgayTiemGanNhat(ngayTiemGanNhat);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public ThuCung(
             long id,
             String maThuCung,
@@ -117,7 +102,6 @@ public class ThuCung implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ với khachHangId. */
     public ThuCung(
             long id,
             String maThuCung,
@@ -158,9 +142,6 @@ public class ThuCung implements Serializable {
                 ngayTiemGanNhat);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tuổi thú cưng theo năm (thuộc tính dẫn xuất từ ngaySinh). */
     public int tinhTuoiTheoNam() {
         if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
             return 0;
@@ -168,7 +149,6 @@ public class ThuCung implements Serializable {
         return Period.between(ngaySinh, LocalDate.now()).getYears();
     }
 
-    /** Tính tổng số tháng tuổi của thú cưng (thuộc tính dẫn xuất từ ngaySinh). */
     public int tinhTuoiTheoThang() {
         if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
             return 0;
@@ -177,12 +157,9 @@ public class ThuCung implements Serializable {
         return p.getYears() * 12 + p.getMonths();
     }
 
-    /** Kiểm tra thú cưng đã có thông tin tiêm phòng hay chưa (dẫn xuất). */
     public boolean kiemTraDaTiemPhong() {
         return soMuiTiem > 0 || (tiemChung != null && !tiemChung.isBlank());
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maThuCung);
@@ -206,8 +183,6 @@ public class ThuCung implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaThuCung() {
         return this.maThuCung;
@@ -568,8 +543,6 @@ public class ThuCung implements Serializable {
     public void datNgayTiemGanNhat(LocalDate ngayTiemGanNhat) {
         setNgayTiemGanNhat(ngayTiemGanNhat);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

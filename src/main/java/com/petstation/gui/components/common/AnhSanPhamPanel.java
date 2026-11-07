@@ -9,7 +9,6 @@ import java.util.concurrent.*;
 
 import javax.swing.*;
 
-/** Hiển thị ảnh đúng tỷ lệ; tải nền và bỏ kết quả cũ khi người dùng đổi sản phẩm. */
 public final class AnhSanPhamPanel extends JPanel {
     private static final ExecutorService BO_TAI =
             Executors.newFixedThreadPool(
@@ -39,7 +38,6 @@ public final class AnhSanPhamPanel extends JPanel {
         setBorder(null);
     }
 
-    /** Đặt ảnh theo đường dẫn tương đối trong SQL; không chặn luồng giao diện. */
     public void datAnh(String giaTri) {
         duongDan = giaTri == null ? "" : giaTri;
         long phien = ++lanTai;

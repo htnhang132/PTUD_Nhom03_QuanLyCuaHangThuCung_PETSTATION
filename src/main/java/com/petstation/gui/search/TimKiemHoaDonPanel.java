@@ -29,18 +29,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-/**
- * Cung cấp giao diện Master-Detail Split-Pane cho tra cứu và tìm kiếm hóa đơn. Hỗ trợ bộ lọc đa
- * tiêu chí (ngày tháng, trạng thái, phương thức thanh toán) và xem trước chi tiết hóa đơn chuẩn máy
- * in nhiệt K80 (80mm) ngay bên cạnh.
- */
 public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     private final HoaDonDocPanel pnlHoaDon = new HoaDonDocPanel();
     private final JLabel lblBillStatus = new JLabel("Chọn hóa đơn bên trái để xem trước");
     private final NutDinhDang btnInLai;
     private final NutDinhDang btnXuatHtml;
 
-    // Bộ lọc đa tiêu chí
     private final BoChonNgay txtTuNgay;
     private final BoChonNgay txtDenNgay;
     private final JComboBox<String> cboPhuongThuc;
@@ -51,7 +45,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     public TimKiemHoaDonPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.HOA_DON, banHang, dieuHuong);
 
-        // 1. Tạo thanh bộ lọc đa tiêu chí gom chung trên cùng 1 hàng
         LocalDate macDinhTuNgay = LocalDate.now().minusDays(60);
         LocalDate homNay = LocalDate.now();
 
@@ -64,7 +57,9 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                             "TẤT CẢ",
                             "Tiền mặt",
                             "Chuyển khoản",
-                            "Thẻ"
+                            "Thẻ",
+                            "Điểm tích lũy",
+                            "Kết hợp"
                         });
 
         cboTrangThai =
@@ -130,7 +125,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             pnlNorth.add(pnlThanhCongCu, BorderLayout.CENTER);
         }
 
-        // 2. Tạo Preview Panel biên nhận K80 bên phải
         JPanel pnlRightDetail = new JPanel(new BorderLayout(0, 8));
         pnlRightDetail.setPreferredSize(new Dimension(380, 0));
         pnlRightDetail.setBorder(
@@ -141,7 +135,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         JPanel pnlTitleDetail = new JPanel(new BorderLayout());
         lblBillStatus.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblBillStatus.setForeground(new Color(30, 41, 59));
-        pnlTitleDetail.add(lblBillStatus, BorderLayout.WEST);
+        pnlTitleDetail.add(lblBillStatus, BorderLayout.CENTER);
         pnlRightDetail.add(pnlTitleDetail, BorderLayout.NORTH);
 
         JScrollPane scrHoaDon =
@@ -152,7 +146,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         scrHoaDon.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225)));
         pnlRightDetail.add(scrHoaDon, BorderLayout.CENTER);
 
-        // Các nút thao tác trên hóa đơn bên phải
         JPanel pnlActionBill = new JPanel(new GridLayout(2, 1, 0, 6));
         pnlActionBill.setBorder(new EmptyBorder(6, 0, 4, 0));
 
@@ -169,7 +162,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
         pnlActionBill.add(btnXuatHtml);
         pnlRightDetail.add(pnlActionBill, BorderLayout.SOUTH);
 
-        // 3. Tái cấu trúc Center thành JSplitPane
         Component centerComp = rootLayout.getLayoutComponent(BorderLayout.CENTER);
         if (centerComp != null) {
             remove(centerComp);
@@ -181,7 +173,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             add(splitPane, BorderLayout.CENTER);
         }
 
-        // 4. Lắng nghe chọn dòng để nạp dữ liệu vào hóa đơn K80
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
@@ -231,6 +222,9 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     @Override
     protected void sauKhiTaiLai() {
         if (txtTuNgay != null) apDungBoLocNangCao();
+        if (tblBang.getSelectedRow() < 0 && tblBang.getRowCount() > 0) {
+            tblBang.setRowSelectionInterval(0, 0);
+        }
     }
 
     private void capNhatXemTruocHoaDon() {
@@ -268,13 +262,11 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
 
         List<RowFilter<DefaultTableModel, Object>> cacBoLoc = new ArrayList<>();
 
-        // 1. Lọc từ khóa tìm kiếm chung
         String tuKhoa = txtTimKiem.getText().trim();
         if (!tuKhoa.isEmpty() && !"Tìm trong danh sách...".equals(tuKhoa)) {
             cacBoLoc.add(RowFilter.regexFilter("(?iu)" + java.util.regex.Pattern.quote(tuKhoa)));
         }
 
-        // 2. Lọc phương thức thanh toán (cột 6 trong model)
         String phuongThuc = (String) cboPhuongThuc.getSelectedItem();
         if (phuongThuc != null && !"TẤT CẢ".equals(phuongThuc)) {
             String maPt =
@@ -282,12 +274,12 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
                         case "Tiền mặt" -> "TIEN_MAT|Tiền mặt";
                         case "Chuyển khoản" -> "CHUYEN_KHOAN|Chuyển khoản.*";
                         case "Thẻ" -> "THE_NGAN_HANG|THE|Thẻ";
+                        case "Điểm tích lũy" -> "DIEM_TICH_LUY|Điểm tích lũy";
                         default -> "KET_HOP|Kết hợp";
                     };
             cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maPt + ")$", 6));
         }
 
-        // 3. Lọc trạng thái (cột 7 trong model)
         String trangThai = (String) cboTrangThai.getSelectedItem();
         if (trangThai != null && !"TẤT CẢ".equals(trangThai)) {
             String maTt =
@@ -299,7 +291,6 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maTt + ")$", 7));
         }
 
-        // 4. Lọc ngày tháng (cột 4 trong model: thanh_toan_luc)
         LocalDate tuNgay = txtTuNgay.layNgayDuocChon();
         String tuNgayStr = tuNgay == null ? "" : tuNgay.toString();
         LocalDate denNgay = txtDenNgay.layNgayDuocChon();

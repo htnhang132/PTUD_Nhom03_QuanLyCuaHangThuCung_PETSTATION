@@ -24,24 +24,17 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-/** Cung cấp giao diện và xử lý tương tác cho màn hình thanh menu. */
 public final class ThanhMenuChinh extends JPanel {
-    /** Bộ đăng ký. */
     private final DangKyManHinh boDangKy;
 
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
 
-    /** Đăng xuất. */
     private final Runnable dangXuat;
 
-    /** Thoát. */
     private final Runnable thoat;
 
-    /** Menu các nút. */
     private final Map<Character, JButton> menuCacNut = new LinkedHashMap<>();
 
-    /** Các menu bật lên. */
     private final Map<Character, JPopupMenu> cacMenuBatLen = new LinkedHashMap<>();
 
     public ThanhMenuChinh(
@@ -64,9 +57,8 @@ public final class ThanhMenuChinh extends JPanel {
     }
 
     public void moMenu(char phimTruyCap) {
-        // Nút.
         JButton btnNut = menuCacNut.get(Character.toUpperCase(phimTruyCap));
-        // Menu bật lên.
+
         JPopupMenu pmnMenuBatLen = cacMenuBatLen.get(Character.toUpperCase(phimTruyCap));
         if (btnNut != null && pmnMenuBatLen != null && btnNut.isEnabled()) {
             pmnMenuBatLen.show(btnNut, 0, btnNut.getHeight());
@@ -74,9 +66,8 @@ public final class ThanhMenuChinh extends JPanel {
     }
 
     private void themMenu(char phimTruyCap, String nhan, List<CauTrucMenu.Muc> cacMuc) {
-        // Gạch dưới.
         int gachDuoi = Math.max(0, nhan.toLowerCase().indexOf(Character.toLowerCase(phimTruyCap)));
-        // Nút.
+
         JButton btnNut =
                 new JButton(
                         "<html>"
@@ -86,7 +77,6 @@ public final class ThanhMenuChinh extends JPanel {
                                 + "</u>"
                                 + nhan.substring(gachDuoi + 1)
                                 + "</html>") {
-                    /** Vẽ thành phần trong lớp xử lý giao diện. */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         if (getModel().isRollover()) {
@@ -109,7 +99,6 @@ public final class ThanhMenuChinh extends JPanel {
         btnNut.setRolloverEnabled(true);
         btnNut.setToolTipText("Mở menu " + nhan + " (Alt + " + phimTruyCap + ")");
 
-        // Menu bật lên.
         JPopupMenu pmnMenuBatLen = new JPopupMenu();
         for (CauTrucMenu.Muc muc : cacMuc) {
             if (muc.kiemTraPhanCach()) {
@@ -120,10 +109,10 @@ public final class ThanhMenuChinh extends JPanel {
                 }
                 continue;
             }
-            // Định nghĩa.
+
             DinhNghiaManHinh dinhNghia = boDangKy.layDinhNghia(muc.manHinh());
             if (!boDangKy.coTheTruyCap(muc.manHinh())) continue;
-            // Mục.
+
             JMenuItem btnMuc = new JMenuItem(muc.nhan());
             btnMuc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             btnMuc.setEnabled(dinhNghia.daTrienKhai());
@@ -140,11 +129,11 @@ public final class ThanhMenuChinh extends JPanel {
         catCuoiPhanCach(pmnMenuBatLen);
         if (phimTruyCap == 'H') {
             if (pmnMenuBatLen.getComponentCount() > 0) pmnMenuBatLen.addSeparator();
-            // Đăng xuất mục.
+
             JMenuItem btnDangXuatMuc = new JMenuItem("Đăng xuất");
             btnDangXuatMuc.addActionListener(suKien -> dangXuat.run());
             pmnMenuBatLen.add(btnDangXuatMuc);
-            // Thoát mục.
+
             JMenuItem btnThoatMuc = new JMenuItem("Thoát");
             btnThoatMuc.addActionListener(suKien -> thoat.run());
             pmnMenuBatLen.add(btnThoatMuc);
@@ -159,7 +148,6 @@ public final class ThanhMenuChinh extends JPanel {
     }
 
     private void catCuoiPhanCach(JPopupMenu pmnMenuBatLen) {
-        // Số phần tử.
         int soPhanTu = pmnMenuBatLen.getComponentCount();
         if (soPhanTu > 0
                 && pmnMenuBatLen.getComponent(soPhanTu - 1) instanceof JPopupMenu.Separator)

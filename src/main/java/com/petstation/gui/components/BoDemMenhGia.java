@@ -19,37 +19,25 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho mệnh giá bộ đếm.
- *
- * <p>Bảng kiểm đếm tiền theo mệnh giá. Gõ số tờ rồi Enter (hoặc mũi tên xuống) để sang mệnh giá kế
- * tiếp; Enter ở dòng cuối gọi {@code onComplete}. Tổng tiền cập nhật ngay khi gõ.
- */
 public final class BoDemMenhGia extends JPanel {
-    /** Các mệnh giá. */
     public static final long[] CAC_MENH_GIA = {
         500_000, 200_000, 100_000, 50_000, 20_000, 10_000, 5_000, 2_000, 1_000
     };
 
-    /** Các trường. */
     private final JTextField[] cacTruong = new JTextField[CAC_MENH_GIA.length];
 
-    /** Các số tiền. */
     private final JLabel[] cacSoTien = new JLabel[CAC_MENH_GIA.length];
 
-    /** Nhãn tổng. */
     private final JLabel lblNhanTong = new JLabel("0₫", SwingConstants.RIGHT);
 
-    /** Khi thay đổi. */
     private Runnable khiThayDoi = () -> {};
 
-    /** Khi hoàn tất. */
     private Runnable khiHoanTat = () -> {};
 
     public BoDemMenhGia() {
         setOpaque(false);
         setLayout(new GridBagLayout());
-        // Giá trị đang xét.
+
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(3, 6, 3, 6);
         giaTriDangXet.fill = GridBagConstraints.HORIZONTAL;
@@ -60,7 +48,7 @@ public final class BoDemMenhGia extends JPanel {
 
         for (int chiSo = 0; chiSo < CAC_MENH_GIA.length; chiSo++) {
             final int dong = chiSo;
-            // Tên.
+
             JLabel lblTen = new JLabel(TienTe.dinhDang(CAC_MENH_GIA[chiSo]));
             lblTen.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
             giaTriDangXet.gridy = chiSo + 1;
@@ -78,21 +66,11 @@ public final class BoDemMenhGia extends JPanel {
                             BorderFactory.createEmptyBorder(2, 6, 2, 6)));
             txtTruongDangXet.addFocusListener(
                     new FocusAdapter() {
-                        /**
-                         * Lấy tiêu điểm nhận trong lớp xử lý giao diện.
-                         *
-                         * @param suKien sự kiện
-                         */
                         @Override
                         public void focusGained(FocusEvent suKien) {
                             SwingUtilities.invokeLater(txtTruongDangXet::selectAll);
                         }
 
-                        /**
-                         * Lấy tiêu điểm mất trong lớp xử lý giao diện.
-                         *
-                         * @param suKien sự kiện
-                         */
                         @Override
                         public void focusLost(FocusEvent suKien) {
                             chuanHoa(dong);
@@ -100,21 +78,11 @@ public final class BoDemMenhGia extends JPanel {
                     });
             txtTruongDangXet.addKeyListener(
                     new KeyAdapter() {
-                        /**
-                         * Lấy khóa đã thả trong lớp xử lý giao diện.
-                         *
-                         * @param suKien sự kiện
-                         */
                         @Override
                         public void keyReleased(KeyEvent suKien) {
                             lamMoi(dong);
                         }
 
-                        /**
-                         * Lấy khóa đã nhấn trong lớp xử lý giao diện.
-                         *
-                         * @param suKien sự kiện
-                         */
                         @Override
                         public void keyPressed(KeyEvent suKien) {
                             if (suKien.getKeyCode() == KeyEvent.VK_ENTER
@@ -122,9 +90,9 @@ public final class BoDemMenhGia extends JPanel {
                                 suKien.consume();
                                 chuanHoa(dong);
                                 if (dong + 1 < cacTruong.length) layTieuDiem(dong + 1);
-                                else 
+                                else
                                 if (suKien.getKeyCode() == KeyEvent.VK_ENTER) khiHoanTat.run();
-                            } else 
+                            } else
                             if (suKien.getKeyCode() == KeyEvent.VK_UP && dong > 0) {
                                 suKien.consume();
                                 chuanHoa(dong);
@@ -153,7 +121,6 @@ public final class BoDemMenhGia extends JPanel {
         giaTriDangXet.gridwidth = 3;
         add(pnlDong, giaTriDangXet);
 
-        // Tên tổng.
         JLabel lblTenTong = new JLabel("Tổng cộng");
         lblTenTong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
         giaTriDangXet.gridy = CAC_MENH_GIA.length + 2;
@@ -168,7 +135,6 @@ public final class BoDemMenhGia extends JPanel {
     }
 
     private void themTieuDe(String vanBan, int cot, GridBagConstraints giaTriDangXet) {
-        // Dòng đang xét.
         JLabel lblDongDangXet =
                 new JLabel(vanBan, cot == 0 ? SwingConstants.LEFT : SwingConstants.RIGHT);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
@@ -188,7 +154,6 @@ public final class BoDemMenhGia extends JPanel {
     }
 
     public long tinhTong() {
-        // Tổng.
         long tong = 0;
         for (int chiSo = 0; chiSo < cacTruong.length; chiSo++)
             tong += dem(chiSo) * CAC_MENH_GIA[chiSo];
@@ -218,7 +183,6 @@ public final class BoDemMenhGia extends JPanel {
     }
 
     private int dem(int dong) {
-        // Các chữ số.
         String cacChuSo = cacTruong[dong].getText().replaceAll("[^0-9]", "");
         if (cacChuSo.isEmpty() || cacChuSo.length() > 7) return 0;
         return Integer.parseInt(cacChuSo);

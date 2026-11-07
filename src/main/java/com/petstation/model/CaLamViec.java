@@ -6,14 +6,9 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Objects;
 
-/**
- * Thực thể Ca làm việc khớp bảng [ca_lam_viec].
- * Khóa chính: maCa.
- */
 public class CaLamViec implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã ca làm việc (ví dụ: CA01). */
     private String maCa;
     private String tenCa;
     private LocalTime gioBatDau;
@@ -21,19 +16,16 @@ public class CaLamViec implements Serializable {
     private int soNhanSuToiThieu;
     private double heSoLuong;
 
-    /** Constructor mặc định. */
     public CaLamViec() {
         this.soNhanSuToiThieu = 1;
         this.heSoLuong = 1.0;
     }
 
-    /** Constructor chỉ có khóa chính. */
     public CaLamViec(String maCa) {
         this();
         setMaCa(maCa);
     }
 
-    /** Constructor đầy đủ thuộc tính thường. */
     public CaLamViec(
             String maCa,
             String tenCa,
@@ -50,7 +42,6 @@ public class CaLamViec implements Serializable {
         setHeSoLuong(heSoLuong);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public CaLamViec(long id) {
         this();
         setId(id);
@@ -68,9 +59,6 @@ public class CaLamViec implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tổng số giờ của ca làm việc (thuộc tính dẫn xuất từ gioBatDau và gioKetThuc). */
     public double tinhSoGioLam() {
         if (gioBatDau == null || gioKetThuc == null) {
             return 0.0;
@@ -81,8 +69,6 @@ public class CaLamViec implements Serializable {
         }
         return phut / 60.0;
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaCa() { return this.maCa; }
     public String layMaCa() { return this.maCa; }
@@ -126,8 +112,6 @@ public class CaLamViec implements Serializable {
     }
     public void datHeSoLuong(double heSoLuong) { setHeSoLuong(heSoLuong); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maCa); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -138,8 +122,6 @@ public class CaLamViec implements Serializable {
         }
     }
     public void datId(long id) { setId(id); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maCa) ====================
 
     @Override
     public boolean equals(Object o) {

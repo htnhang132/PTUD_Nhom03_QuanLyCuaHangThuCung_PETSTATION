@@ -2,9 +2,7 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho DoiHang; service gọi qua hợp đồng này. */
 public interface DoiHangDAO {
-
     List<Object[]> timHoaDon(String tuKhoa);
 
     List<Object[]> layDongHoaDon(long hoaDon);

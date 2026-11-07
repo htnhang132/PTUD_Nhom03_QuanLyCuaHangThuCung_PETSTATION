@@ -6,26 +6,17 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Lịch hẹn dịch vụ khớp bảng [lich_hen].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã lịch hẹn (maLichHen). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với KhachHang, ThuCung, NhanVien, GoiDichVuSpa.
- * - Có phương thức tính thời lượng lịch hẹn dẫn xuất và equals/hashCode theo khóa chính maLichHen.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class LichHen implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Lịch hẹn */
     private String maLichHen;
-    /** Quan hệ kết hợp: Khách hàng đặt lịch. */
+
     private KhachHang khachHang;
-    /** Quan hệ kết hợp: Thú cưng sử dụng dịch vụ. */
+
     private ThuCung thuCung;
-    /** Quan hệ kết hợp: Nhân viên được phân công phụ trách (có thể null). */
+
     private NhanVien nhanVien;
-    /** Quan hệ kết hợp: Gói dịch vụ Spa đăng ký (có thể null nếu hẹn khám/lưu trú). */
+
     private GoiDichVuSpa dichVu;
 
     private String loaiDichVu;
@@ -34,24 +25,20 @@ public class LichHen implements Serializable {
     private String trangThai;
     private String ghiChu;
 
-    /** Constructor mặc định. */
     public LichHen() {
         this.trangThai = "DA_XAC_NHAN";
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maLichHen. */
     public LichHen(String maLichHen) {
         this();
         setMaLichHen(maLichHen);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public LichHen(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận các đối tượng thực thể liên kết và khóa chính maLichHen. */
     public LichHen(
             String maLichHen,
             KhachHang khachHang,
@@ -75,7 +62,6 @@ public class LichHen implements Serializable {
         setDichVu(dichVu);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public LichHen(
             long id,
             String maLichHen,
@@ -92,7 +78,6 @@ public class LichHen implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public LichHen(
             long id,
             String maLichHen,
@@ -119,19 +104,12 @@ public class LichHen implements Serializable {
                 dichVuId == null ? null : new GoiDichVuSpa(dichVuId));
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính thời lượng khung giờ hẹn theo số phút (thuộc tính dẫn xuất từ batDau và ketThuc).
-     */
     public long tinhThoiLuongPhut() {
         if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau)) {
             return 0L;
         }
         return Duration.between(batDau, ketThuc).toMinutes();
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maLichHen);
@@ -155,8 +133,6 @@ public class LichHen implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaLichHen() {
         return this.maLichHen;
@@ -421,8 +397,6 @@ public class LichHen implements Serializable {
     public void datDichVuId(Long dichVuId) {
         setDichVuId(dichVuId);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

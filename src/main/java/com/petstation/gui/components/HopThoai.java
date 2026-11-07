@@ -5,53 +5,25 @@ import java.awt.Component;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho hộp thoại.
- *
- * <p>Hộp thoại dùng chung toàn hệ thống: cùng tiêu đề theo loại, cùng nhãn nút tiếng Việt. Mọi màn
- * gọi lớp này thay vì JOptionPane để giao diện nhất quán.
- *
- * <ul>
- *   <li>Thông báo: tiêu đề "Thông báo", nút "Đóng"
- *   <li>Thành công: tiêu đề "Thành công", nút "Đóng"
- *   <li>Cảnh báo / Lỗi: tiêu đề "Cảnh báo" / "Lỗi", nút "Đóng"
- *   <li>Xác nhận: tiêu đề "Xác nhận", nút "Đồng ý" và "Hủy" (mặc định chọn Hủy khi là thao tác nguy
- *       hiểm)
- * </ul>
- */
 public final class HopThoai {
-    /** Tiêu đề thông tin. */
     public static final String TIEU_DE_THONG_TIN = "Thông báo";
 
-    /** Tiêu đề thành công. */
     public static final String TIEU_DE_THANH_CONG = "Thành công";
 
-    /** Tiêu đề cảnh báo. */
     public static final String TIEU_DE_CANH_BAO = "Cảnh báo";
 
-    /** Tiêu đề lỗi. */
     public static final String TIEU_DE_LOI = "Lỗi";
 
-    /** Tiêu đề xác nhận. */
     public static final String TIEU_DE_XAC_NHAN = "Xác nhận";
 
-    /** Đóng. */
     private static final String DONG = "Đóng";
 
-    /** Đồng ý. */
     private static final String DONG_Y = "Đồng ý";
 
-    /** Hủy. */
     private static final String HUY = "Hủy";
 
     private HopThoai() {}
 
-    /**
-     * Thiết lập các giá trị mặc định trong HopThoai.
-     *
-     * <p>Gọi một lần lúc khởi động để các hộp thoại còn lại (nhập liệu, chọn file) cũng dùng tiếng
-     * Việt.
-     */
     public static void thietLapCacGiaTriMacDinh() {
         UIManager.put("OptionPane.okButtonText", DONG_Y);
         UIManager.put("OptionPane.cancelButtonText", HUY);
@@ -76,38 +48,18 @@ public final class HopThoai {
         hienThi(cha, thongBao, TIEU_DE_LOI, JOptionPane.ERROR_MESSAGE);
     }
 
-    /**
-     * Xác nhận trong HopThoai.
-     *
-     * <p>Hỏi xác nhận. Trả true nếu bấm "Đồng ý".
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public static boolean xacNhan(Component cha, String thongBao) {
         return xacNhan(cha, thongBao, DONG_Y, false);
     }
 
-    /**
-     * Xác nhận nguy hiểm trong HopThoai.
-     *
-     * <p>Hỏi xác nhận cho thao tác nguy hiểm (xóa, hủy...): nút mặc định là "Hủy".
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param nhanXacNhan nhãn xác nhận
-     * @return kết quả kiểm tra điều kiện xử lý
-     */
     public static boolean xacNhanNguyHiem(Component cha, String thongBao, String nhanXacNhan) {
         return xacNhan(cha, thongBao, nhanXacNhan, true);
     }
 
     public static boolean xacNhan(
             Component cha, String thongBao, String nhanXacNhan, boolean nguyHiem) {
-        // Các lựa chọn.
         Object[] cacLuaChon = {nhanXacNhan, HUY};
-        // Lựa chọn.
+
         int luaChon =
                 JOptionPane.showOptionDialog(
                         cha,
@@ -121,15 +73,12 @@ public final class HopThoai {
         return luaChon == 0;
     }
 
-    // ── Tương thích với chữ ký JOptionPane cũ để các màn chuyển sang mà không đổi logic ──
-
     public static void hienThiThongBaoHopThoai(Component cha, Object thongBao) {
         hienThi(cha, String.valueOf(thongBao), TIEU_DE_THONG_TIN, JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static void hienThiThongBaoHopThoai(
             Component cha, Object thongBao, String tieuDe, int kieu) {
-        // Đã chuẩn hóa.
         String daChuanHoa =
                 switch (kieu) {
                     case JOptionPane.ERROR_MESSAGE -> TIEU_DE_LOI;
@@ -148,31 +97,17 @@ public final class HopThoai {
                 cha, thongBao, tieuDe, kieuLuaChon, JOptionPane.QUESTION_MESSAGE);
     }
 
-    /**
-     * Hiển thị xác nhận hộp thoại trong HopThoai.
-     *
-     * <p>Trả về YES_OPTION/OK_OPTION khi đồng ý, NO_OPTION/CANCEL_OPTION khi không (giữ mã trả về
-     * cũ).
-     *
-     * @param cha cha
-     * @param thongBao thông báo
-     * @param tieuDe tiêu đề
-     * @param kieuLuaChon kiểu lựa chọn
-     * @param kieuThongBao kiểu thông báo
-     * @return kết quả hiển thị xác nhận hộp thoại
-     */
     public static int hienThiXacNhanHopThoai(
             Component cha, Object thongBao, String tieuDe, int kieuLuaChon, int kieuThongBao) {
-        // Đồng ý không.
         boolean dongYKhong = kieuLuaChon == JOptionPane.YES_NO_OPTION;
-        // Nguy hiểm.
+
         boolean nguyHiem =
                 kieuThongBao == JOptionPane.WARNING_MESSAGE
                         || kieuThongBao == JOptionPane.ERROR_MESSAGE;
-        // Các lựa chọn.
+
         Object[] cacLuaChon =
                 dongYKhong ? new Object[] {"Có", "Không"} : new Object[] {DONG_Y, HUY};
-        // Lựa chọn.
+
         int luaChon =
                 JOptionPane.showOptionDialog(
                         cha,

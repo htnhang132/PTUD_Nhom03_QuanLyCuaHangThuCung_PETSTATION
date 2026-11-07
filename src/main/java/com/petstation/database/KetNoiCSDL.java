@@ -4,9 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/** Mở và kiểm tra kết nối JDBC theo cấu hình SQL Server. */
 public final class KetNoiCSDL {
-    /** Cấu hình. */
     private final CauHinhCSDL cauHinh;
 
     public KetNoiCSDL(CauHinhCSDL cauHinh) {

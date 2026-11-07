@@ -8,18 +8,12 @@ import com.petstation.model.VaiTro;
 import java.util.EnumSet;
 import java.util.Set;
 
-/**
- * Điều phối nghiệp vụ và kiểm tra dữ liệu cho quyền dịch vụ.
- *
- * <p>Quyền theo vai trò (khớp database/002_sample_data.sql) để hiển thị ma trận phân quyền.
- */
 public final class QuyenVaiTroService {
     private static final QuyenVaiTroDAO quyenVaiTroDAO = new QuyenVaiTroDAOImpl();
 
     private QuyenVaiTroService() {}
 
     public static Set<Quyen> tao(VaiTro vaiTro) {
-        // Các quyền.
         Set<Quyen> cacQuyen = EnumSet.noneOf(Quyen.class);
         for (Object[] dong : quyenVaiTroDAO.timCua(vaiTro.name())) {
             if (dong != null && dong.length > 0 && dong[0] != null) {

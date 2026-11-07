@@ -6,9 +6,7 @@ import java.awt.geom.Path2D;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho dòng biểu tượng. */
 public final class BieuTuongNet implements Icon {
-	/** Cung cấp giao diện và xử lý tương tác cho kiểu. */
 	public enum Kieu {
 		TRANG_CHINH,
 		MOI,
@@ -43,13 +41,10 @@ public final class BieuTuongNet implements Icon {
 		KHOA2
 	}
 
-	/** Kiểu. */
 	private final Kieu kieu;
 
-	/** Kích thước. */
 	private final int kichThuoc;
 
-	/** Màu. */
 	private final Color mau;
 
 	public BieuTuongNet(Kieu kieu, int kichThuoc, Color mau) {
@@ -70,18 +65,16 @@ public final class BieuTuongNet implements Icon {
 
 	@Override
 	public void paintIcon(Component thanhPhan, Graphics doHoa, int toaDoNgang, int toaDoDoc) {
-		// Đồ họa.
 		Graphics2D doHoa2 = (Graphics2D) doHoa.create();
 		doHoa2.translate(toaDoNgang, toaDoDoc);
 		doHoa2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		doHoa2.setColor(thanhPhan.isEnabled() ? mau : MauUngDung.VO_HIEU_HOA);
 		doHoa2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-		// Mô hình đang xét.
+
 		int moHinhDangXet = 3;
-		// Sự kiện.
+
 		int suKien = kichThuoc - 4;
 		if (kieu.ordinal() > Kieu.TRO_GIUP.ordinal()) {
-			// Tỷ lệ.
 			double tyLe = kichThuoc / 24.0;
 			doHoa2.scale(tyLe, tyLe);
 			doHoa2.setStroke(
@@ -93,17 +86,14 @@ public final class BieuTuongNet implements Icon {
 		}
 		switch (kieu) {
 		case TRANG_CHINH -> {
-			// Icon màn hình chính: ngôi nhà.
 			double s = kichThuoc;
 
 			Path2D ngoiNha = new Path2D.Double();
 
-			// Mái nhà.
 			ngoiNha.moveTo(s * 0.12, s * 0.46);
 			ngoiNha.lineTo(s * 0.50, s * 0.14);
 			ngoiNha.lineTo(s * 0.88, s * 0.46);
 
-			// Thân nhà.
 			ngoiNha.moveTo(s * 0.23, s * 0.43);
 			ngoiNha.lineTo(s * 0.23, s * 0.86);
 			ngoiNha.lineTo(s * 0.77, s * 0.86);
@@ -111,7 +101,6 @@ public final class BieuTuongNet implements Icon {
 
 			doHoa2.draw(ngoiNha);
 
-			// Cửa chính.
 			Path2D cuaChinh = new Path2D.Double();
 			cuaChinh.moveTo(s * 0.42, s * 0.86);
 			cuaChinh.lineTo(s * 0.42, s * 0.65);
@@ -147,16 +136,13 @@ public final class BieuTuongNet implements Icon {
 			doHoa2.drawLine(4, 8, 9, 8);
 		}
 		case TRO_GIUP -> {
-			// Icon trợ giúp: dấu hỏi nằm trong vòng tròn.
 			double s = kichThuoc;
 
-			// Vòng tròn bên ngoài.
 			int le = (int) Math.round(s * 0.14);
 			int duongKinh = (int) Math.round(s * 0.72);
 
 			doHoa2.drawOval(le, le, duongKinh, duongKinh);
 
-			// Đường nét dấu hỏi.
 			Path2D dauHoi = new Path2D.Double();
 
 			dauHoi.moveTo(s * 0.38, s * 0.39);
@@ -183,7 +169,6 @@ public final class BieuTuongNet implements Icon {
 
 			doHoa2.draw(dauHoi);
 
-			// Dấu chấm bên dưới.
 			int kichThuocCham = Math.max(2, (int) Math.round(s * 0.075));
 			int toaDoCham = (int) Math.round(s * 0.50 - kichThuocCham / 2.0);
 
@@ -199,7 +184,6 @@ public final class BieuTuongNet implements Icon {
 	}
 
 	private static Path2D layDuongDan(double... vungDangXet) {
-		// Đường dẫn.
 		Path2D duongDan = new Path2D.Double();
 		duongDan.moveTo(vungDangXet[0], vungDangXet[1]);
 		for (int chiSo = 2; chiSo < vungDangXet.length; chiSo += 2)
@@ -226,13 +210,6 @@ public final class BieuTuongNet implements Icon {
 						2 * dongDuLieu));
 	}
 
-	/**
-	 * Vẽ ký hiệu trong BieuTuongNet.
-	 *
-	 * <p>Vẽ biểu tượng trên lưới 24x24.
-	 *
-	 * @param doHoa đồ họa
-	 */
 	private void veKyHieu(Graphics2D doHoa) {
 		switch (kieu) {
 		case GIO_HANG -> {
@@ -242,7 +219,7 @@ public final class BieuTuongNet implements Icon {
 		}
 		case CAC_NGUOI_DUNG -> {
 			layElip(doHoa, 12, 8, 4);
-			// Nội dung.
+
 			Path2D noiDung = new Path2D.Double();
 			noiDung.moveTo(4, 21);
 			noiDung.quadTo(4, 13.5, 12, 13.5);
@@ -291,7 +268,7 @@ public final class BieuTuongNet implements Icon {
 		}
 		case KHOA -> {
 			doHoa.draw(new java.awt.geom.RoundRectangle2D.Double(5, 11, 14, 10, 2, 2));
-			// Quai khóa.
+
 			Path2D quaiKhoa = new Path2D.Double();
 			quaiKhoa.moveTo(8, 11);
 			quaiKhoa.lineTo(8, 8);
@@ -320,7 +297,6 @@ public final class BieuTuongNet implements Icon {
 			layDong(doHoa, 9, 17, 16, 17);
 		}
 		case GIOT_NUOC -> {
-			// Thả.
 			Path2D tha = new Path2D.Double();
 			tha.moveTo(12, 3);
 			tha.quadTo(19, 11, 19, 15);
@@ -332,7 +308,6 @@ public final class BieuTuongNet implements Icon {
 			layElip(doHoa, 12, 12, 3);
 			layElip(doHoa, 12, 12, 7);
 			for (int chiSo = 0; chiSo < 8; chiSo++) {
-				// Giá trị đầu.
 				double giaTriDau = Math.toRadians(chiSo * 45);
 				layDong(
 						doHoa,
@@ -348,7 +323,6 @@ public final class BieuTuongNet implements Icon {
 		}
 		case QUAY_LAI -> doHoa.draw(layDuongDan(15, 5, 8, 12, 15, 19));
 		case CHUONG -> {
-			// Chuông.
 			Path2D chuong = new Path2D.Double();
 			chuong.moveTo(6, 17);
 			chuong.lineTo(6, 11);
@@ -361,7 +335,6 @@ public final class BieuTuongNet implements Icon {
 			layDong(doHoa, 10, 21.5, 14, 21.5);
 		}
 		case KHIEN -> {
-			// Khiên.
 			Path2D khien = new Path2D.Double();
 			khien.moveTo(12, 3);
 			khien.lineTo(20, 6);

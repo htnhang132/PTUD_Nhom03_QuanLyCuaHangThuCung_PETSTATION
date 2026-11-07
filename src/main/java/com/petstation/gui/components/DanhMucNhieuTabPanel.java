@@ -6,16 +6,9 @@ import java.awt.Font;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho các thẻ danh mục vùng hiển thị.
- *
- * <p>Màn có nhiều tab (ví dụ Sản phẩm + Lịch sử giá). Chuyển onShow xuống các tab con.
- */
 public class DanhMucNhieuTabPanel extends CoSoPanel {
-    /** Các tab. */
     private final JTabbedPane tabCacTab = new JTabbedPane();
 
-    /** Các thành phần con. */
     private final JPanel[] cacThanhPhanCon;
 
     public DanhMucNhieuTabPanel(String[] cacTieuDe, JPanel[] cacThanhPhanCon) {

@@ -17,52 +17,31 @@ import java.time.format.DateTimeFormatter;
 
 import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho ca thu ngân vùng hiển thị.
- *
- * <p>Ca thu ngân. Mở ca: chọn ca (tự gợi ý theo giờ), gõ số tờ từng mệnh giá + Enter để sang dòng
- * kế, Enter ở dòng cuối là mở ca. Kết ca: kiểm đếm tương tự, hiện chênh lệch ngay, ghi người nhận
- * bàn giao.
- */
 public final class CaThuNganPanel extends CoSoPanel {
-    /** Ca làm việc. */
     private final CaThuNganService caLamViec;
 
-    /** Các thẻ. */
     private final CardLayout cacThe = new CardLayout();
 
-    /** Gốc. */
     private final JPanel pnlGoc = new JPanel(cacThe);
 
-    // Trang mở ca
-    /** Tên ca làm việc. */
     private final JComboBox<String> cboTenCaLamViec =
     		BieuMauPanel.layHopChon(
     		        new String[] {"Ca sáng", "Ca chiều"});
 
-    /** Mở bộ đếm. */
     private final BoDemMenhGia pnlMoBoDem = new BoDemMenhGia();
 
-    /** Mở lỗi. */
     private final JLabel lblMoLoi = new JLabel("");
 
-    /** Cuối cùng bàn giao. */
     private final JLabel lblCuoiCungBanGiao = new JLabel("");
 
-    /** Đang chờ biểu ngữ. */
     private final JLabel lblDangChoBieuNgu = new JLabel("");
 
-    // Trang đang chạy ca
-    /** Các chỉ số. */
     private final JPanel pnlCacChiSo = new JPanel(new GridLayout(2, 3, 10, 10));
 
-    /** Đóng bộ đếm. */
     private final BoDemMenhGia pnlDongBoDem = new BoDemMenhGia();
 
-    /** Chênh lệch. */
     private final JLabel lblChenhLech = new JLabel();
 
-    /** Người nhận. */
     private final JComboBox<CaThuNganService.NguoiNhan> cboNguoiNhan = new JComboBox<>();
 
     private final JComboBox<String> cboHinhThuc =
@@ -70,19 +49,16 @@ public final class CaThuNganPanel extends CoSoPanel {
     private final JTextField txtTienDauCa = BieuMauPanel.layTruongVanBan("");
     private final JTextField txtTienThucDem = BieuMauPanel.layTruongVanBan("");
 
-    /** Ghi chú. */
     private final JTextField txtGhiChu = BieuMauPanel.layTruongVanBan("");
 
-    /** Đóng lỗi. */
     private final JLabel lblDongLoi = new JLabel("");
 
-    /** Nút đóng. */
     private final NutDinhDang btnNutDong = new NutDinhDang("Kết ca", NutDinhDang.KieuNut.CHINH);
 
     public CaThuNganPanel(CaThuNganService caLamViec) {
         this.caLamViec = caLamViec;
         setLayout(new BorderLayout(0, 14));
-        // Tiêu đề.
+
         JLabel lblTieuDe = taoTieuDeMuc("Ca thu ngân");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
         add(lblTieuDe, BorderLayout.NORTH);
@@ -148,7 +124,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         pnlCacChiSo.setOpaque(false);
         pnlVungDangXet.add(pnlCacChiSo, BorderLayout.NORTH);
 
-        // Số lượng.
         JPanel pnlSoLuong = layThe(new BorderLayout(0, 8));
         pnlSoLuong.add(taoTieuDeMuc("Kiểm đếm tiền mặt trong két"), BorderLayout.NORTH);
         JPanel pnlDem = new JPanel(new BorderLayout(0, 8));
@@ -180,7 +155,6 @@ public final class CaThuNganPanel extends CoSoPanel {
                 () -> txtTienThucDem.setText(String.valueOf(pnlDongBoDem.tinhTong())));
         pnlDongBoDem.layKhiHoanTat(() -> txtGhiChu.requestFocusInWindow());
 
-        // Bên.
         JPanel pnlBen = new JPanel();
         pnlBen.setOpaque(false);
         pnlBen.setLayout(new BoxLayout(pnlBen, BoxLayout.Y_AXIS));
@@ -217,12 +191,10 @@ public final class CaThuNganPanel extends CoSoPanel {
         btnNutDong.addActionListener(suKien -> dongCaLamViec());
         pnlBen.add(btnNutDong);
 
-        // Bên thẻ.
         JPanel pnlBenThe = layThe(new BorderLayout());
         pnlBenThe.setPreferredSize(new Dimension(330, 0));
         pnlBenThe.add(pnlBen, BorderLayout.NORTH);
 
-        // Giữa.
         JPanel pnlGiua = taoVungTrongSuot(new BorderLayout(14, 0));
         pnlGiua.add(pnlSoLuong, BorderLayout.CENTER);
         pnlGiua.add(pnlBenThe, BorderLayout.EAST);
@@ -231,7 +203,6 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private JLabel layNho(String vanBan) {
-        // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblDongDangXet.setForeground(MauUngDung.VAN_BAN_XAM);
@@ -240,7 +211,6 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private void moCaLamViec() {
-        // Tiền mặt.
         long tienMat;
         try {
             tienMat = docSoTien(txtTienDauCa);
@@ -250,7 +220,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         }
         if (tienMat == 0 && !HopThoai.xacNhan(this, "Tiền đầu ca là 0₫. Vẫn mở ca?")) return;
         lblMoLoi.setText("");
-        // Tên.
+
         String ten = String.valueOf(cboTenCaLamViec.getSelectedItem());
         try {
             caLamViec.mo(ten, tienMat);
@@ -260,7 +230,6 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private void dongCaLamViec() {
-        // Tổng.
         long tong;
         try {
             tong = docSoTien(txtTienThucDem);
@@ -268,7 +237,7 @@ public final class CaThuNganPanel extends CoSoPanel {
             lblDongLoi.setText(e.getMessage());
             return;
         }
-        // Chênh lệch.
+
         long chenhLech = tong - caLamViec.layTienMatDuKien();
         if (cboHinhThuc.getSelectedIndex() == 1 && cboNguoiNhan.getSelectedItem() == null) {
             lblDongLoi.setText("Nhập tên người nhận bàn giao.");
@@ -281,7 +250,7 @@ public final class CaThuNganPanel extends CoSoPanel {
             txtGhiChu.requestFocusInWindow();
             return;
         }
-        // Đồng ý.
+
         boolean dongY =
                 HopThoai.xacNhan(
                         this,
@@ -318,7 +287,6 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private void capNhatSoLuongTomTat() {
-        // Chênh lệch.
         long chenhLech;
         try {
             chenhLech = docSoTien(txtTienThucDem) - caLamViec.layTienMatDuKien();
@@ -348,7 +316,7 @@ public final class CaThuNganPanel extends CoSoPanel {
                             : "Ca gần nhất – " + caLamViec.layBanGiaoGanNhat());
             cboTenCaLamViec.setSelectedItem(layDeXuatCaLamViec());
             pnlMoBoDem.datLai();
-            // Đang chờ.
+
             boolean dangCho = !caLamViec.layTieuDeDangCho().isEmpty();
             lblDangChoBieuNgu.setVisible(dangCho);
             lblDangChoBieuNgu.setText(

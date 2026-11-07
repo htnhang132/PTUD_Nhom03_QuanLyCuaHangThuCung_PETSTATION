@@ -4,14 +4,9 @@ import com.petstation.util.DuLieu;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Thực thể Gói dịch vụ Spa khớp bảng [goi_dich_vu_spa].
- * Khóa chính: maGoi.
- */
 public class GoiDichVuSpa implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã gói dịch vụ Spa (ví dụ: SPA00000001). */
     private String maGoi;
     private String tenGoi;
     private String moTa;
@@ -21,18 +16,15 @@ public class GoiDichVuSpa implements Serializable {
     private String bangGia;
     private String trangThai;
 
-    /** Constructor mặc định. */
     public GoiDichVuSpa() {
         this.trangThai = "HOAT_DONG";
     }
 
-    /** Constructor chỉ có khóa chính. */
     public GoiDichVuSpa(String maGoi) {
         this();
         setMaGoi(maGoi);
     }
 
-    /** Constructor đầy đủ thuộc tính thường. */
     public GoiDichVuSpa(
             String maGoi,
             String tenGoi,
@@ -53,7 +45,6 @@ public class GoiDichVuSpa implements Serializable {
         setTrangThai(trangThai);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public GoiDichVuSpa(long id) {
         this();
         setId(id);
@@ -73,19 +64,13 @@ public class GoiDichVuSpa implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính thời lượng dự kiến theo giờ (thuộc tính dẫn xuất từ thoiGianDuKien tính bằng phút). */
     public double tinhThoiGianTheoGio() {
         return Math.max(0, thoiGianDuKien) / 60.0;
     }
 
-    /** Kiểm tra gói dịch vụ còn đang mở phục vụ hay không (dẫn xuất). */
     public boolean kiemTraDangPhucVu() {
         return trangThai == null || "HOAT_DONG".equalsIgnoreCase(trangThai) || "Đang áp dụng".equalsIgnoreCase(trangThai) || "Đang hoạt động".equalsIgnoreCase(trangThai);
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaGoi() { return this.maGoi; }
     public String layMaGoi() { return this.maGoi; }
@@ -141,8 +126,6 @@ public class GoiDichVuSpa implements Serializable {
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
     public void datTrangThai(String trangThai) { setTrangThai(trangThai); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maGoi); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -153,8 +136,6 @@ public class GoiDichVuSpa implements Serializable {
         }
     }
     public void datId(long id) { setId(id); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maGoi) ====================
 
     @Override
     public boolean equals(Object o) {

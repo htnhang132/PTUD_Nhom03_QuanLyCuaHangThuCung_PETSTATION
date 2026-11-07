@@ -14,11 +14,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho phê duyệt dịch vụ. */
 public final class PheDuyetService {
-    private static final YeuCauPheDuyetDAO pheDuyetDAO = new YeuCauPheDuyetDAOImpl();
+    private static YeuCauPheDuyetDAO pheDuyetDAO = new YeuCauPheDuyetDAOImpl();
 
-    /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho loại. */
+    public static void cauHinhDAO(YeuCauPheDuyetDAO dao) {
+        if (dao != null) pheDuyetDAO = dao;
+    }
+
     public enum Loai {
         SUA_HOA_DON("Sửa/hủy hóa đơn"),
         DOI_TRA("Đổi trả vượt hạn mức"),
@@ -27,7 +29,6 @@ public final class PheDuyetService {
         NGHI_PHEP("Nghỉ phép"),
         GIA_BAN("Đề xuất giá bán");
 
-        /** Nhãn. */
         public final String nhan;
 
         Loai(String nhan) {
@@ -48,24 +49,17 @@ public final class PheDuyetService {
         }
     }
 
-    /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho yêu cầu. */
     public static final class YeuCau {
-        /** Id. */
         public final String id;
 
-        /** Loại. */
         public final Loai loai;
 
-        /** Người gửi. */
         public final String nguoiGui;
 
-        /** Thời gian. */
         public final LocalDateTime thoiGian;
 
-        /** Lý do. */
         public final String lyDo, truoc, sau;
 
-        /** Trạng thái. */
         public String trangThai, daQuyetDinhTheo, tuChoiLyDo;
 
         YeuCau(Object[] dongDuLieu) {
@@ -94,10 +88,8 @@ public final class PheDuyetService {
         }
     }
 
-    /** Các bộ lắng nghe. */
     private static final List<Runnable> CAC_BO_LANG_NGHE = new ArrayList<>();
 
-    /** Đã chọn hóa đơn. */
     public static String daChonHoaDon = "";
 
     private PheDuyetService() {}
@@ -110,7 +102,6 @@ public final class PheDuyetService {
             String thaoTac,
             long dich,
             String noiDungXuLy) {
-        // Quyền.
         Quyen quyen =
                 switch (loai) {
                     case SUA_HOA_DON, DOI_TRA -> Quyen.BAN_HANG;
@@ -132,7 +123,7 @@ public final class PheDuyetService {
         if (!dungThaoTac || dich <= 0)
             throw new IllegalArgumentException("Thao tác không phù hợp với loại phê duyệt.");
         if (lyDo == null || lyDo.isBlank()) throw new IllegalArgumentException("Cần nhập lý do.");
-        // Mã.
+
         String ma = taoMa("YC");
         thucHienGiaoDich(
                 ketNoi -> {
@@ -173,7 +164,7 @@ public final class PheDuyetService {
                     List<Object[]> cacDong = pheDuyetDAO.timDuyet(yeuCau.id);
                     if (cacDong.isEmpty())
                         throw new IllegalArgumentException("Yêu cầu đã được xử lý.");
-                    // Dòng dữ liệu.
+
                     Object[] dongDuLieu = cacDong.get(0);
                     PheDuyetService.apDungPheDuyet(
                             chuyenThanhChuoi(dongDuLieu[0]),
@@ -195,7 +186,7 @@ public final class PheDuyetService {
                 ketNoi -> {
                     List<Object[]> cacDong = pheDuyetDAO.timTuChoi(yeuCau.id);
                     if (cacDong.isEmpty()) throw new IllegalArgumentException("Yêu cầu đã xử lý.");
-                    // Dòng dữ liệu.
+
                     Object[] dongDuLieu = cacDong.get(0);
                     long idDoiTuong = layIdCauNoi(null, chuyenThanhChuoi(dongDuLieu[1]));
                     if ("DOI_TRA".equals(dongDuLieu[0]) || "PHIEU_DOI_TRA".equals(dongDuLieu[0]))
@@ -226,7 +217,7 @@ public final class PheDuyetService {
 
     public static void layHoaDonYeuCau(String hoaDon, boolean huy, String lyDo, String thayDoi) {
         yeuCau(Quyen.BAN_HANG);
-        // Id.
+
         long id = layId("hoa_don", "ma_hoa_don", hoaDon);
         if (lyDo.isBlank() || !huy && thayDoi.isBlank())
             throw new IllegalArgumentException("Cần lý do và nội dung cần sửa.");
@@ -264,7 +255,7 @@ public final class PheDuyetService {
     public static void xoaBoLangNghe() {
         CAC_BO_LANG_NGHE.clear();
     }
-    
+
     public static void yeuCauBoSung(String ma, String noiDung) {
         yeuCau(Quyen.XU_LY_PHE_DUYET);
 

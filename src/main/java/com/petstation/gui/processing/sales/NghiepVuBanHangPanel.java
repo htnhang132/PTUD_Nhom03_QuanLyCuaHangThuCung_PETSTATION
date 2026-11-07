@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho bán hàng nghiệp vụ vùng hiển thị. */
 public abstract class NghiepVuBanHangPanel extends BangNghiepVuPanel {
     protected NghiepVuBanHangPanel(
             LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {

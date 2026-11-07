@@ -6,7 +6,6 @@ import com.petstation.model.PhuongThuc;
 
 import java.util.List;
 
-/** Ghép model giỏ hàng với chính sách dữ liệu thật tại một điểm khởi tạo. */
 public final class GioHangService {
     private GioHangService() {}
 

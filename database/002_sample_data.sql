@@ -1,16 +1,3 @@
-/*
-    Pet Station - 002_sample_data.sql
-    Dữ liệu mẫu toàn diện cho hệ thống Quản lý Cửa hàng Thú cưng Pet Station.
-    - 100% Khóa tự nhiên nghiệp vụ (ma_..., ten_dang_nhap).
-    - Toàn bộ các thuộc tính được điền dữ liệu đầy đủ, KHÔNG CÓ GIÁ TRỊ NULL.
-    - Thành viên nhóm thực hiện dự án:
-      1. Huỳnh Tấn Nhàng  (NV0001 - admin   - Cửa hàng trưởng / Quản lý)
-      2. Trần Quang Vinh  (NV0002 - vinhtq  - Quản lý cửa hàng)
-      3. Nguyễn Gia Vỉ    (NV0003 - ving    - Nhân viên kho)
-      4. Phan Trần Thảo Vy (NV0004 - vyptt   - Nhân viên bán hàng)
-      5. Trần Quang Đạt   (NV0005 - dattq   - Nhân viên Spa / Hotel)
-*/
-
 USE [PetStationDemo1];
 GO
 
@@ -71,7 +58,6 @@ DELETE FROM dbo.[goi_dich_vu_spa];
 DELETE FROM dbo.[chuong_trinh_khuyen_mai];
 DELETE FROM dbo.[ca_lam_viec];
 
--- 1. BẢNG CA_LAM_VIEC
 -- 1. CA LÀM VIỆC
 INSERT INTO dbo.[ca_lam_viec] ([ma_ca], [ten_ca], [gio_bat_dau], [gio_ket_thuc], [so_nhan_su_toi_thieu], [he_so_luong])
 VALUES
@@ -79,7 +65,6 @@ VALUES
     (N'CA02', N'Ca chiều', CONVERT(time,'14:30:00'), CONVERT(time,'21:30:00'), 2, 1.00),
     (N'CA03', N'Ca tối', CONVERT(time,'18:00:00'), CONVERT(time,'22:00:00'), 1, 1.20);
 
--- 2. BẢNG CHUONG_TRINH_KHUYEN_MAI
 -- 2. CHƯƠNG TRÌNH KHUYẾN MÃI
 INSERT INTO dbo.[chuong_trinh_khuyen_mai] ([ma_chuong_trinh], [ten], [loai_giam], [gia_tri], [bat_dau], [ket_thuc], [nguon], [trang_thai], [don_toi_thieu])
 VALUES
@@ -88,7 +73,6 @@ VALUES
     (N'KM000003', N'Giảm giá phụ kiện cuối tuần', N'PHAN_TRAM', 15.00, DATEADD(day,-10,CAST(@homNay AS datetime2)), DATEADD(day,20,CAST(@homNay AS datetime2)), N'PRODUCT', N'HOAT_DONG', 150000.00),
     (N'KM000004', N'Tri ân khách hàng thân thiết', N'SO_TIEN', 30000.00, DATEADD(day,-60,CAST(@homNay AS datetime2)), DATEADD(day,60,CAST(@homNay AS datetime2)), N'ALL', N'HOAT_DONG', 250000.00);
 
--- 3. BẢNG GOI_DICH_VU_SPA
 -- 3. GÓI DỊCH VỤ SPA
 INSERT INTO dbo.[goi_dich_vu_spa] ([ma_goi], [ten_goi], [mo_ta], [thoi_gian_du_kien], [chung_loai_ap_dung], [don_gia_goc], [bang_gia], [trang_thai])
 VALUES
@@ -101,7 +85,6 @@ VALUES
     (N'SPA00000007', N'Cạo lông vệ sinh và tạo hình thẩm mỹ', N'Cạo lông bàn chân, vùng bụng, vệ sinh tuyến hôi và tỉa mặt', 50, N'Cả hai', 160000.00, N'DOG|< 5kg|0.00|5.00|160000.00;DOG|5 - 15kg|5.00|15.00|210000.00;DOG|>= 15kg|15.00|NULL|270000.00;CAT|< 5kg|0.00|5.00|150000.00;CAT|>= 5kg|5.00|NULL|195000.00', N'HOAT_DONG'),
     (N'SPA00000008', N'Tắm sục khoáng Onsen thư giãn', N'Ngâm bồn sục khoáng ấm Onsen Nhật Bản giúp tuần hoàn máu và sạch sâu', 60, N'Cả hai', 260000.00, N'DOG|< 5kg|0.00|5.00|260000.00;DOG|5 - 15kg|5.00|15.00|330000.00;DOG|>= 15kg|15.00|NULL|430000.00;CAT|< 5kg|0.00|5.00|240000.00;CAT|>= 5kg|5.00|NULL|310000.00', N'HOAT_DONG');
 
--- 4. BẢNG KHACH_HANG
 -- 4. KHÁCH HÀNG
 INSERT INTO dbo.[khach_hang] ([ma_khach_hang], [ho_ten], [so_dien_thoai], [dia_chi], [ngay_sinh], [diem_tich_luy], [hang_thanh_vien], [dang_hoat_dong], [email], [ghi_chu], [ngay_tao], [lich_su_diem])
 VALUES
@@ -136,7 +119,6 @@ VALUES
     (N'KH000029', N'Lâm Mỹ Lệ', N'0981234567', N'55 Đinh Tiên Hoàng, TP.HCM', CONVERT(date,'1997-03-21',23), 640, N'Bạc', 1, N'le.lam@email.com', N'Khách hàng trẻ nhiệt tình, hay chia sẻ ảnh cún', DATEADD(second,-555363,CAST(@homNay AS datetime2)), N'1|50|640|Tích điểm giao dịch mẫu|2026-10-15 08:00:00;2|590|590|Số dư đầu kỳ|2026-10-01 08:00:00'),
     (N'KH000030', N'Tô Hoài An', N'0992345678', N'72 Nguyễn Bỉnh Khiêm, TP.HCM', CONVERT(date,'1994-07-07',23), 1950, N'Vàng', 1, N'an.to@email.com', N'Nuôi bé mèo Munchkin chân ngắn nhanh nhẹn', DATEADD(second,-555363,CAST(@homNay AS datetime2)), N'1|50|1950|Tích điểm giao dịch mẫu|2026-10-15 08:00:00;2|1900|1900|Số dư đầu kỳ|2026-10-01 08:00:00');
 
--- 5. BẢNG NHA_CUNG_CAP
 -- 5. NHÀ CUNG CẤP
 INSERT INTO dbo.[nha_cung_cap] ([ma_nha_cung_cap], [ten], [so_dien_thoai], [dia_chi], [nguoi_dai_dien], [nhom_mat_hang], [ghi_chu], [trang_thai], [ma_so_thue], [dieu_khoan])
 VALUES
@@ -151,7 +133,6 @@ VALUES
     (N'NCC0009', N'Công ty Chăm sóc thú cưng Đại Việt', N'02838990005', N'215 Nam Kỳ Khởi Nghĩa, Quận 3, TP.HCM', N'Võ Thu Ngân', N'Mỹ phẩm Spa', N'Phân phối sữa tắm Joyce & Dolls, BBN, dầu xả mềm mượt', N'DANG_HOP_TAC', N'0318901234', N'Hỗ trợ đào tạo kỹ thuật viên Spa chuyên nghiệp'),
     (N'NCC0010', N'Nhà phân phối thiết bị Thiên Phúc', N'02838990006', N'96 Nguyễn Thị Thập, Quận 7, TP.HCM', N'Đỗ Hoàng Long', N'Thiết bị Grooming', N'Cung cấp máy sấy lông công suất lớn, bàn nâng thủy lực', N'DANG_HOP_TAC', N'0319012345', N'Bảo hành thiết bị 24 tháng, bảo trì định kỳ 6 tháng');
 
--- 6. BẢNG NHAN_VIEN
 -- 6. NHÂN VIÊN
 INSERT INTO dbo.[nhan_vien] ([ma_nhan_vien], [ho_ten], [ngay_sinh], [so_dien_thoai], [dia_chi], [chuc_vu], [ngay_vao_lam], [anh_dai_dien], [dang_lam_viec], [cccd])
 VALUES
@@ -167,7 +148,6 @@ VALUES
     (N'NV0010', N'Lê Hoàng Phúc', CONVERT(date,'2001-06-22',23), N'0901234510', N'67 Thống Nhất, Phường 11, Quận Gò Vấp, TP.HCM', N'Nhân viên kho', CONVERT(date,'2023-04-10',23), N'images/staff/phucle.png', 1, N'079201010011'),
     (N'NV0011', N'Phạm Thảo Nhi', CONVERT(date,'2003-09-05',23), N'0901234511', N'91 Nguyễn Thái Sơn, Phường 3, Quận Gò Vấp, TP.HCM', N'Nhân viên Spa/Hotel', CONVERT(date,'2023-05-15',23), N'images/staff/nhipham.png', 1, N'079203011122');
 
--- 7. BẢNG PHONG_HOTEL
 -- 9. PHÒNG HOTEL
 INSERT INTO dbo.[phong_hotel] ([ma_phong], [ten_phong], [loai_phong], [gia_dem], [trang_thai], [suc_chua], [ghi_chu], [bang_gia])
 VALUES
@@ -184,7 +164,6 @@ VALUES
     (N'P011', N'Penthouse Sky Pet 3', N'Penthouse', 400000.0, N'TRONG', 3, N'Phòng penthouse rộng 15m2, sân chơi riêng, pate bữa khuya thượng hạng', N'400000'),
     (N'P012', N'Penthouse Sky Pet 4', N'Penthouse', 400000.0, N'TRONG', 3, N'Phòng penthouse rộng 15m2, sân chơi riêng, pate bữa khuya thượng hạng', N'400000');
 
--- 8. BẢNG SAN_PHAM
 -- 10. SẢN PHẨM & DỊCH VỤ
 INSERT INTO dbo.[san_pham] ([ma_san_pham], [barcode], [ten], [nhom_hang], [don_vi_tinh], [gia_ban], [gia_nhap_gan_nhat], [ton_toi_thieu], [theo_doi_hsd], [anh], [trang_thai], [thuong_hieu], [quy_cach], [doi_tuong_su_dung], [mo_ta], [nguon_url], [ngay_thu_thap], [lich_su_gia], [de_xuat_gia])
 VALUES
@@ -263,7 +242,6 @@ VALUES
     (N'SP000073', N'8938505000732', N'Đồ chơi dây thừng cho chó mèo PAW loại dài', N'Phụ kiện', N'Cái', 50000.00, 32500.00, 5, 0, N'images/products/SP-PK-015.jpg', N'DANG_BAN', N'PAW', N'', N'Chó và mèo', N'Phụ kiện thương hiệu PAW, dành cho chó và mèo.', N'https://www.petmart.vn/do-choi-day-thung-cho-cho-meo-paw-loai-dai', CONVERT(date,'2026-10-19',23), N'0.00|50000.00|2|2026-09-15 08:00:00', N'KhongDeXuat'),
     (N'SP000074', N'8938505000749', N'Bát ăn cho chó mèo bằng nhựa BOBO Plastic Bowl 3038', N'Phụ kiện', N'Cái', 35000.00, 22750.00, 5, 0, N'images/products/SP-PK-016.jpg', N'DANG_BAN', N'BOBO', N'', N'Chó và mèo', N'Phụ kiện thương hiệu BOBO, dành cho chó và mèo.', N'https://www.petmart.vn/bat-an-cho-cho-meo-bang-nhua-bobo-plastic-bowl-3038', CONVERT(date,'2026-10-19',23), N'0.00|35000.00|2|2026-09-15 08:00:00', N'KhongDeXuat');
 
--- 9. BẢNG THU_CUNG
 -- 12. THÚ CƯNG
 INSERT INTO dbo.[thu_cung] ([ma_thu_cung], [ma_khach_hang], [ten], [loai], [giong], [gioi_tinh], [mau_long], [can_nang], [tinh_trang_suc_khoe], [di_ung_benh_ly], [anh], [dang_theo_doi], [ngay_sinh], [tinh_cach], [tiem_chung], [so_mui_tiem], [ngay_tiem_gan_nhat])
 VALUES
@@ -298,7 +276,6 @@ VALUES
     (N'TC000029', N'KH000029', N'Bông Gòn', N'Mèo', N'Chinchilla', N'Cái', N'Trắng bạc', 3.3, N'Lông tơ mỏng mịn, mắt viền đen', N'Không có dị ứng', N'images/pets/tc29.jpg', 1, CONVERT(date,'2023-05-01',23), N'Kiêu kỳ, thích được khen', N'Dại|2026-06-10|2027-06-10|Đã tiêm đủ;4 bệnh mèo|2026-07-15|2027-07-15|Đã tiêm đủ', 2, CONVERT(date,'2026-07-15',23)),
     (N'TC000030', N'KH000030', N'Max', N'Chó', N'Labrador', N'Đực', N'Đen tuyền', 28.0, N'Rất thông minh, biết bơi giỏi', N'Không có dị ứng', N'images/pets/tc30.jpg', 1, CONVERT(date,'2021-12-10',23), N'Tận tụy, nghe lời tuyệt đối', N'Dại|2026-02-12|2027-02-12|Đã tiêm đủ;7 bệnh|2026-03-18|2027-03-18|Đã tiêm đủ', 2, CONVERT(date,'2026-03-18',23));
 
--- 10. BẢNG VOUCHER
 -- 28. VOUCHER
 INSERT INTO dbo.[voucher] ([ma_voucher], [ma_khach_hang], [menh_gia], [hieu_luc_den], [su_dung_luc], [chi_ap_dung_spa], [so_luong], [da_dung], [don_toi_thieu], [trang_thai], [khoa_doi_diem])
 VALUES
@@ -308,7 +285,6 @@ VALUES
     (N'VOUCHER000004', N'KH000004', 50000.00, DATEADD(day,60,CAST(@homNay AS datetime2)), DATEADD(day,50,CAST(@homNay AS datetime2)), 1, 1, 0, 150000.00, N'CON_HAN', N'DOI-DIEM-004'),
     (N'VOUCHER000005', N'KH000005', 100000.00, DATEADD(day,60,CAST(@homNay AS datetime2)), DATEADD(day,55,CAST(@homNay AS datetime2)), 0, 1, 0, 250000.00, N'CON_HAN', N'DOI-DIEM-005');
 
--- 11. BẢNG LICH_LAM_VIEC
 -- 8. LỊCH LÀM VIỆC
 INSERT INTO dbo.[lich_lam_viec] ([ma_nhan_vien], [ngay_lam], [ma_ca], [trang_thai], [loai])
 VALUES
@@ -448,7 +424,6 @@ VALUES
     (N'NV0010', DATEADD(day,7,@homNay), N'CA01', N'DANG_MO', N'DI_LAM'),
     (N'NV0011', DATEADD(day,7,@homNay), N'CA02', N'DANG_MO', N'DI_LAM');
 
--- 12. BẢNG TAI_KHOAN
 -- 7. TÀI KHOẢN
 INSERT INTO dbo.[tai_khoan] ([ma_nhan_vien], [ten_dang_nhap], [mat_khau_hash], [vai_tro], [quyen], [trang_thai], [so_lan_dang_nhap_sai], [khoa_den], [bat_buoc_doi_mat_khau], [dang_nhap_cuoi])
 VALUES
@@ -462,7 +437,6 @@ VALUES
     (N'NV0010', N'demo.stock', N'$2a$10$5HXwTpB7xQBI/z8J6tIvTefKZKocd6Yx0b7i8p0w1eyOKsfDa10fG', N'NHAN_VIEN_KHO', N'XEM_TONG_QUAN;XEM_LICH_LAM_VIEC;QUAN_LY_SAN_PHAM;QUAN_LY_NHA_CUNG_CAP;NHAP_KHO;XUAT_HUY_KHO;KIEM_KE_KHO;DE_XUAT_GIA', N'HOAT_DONG', 0, CONVERT(datetime2,'2020-01-01 00:00:00',120), 0, DATEADD(minute,-15,CAST(@homNay AS datetime2))),
     (N'NV0011', N'demo.spa', N'$2a$10$5HXwTpB7xQBI/z8J6tIvTefKZKocd6Yx0b7i8p0w1eyOKsfDa10fG', N'NHAN_VIEN_SPA_HOTEL', N'XEM_TONG_QUAN;XEM_LICH_LAM_VIEC;QUAN_LY_KHACH_HANG;QUAN_LY_THU_CUNG;BAN_HANG;THANH_TOAN;QUAN_LY_CA_THU_NGAN;QUAN_LY_SPA;QUAN_LY_LUU_TRU', N'HOAT_DONG', 0, CONVERT(datetime2,'2020-01-01 00:00:00',120), 0, DATEADD(minute,-15,CAST(@homNay AS datetime2)));
 
--- 13. BẢNG LO_HANG
 -- 11. LÔ HÀNG
 INSERT INTO dbo.[lo_hang] ([ma_lo], [ma_san_pham], [so_lo], [ngay_san_xuat], [ngay_nhap], [han_su_dung], [gia_nhap], [so_luong_nhap], [so_luong_ton], [ngay_kiem_ke], [trang_thai])
 VALUES
@@ -541,7 +515,6 @@ VALUES
     (N'LO00000074', N'SP000073', N'LO00000074', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,365,@homNay), 32500.00, 27, 27, @homNay, N'SAN_SANG'),
     (N'LO00000075', N'SP000074', N'LO00000075', DATEADD(day,-30,@homNay), @homNay, DATEADD(day,365,@homNay), 22750.00, 28, 28, @homNay, N'SAN_SANG');
 
--- 14. BẢNG LICH_HEN
 -- 25. LỊCH HẸN SPA
 INSERT INTO dbo.[lich_hen] ([ma_lich_hen], [ma_khach_hang], [ma_thu_cung], [loai_dich_vu], [bat_dau], [ket_thuc], [trang_thai], [ghi_chu], [ma_nhan_vien], [ma_goi])
 VALUES
@@ -556,7 +529,6 @@ VALUES
     (N'LH00000009', N'KH000009', N'TC000009', N'SPA', DATEADD(day,1,DATEADD(hour,10,CAST(@homNay AS datetime2))), DATEADD(day,1,DATEADD(hour,11,CAST(@homNay AS datetime2))), N'DA_XAC_NHAN', N'Vệ sinh tai và cắt móng cho mèo Xiêm', N'NV0011', N'SPA00000003'),
     (N'LH00000010', N'KH000010', N'TC000010', N'SPA', DATEADD(day,2,DATEADD(hour,15,CAST(@homNay AS datetime2))), DATEADD(day,2,DATEADD(hour,17,CAST(@homNay AS datetime2))), N'DA_XAC_NHAN', N'Combo Spa VIP cho Shiba Inu', N'NV0005', N'SPA00000004');
 
--- 15. BẢNG BIEN_BAN_KIEM_KE
 -- 14. BIÊN BẢN KIỂM KÊ
 INSERT INTO dbo.[bien_ban_kiem_ke] ([ma_bien_ban], [ten_dang_nhap], [ky_kiem_ke], [trang_thai], [tao_luc])
 VALUES
@@ -565,7 +537,6 @@ VALUES
     (N'KK00000003', N'ving', N'Kiểm kê đột xuất nhóm thức ăn hạt', N'CHO_DUYET', DATEADD(day,-1,CAST(@homNay AS datetime2))),
     (N'KK00000004', N'ving', N'Kiểm kê nhóm phụ kiện & vệ sinh', N'DANG_KIEM', DATEADD(hour,-3,CAST(@homNay AS datetime2)));
 
--- 16. BẢNG CAI_DAT
 -- 13. CÀI ĐẶT HỆ THỐNG
 INSERT INTO dbo.[cai_dat] ([ma_cai_dat], [gia_tri], [ten_dang_nhap], [ngay_cap_nhat])
 VALUES
@@ -600,19 +571,24 @@ VALUES
     (N'SO_GIO_TOI_DA_MOI_TUAN', N'40', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'SO_GIO_BAO_TRUOC_DOI_CA', N'12', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'THU_MUC_ANH_CHAM_SOC', N'images/care', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
+    (N'NGUONG_TON_KHO_THAP', N'10', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
+    (N'SO_NGAY_CANH_BAO_HET_HAN', N'30', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
+    (N'PHI_TRA_PHONG_TRE', N'100000', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
+    (N'MAY_IN', N'Microsoft Print to PDF', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
+    (N'MA_BIN_NGAN_HANG', N'970436', N'admin', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'PHIEN_BAN_CSDL', N'20261106', N'admin', DATEADD(second,-555362,CAST(@homNay AS datetime2)));
 
--- 17. BẢNG NHAT_KY_HE_THONG
 -- 33. NHẬT KÝ HỆ THỐNG
 INSERT INTO dbo.[nhat_ky_he_thong] ([ma_nhat_ky], [ten_dang_nhap], [hanh_dong], [loai_doi_tuong], [ma_doi_tuong], [gia_tri_cu], [gia_tri_moi], [ghi_chu], [thoi_gian], [nguoi_dung], [loai_su_kien], [ket_qua])
 VALUES
-    (N'LOG00000001', N'admin', N'Đăng nhập hệ thống', N'HỆ THỐNG', N'HT01', N'Chưa đăng nhập', N'Đã đăng nhập', N'Huỳnh Tấn Nhàng đăng nhập thành công vai trò Cửa hàng trưởng', DATEADD(hour,-4,CAST(@homNay AS datetime2)), N'Huỳnh Tấn Nhàng', N'DANG_NHAP', N'THANH_CONG'),
-    (N'LOG00000002', N'vinhtq', N'Mở ca thu ngân', N'PHIÊN LÀM VIỆC', N'MPI00000035', N'0', N'2000000', N'Trần Quang Vinh mở ca với số dư đầu ca 2,000,000 VND', DATEADD(hour,-3,CAST(@homNay AS datetime2)), N'Trần Quang Vinh', N'MO_CA', N'THANH_CONG'),
-    (N'LOG00000003', N'vyptt', N'Lập hóa đơn thanh toán', N'HÓA ĐƠN', N'HD2610190001', N'Tạo mới', N'Đã thanh toán', N'Phan Trần Thảo Vy lập hóa đơn bán lẻ thành công', DATEADD(hour,-2,CAST(@homNay AS datetime2)), N'Phan Trần Thảo Vy', N'BAN_HANG', N'THANH_CONG'),
-    (N'LOG00000004', N'ving', N'Nhập kho sản phẩm', N'PHIẾU NHẬP', N'PNK00000001', N'Chờ nhập', N'Đã nhập kho', N'Nguyễn Gia Vỉ hoàn tất nhập lô hàng thức ăn Royal Canin', DATEADD(hour,-1,CAST(@homNay AS datetime2)), N'Nguyễn Gia Vỉ', N'NHAP_KHO', N'THANH_CONG'),
-    (N'LOG00000005', N'dattq', N'Tiếp nhận dịch vụ Spa', N'PHIẾU SPA', N'SPA00000001', N'Chờ tiếp nhận', N'Đang thực hiện', N'Trần Quang Đạt tiếp nhận bé Poodle thực hiện gói tắm sấy', DATEADD(minute,-30,CAST(@homNay AS datetime2)), N'Trần Quang Đạt', N'SPA', N'THANH_CONG');
+    (N'LOG00000001', N'admin', N'Đăng nhập hệ thống', N'HỆ THỐNG', N'HT01', N'Chưa đăng nhập', N'Đã đăng nhập', N'Huỳnh Tấn Nhàng đăng nhập thành công vai trò Cửa hàng trưởng', DATEADD(hour,-4,SYSDATETIME()), N'Huỳnh Tấn Nhàng', N'LOGIN', N'Thành công'),
+    (N'LOG00000002', N'vinhtq', N'Mở ca thu ngân', N'PHIÊN LÀM VIỆC', N'MPI00000035', N'0', N'2000000', N'Trần Quang Vinh mở ca với số dư đầu ca 2,000,000 VND', DATEADD(hour,-3,SYSDATETIME()), N'Trần Quang Vinh', N'SYSTEM', N'Thành công'),
+    (N'LOG00000003', N'vyptt', N'Lập hóa đơn thanh toán', N'HÓA ĐƠN', N'HD2610190001', N'Tạo mới', N'Đã thanh toán', N'Phan Trần Thảo Vy lập hóa đơn bán lẻ thành công', DATEADD(hour,-2,SYSDATETIME()), N'Phan Trần Thảo Vy', N'PAYMENT', N'Thành công'),
+    (N'LOG00000004', N'ving', N'Nhập kho sản phẩm', N'PHIẾU NHẬP', N'PNK00000001', N'Chờ nhập', N'Đã nhập kho', N'Nguyễn Gia Vỉ hoàn tất nhập lô hàng thức ăn Royal Canin', DATEADD(hour,-1,SYSDATETIME()), N'Nguyễn Gia Vỉ', N'INVENTORY', N'Thành công'),
+    (N'LOG00000005', N'dattq', N'Tiếp nhận dịch vụ Spa', N'PHIẾU SPA', N'SPA00000001', N'Chờ tiếp nhận', N'Đang thực hiện', N'Trần Quang Đạt tiếp nhận bé Poodle thực hiện gói tắm sấy', DATEADD(minute,-30,SYSDATETIME()), N'Trần Quang Đạt', N'CREATE', N'Thành công'),
+    (N'LOG00000006', N'ving', N'Lập phiếu xuất hủy vượt hạn mức', N'PHIẾU XUẤT', N'PXK00000004', N'Tạo mới', N'Chờ duyệt', N'Phiếu xuất hủy vượt hạn mức tự duyệt, chuyển Quản lý phê duyệt', DATEADD(minute,-20,SYSDATETIME()), N'Nguyễn Gia Vỉ', N'INVENTORY', N'Cảnh báo'),
+    (N'LOG00000007', N'tuanlm', N'Đăng nhập sai mật khẩu', N'HỆ THỐNG', N'HT02', N'Chưa đăng nhập', N'Từ chối', N'Nhập sai mật khẩu lần 1 trên máy quầy thu ngân', DATEADD(minute,-15,SYSDATETIME()), N'Lê Minh Tuấn', N'LOGIN', N'Thất bại');
 
--- 18. BẢNG PHIEN_LAM_VIEC
 -- 16. PHIÊN LÀM VIỆC
 INSERT INTO dbo.[phien_lam_viec] ([ma_phien], [ma_ca], [ten_dang_nhap], [mo_luc], [dong_luc], [tien_dau_ca], [tien_thuc_te], [chenh_lech], [giai_trinh], [trang_thai], [ten_ca], [nguoi_nhan_ban_giao], [hinh_thuc_ban_giao])
 VALUES
@@ -652,7 +628,6 @@ VALUES
     (N'MPI00000034', N'CA02', N'vinhtq', DATEADD(day,-1,CAST(@homNay AS datetime2)), DATEADD(hour,8,DATEADD(day,-1,CAST(@homNay AS datetime2))), 1000000.00, 1510000.00, 20000.00, N'Bàn giao đầy đủ hóa đơn chứng từ', N'DA_BAN_GIAO', N'Ca chiều', N'admin', N'BAN_GIAO'),
     (N'MPI00000035', N'CA01', N'dattq', DATEADD(hour,-6,CAST(@homNay AS datetime2)), DATEADD(hour,-1,CAST(@homNay AS datetime2)), 2000000.00, 2465000.00, 15000.00, N'Đã chốt ca sáng và bàn giao quỹ', N'DA_BAN_GIAO', N'Ca sáng', N'admin', N'BAN_GIAO');
 
--- 19. BẢNG PHIEU_NHAP_KHO
 -- 19. PHIẾU NHẬP KHO
 INSERT INTO dbo.[phieu_nhap_kho] ([ma_phieu_nhap], [ma_nha_cung_cap], [ten_dang_nhap], [ngay_nhap], [tong_tien], [trang_thai], [ghi_chu], [da_tra])
 VALUES
@@ -667,7 +642,6 @@ VALUES
     (N'PNK00000009', N'NCC0009', N'demo.stock', DATEADD(day,-2,CAST(@homNay AS datetime2)), 10500000.00, N'DA_NHAP', N'Nhập sữa tắm Joyce & Dolls và dầu xả dưỡng lông', 4500000.00),
     (N'PNK00000010', N'NCC0010', N'ving', DATEADD(day,-1,CAST(@homNay AS datetime2)), 19500000.00, N'DA_NHAP', N'Nhập máy sấy lông công suất lớn và bàn cắt tỉa', 9500000.00);
 
--- 20. BẢNG PHIEU_XUAT_KHO
 -- 21. PHIẾU XUẤT KHO
 INSERT INTO dbo.[phieu_xuat_kho] ([ma_phieu_xuat], [ten_dang_nhap], [loai_xuat], [ly_do], [tong_gia_tri], [trang_thai], [tao_luc])
 VALUES
@@ -677,7 +651,6 @@ VALUES
     (N'PXK00000004', N'ving', N'XUAT_HUY', N'Xuất hủy 6 gói hạt Royal Canin bị ẩm mốc do thấm nước mưa kho phụ', 546000.00, N'CHO_XUAT', DATEADD(hour,-5,CAST(@homNay AS datetime2))),
     (N'PXK00000005', N'demo.stock', N'XUAT_HUY', N'Xuất hủy 4 chai sữa tắm bị nứt vòi bơm khi bốc dỡ', 650000.00, N'CHO_XUAT', DATEADD(hour,-2,CAST(@homNay AS datetime2)));
 
--- 21. BẢNG YEU_CAU_PHE_DUYET
 -- 29. YÊU CẦU PHÊ DUYỆT
 INSERT INTO dbo.[yeu_cau_phe_duyet] ([ma_yeu_cau], [loai], [ten_dang_nhap_gui], [loai_doi_tuong], [ma_doi_tuong], [ly_do], [trang_thai], [ten_dang_nhap_xu_ly], [phan_hoi], [gui_luc], [xu_ly_luc], [noi_dung_truoc], [noi_dung_sau], [payload])
 VALUES
@@ -693,14 +666,12 @@ VALUES
     (N'YC00000010', N'SUA_HOA_DON', N'vyptt', N'GHI_CHU_HOA_DON', N'HD2610190033', N'Khách hàng Phạm Minh Đức yêu cầu bổ sung thông tin xuất hóa đơn VAT công ty', N'CHO_DUYET', NULL, NULL, DATEADD(hour,-1,CAST(@homNay AS datetime2)), NULL, N'HD2610190033', N'Bổ sung MST 0314455667 - Công ty TNHH Minh Đức', N'Bổ sung MST 0314455667 - Công ty TNHH Minh Đức'),
     (N'YC00000011', N'NGHI_PHEP', N'dattq', N'NGHI_PHEP', N'NV0005', N'Xin nghỉ phép 1 ngày để giải quyết việc gia đình tại quê', N'CHO_DUYET', NULL, NULL, DATEADD(minute,-30,CAST(@homNay AS datetime2)), NULL, N'Ca chiều (CA02)', N'Xin nghỉ phép có bàn giao ca', CONVERT(nvarchar(10), DATEADD(day,3,@homNay), 23));
 
--- 22. BẢNG PHIEU_SPA_TREO
 -- 32. PHIẾU SPA TREO
 INSERT INTO dbo.[phieu_spa_treo] ([ma_phieu], [ten_dang_nhap], [ma_khach], [so_dien_thoai], [ma_thu], [ma_goi], [ma_hen], [can_nang], [tinh_trang], [yeu_cau], [cap_nhat_luc])
 VALUES
     (N'TREOSPA0001', N'dattq', N'KH000001', N'0901234567', N'TC000001', N'SPA00000001', N'LH00000001', N'4.2', N'Bình thường, lông hơi rối vùng cổ', N'Chải kỹ và dưỡng lông mềm', DATEADD(hour,-2,CAST(@homNay AS datetime2))),
     (N'TREOSPA0002', N'demo.spa', N'KH000002', N'0912345678', N'TC000002', N'SPA00000002', N'LH00000002', N'3.8', N'Bình thường', N'Tạo kiểu dáng tròn phong cách Hàn Quốc', DATEADD(hour,-1,CAST(@homNay AS datetime2)));
 
--- 23. BẢNG CHI_TIET_KIEM_KE
 -- 15. CHI TIẾT KIỂM KÊ
 INSERT INTO dbo.[chi_tiet_kiem_ke] ([ma_bien_ban], [ma_lo], [ton_he_thong], [ton_thuc_te], [nguyen_nhan])
 VALUES
@@ -711,7 +682,6 @@ VALUES
     (N'KK00000003', N'LO00000003', 85, 85, N'Khớp số lượng thực tế'),
     (N'KK00000004', N'LO00000017', 9, 9, N'Đang kiểm kê định kỳ');
 
--- 24. BẢNG HOA_DON
 -- 17. HÓA ĐƠN
 INSERT INTO dbo.[hoa_don] ([ma_hoa_don], [ma_phien], [ten_dang_nhap], [ma_khach_hang], [tong_tien], [hinh_thuc_thanh_toan], [tien_khach_dua], [tien_thoi], [diem_cong], [trang_thai], [tao_luc], [thanh_toan_luc], [idempotency_key], [tam_tinh], [giam_gia], [diem_dung], [ma_voucher], [ghi_chu], [chi_tiet_thanh_toan])
 VALUES
@@ -751,7 +721,6 @@ VALUES
     (N'HD2610190034', N'MPI00000034', N'vinhtq', N'KH000008', 490000.00, N'CHUYEN_KHOAN', 490000.00, 0.00, 49, N'DA_THANH_TOAN', DATEADD(day,-1,CAST(@homNay AS datetime2)), DATEADD(hour,17,DATEADD(day,-1,CAST(@homNay AS datetime2))), N'IDEMP-HD-0034', 490000.00, 0.00, 0, N'VOUCHER000005', N'Giao dịch bán lẻ thức ăn & phụ kiện', N'CHUYEN_KHOAN:490000:490000:0'),
     (N'HD2610190035', N'MPI00000035', N'dattq', N'KH000011', 450000.00, N'TIEN_MAT', 500000.00, 50000.00, 45, N'DA_THANH_TOAN', DATEADD(hour,-4,CAST(@homNay AS datetime2)), DATEADD(hour,-4,CAST(@homNay AS datetime2)), N'IDEMP-HD-0035', 450000.00, 0.00, 0, NULL, N'Giao dịch bán lẻ hàng hóa ca sáng', N'TIEN_MAT:450000:500000:50000');
 
--- 25. BẢNG CHI_TIET_PHIEU_NHAP
 -- 20. CHI TIẾT PHIẾU NHẬP
 INSERT INTO dbo.[chi_tiet_phieu_nhap] ([ma_phieu_nhap], [ma_san_pham], [ma_lo], [han_su_dung], [so_luong], [gia_nhap])
 VALUES
@@ -770,7 +739,6 @@ VALUES
     (N'PNK00000009', N'SP000005', N'LO00000005', CONVERT(date,'2029-06-01',23), 75, 140000.00),
     (N'PNK00000010', N'SP000046', N'LO00000047', CONVERT(date,'2030-12-31',23), 120, 162500.00);
 
--- 26. BẢNG CHI_TIET_PHIEU_XUAT
 -- 22. CHI TIẾT PHIẾU XUẤT
 INSERT INTO dbo.[chi_tiet_phieu_xuat] ([ma_phieu_xuat], [ma_lo], [so_luong], [gia_tri])
 VALUES
@@ -782,7 +750,6 @@ VALUES
     (N'PXK00000004', N'LO00000001', 6, 546000.00),
     (N'PXK00000005', N'LO00000059', 4, 650000.00);
 
--- 27. BẢNG CHI_TIET_HOA_DON
 -- 18. CHI TIẾT HÓA ĐƠN
 INSERT INTO dbo.[chi_tiet_hoa_don] ([ma_hoa_don], [ma_san_pham], [ma_lo], [so_luong], [don_gia], [giam_gia], [thue_gtgt], [ma_dich_vu], [ten_hang])
 VALUES
@@ -824,13 +791,11 @@ VALUES
     (N'HD2610190035', N'SP000002', N'LO00000002', 2, 145000.00, 0.00, 0.00, N'', N'Thức ăn hạt cho chó ROYAL CANIN Mini Adult — Gói 800g'),
     (N'HD2610190035', N'SP000015', N'LO00000016', 1, 160000.00, 0.00, 0.00, N'', N'Cát vệ sinh cho mèo siêu vón IRIS OHYAMA KFAG-100');
 
--- 28. BẢNG PHIEU_DOI_TRA
 -- 30. PHIẾU ĐỔI TRẢ
 INSERT INTO dbo.[phieu_doi_tra] ([ma_phieu], [ma_hoa_don], [ten_dang_nhap], [chenh_lech], [trang_thai], [tao_luc], [ly_do], [loai_phieu], [ma_hoa_don_thay_the], [gia_tri_duoc_doi], [khoa_thao_tac])
 VALUES
     (N'DT00000001', N'HD2610190001', N'vyptt', 10000.00, N'HOAN_TAT', DATEADD(day,-2,CAST(@homNay AS datetime2)), N'Khách đổi cỡ vòng cổ lớn hơn cho cún cưng', N'DOI_HANG', N'HD2610190002', 75000.00, N'KHOA-DT01');
 
--- 29. BẢNG HOP_DONG_LUU_TRU
 -- 23. HỢP ĐỒNG LƯU TRÚ
 INSERT INTO dbo.[hop_dong_luu_tru] ([ma_hop_dong], [ma_khach_hang], [ma_thu_cung], [ma_phong], [hinh_thuc_gui], [ngay_vao], [ngay_ra_du_kien], [ngay_ra_thuc_te], [tien_coc], [phuong_thuc_coc], [khoa_thu_coc], [trang_thai], [gia_dem], [ghi_chu], [ma_hoa_don], [da_nhan_coc], [nhan_coc_luc], [nhan_coc_boi], [ma_phien_nhan_coc], [coc_yeu_cau], [ly_do_doi_coc])
 VALUES
@@ -842,7 +807,6 @@ VALUES
     (N'HDHT000006', N'KH000006', N'TC000006', N'P006', N'Qua đêm', DATEADD(day,1,CAST(@homNay AS datetime2)), DATEADD(day,4,CAST(@homNay AS datetime2)), NULL, 250000.00, N'CHUYEN_KHOAN', N'COC-HDHT000006', N'DA_DAT', 250000.00, N'Khách đặt trước phòng VIP cho bé Golden dịp cuối tuần', NULL, 1, DATEADD(hour,-3,CAST(@homNay AS datetime2)), N'dattq', N'MPI00000035', 250000.00, N'Không đổi'),
     (N'HDHT000007', N'KH000007', N'TC000007', N'P009', N'Qua đêm', DATEADD(day,2,CAST(@homNay AS datetime2)), DATEADD(day,5,CAST(@homNay AS datetime2)), NULL, 0.00, N'TIEN_MAT', NULL, N'DA_DAT', 400000.00, N'Khách đặt phòng Penthouse, hẹn đóng cọc khi đưa bé đến', NULL, 0, NULL, NULL, NULL, 400000.00, N'Không đổi');
 
--- 30. BẢNG PHIEU_TIEP_NHAN_SPA
 -- 26. PHIẾU TIẾP NHẬN SPA
 INSERT INTO dbo.[phieu_tiep_nhan_spa] ([ma_phieu], [ma_lich_hen], [ma_thu_cung], [ma_goi], [mo_ta_dich_vu], [don_gia], [so_luong], [can_nang_thuc_te], [tong_tien], [trang_thai], [tao_luc], [ma_nhan_vien], [ghi_chu], [anh], [ma_hoa_don])
 VALUES
@@ -860,13 +824,11 @@ VALUES
     (N'SPA00000012', NULL, N'TC000016', N'SPA00000001', N'Tắm và sấy khô cơ bản', 200000.00, 1, 5.00, 200000.00, N'TIEP_NHAN', DATEADD(minute,-20,CAST(@homNay AS datetime2)), N'NV0005', N'Khách dặn dùng sữa tắm dịu nhẹ', N'images/spa/spa_12.jpg', NULL),
     (N'SPA00000013', NULL, N'TC000019', N'SPA00000003', N'Vệ sinh tai và cắt mài móng', 100000.00, 1, 8.20, 100000.00, N'DA_HUY', DATEADD(day,-3,CAST(@homNay AS datetime2)), N'NV0007', N'Bé cún đang mệt nên khách hẹn dời sang tuần sau', N'images/spa/spa_13.jpg', NULL);
 
--- 31. BẢNG CHI_TIET_DOI_TRA
 -- 31. CHI TIẾT ĐỔI TRẢ
 INSERT INTO dbo.[chi_tiet_doi_tra] ([ma_phieu], [ma_hoa_don], [ma_san_pham], [ma_lo], [so_luong], [tien_hoan])
 VALUES
     (N'DT00000001', N'HD2610190001', N'SP000001', N'LO00000001', 1, 75000.00);
 
--- 32. BẢNG LICH_SU_THU_COC_HOTEL
 -- 24. LỊCH SỬ THU CỌC HOTEL
 INSERT INTO dbo.[lich_su_thu_coc_hotel] ([ma_hop_dong], [khoa_thu_coc], [phuong_thuc], [so_tien], [khach_dua], [tien_thua], [ma_phien], [ten_dang_nhap_thu], [tao_luc])
 VALUES
@@ -877,7 +839,6 @@ VALUES
     (N'HDHT000005', N'COC-HDHT000005', N'TIEN_MAT', 150000.00, 200000.00, 50000.00, N'MPI00000034', N'vyptt', DATEADD(day,-1,CAST(@homNay AS datetime2))),
     (N'HDHT000006', N'COC-HDHT000006', N'CHUYEN_KHOAN', 250000.00, 250000.00, 0.00, N'MPI00000035', N'dattq', DATEADD(hour,-3,CAST(@homNay AS datetime2)));
 
--- 33. BẢNG NHAT_KY_CHAM_SOC
 -- 27. NHẬT KÝ CHĂM SÓC
 INSERT INTO dbo.[nhat_ky_cham_soc] ([ma_nhat_ky], [ma_hop_dong], [ma_phieu_spa], [ma_nhan_vien], [thoi_gian], [an_uong], [ve_sinh], [tinh_trang], [huong_dan_thuoc], [da_thuc_hien], [anh_truoc], [anh_sau], [tep_dinh_kem])
 VALUES

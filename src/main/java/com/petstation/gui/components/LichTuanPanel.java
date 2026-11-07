@@ -51,92 +51,67 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho tuần lịch làm việc vùng hiển thị.
- *
- * <p>Lịch làm việc theo tuần dạng lưới: hàng là ca (Ca sáng CA01 07:30-14:30, Ca chiều CA02
- * 14:30-21:30), cột là các ngày trong tuần, mỗi ô chứa thẻ nhân viên. Một giao diện cho 3 màn: xem
- * toàn cửa hàng, xem cá nhân (kèm Đăng ký nghỉ) và phân lịch (thêm/bớt nhân viên trong ô).
- */
 public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
-    /** Cung cấp giao diện và xử lý tương tác cho chế độ. */
     public enum CheDo {
         HIEN_THI_TAT_CA,
         CA_NHAN,
         SUA
     }
 
-    /** Ngày. */
     private static final DateTimeFormatter NGAY =
             DateTimeFormatter.ofPattern("dd/MM/uuuu")
                     .withResolverStyle(java.time.format.ResolverStyle.STRICT);
 
-    /** Thứ. */
     private static final String[] THU = {
         "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"
     };
 
-    /** Tiêu đề nền. */
     private static final Color TIEU_DE_NEN = new Color(0xEA, 0xF1, 0xFB);
 
-    /** Tiêu đề chữ. */
     private static final Color TIEU_DE_CHU = new Color(0x1F, 0x6F, 0xB5);
 
-    /** Dòng nhãn nền. */
     private static final Color DONG_NHAN_NEN = new Color(0xFF, 0xFF, 0xCC);
 
-    /** Bán hàng. */
     private static final Color BAN_HANG = new Color(0xE6, 0xEA, 0xEE);
 
-    /** Spa. */
     private static final Color SPA = new Color(0x72, 0xD1, 0x2F);
 
-    /** Kho. */
     private static final Color KHO = new Color(0x92, 0xD2, 0xF6);
 
-    /** Quản lý. */
     private static final Color QUAN_LY = new Color(0xFF, 0xF2, 0x8C);
 
-    /** Nghỉ phép. */
     private static final Color NGHI_PHEP = new Color(0xE0, 0x4B, 0x3A);
 
-    /** Chế độ. */
     private final CheDo cheDo;
 
-    /** Hiện tại người dùng. */
     private final String hienTaiNguoiDung;
 
-    /** Thứ hai. */
     private LocalDate thuHai = LichLamViecService.layThuHaiCuaTuan(LocalDate.now());
 
-    /** Trường ngày. */
     private final com.petstation.gui.components.common.BoChonNgay txtTruongNgay =
             new com.petstation.gui.components.common.BoChonNgay();
 
-    /** Ô lọc nhân viên / chức vụ. */
     private final JTextField txtLocNhanVien = new JTextField(11);
 
-    /** Tất cả. */
     private final JRadioButton btnTatCa = new JRadioButton("Tất cả", true);
 
-    /** Làm việc. */
     private final JRadioButton btnLamViec = new JRadioButton("Ca làm việc");
 
-    /** Nghỉ phép. */
     private final JRadioButton btnNghiPhep = new JRadioButton("Nghỉ phép");
 
-    /** Lưới vùng chủ. */
     private final JPanel pnlLuoiVungChu = new JPanel(new BorderLayout());
 
-    /** Tóm tắt. */
     private final JLabel lblTomTat = new JLabel(" ");
+
+    private List<Muc> lichTuanHienTai = List.of();
+
+    private java.util.Map<String, Object[]> mapNhanVienHienTai = java.util.Map.of();
 
     public LichTuanPanel(CheDo cheDo, String hienTaiNguoiDung) {
         this.cheDo = cheDo;
         this.hienTaiNguoiDung = hienTaiNguoiDung == null ? "" : hienTaiNguoiDung;
         setLayout(new BorderLayout(0, 10));
 
-        // Tiêu đề.
         String tieuDe =
                 switch (cheDo) {
                     case HIEN_THI_TAT_CA -> "Lịch làm việc theo tuần";
@@ -303,6 +278,12 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
 
     private void dungLai() {
         txtTruongNgay.datNgayDuocChon(thuHai);
+        lichTuanHienTai = LichLamViecService.layLichTrongTuan(thuHai);
+        java.util.Map<String, Object[]> mapNv = new java.util.HashMap<>();
+        for (Object[] nv : DanhMucService.layNhanVien()) {
+            mapNv.put(String.valueOf(nv[0]), nv);
+        }
+        mapNhanVienHienTai = mapNv;
         pnlLuoiVungChu.removeAll();
         JPanel pnlLuoi = new JPanel(new GridBagLayout());
         pnlLuoi.setBackground(Color.WHITE);
@@ -411,10 +392,14 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlVungDangXet.setLayout(new BoxLayout(pnlVungDangXet, BoxLayout.Y_AXIS));
         pnlVungDangXet.setBackground(
                 ngay.equals(LocalDate.now()) ? new Color(0xFC, 0xFD, 0xFF) : Color.WHITE);
+        List<Muc> cacMucTrongO =
+                lichTuanHienTai.stream()
+                        .filter(m -> m.ngay.equals(ngay) && m.caLamViec == caLamViec)
+                        .toList();
+        long soNguoiDiLam = cacMucTrongO.stream().filter(m -> !m.kiemTraNghiPhep()).count();
         boolean ngan1 =
                 cheDo != CheDo.CA_NHAN
-                        && LichLamViecService.demCaLamViec(ngay, caLamViec)
-                                < LichLamViecService.NHO_NHAT_NHAN_VIEN[caLamViec];
+                        && soNguoiDiLam < LichLamViecService.NHO_NHAT_NHAN_VIEN[caLamViec];
         pnlVungDangXet.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 1, new Color(0xE3, 0xE7, 0xEC)),
@@ -423,16 +408,14 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
                                 : new EmptyBorder(2, 2, 2, 2)));
 
         List<Muc> cacMuc = new ArrayList<>();
-        for (Muc suKien : LichLamViecService.layO(ngay, caLamViec))
+        for (Muc suKien : cacMucTrongO)
             if (kiemTraHienThi(suKien)) cacMuc.add(suKien);
         for (Muc suKien : cacMuc) {
             pnlVungDangXet.add(layThe(suKien));
             pnlVungDangXet.add(javax.swing.Box.createVerticalStrut(4));
         }
         if (ngan1 && !btnNghiPhep.isSelected()) {
-            long can =
-                    LichLamViecService.NHO_NHAT_NHAN_VIEN[caLamViec]
-                            - LichLamViecService.demCaLamViec(ngay, caLamViec);
+            long can = LichLamViecService.NHO_NHAT_NHAN_VIEN[caLamViec] - soNguoiDiLam;
             JLabel lblCanhBao = new JLabel("Thiếu " + can + " người");
             lblCanhBao.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
             lblCanhBao.setForeground(NGHI_PHEP);
@@ -515,7 +498,9 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
         return pnlThe;
     }
 
-    private static Object[] layNhanVienCua(String ma) {
+    private Object[] layNhanVienCua(String ma) {
+        Object[] tuBoNho = mapNhanVienHienTai.get(ma);
+        if (tuBoNho != null) return tuBoNho;
         for (Object[] chuoi : DanhMucService.layNhanVien())
             if (String.valueOf(chuoi[0]).equals(ma)) return chuoi;
         return null;
@@ -1059,10 +1044,21 @@ public class LichTuanPanel extends CoSoPanel implements HoTroThanhCongCu {
             return;
         }
         int ngan1 = 0;
-        for (int ngayDangXet = 0; ngayDangXet < 7; ngayDangXet++)
-            for (int chuoi = 0; chuoi < LichLamViecService.CAC_CA_LAM_VIEC.length; chuoi++)
-                if (LichLamViecService.demCaLamViec(thuHai.plusDays(ngayDangXet), chuoi)
-                        < LichLamViecService.NHO_NHAT_NHAN_VIEN[chuoi]) ngan1++;
+        for (int ngayDangXet = 0; ngayDangXet < 7; ngayDangXet++) {
+            LocalDate ngayKiem = thuHai.plusDays(ngayDangXet);
+            for (int chuoi = 0; chuoi < LichLamViecService.CAC_CA_LAM_VIEC.length; chuoi++) {
+                int caKiem = chuoi;
+                long dem =
+                        lichTuanHienTai.stream()
+                                .filter(
+                                        m ->
+                                                m.ngay.equals(ngayKiem)
+                                                        && m.caLamViec == caKiem
+                                                        && !m.kiemTraNghiPhep())
+                                .count();
+                if (dem < LichLamViecService.NHO_NHAT_NHAN_VIEN[chuoi]) ngan1++;
+            }
+        }
         lblTomTat.setText(
                 tuan
                         + " · "

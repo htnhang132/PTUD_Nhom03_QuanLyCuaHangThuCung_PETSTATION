@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Thao tác dữ liệu cho XuLySpa; service gọi qua hợp đồng này. */
 public interface PhieuTiepNhanSpaDAO {
     int capNhatTiepNhan(Object... cacThamSo);
 

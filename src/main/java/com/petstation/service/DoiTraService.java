@@ -15,14 +15,17 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Đổi phụ kiện trong ba ngày, thu phần chênh lệch; không phát sinh hoàn tiền. */
 public final class DoiTraService {
-    private static final DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
-    private static final PhieuDoiTraDAO doiTraDAO = new PhieuDoiTraDAOImpl();
+    private static DoiHangDAO doiHangDAO = new DoiHangDAOImpl();
+    private static PhieuDoiTraDAO doiTraDAO = new PhieuDoiTraDAOImpl();
 
     private DoiTraService() {}
 
-    /** API hoàn tiền cũ chỉ còn để báo rõ quy định khi gặp lời gọi cũ. */
+    public static void cauHinhDAO(DoiHangDAO doiHang, PhieuDoiTraDAO doiTra) {
+        if (doiHang != null) doiHangDAO = doiHang;
+        if (doiTra != null) doiTraDAO = doiTra;
+    }
+
     public static long traHang(long muc, int soLuong, String lyDo) {
         yeuCau(Quyen.BAN_HANG);
         throw new IllegalArgumentException(
@@ -37,11 +40,9 @@ public final class DoiTraService {
     static void kiemTraHanDoi(
         LocalDateTime ngayLap,
         LocalDateTime hienTai) {
-
         if (ngayLap == null
             || hienTai.isBefore(ngayLap)
             || hienTai.isAfter(ngayLap.plusHours(72))) {
-
             throw new IllegalArgumentException(
                 "Chỉ được đổi trong 72 giờ kể từ ngày lập hóa đơn.");
         }
@@ -83,8 +84,6 @@ public final class DoiTraService {
         return new DuLieu(goc, phanBo(daDoi + soLuong, goc) - phanBo(daDoi, goc), daDoi);
     }
 
-    /** Nạp hàng thay thế và tín dụng đổi hàng vào màn thanh toán chung. */
-
     public static List<Object[]> timHoaDon(String tuKhoa) {
         yeuCau(Quyen.BAN_HANG);
 
@@ -111,7 +110,6 @@ public final class DoiTraService {
     public static long layGiaTriDuocDoi(
         long dong,
         int soLuong) {
-
         yeuCau(Quyen.BAN_HANG);
 
         return thucHienGiaoDich(
@@ -151,7 +149,6 @@ public final class DoiTraService {
                 });
     }
 
-    /** Khóa hóa đơn gốc; ghi hàng nhập lại trong transaction thanh toán. */
     static long chuanBi(GioHang gio) {
         var yc = gio.layDoiHang();
         if (yc == null || yc.lyDo().isBlank())

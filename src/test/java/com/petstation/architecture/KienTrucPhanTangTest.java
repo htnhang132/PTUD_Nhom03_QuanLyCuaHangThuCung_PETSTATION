@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Kiểm tra quy tắc package bằng cách đọc source, không cần framework kiến trúc riêng. */
 class KienTrucPhanTangTest {
     private final Path nguon = Path.of("src/main/java/com/petstation");
 

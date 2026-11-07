@@ -4,7 +4,6 @@ import com.petstation.gui.components.DanhMucNhieuTabPanel;
 
 import javax.swing.JPanel;
 
-/** Cung cấp giao diện và xử lý tương tác cho tài khoản quyền vùng hiển thị. */
 public final class TaiKhoanPhanQuyenPanel extends DanhMucNhieuTabPanel {
     public TaiKhoanPhanQuyenPanel() {
         super(

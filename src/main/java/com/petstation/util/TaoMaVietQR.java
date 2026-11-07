@@ -10,10 +10,6 @@ import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-/**
- * Tạo VietQR chuyển khoản cục bộ theo cấu trúc TLV/CRC của NAPAS. Tham chiếu và bộ mẫu:
- * https://www.vietqr.io/danh-sach-api/link-tao-ma-nhanh/api-tao-ma-qr
- */
 public final class TaoMaVietQR {
     private TaoMaVietQR() {}
 

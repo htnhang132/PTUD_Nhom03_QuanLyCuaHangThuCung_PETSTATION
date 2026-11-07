@@ -12,7 +12,6 @@ import com.petstation.model.DonDoiTreo;
 import com.petstation.model.GioHang;
 import com.petstation.model.Quyen;
 
-/** Treo nháp không giữ tồn kho, không nhập lại hàng cũ và không gia hạn 72 giờ đổi hàng. */
 public final class DonDoiTreoService {
     private static final DonDoiTreoDAO dao = new DonDoiTreoDAOImpl();
     private static final HoaDonDAO hoaDonDAO = new HoaDonDAOImpl();
@@ -50,7 +49,6 @@ public final class DonDoiTreoService {
                 hang.ma(), hang.ma(), yc.soLuong(), yc.lyDo(), true, true));
     }
 
-    /** Chỉ xóa bản nháp khi đã dựng được đơn đổi hợp lệ; lỗi giữ nguyên nháp. */
     public static void chuyenThanhToan(long id, GioHang gio, long dong, int sl, String ma, String lyDo) {
         yeuCau(Quyen.BAN_HANG);
         thucHienGiaoDich(c -> {

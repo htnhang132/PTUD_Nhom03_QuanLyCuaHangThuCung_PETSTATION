@@ -5,7 +5,6 @@ import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC đổi trả DAO. */
 public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
     public PhieuDoiTraDAOImpl() {}
 

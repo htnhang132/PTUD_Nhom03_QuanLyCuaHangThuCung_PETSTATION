@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.Objects;
 
-/** Số tiền phân bổ là tiền thu ròng; tiền thừa chỉ thuộc dòng tiền mặt. */
 public class DongThuTien implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -32,20 +31,39 @@ public class DongThuTien implements Serializable {
     public PhuongThuc getPhuongThuc() { return this.phuongThuc; }
     public PhuongThuc layPhuongThuc() { return this.phuongThuc; }
     public PhuongThuc phuongThuc() { return this.phuongThuc; }
-    public void setPhuongThuc(PhuongThuc phuongThuc) { this.phuongThuc = phuongThuc; }
-    public void datPhuongThuc(PhuongThuc phuongThuc) { this.phuongThuc = phuongThuc; }
+    public void setPhuongThuc(PhuongThuc phuongThuc) {
+        Objects.requireNonNull(phuongThuc, "Phương thức thanh toán không được rỗng.");
+        if (phuongThuc == PhuongThuc.KET_HOP) {
+            throw new IllegalArgumentException("Không dùng trực tiếp phương thức kết hợp cho dòng thu đơn lẻ.");
+        }
+        this.phuongThuc = phuongThuc;
+    }
+    public void datPhuongThuc(PhuongThuc phuongThuc) { setPhuongThuc(phuongThuc); }
 
     public long getSoTien() { return this.soTien; }
     public long laySoTien() { return this.soTien; }
     public long soTien() { return this.soTien; }
-    public void setSoTien(long soTien) { this.soTien = soTien; }
-    public void datSoTien(long soTien) { this.soTien = soTien; }
+    public void setSoTien(long soTien) {
+        if (soTien < 0) {
+            throw new IllegalArgumentException("Số tiền thu không được âm.");
+        }
+        this.soTien = soTien;
+    }
+    public void datSoTien(long soTien) { setSoTien(soTien); }
 
     public long getKhachDua() { return this.khachDua; }
     public long layKhachDua() { return this.khachDua; }
     public long khachDua() { return this.khachDua; }
-    public void setKhachDua(long khachDua) { this.khachDua = khachDua; }
-    public void datKhachDua(long khachDua) { this.khachDua = khachDua; }
+    public void setKhachDua(long khachDua) {
+        if (khachDua < this.soTien) {
+            throw new IllegalArgumentException("Tiền khách đưa không được nhỏ hơn số tiền thu.");
+        }
+        if (this.phuongThuc != null && this.phuongThuc != PhuongThuc.TIEN_MAT && khachDua != this.soTien) {
+            throw new IllegalArgumentException("Khoản thu không hợp lệ; chỉ tiền mặt có tiền thừa.");
+        }
+        this.khachDua = khachDua;
+    }
+    public void datKhachDua(long khachDua) { setKhachDua(khachDua); }
 
     public boolean isDaXacNhan() { return this.daXacNhan; }
     public boolean layDaXacNhan() { return this.daXacNhan; }
@@ -56,7 +74,7 @@ public class DongThuTien implements Serializable {
     public long tienThua() {
         return khachDua - soTien;
     }
-    
+
     public static java.util.List<DongThuTien> kiemTra(java.util.List<DongThuTien> cacDong, long canThu) {
         if (cacDong == null || cacDong.isEmpty() || canThu < 0)
             throw new IllegalArgumentException("Thiếu khoản thu.");

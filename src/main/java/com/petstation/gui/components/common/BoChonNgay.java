@@ -9,38 +9,23 @@ import java.util.*;
 
 import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho ngày bộ chọn.
- *
- * <p>Custom BoChonNgay component with calendar popup Thay thế cho việc nhập tay ngày tháng vào
- * JTextField
- */
 public class BoChonNgay extends JPanel {
-    /** Trường văn bản. */
     private JTextField txtTruongVanBan;
 
-    /** Nút lịch. */
     private JButton btnNutLich;
 
-    /** Lịch hộp thoại. */
     private JDialog lichHopThoai;
 
-    /** Ngày định dạng. */
     private SimpleDateFormat ngayDinhDang = new SimpleDateFormat("dd/MM/yyyy");
 
-    /** Ngày được chọn. */
     private LocalDate ngayDuocChon;
 
-    /** Nhãn tháng năm. */
     private JLabel lblNhanThangNam;
 
-    /** Số ngày vùng hiển thị. */
     private JPanel pnlSoNgayVungHienThi;
 
-    /** Hiện tại tháng. */
     private int hienTaiThang;
 
-    /** Hiện tại năm. */
     private int hienTaiNam;
 
     public BoChonNgay() {
@@ -53,7 +38,6 @@ public class BoChonNgay extends JPanel {
         this.hienTaiThang = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getMonthValue();
         this.hienTaiNam = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getYear();
 
-        // Trường nhập để hiển thị ngày đã chọn
         txtTruongVanBan = new JTextField(10);
         txtTruongVanBan.setEditable(false);
         txtTruongVanBan.setBackground(Color.WHITE);
@@ -61,7 +45,6 @@ public class BoChonNgay extends JPanel {
             txtTruongVanBan.setText(dinhDangNgay(ngayDuocChon));
         }
 
-        // Nút mở lịch
         btnNutLich =
                 new JButton(
                         new com.petstation.gui.components.BieuTuongNet(
@@ -83,7 +66,6 @@ public class BoChonNgay extends JPanel {
             taoLichHopThoai();
         }
 
-        // Đặt lại về tháng hiện tại hoặc tháng đã chọn
         if (ngayDuocChon != null) {
             hienTaiThang = ngayDuocChon.getMonthValue();
             hienTaiNam = ngayDuocChon.getYear();
@@ -91,8 +73,6 @@ public class BoChonNgay extends JPanel {
 
         capNhatLich();
 
-        // Hiển thị hộp thoại gần thành phần đang tương tác
-        // Vị trí.
         Point viTri = txtTruongVanBan.getLocationOnScreen();
         lichHopThoai.pack();
         GraphicsConfiguration cauHinhDoHoa = txtTruongVanBan.getGraphicsConfiguration();
@@ -119,12 +99,11 @@ public class BoChonNgay extends JPanel {
     }
 
     private void taoLichHopThoai() {
-        // Cửa sổ.
         Window cuaSo =
                 SwingUtilities.getWindowAncestor(txtTruongVanBan != null ? txtTruongVanBan : this);
         if (cuaSo instanceof Frame) {
             lichHopThoai = new JDialog((Frame) cuaSo, "Chọn ngày", true);
-        } else 
+        } else
         if (cuaSo instanceof Dialog) {
             lichHopThoai = new JDialog((Dialog) cuaSo, "Chọn ngày", true);
         } else {
@@ -134,12 +113,9 @@ public class BoChonNgay extends JPanel {
         lichHopThoai.setLayout(new BorderLayout());
         lichHopThoai.setUndecorated(false);
 
-        // Tiêu đề với tháng/năm và nút điều hướng
-        // Tiêu đề vùng hiển thị.
         JPanel pnlTieuDeVungHienThi = new JPanel(new BorderLayout());
         pnlTieuDeVungHienThi.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Nút trước.
         JButton btnNutTruoc =
                 new JButton(
                         new com.petstation.gui.components.BieuTuongGiaoDien(
@@ -156,7 +132,6 @@ public class BoChonNgay extends JPanel {
                     capNhatLich();
                 });
 
-        // Nút tiếp theo.
         JButton btnNutTiepTheo =
                 new JButton(
                         new com.petstation.gui.components.BieuTuongGiaoDien(
@@ -180,34 +155,26 @@ public class BoChonNgay extends JPanel {
         pnlTieuDeVungHienThi.add(lblNhanThangNam, BorderLayout.CENTER);
         pnlTieuDeVungHienThi.add(btnNutTiepTheo, BorderLayout.EAST);
 
-        // Panel chứa các ngày trong tháng
         pnlSoNgayVungHienThi = new JPanel(new GridLayout(7, 7, 4, 4));
         pnlSoNgayVungHienThi.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // Thêm tiêu đề cho các ngày trong tuần
-        // Ngày các tên.
         String[] ngayCacTen = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
         for (String tenNgay : ngayCacTen) {
-            // Nhãn.
             JLabel lblNhan = new JLabel(tenNgay, SwingConstants.CENTER);
             lblNhan.setFont(lblNhan.getFont().deriveFont(Font.BOLD));
             lblNhan.setForeground(com.petstation.gui.components.MauUngDung.NAU);
             pnlSoNgayVungHienThi.add(lblNhan);
         }
 
-        // Nút hôm nay và hủy
-        // Chân trang vùng hiển thị.
         JPanel pnlChanTrangVungHienThi = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        // Nút hôm nay.
+
         JButton btnNutHomNay = new JButton("Hôm nay");
         btnNutHomNay.addActionListener(
                 suKien -> {
-                    // Hôm nay.
                     LocalDate homNay = LocalDate.now();
                     chonNgay(homNay);
                 });
 
-        // Nút xóa.
         JButton btnNutXoa = new JButton("Xóa");
         btnNutXoa.addActionListener(
                 suKien -> {
@@ -235,31 +202,23 @@ public class BoChonNgay extends JPanel {
     private void capNhatLich() {
         lblNhanThangNam.setText(String.format("Tháng %d/%d", hienTaiThang, hienTaiNam));
 
-        // Xóa các nút ngày cũ (giữ lại tiêu đề)
-        // Các thành phần.
         Component[] cacThanhPhan = pnlSoNgayVungHienThi.getComponents();
         for (int chiSo = cacThanhPhan.length - 1; chiSo >= 7; chiSo--) {
             pnlSoNgayVungHienThi.remove(chiSo);
         }
 
-        // Tính toán ngày đầu tiên của tháng
-        // Đầu tiên ngày.
         LocalDate dauTienNgay = LocalDate.of(hienTaiNam, hienTaiThang, 1);
-        // Đầu tiên ngày của tuần.
-        int dauTienNgayCuaTuan = dauTienNgay.getDayOfWeek().getValue() % 7; // 0 = CN, 1 = T2, ...
 
-        // Thêm ô trống cho các ngày trước ngày 1
+        int dauTienNgayCuaTuan = dauTienNgay.getDayOfWeek().getValue() % 7;
+
         for (int chiSo = 0; chiSo < dauTienNgayCuaTuan; chiSo++) {
             pnlSoNgayVungHienThi.add(new JLabel(""));
         }
 
-        // Thêm các ngày trong tháng
-        // Số ngày vào tháng.
         int soNgayVaoThang = dauTienNgay.lengthOfMonth();
         for (int ngay = 1; ngay <= soNgayVaoThang; ngay++) {
-            // Ngày.
             final LocalDate ngay2 = LocalDate.of(hienTaiNam, hienTaiThang, ngay);
-            // Nút ngày.
+
             JButton btnNutNgay = new JButton(String.valueOf(ngay));
             btnNutNgay.setFocusPainted(true);
             btnNutNgay.setMargin(new Insets(2, 2, 2, 2));
@@ -271,14 +230,12 @@ public class BoChonNgay extends JPanel {
             btnNutNgay.setPreferredSize(new Dimension(canh, canh));
             btnNutNgay.setName("ngay:" + ngay);
 
-            // Làm nổi bật ngày được chọn
             if (ngayDuocChon != null && ngay2.equals(ngayDuocChon)) {
                 btnNutNgay.setBackground(com.petstation.gui.components.MauUngDung.DO_THUONG_HIEU);
                 btnNutNgay.setForeground(Color.WHITE);
                 btnNutNgay.setOpaque(true);
             }
 
-            // Làm nổi bật ngày hôm nay
             if (ngay2.equals(LocalDate.now())) {
                 btnNutNgay.setBorder(
                         BorderFactory.createLineBorder(
@@ -305,7 +262,6 @@ public class BoChonNgay extends JPanel {
                 "%02d/%02d/%d", ngay.getDayOfMonth(), ngay.getMonthValue(), ngay.getYear());
     }
 
-    // Truy xuất và cập nhật thuộc tính
     public LocalDate layNgayDuocChon() {
         return ngayDuocChon;
     }
@@ -360,10 +316,6 @@ public class BoChonNgay extends JPanel {
         btnNutLich.setEnabled(duocBat);
     }
 
-    /**
-     * Tạo nút mở lịch gắn với một {@link JTextField} có sẵn (cho phép vừa nhập tay vừa chọn ngày
-     * trong lịch).
-     */
     public static JButton taoNutLich(
             JTextField txtTruong, java.time.format.DateTimeFormatter dinhDang) {
         BoChonNgay boChon = new BoChonNgay((LocalDate) null);

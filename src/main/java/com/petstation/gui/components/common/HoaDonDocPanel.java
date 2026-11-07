@@ -15,7 +15,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-/** Cùng một bố cục theo đơn vị point cho bản xem và giấy 80mm; chỉ ngắt giữa các khối. */
 public final class HoaDonDocPanel extends JComponent implements Scrollable, Printable {
     public static final double RONG_GIAY = 80.0 / 25.4 * 72;
     private static final double LE = 11, RONG_NOI_DUNG = RONG_GIAY - 2 * LE;
@@ -282,7 +281,6 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         }
     }
 
-    /** In theo khối nguyên vẹn, giữ vùng nội dung 80mm khi giấy đang chọn lớn hơn. */
     @Override
     public int print(Graphics doHoa, PageFormat trang, int soTrang) throws PrinterException {
         if (cacKhoi.isEmpty()) return NO_SUCH_PAGE;

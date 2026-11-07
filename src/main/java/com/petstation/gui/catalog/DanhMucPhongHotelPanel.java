@@ -10,7 +10,6 @@ import com.petstation.service.DanhMucService;
 
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho phòng danh mục vùng hiển thị. */
 public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
     public DanhMucPhongHotelPanel() {
         super(
@@ -23,7 +22,6 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục phòng lưu trú", "phòng")
                         .themBoLoc("Loại phòng", d -> String.valueOf(d[1]))
@@ -31,7 +29,6 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                         .datTrangThai(5, "Trống", "Ngừng hoạt động")
                         .datDieuKienXoa(
                                 dongDuLieu -> {
-                                    // Trạng thái.
                                     String trangThai = String.valueOf(dongDuLieu[5]);
                                     return "Có thú".equals(trangThai)
                                                     || "Đang dọn".equals(trangThai)
@@ -50,11 +47,11 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Mã phòng", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Loại phòng", Kieu.HOP_CHON)
                         .batBuoc()
-                        .datLuaChon("Tiêu chuẩn", "VIP", "Mèo"),
+                        .datLuaChon("Tiêu chuẩn", "VIP", "Penthouse", "Mèo"),
                 TruongDuLieu.tao("Sức chứa (thú)", Kieu.SO_NGUYEN).batBuoc().datMacDinh("1"),
                 TruongDuLieu.tao("Giá / ngày", Kieu.TIEN_TE).batBuoc(),
                 TruongDuLieu.tao("Ghi chú", Kieu.VAN_BAN),
-                TruongDuLieu.tao("Trạng thái (chỉ chỉnh tay Trống / Bảo trì)", Kieu.HOP_CHON)
+                TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Trống", "Bảo trì")
                         .choSuaKhi(
                                 giaTri ->

@@ -11,7 +11,6 @@ import com.petstation.model.Quyen;
 import java.time.LocalDate;
 import java.util.*;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho thống kê dịch vụ. */
 public final class ThongKeService {
     private static final ThongKeDAO thongKeDAO = new ThongKeDAOImpl();
 
@@ -26,7 +25,6 @@ public final class ThongKeService {
     }
 
     private static void kiemTraQuyenBaoCao() {
-        // Giới hạn thao tác theo quyền và phiên đăng nhập hiện tại.
         if (!layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)) yeuCau(Quyen.XEM_BAO_CAO_CA);
     }
 
@@ -34,10 +32,9 @@ public final class ThongKeService {
         return layDoanhThuTheoNgay(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layDoanhThuTheoNgay(KhoangNgay khoangNgay) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.layDoanhThuTheoNgay(
                 khoangNgay.tuNgay(),
@@ -50,10 +47,9 @@ public final class ThongKeService {
         return layDoanhThu(KhoangNgay.ganDay(soNgay), nhomTongHop);
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layDoanhThu(KhoangNgay khoangNgay, String nhomTongHop) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.layDoanhThu(
                 khoangNgay.tuNgay(),
@@ -67,10 +63,9 @@ public final class ThongKeService {
         return laySanPhamBanChay(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> laySanPhamBanChay(KhoangNgay khoangNgay) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.laySanPhamBanChay(
                 khoangNgay.tuNgay(),
@@ -94,10 +89,9 @@ public final class ThongKeService {
         return layDuLieuSpa(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layDuLieuSpa(KhoangNgay khoangNgay) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.layDuLieuSpa(
                 khoangNgay.tuNgay(),
@@ -110,10 +104,9 @@ public final class ThongKeService {
         return layLichHen(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layLichHen(KhoangNgay khoangNgay) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.layLichHen(
                 khoangNgay.tuNgay(),
@@ -131,10 +124,9 @@ public final class ThongKeService {
         return layDuLieuHotel(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layDuLieuHotel(KhoangNgay khoangNgay) {
         kiemTraQuyenBaoCao();
-        // Tất cả.
+
         boolean tatCa = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.layDuLieuHotel(
                 khoangNgay.tuNgay(),
@@ -147,7 +139,6 @@ public final class ThongKeService {
         return layKhachHang(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layKhachHang(KhoangNgay khoangNgay) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.timCacKhachHang(khoangNgay.tuNgay(), khoangNgay.layCanTren());
@@ -162,7 +153,6 @@ public final class ThongKeService {
         return layCongNoNhaCungCap(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layCongNoNhaCungCap(KhoangNgay khoangNgay) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.timNhaCungCapCongNo(khoangNgay.tuNgay(), khoangNgay.layCanTren());
@@ -172,7 +162,6 @@ public final class ThongKeService {
         return layNhanVien(KhoangNgay.ganDay(soNgay));
     }
 
-    /** Truy vấn theo khoảng ngày đã kiểm tra, bao gồm cả hai ngày. */
     public static List<Object[]> layNhanVien(KhoangNgay khoangNgay) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
         return thongKeDAO.timNhanVien(khoangNgay.tuNgay(), khoangNgay.layCanTren());

@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 
 public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
-
     private final JCheckBox chkTheoNgay =
         new JCheckBox("Lọc theo ngày", true);
 
@@ -32,11 +31,12 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
             "Đã tiếp nhận",
             "Đang thực hiện",
             "Hoàn thành",
-            "Đã thanh toán"
+            "Đã thanh toán",
+            "Đã hủy"
         });
 
     private static final String[] MA_TRANG_THAI = {
-        "", "TIEP_NHAN", "DANG_THUC_HIEN", "HOAN_TAT", "DA_THANH_TOAN"
+        "", "TIEP_NHAN", "DANG_THUC_HIEN", "HOAN_TAT", "DA_THANH_TOAN", "DA_HUY"
     };
 
     private record BoLoc(
@@ -49,19 +49,26 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     public TraCuuPhieuSpaPanel(
         GioHang gio,
         Consumer<MaManHinh> dieuHuong) {
-
         super(LoaiNghiepVu.PHIEU_SPA, gio, dieuHuong);
 
         txtTimKiem.setToolTipText(
             "Lọc nhanh mã phiếu, tên khách, thú cưng trong kết quả");
 
         chkTheoNgay.setOpaque(false);
+        khoangNgay.chonKy("30 ngày qua");
         khoangNgay.setVisible(true);
 
         chkTheoNgay.addActionListener(e -> {
             khoangNgay.setVisible(chkTheoNgay.isSelected());
+            ghiNhanBoLoc();
+            taiLaiNen();
             revalidate();
             repaint();
+        });
+
+        cboTrangThai.addActionListener(e -> {
+            ghiNhanBoLoc();
+            taiLaiNen();
         });
 
         pnlCacThaoTac.add(chkTheoNgay);
@@ -70,7 +77,6 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
 
         themNut(pnlCacThaoTac, "Tìm kiếm", this::ghiNhanBoLoc);
 
-        // Giữ các thao tác trên hàng riêng như màn hình tra cứu mẫu.
         JPanel pnlThaoTacPhieu = new ThanhDanhSach();
         pnlThaoTacPhieu.setBorder(BorderFactory.createEmptyBorder());
         JPanel pnlDauTrang = (JPanel) pnlCacThaoTac.getParent();
@@ -130,10 +136,9 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     protected List<Object[]> layDuLieu() {
         BoLoc loc = boLoc;
 
-        // Lần mở đầu tiên mặc định tra cứu phiếu trong ngày.
         if (loc == null) {
             LocalDate homNay = LocalDate.now();
-            return SpaService.timKiem(homNay, homNay, "");
+            return SpaService.timKiem(homNay.minusDays(29), homNay, "");
         }
 
         return SpaService.timKiem(
@@ -147,7 +152,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
         txtTimKiem.setText("");
 
         chkTheoNgay.setSelected(true);
-        khoangNgay.datLai();
+        khoangNgay.chonKy("30 ngày qua");
         khoangNgay.setVisible(true);
 
         cboTrangThai.setSelectedIndex(0);

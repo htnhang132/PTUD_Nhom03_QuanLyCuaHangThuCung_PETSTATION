@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Biểu diễn dữ liệu trạng thái tài khoản dùng trong nghiệp vụ cửa hàng. */
 public enum TrangThaiTaiKhoan {
     HOAT_DONG,
     TAM_KHOA,

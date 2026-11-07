@@ -10,27 +10,24 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-/** Tạo tài khoản quản trị ban đầu theo cấu hình và thông tin do người vận hành cung cấp. */
 public final class KhoiTaoQuanTri {
     private KhoiTaoQuanTri() {}
 
     public static void main(String[] cacDoiSo) throws Exception {
-        // Bàn điều khiển.
         Console banDieuKhien = System.console();
         if (banDieuKhien == null) {
             System.err.println("Hãy chạy lệnh trong terminal tương tác.");
             System.exit(1);
         }
 
-        // Tên đăng nhập.
         String tenDangNhap = banDieuKhien.readLine("Tên đăng nhập Cửa hàng trưởng: ").trim();
-        // Họ tên.
+
         String hoTen = banDieuKhien.readLine("Họ tên: ").trim();
-        // Số điện thoại.
+
         String soDienThoai = banDieuKhien.readLine("Số điện thoại: ").replaceAll("\\D", "");
-        // Mật khẩu.
+
         char[] matKhau = banDieuKhien.readPassword("Mật khẩu (tối thiểu 8 ký tự): ");
-        // Xác nhận.
+
         char[] xacNhan = banDieuKhien.readPassword("Nhập lại mật khẩu: ");
 
         if (tenDangNhap.isBlank() || hoTen.isBlank() || soDienThoai.isBlank()) {
@@ -40,12 +37,10 @@ public final class KhoiTaoQuanTri {
             throw new IllegalArgumentException("Mật khẩu không hợp lệ hoặc nhập lại không khớp.");
         }
 
-        // Mã băm.
         String maBam = BCrypt.hashpw(new String(matKhau), BCrypt.gensalt(12));
         java.util.Arrays.fill(matKhau, '\0');
         java.util.Arrays.fill(xacNhan, '\0');
 
-        // CSDL.
         KetNoiCSDL csdl = new KetNoiCSDL(CauHinhCSDL.nap());
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
@@ -53,7 +48,7 @@ public final class KhoiTaoQuanTri {
                 if (layQuanLyTonTai(ketNoi)) {
                     throw new IllegalStateException("Hệ thống đã có tài khoản Cửa hàng trưởng.");
                 }
-                // Id nhân viên.
+
                 String maNhanVien = themNhanVien(ketNoi, hoTen, soDienThoai);
                 themTaiKhoan(ketNoi, maNhanVien, tenDangNhap, maBam);
                 ketNoi.commit();
@@ -78,9 +73,8 @@ public final class KhoiTaoQuanTri {
 
     private static String themNhanVien(Connection ketNoi, String hoTen, String soDienThoai)
             throws Exception {
-        // Mã.
         String ma = DuLieu.taoMa("NV");
-        // SQL.
+
         String sql =
                 """
                 INSERT INTO nhan_vien
@@ -98,7 +92,6 @@ public final class KhoiTaoQuanTri {
 
     private static void themTaiKhoan(
             Connection ketNoi, String maNhanVien, String tenDangNhap, String maBam) throws Exception {
-        // SQL.
         String sql =
                 """
                 INSERT INTO tai_khoan

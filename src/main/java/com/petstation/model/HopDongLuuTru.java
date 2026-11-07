@@ -6,32 +6,21 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Hợp đồng lưu trú khách sạn thú cưng khớp bảng [hop_dong_luu_tru].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã hợp đồng (maHopDong). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với KhachHang, ThuCung, PhongHotel, HoaDon, TaiKhoan, PhienLamViec.
- * - Phương thức tính thuộc tính dẫn xuất: tinhSoDemLuuTru(), tinhTienPhongDuKien(),
- *   tinhCocToiThieu50PhanTram(), tinhTienConPhaiThu().
- * - Kiểm tra ràng buộc trong setter và equals/hashCode chỉ theo khóa chính maHopDong.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class HopDongLuuTru implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Hợp đồng lưu trú */
     private String maHopDong;
-    /** Quan hệ kết hợp: Khách hàng ký hợp đồng gửi thú cưng. */
+
     private KhachHang khachHang;
-    /** Quan hệ kết hợp: Thú cưng được lưu trú. */
+
     private ThuCung thuCung;
-    /** Quan hệ kết hợp: Phòng khách sạn được phân bổ. */
+
     private PhongHotel phong;
-    /** Quan hệ kết hợp: Hóa đơn tất toán khi trả phòng (null khi chưa trả phòng). */
+
     private HoaDon hoaDon;
-    /** Quan hệ kết hợp: Tài khoản nhân viên thu tiền đặt cọc. */
+
     private TaiKhoan nguoiNhanCoc;
-    /** Quan hệ kết hợp: Phiên làm việc ghi nhận khoản thu tiền cọc. */
+
     private PhienLamViec phienNhanCoc;
 
     private String hinhThucGui;
@@ -49,24 +38,20 @@ public class HopDongLuuTru implements Serializable {
     private long cocYeuCau;
     private String lyDoDoiCoc;
 
-    /** Constructor mặc định. */
     public HopDongLuuTru() {
         this.trangThai = "DA_DAT";
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maHopDong. */
     public HopDongLuuTru(String maHopDong) {
         this();
         setMaHopDong(maHopDong);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public HopDongLuuTru(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận các đối tượng thực thể liên kết và khóa chính maHopDong. */
     public HopDongLuuTru(
             String maHopDong,
             KhachHang khachHang,
@@ -112,7 +97,6 @@ public class HopDongLuuTru implements Serializable {
         setLyDoDoiCoc(lyDoDoiCoc);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public HopDongLuuTru(
             long id,
             String maHopDong,
@@ -140,7 +124,6 @@ public class HopDongLuuTru implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public HopDongLuuTru(
             long id,
             String maHopDong,
@@ -189,11 +172,6 @@ public class HopDongLuuTru implements Serializable {
                 lyDoDoiCoc);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính số đêm lưu trú của hợp đồng (thuộc tính dẫn xuất từ ngayVao và ngayRaThucTe/ngayRaDuKien, tối thiểu 1 đêm).
-     */
     public long tinhSoDemLuuTru() {
         if (ngayVao == null) {
             return 1L;
@@ -206,19 +184,14 @@ public class HopDongLuuTru implements Serializable {
         return Math.max(1L, soNgay);
     }
 
-    /** Tính tổng tiền phòng lưu trú (thuộc tính dẫn xuất: soDem * giaDem). */
     public long tinhTienPhongDuKien() {
         return tinhSoDemLuuTru() * Math.max(0L, giaDem);
     }
 
-    /** Tính mức tiền đặt cọc chuẩn 50% tiền phòng dự kiến (thuộc tính dẫn xuất). */
     public long tinhCocToiThieu50PhanTram() {
         return Math.round(tinhTienPhongDuKien() * 0.5);
     }
 
-    /**
-     * Tính số tiền còn phải thu khi trả phòng sau khi cấn trừ tiền cọc đã nhận (thuộc tính dẫn xuất).
-     */
     public long tinhTienConPhaiThu() {
         long cocDaThu = daNhanCoc ? Math.max(0L, tienCoc) : 0L;
         return Math.max(0L, tinhTienPhongDuKien() - cocDaThu);
@@ -256,8 +229,6 @@ public class HopDongLuuTru implements Serializable {
         return tinhTienConPhaiThu();
     }
 
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maHopDong);
     }
@@ -280,8 +251,6 @@ public class HopDongLuuTru implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaHopDong() {
         return this.maHopDong;
@@ -820,8 +789,6 @@ public class HopDongLuuTru implements Serializable {
     public void datLyDoDoiCoc(String lyDoDoiCoc) {
         setLyDoDoiCoc(lyDoDoiCoc);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

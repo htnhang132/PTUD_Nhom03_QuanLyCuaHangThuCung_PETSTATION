@@ -52,37 +52,25 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
-/** Màn hình đăng nhập và xác minh tài khoản trước khi mở cửa sổ chính. */
 public class DangNhapFrame extends JFrame {
-    /** Hiển thị thay thế. */
     private static final char HIEN_THI_THAY_THE = '\u2022';
 
-    /** Chiều rộng vùng nội dung của thẻ đăng nhập (nhãn, ô nhập, nút cùng rộng bằng nhau). */
-    /** Chiều rộng biểu mẫu. */
     private static final int CHIEU_RONG_BIEU_MAU = 340;
 
-    /** Kích thước logo theo đơn vị giao diện; ảnh gốc được giữ để vẽ nét trên màn hình HiDPI. */
     private static final int KICH_THUOC_LOGO = 160;
 
-    /** Ngữ cảnh. */
     private final KhoiTaoUngDung nguCanh;
 
-    /** Văn bản người dùng. */
     private final JTextField txtVanBanNguoiDung = new JTextField("admin");
 
-    /** Văn bản mật khẩu. */
     private final JPasswordField txtVanBanMatKhau = new JPasswordField("PetStation@123");
 
-    /** Hiển thị mật khẩu. */
     private final JCheckBox btnHienThiMatKhau = new JCheckBox("Hiện mật khẩu");
 
-    /** Nhãn lỗi. */
     private final JLabel lblNhanLoi = new JLabel("");
 
-    /** Nhãn chữ hoa. */
     private final JLabel lblNhanChuHoa = new JLabel("");
 
-    /** Nút đăng nhập. */
     private final NutDinhDang btnNutDangNhap =
             new NutDinhDang("Đăng nhập", NutDinhDang.KieuNut.CHINH);
 
@@ -96,19 +84,12 @@ public class DangNhapFrame extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Khung gốc có nền chuyển sắc
-        // Gốc.
         JPanel pnlGoc =
                 new JPanel(new BorderLayout()) {
-                    /**
-                     * Vẽ thành phần trong lớp xử lý giao diện.
-                     *
-                     * @param doHoa đồ họa
-                     */
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         super.paintComponent(doHoa);
-                        // Đồ họa 2.
+
                         Graphics2D doHoa2 = (Graphics2D) doHoa;
                         doHoa2.setPaint(
                                 new GradientPaint(
@@ -125,38 +106,27 @@ public class DangNhapFrame extends JFrame {
         pnlGoc.setBorder(BorderFactory.createLineBorder(new Color(0x8C, 0x7A, 0x6E), 1));
         setContentPane(pnlGoc);
 
-        // Thanh trên cho phép kéo cửa sổ và đóng ứng dụng
         pnlGoc.add(taoTrenThanh(), BorderLayout.NORTH);
 
-        // Khung dùng GridBagLayout để căn giữa thẻ đăng nhập
-        // Giữa vùng bao.
         JPanel pnlGiuaVungBao = new JPanel(new GridBagLayout());
         pnlGiuaVungBao.setOpaque(false);
 
-        // Thẻ đăng nhập
-        // Thẻ.
         JPanel pnlThe = new JPanel();
         pnlThe.setBackground(MauUngDung.NEN_KEM);
         pnlThe.setLayout(new BoxLayout(pnlThe, BoxLayout.Y_AXIS));
         pnlThe.setBorder(new EmptyBorder(28, 48, 28, 48));
         pnlThe.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Logo
-        // Logo biểu tượng.
         JLabel lblLogoBieuTuong = taoLogo();
         lblLogoBieuTuong.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblLogoBieuTuong.setBorder(new EmptyBorder(0, 0, 12, 0));
 
-        // Tiêu đề
-        // Tiêu đề.
         JLabel lblTieuDe = new JLabel("Pet Station", SwingConstants.CENTER);
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 30));
         lblTieuDe.setForeground(MauUngDung.DO_THUONG_HIEU);
         lblTieuDe.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTieuDe.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        // Tiêu đề phụ
-        // Tiêu đề phụ.
         JLabel lblTieuDePhu =
                 new JLabel("Hệ thống quản lý cửa hàng thú cưng", SwingConstants.CENTER);
         lblTieuDePhu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -164,14 +134,12 @@ public class DangNhapFrame extends JFrame {
         lblTieuDePhu.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTieuDePhu.setBorder(new EmptyBorder(0, 0, 24, 0));
 
-        // Định dạng các trường nhập
         dinhDangTruong(txtVanBanNguoiDung);
         dinhDangTruong(txtVanBanMatKhau);
         txtVanBanMatKhau.setEchoChar(HIEN_THI_THAY_THE);
         txtVanBanNguoiDung.getAccessibleContext().setAccessibleName("Tên đăng nhập");
         txtVanBanMatKhau.getAccessibleContext().setAccessibleName("Mật khẩu");
 
-        // Ô chọn hiển thị mật khẩu
         btnHienThiMatKhau.setOpaque(false);
         btnHienThiMatKhau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnHienThiMatKhau.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -180,39 +148,26 @@ public class DangNhapFrame extends JFrame {
                         txtVanBanMatKhau.setEchoChar(
                                 btnHienThiMatKhau.isSelected() ? (char) 0 : HIEN_THI_THAY_THE));
 
-        // Nhãn báo trạng thái Caps Lock
         lblNhanChuHoa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         lblNhanChuHoa.setForeground(MauUngDung.CAM);
         txtVanBanMatKhau.addKeyListener(
                 new KeyAdapter() {
-                    /**
-                     * Lấy khóa đã nhấn trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void keyPressed(KeyEvent suKien) {
                         capNhatChuHoaKhoa();
                     }
 
-                    /**
-                     * Lấy khóa đã thả trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void keyReleased(KeyEvent suKien) {
                         capNhatChuHoaKhoa();
                     }
                 });
 
-        // Nhãn thông báo lỗi
         lblNhanLoi.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
         lblNhanLoi.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblNhanLoi.setBorder(new EmptyBorder(4, 0, 0, 0));
         lblNhanLoi.getAccessibleContext().setAccessibleName("Thông báo lỗi đăng nhập");
 
-        // Nút đăng nhập
         btnNutDangNhap.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnNutDangNhap.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
         btnNutDangNhap.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
@@ -220,8 +175,6 @@ public class DangNhapFrame extends JFrame {
         txtVanBanMatKhau.addActionListener(suKien -> layThucHienDangNhap());
         txtVanBanNguoiDung.addActionListener(suKien -> txtVanBanMatKhau.requestFocusInWindow());
 
-        // Liên kết quên mật khẩu
-        // Quên.
         JButton btnQuen = new JButton("Quên mật khẩu?");
         btnQuen.setBorderPainted(false);
         btnQuen.setContentAreaFilled(false);
@@ -241,25 +194,20 @@ public class DangNhapFrame extends JFrame {
                                 "Quên mật khẩu",
                                 JOptionPane.INFORMATION_MESSAGE));
 
-        // Sắp xếp nội dung thẻ với khoảng cách thống nhất
         pnlThe.add(lblLogoBieuTuong);
         pnlThe.add(lblTieuDe);
         pnlThe.add(lblTieuDePhu);
 
-        // Nhóm trường tên đăng nhập
         pnlThe.add(layNhanTruong("Tên đăng nhập"));
         pnlThe.add(Box.createVerticalStrut(8));
         pnlThe.add(txtVanBanNguoiDung);
         pnlThe.add(Box.createVerticalStrut(20));
 
-        // Nhóm trường mật khẩu
         pnlThe.add(layNhanTruong("Mật khẩu"));
         pnlThe.add(Box.createVerticalStrut(8));
         pnlThe.add(txtVanBanMatKhau);
         pnlThe.add(Box.createVerticalStrut(8));
 
-        // Dòng tùy chọn: ô đánh dấu bên trái, quên mật khẩu bên phải
-        // Các lựa chọn dòng.
         JPanel pnlCacLuaChonDong = new JPanel(new BorderLayout());
         pnlCacLuaChonDong.setOpaque(false);
         pnlCacLuaChonDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -272,8 +220,6 @@ public class DangNhapFrame extends JFrame {
         pnlThe.add(Box.createVerticalStrut(24));
         pnlThe.add(btnNutDangNhap);
 
-        // Thêm thẻ vào khung căn giữa
-        // Ràng buộc bố cục.
         GridBagConstraints rangBuocBoCuc = new GridBagConstraints();
         rangBuocBoCuc.gridx = 0;
         rangBuocBoCuc.gridy = 0;
@@ -282,8 +228,6 @@ public class DangNhapFrame extends JFrame {
 
         pnlGoc.add(pnlGiuaVungBao, BorderLayout.CENTER);
 
-        // Chân trang
-        // Chân trang.
         JLabel lblChanTrang =
                 new JLabel("© " + Year.now() + " Pet Station – v1.0.0", SwingConstants.CENTER);
         lblChanTrang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
@@ -296,12 +240,10 @@ public class DangNhapFrame extends JFrame {
     }
 
     private JPanel taoTrenThanh() {
-        // Thanh.
         JPanel pnlThanh = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         pnlThanh.setOpaque(false);
         pnlThanh.setPreferredSize(new Dimension(0, 36));
 
-        // Đóng.
         JButton btnDong = new JButton("×");
         btnDong.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 20));
         btnDong.setForeground(Color.WHITE);
@@ -313,24 +255,13 @@ public class DangNhapFrame extends JFrame {
         btnDong.getAccessibleContext().setAccessibleName("Thoát ứng dụng");
         btnDong.addActionListener(suKien -> System.exit(0));
 
-        // Hiệu ứng khi đưa chuột lên nút đóng
         btnDong.addMouseListener(
                 new MouseAdapter() {
-                    /**
-                     * Lấy chuột đã vào trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseEntered(MouseEvent suKien) {
                         btnDong.setForeground(MauUngDung.VANG);
                     }
 
-                    /**
-                     * Lấy chuột đã ra trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseExited(MouseEvent suKien) {
                         btnDong.setForeground(Color.WHITE);
@@ -339,28 +270,15 @@ public class DangNhapFrame extends JFrame {
 
         pnlThanh.add(btnDong);
 
-        // Kéo để di chuyển cửa sổ
-        // Kéo.
         MouseAdapter keo =
                 new MouseAdapter() {
-                    /** Gốc. */
                     private Point goc;
 
-                    /**
-                     * Lấy chuột đã nhấn trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mousePressed(MouseEvent suKien) {
                         goc = suKien.getPoint();
                     }
 
-                    /**
-                     * Lấy chuột đã kéo trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseDragged(MouseEvent suKien) {
                         if (goc == null) return;
@@ -374,7 +292,6 @@ public class DangNhapFrame extends JFrame {
     }
 
     private void capNhatChuHoaKhoa() {
-        // Chữ hoa.
         boolean chuHoa;
         try {
             chuHoa = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
@@ -390,9 +307,8 @@ public class DangNhapFrame extends JFrame {
     }
 
     private void layThucHienDangNhap() {
-        // Tên đăng nhập.
         String tenDangNhap = txtVanBanNguoiDung.getText().trim();
-        // Mật khẩu.
+
         char[] matKhau = txtVanBanMatKhau.getPassword();
         if (tenDangNhap.isEmpty()) {
             hienThiThongBao("Vui lòng nhập tên đăng nhập.", MauUngDung.VAN_BAN_NGUY_HIEM);
@@ -408,11 +324,6 @@ public class DangNhapFrame extends JFrame {
         datBieuMauDuocBat(false);
         hienThiThongBao("Đang xác thực...", MauUngDung.VAN_BAN_XAM);
         new SwingWorker<PhienDangNhap, Void>() {
-            /**
-             * Lấy thực hiện vào nền trong lớp xử lý giao diện.
-             *
-             * @return kết quả lấy thực hiện vào nền
-             */
             @Override
             protected PhienDangNhap doInBackground() {
                 try {
@@ -422,21 +333,18 @@ public class DangNhapFrame extends JFrame {
                 }
             }
 
-            /** Lấy đã hoàn tất trong lớp xử lý giao diện. */
             @Override
             protected void done() {
                 try {
-                    // Phiên đăng nhập.
                     PhienDangNhap phienDangNhap = get();
                     nguCanh.layNguCanhPhien().batDau(phienDangNhap);
                     dispose();
                     new ChinhFrame(nguCanh).setVisible(true);
                 } catch (Exception ngoaiLe) {
-                    // Nguyên nhân.
                     Throwable nguyenNhan =
                             ngoaiLe.getCause() == null ? ngoaiLe : ngoaiLe.getCause();
                     nguyenNhan.printStackTrace();
-                    // Thông báo.
+
                     String thongBao =
                             nguyenNhan instanceof XacThucException
                                     ? nguyenNhan.getMessage()
@@ -457,24 +365,16 @@ public class DangNhapFrame extends JFrame {
         btnNutDangNhap.setEnabled(duocBat);
     }
 
-    /**
-     * Tạo logo lớn, giữ ảnh gốc để Swing vẽ theo độ phóng đại thực tế của màn hình.
-     *
-     * @return kết quả tạo logo
-     */
     private JLabel taoLogo() {
-        // Tài nguyên.
         URL taiNguyen = DangNhapFrame.class.getResource("/images/pet-station-logo.png");
         if (taiNguyen == null) {
-            // Hiển thị tên thương hiệu được định dạng khi thiếu ảnh biểu trưng
-            // Thay thế.
             JLabel lblThayThe = new JLabel("🐾", SwingConstants.CENTER);
             lblThayThe.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 96));
             lblThayThe.setPreferredSize(new Dimension(KICH_THUOC_LOGO, KICH_THUOC_LOGO));
             lblThayThe.setAlignmentX(Component.CENTER_ALIGNMENT);
             return lblThayThe;
         }
-        // Không tạo bản bitmap 160px trước: màn hình 150%/200% cần nhiều điểm ảnh hơn để giữ nét.
+
         ImageIcon bieuTuongGoc = new ImageIcon(taiNguyen);
         Image anhGoc = bieuTuongGoc.getImage();
         double tiLe =
@@ -484,9 +384,6 @@ public class DangNhapFrame extends JFrame {
         int chieuCao = Math.max(1, (int) Math.round(bieuTuongGoc.getIconHeight() * tiLe));
         Icon bieuTuong =
                 new Icon() {
-                    /**
-                     * Vẽ trực tiếp ảnh nguồn, giữ nguyên tỉ lệ và phép phóng đại HiDPI của Swing.
-                     */
                     @Override
                     public void paintIcon(Component thanhPhan, Graphics doHoa, int x, int y) {
                         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
@@ -509,17 +406,11 @@ public class DangNhapFrame extends JFrame {
                         }
                     }
 
-                    /**
-                     * @return chiều rộng logo theo đơn vị giao diện
-                     */
                     @Override
                     public int getIconWidth() {
                         return KICH_THUOC_LOGO;
                     }
 
-                    /**
-                     * @return chiều cao logo theo đơn vị giao diện
-                     */
                     @Override
                     public int getIconHeight() {
                         return KICH_THUOC_LOGO;
@@ -547,7 +438,6 @@ public class DangNhapFrame extends JFrame {
     }
 
     private JComponent layNhanTruong(String vanBan) {
-        // Dòng đang xét.
         JLabel lblDongDangXet = new JLabel(vanBan);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         lblDongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -556,15 +446,6 @@ public class DangNhapFrame extends JFrame {
         return dong;
     }
 
-    /**
-     * Lấy trái dòng trong DangNhapFrame.
-     *
-     * <p>Đặt một thành phần vào hàng căn trái, rộng bằng thẻ. Mọi phần tử trong thẻ dùng chung
-     * CENTER_ALIGNMENT; nếu trộn LEFT/CENTER/RIGHT, BoxLayout sẽ dịch các phần tử lệch nhau.
-     *
-     * @param giaTriDangXet giá trị đang xét
-     * @return kết quả lấy trái dòng
-     */
     private JComponent layTraiDong(JComponent giaTriDangXet) {
         JPanel pnlDong = new JPanel(new BorderLayout());
         pnlDong.setOpaque(false);
@@ -574,21 +455,13 @@ public class DangNhapFrame extends JFrame {
         return pnlDong;
     }
 
-    /**
-     * Hiển thị thông báo trong DangNhapFrame.
-     *
-     * <p>Hiển thị thông báo, tự xuống dòng để không làm thẻ rộng ra.
-     *
-     * @param vanBan văn bản
-     * @param mau màu
-     */
     private void hienThiThongBao(String vanBan, Color mau) {
         lblNhanLoi.setForeground(mau);
         if (vanBan == null || vanBan.isEmpty()) {
             lblNhanLoi.setText("");
             return;
         }
-        // An toàn.
+
         String anToan = vanBan.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
         lblNhanLoi.setText(
                 "<html><div style='width:"

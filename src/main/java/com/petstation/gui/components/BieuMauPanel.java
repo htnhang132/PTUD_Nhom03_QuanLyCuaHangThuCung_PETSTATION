@@ -5,19 +5,11 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho biểu mẫu vùng hiển thị.
- *
- * <p>Lưới biểu mẫu 2 cột: nhãn ở trên, ô nhập ở dưới.
- */
 public final class BieuMauPanel extends JPanel {
-    /** Giá trị đang xét. */
     private final GridBagConstraints giaTriDangXet = new GridBagConstraints();
 
-    /** Cột. */
     private int cot;
 
-    /** Dòng. */
     private int dong;
 
     public BieuMauPanel() {
@@ -31,7 +23,7 @@ public final class BieuMauPanel extends JPanel {
 
     public void themMuc(String tieuDe) {
         layKetThucDong();
-        // Nhãn.
+
         JLabel lblNhan = new JLabel(tieuDe);
         lblNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         lblNhan.setForeground(MauUngDung.NAU);
@@ -74,10 +66,9 @@ public final class BieuMauPanel extends JPanel {
     }
 
     private JPanel boc(String nhan, JComponent truong) {
-        // Hộp.
         JPanel pnlHop = new JPanel(new BorderLayout(0, 4));
         pnlHop.setOpaque(false);
-        // Văn bản.
+
         JLabel lblVanBan = new JLabel(nhan);
         lblVanBan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         lblVanBan.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -87,14 +78,6 @@ public final class BieuMauPanel extends JPanel {
         return pnlHop;
     }
 
-    /**
-     * Lấy trường văn bản trong BieuMauPanel.
-     *
-     * <p>Ô nhập chuẩn của ứng dụng.
-     *
-     * @param vanBan văn bản
-     * @return kết quả lấy trường văn bản
-     */
     public static JTextField layTruongVanBan(String vanBan) {
         JTextField txtTruongDangXet = new JTextField(vanBan);
         dinhDangDauVao(txtTruongDangXet);
@@ -111,7 +94,6 @@ public final class BieuMauPanel extends JPanel {
     }
 
     public static <KieuDuLieu> JComboBox<KieuDuLieu> layHopChon(KieuDuLieu[] cacMuc) {
-        // Hộp.
         JComboBox<KieuDuLieu> cboHop = new JComboBox<>(cacMuc);
         cboHop.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         cboHop.setPreferredSize(new Dimension(160, 36));

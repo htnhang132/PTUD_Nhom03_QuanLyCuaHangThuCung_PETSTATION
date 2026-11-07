@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-/** Thanh công cụ một hoặc nhiều hàng có tự động xuống dòng và căn chỉnh đồng bộ chiều cao các nút. */
 public final class ThanhDanhSach extends JPanel {
     private static final int CAO_HANG = 32;
     private static final int KHOANG_CACH_NGANG = 5;
@@ -84,8 +83,6 @@ public final class ThanhDanhSach extends JPanel {
             if (c.isVisible()) cacPhanTu.add(c);
         }
 
-        // Giữ nguyên bề rộng nhóm lọc để FlowLayout bên trong không tự ngắt
-        // nhãn và ô nhập xuống dòng rồi bị cắt bởi chiều cao thanh công cụ.
         java.awt.Insets le = getInsets();
         int rongNoiDung = Math.max(1, rong - le.left - le.right);
         int caoHang = CAO_HANG;

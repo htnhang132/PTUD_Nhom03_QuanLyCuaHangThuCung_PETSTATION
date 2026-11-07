@@ -8,7 +8,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC Hotel DAO. */
 public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
     public HopDongLuuTruDAOImpl() {}
 

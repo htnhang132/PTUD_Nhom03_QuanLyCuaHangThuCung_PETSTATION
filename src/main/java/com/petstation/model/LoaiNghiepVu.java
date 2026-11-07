@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Biểu diễn dữ liệu kiểu nghiệp vụ dùng trong nghiệp vụ cửa hàng. */
 public enum LoaiNghiepVu {
     HOA_DON,
     LO_HANG,

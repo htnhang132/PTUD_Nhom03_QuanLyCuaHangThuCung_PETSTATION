@@ -7,50 +7,36 @@ import java.util.List;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Phiếu xuất kho khớp bảng [phieu_xuat_kho].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính chuẩn hóa là mã phiếu xuất (maPhieuXuat / soPhieu).
- * - Quan hệ kết hợp với TaiKhoan (người lập phiếu) và danh sách ChiTietPhieuXuat.
- * - Thuộc tính dẫn xuất: tongGiaTri được tính động qua getTongGiaTri() / tinhTongGiaTri()
- *   tuyệt đối KHÔNG có setter công khai.
- * - Equals/hashCode chỉ theo khóa chính.
- */
 public class PhieuXuatKho implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Phiếu xuất kho (ma_phieu_xuat) */
     private String maPhieuXuat;
-    /** Quan hệ kết hợp: Tài khoản nhân viên lập phiếu xuất kho. */
+
     private TaiKhoan nguoiLap;
-    /** Quan hệ 1-nhiều: Danh sách dòng chi tiết xuất kho. */
+
     private List<ChiTietPhieuXuat> danhSachChiTiet = new ArrayList<>();
 
     private String loaiXuat;
     private String lyDo;
-    private long tongGiaTri; // snapshot từ CSDL khi chưa load danh sách chi tiết
+    private long tongGiaTri;
     private String trangThai;
     private LocalDateTime taoLuc;
 
-    /** Constructor mặc định. */
     public PhieuXuatKho() {
         this.trangThai = "DA_XUAT";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maPhieuXuat. */
     public PhieuXuatKho(String maPhieuXuat) {
         this();
         setMaPhieuXuat(maPhieuXuat);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public PhieuXuatKho(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính maPhieuXuat. */
     public PhieuXuatKho(
             String maPhieuXuat,
             TaiKhoan nguoiLap,
@@ -66,7 +52,6 @@ public class PhieuXuatKho implements Serializable {
         setTaoLuc(taoLuc);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public PhieuXuatKho(
             long id,
             String maPhieuXuat,
@@ -79,7 +64,6 @@ public class PhieuXuatKho implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO (nhận snapshot tổng giá trị). */
     public PhieuXuatKho(
             long id,
             String maPhieuXuat,
@@ -93,9 +77,6 @@ public class PhieuXuatKho implements Serializable {
         this.tongGiaTri = Math.max(0L, tongGiaTri);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tổng giá trị xuất kho (thuộc tính dẫn xuất từ danh sách ChiTietPhieuXuat). */
     public long tinhTongGiaTri() {
         if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
             long tong = 0L;
@@ -109,7 +90,6 @@ public class PhieuXuatKho implements Serializable {
         return Math.max(0L, this.tongGiaTri);
     }
 
-    /** Thuộc tính dẫn xuất: Không có setter để đảm bảo tính toàn vẹn dữ liệu. */
     public long getTongGiaTri() {
         return tinhTongGiaTri();
     }
@@ -121,8 +101,6 @@ public class PhieuXuatKho implements Serializable {
     public long tongGiaTri() {
         return tinhTongGiaTri();
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaPhieuXuat());
@@ -147,8 +125,6 @@ public class PhieuXuatKho implements Serializable {
         setId(id);
     }
 
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
-
     public String getMaPhieuXuat() {
         return this.maPhieuXuat;
     }
@@ -169,7 +145,6 @@ public class PhieuXuatKho implements Serializable {
         setMaPhieuXuat(maPhieuXuat);
     }
 
-    // Alias soPhieu tương thích ngược
     public String getSoPhieu() {
         return getMaPhieuXuat();
     }
@@ -324,8 +299,6 @@ public class PhieuXuatKho implements Serializable {
     public void datTaoLuc(LocalDateTime taoLuc) {
         setTaoLuc(taoLuc);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

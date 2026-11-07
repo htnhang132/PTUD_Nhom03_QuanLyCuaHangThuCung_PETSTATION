@@ -12,9 +12,6 @@ import com.petstation.util.TienTe;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho khuyến mãi danh mục vùng hiển thị.
- */
 public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
     public DanhMucKhuyenMaiPanel() {
         super(
@@ -28,7 +25,6 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh = CauHinh.tao("Danh mục khuyến mãi", "khuyến mãi")
                 .themBoLoc("Loại giảm", d -> String.valueOf(d[2]))
                 .themBoLoc("Phạm vi", d -> String.valueOf(d[3]))
@@ -49,9 +45,8 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
                 .datBoKiemTra(
                         dongDuLieu -> {
-                            // Từ.
                             LocalDate tu = docNgay(dongDuLieu[6]);
-                            // Đến.
+
                             LocalDate den = docNgay(dongDuLieu[7]);
                             if (tu != null && den != null && den.isBefore(tu))
                                 return "Đến ngày phải sau hoặc bằng Từ ngày.";
@@ -72,7 +67,14 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Loại", Kieu.HOP_CHON).datLuaChon("Giảm %", "Giảm tiền"),
                 TruongDuLieu.tao("Phạm vi", Kieu.HOP_CHON)
                         .datLuaChon("Sản phẩm", "Dịch vụ", "Cả đơn"),
-                TruongDuLieu.tao("Giá trị", Kieu.SO_NGUYEN).batBuoc().an(),
+                TruongDuLieu.tao("Giá trị", Kieu.SO_NGUYEN)
+                        .batBuoc()
+                        .hienThi(
+                                v -> {
+                                    if (v == null || v.isBlank()) return "—";
+                                    long so = TienTe.doc(v);
+                                    return so <= 100 ? so + "%" : TienTe.dinhDang(so);
+                                }),
                 TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).an().datMacDinh("0"),
                 TruongDuLieu.tao("Từ ngày", Kieu.NGAY).batBuoc(),
                 TruongDuLieu.tao("Đến ngày", Kieu.NGAY).batBuoc(),

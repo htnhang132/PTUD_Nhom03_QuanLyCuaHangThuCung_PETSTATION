@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Biểu diễn dữ liệu quyền dùng trong nghiệp vụ cửa hàng. */
 public enum Quyen {
     XEM_TONG_QUAN,
     QUAN_LY_TAI_KHOAN,

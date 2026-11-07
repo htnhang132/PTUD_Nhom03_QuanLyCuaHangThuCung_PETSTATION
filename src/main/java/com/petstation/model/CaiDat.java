@@ -4,33 +4,22 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Thực thể Tham số cấu hình hệ thống khớp bảng [cai_dat].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính chuẩn hóa là mã cài đặt (maCaiDat / khoa).
- * - Quan hệ kết hợp với TaiKhoan (người cập nhật).
- * - Equals/hashCode chỉ theo khóa chính.
- */
 public class CaiDat implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính chuẩn hóa: mã cài đặt (ví dụ: VAT_RATE, MAX_LOGIN_ATTEMPTS) */
     private String maCaiDat;
     private String giaTri;
-    /** Quan hệ kết hợp: Tài khoản quản trị viên cập nhật tham số. */
+
     private TaiKhoan nguoiCapNhat;
     private LocalDateTime ngayCapNhat;
 
-    /** Constructor mặc định. */
     public CaiDat() {
     }
 
-    /** Constructor chỉ có khóa chính. */
     public CaiDat(String maCaiDat) {
         setMaCaiDat(maCaiDat);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan. */
     public CaiDat(String maCaiDat, String giaTri, TaiKhoan nguoiCapNhat, LocalDateTime ngayCapNhat) {
         setMaCaiDat(maCaiDat);
         setGiaTri(giaTri);
@@ -38,7 +27,6 @@ public class CaiDat implements Serializable {
         setNgayCapNhat(ngayCapNhat);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public CaiDat(String maCaiDat, String giaTri, Long nguoiCapNhatId, LocalDateTime ngayCapNhat) {
         this(maCaiDat, giaTri, nguoiCapNhatId == null ? null : new TaiKhoan(nguoiCapNhatId), ngayCapNhat);
     }
@@ -63,7 +51,6 @@ public class CaiDat implements Serializable {
         setMaCaiDat(maCaiDat);
     }
 
-    // Alias khóa tương thích ngược
     public String getKhoa() {
         return getMaCaiDat();
     }

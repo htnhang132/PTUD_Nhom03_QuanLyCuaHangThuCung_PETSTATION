@@ -11,18 +11,13 @@ import com.petstation.service.NguCanhPhienService;
 import com.petstation.service.PhanQuyenService;
 import com.petstation.service.XacThucService;
 
-/** Khởi tạo kết nối SQL Server và các service dùng chung trong ứng dụng. */
 public final class KhoiTaoUngDung {
-    /** CSDL kết nối. */
     private final KetNoiCSDL csdlKetNoi;
 
-    /** Ngữ cảnh phiên. */
     private final NguCanhPhienService nguCanhPhien;
 
-    /** Xác thực dịch vụ. */
     private final XacThucService xacThucDichVu;
 
-    /** Phân quyền dịch vụ. */
     private final PhanQuyenService phanQuyenDichVu;
 
     private KhoiTaoUngDung(
@@ -37,14 +32,13 @@ public final class KhoiTaoUngDung {
     }
 
     public static KhoiTaoUngDung tao() {
-        // CSDL.
         KetNoiCSDL csdl = new KetNoiCSDL(CauHinhCSDL.nap());
         ThaoTacSQL.cauHinh(csdl);
-        // Các giao dịch.
+
         QuanLyGiaoDich cacGiaoDich = new QuanLyGiaoDich(csdl);
-        // Các phiên.
+
         NguCanhPhienService cacPhien = new NguCanhPhienService();
-        // Xác thực.
+
         XacThucService xacThuc =
                 new XacThucService(
                         cacGiaoDich,

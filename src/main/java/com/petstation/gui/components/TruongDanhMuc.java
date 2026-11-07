@@ -6,11 +6,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-/** Cung cấp giao diện và xử lý tương tác cho danh mục các trường. */
 public final class TruongDanhMuc {
     private TruongDanhMuc() {}
 
-    /** Ngày. */
     private static final DateTimeFormatter NGAY =
             DateTimeFormatter.ofPattern("dd/MM/uuuu")
                     .withResolverStyle(java.time.format.ResolverStyle.STRICT);
@@ -24,9 +22,8 @@ public final class TruongDanhMuc {
     }
 
     public static String[] layTenCacVaiTro() {
-        // Các vai trò.
         VaiTro[] cacVaiTro = VaiTro.values();
-        // Ra.
+
         String[] ra = new String[cacVaiTro.length];
         for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
             ra[chiSo] = cacVaiTro[chiSo].layTenHienThi();

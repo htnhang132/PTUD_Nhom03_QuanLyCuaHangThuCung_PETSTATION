@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho LuaChonNghiepVu; service gọi qua hợp đồng này. */
 public interface LuaChonNghiepVuDAO {
     List<Object[]> layLuaChonThuCung(Object... cacThamSo);
 

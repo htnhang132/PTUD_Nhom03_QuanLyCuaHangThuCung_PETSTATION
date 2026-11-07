@@ -6,7 +6,6 @@ import com.petstation.service.PhienDangNhapService;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC phê duyệt DAO. */
 public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     public YeuCauPheDuyetDAOImpl() {}
 
@@ -133,7 +132,6 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
             long nguoiXuLyId,
             String noiDung,
             String maYeuCau) {
-
         String tenDangNhapXuLy = PhienDangNhapService.layTenDangNhap();
         if (tenDangNhapXuLy == null || tenDangNhapXuLy.isBlank()) {
             List<Object[]> r = ThaoTacSQL.truyVan("SELECT ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiXuLyId, nguoiXuLyId);

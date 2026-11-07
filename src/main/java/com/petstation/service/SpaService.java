@@ -12,9 +12,12 @@ import com.petstation.model.Quyen;
 import java.time.*;
 import java.util.*;
 
-/** Quản lý tiếp nhận, lựa chọn dịch vụ, tiến độ và hoàn thành phiếu Spa. */
 public final class SpaService {
-    private static final PhieuTiepNhanSpaDAO xuLySpaDAO = new PhieuTiepNhanSpaDAOImpl();
+    private static PhieuTiepNhanSpaDAO xuLySpaDAO = new PhieuTiepNhanSpaDAOImpl();
+
+    public static void cauHinhDAO(PhieuTiepNhanSpaDAO dao) {
+        if (dao != null) xuLySpaDAO = dao;
+    }
 
     public static long datLichHen(
             String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {
@@ -24,7 +27,7 @@ public final class SpaService {
         return thucHienGiaoDich(
                 ketNoi -> {
                     Object[] thuCung = layThuCung(maThuCung);
-                    // Gói dịch vụ.
+
                     long goiDichVu = layId("goi_dich_vu_spa", "ma_goi", maGoiDichVu),
                             nhanVien = layId("nhan_vien", "ma_nhan_vien", maNhanVien);
                     kiemTraDuong(xuLySpaDAO.demLichHen(goiDichVu));
@@ -87,10 +90,10 @@ public final class SpaService {
         return thucHienGiaoDich(
                 ketNoi -> {
                     Object[] thuCung = layThuCung(maThuCung);
-                    // Lịch hẹn.
+
                     TiemPhongService.kiemTraNhanSpa(maThuCung);
                     Long lichHen = null;
-                    // Nhân viên.
+
                     long nhanVien = layIdNhanVien();
                     if (maLichHen != null && !maLichHen.isBlank()) {
                         List<Object[]> cacDong = xuLySpaDAO.timTiepNhan(maLichHen, thuCung[0]);
@@ -106,7 +109,6 @@ public final class SpaService {
                                     taoMa("SPA"), lichHen, thuCung[0], canNang, nhanVien, ghiChu);
                     xuLySpaDAO.capNhatSucKhoeThuCung(canNang, ghiChu, thuCung[0]);
                     if (lichHen != null) {
-                        // Gói dịch vụ.
                         Object goiDichVu = xuLySpaDAO.layTiepNhan(lichHen);
                         if (goiDichVu != null) themDichVuSpa(ketQua, chuyenThanhChuoi(goiDichVu));
                     }
@@ -119,7 +121,6 @@ public final class SpaService {
         yeuCau(Quyen.QUAN_LY_SPA);
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Các phiếu Spa.
                     List<Object[]> cacPhieuSpa = xuLySpaDAO.timThemDichVuSpa(phieuSpa);
                     if (cacPhieuSpa.isEmpty()
                             || !Set.of("TIEP_NHAN", "DANG_THUC_HIEN")
@@ -127,14 +128,14 @@ public final class SpaService {
                         throw new IllegalArgumentException(
                                 "Phiếu không còn cho phép thêm dịch vụ.");
                     Object[] giaTriTam = cacPhieuSpa.get(0);
-                    // Các giá.
+
                     List<Object[]> cacGia =
                             xuLySpaDAO.layGiaDichVuTheoCanNang(
                                     maGoiDichVu, giaTriTam[1], giaTriTam[0], giaTriTam[0]);
                     if (cacGia.isEmpty())
                         throw new IllegalArgumentException(
                                 "Chưa có bảng giá phù hợp với loài và cân nặng.");
-                    // Giá.
+
                     Object[] gia = cacGia.get(0);
                     xuLySpaDAO.capNhatThemDichVuSpa(phieuSpa, gia[0], gia[2], gia[1]);
                     xuLySpaDAO.tinhLaiTongPhieuSpa(phieuSpa, phieuSpa);
@@ -190,9 +191,7 @@ public final class SpaService {
         LocalDate tuNgay,
         LocalDate denNgay,
         String trangThai) {
-
         yeuCau(Quyen.QUAN_LY_SPA);
-
 
         if ((tuNgay == null) != (denNgay == null)) {
             throw new IllegalArgumentException(

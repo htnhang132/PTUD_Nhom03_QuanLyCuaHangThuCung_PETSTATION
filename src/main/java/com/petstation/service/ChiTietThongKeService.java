@@ -10,7 +10,6 @@ import com.petstation.model.Quyen;
 
 import java.util.Set;
 
-/** Kiểm tra quyền trước khi mở chứng từ; DAO không đọc phiên đăng nhập. */
 public final class ChiTietThongKeService {
     private static final ChiTietThongKeDAO chiTietThongKeDAO = new ChiTietThongKeDAOImpl();
 

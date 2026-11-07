@@ -4,19 +4,11 @@ import java.awt.*;
 
 import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho mật khẩu trường với bật tắt.
- *
- * <p>JPasswordField với nút toggle hiển thị/ẩn mật khẩu Icon con mắt ở cuối ô nhập
- */
 public class TruongMatKhauAnHien extends JPanel {
-    /** Trường mật khẩu. */
     private JPasswordField txtTruongMatKhau;
 
-    /** Nút bật tắt. */
     private JToggleButton btnNutBatTat;
 
-    /** Mật khẩu hiển thị. */
     private boolean matKhauHienThi = false;
 
     public TruongMatKhauAnHien() {
@@ -28,7 +20,6 @@ public class TruongMatKhauAnHien extends JPanel {
 
         txtTruongMatKhau = new JPasswordField(cacCot);
 
-        // Nút bật tắt có biểu tượng con mắt
         btnNutBatTat = new JToggleButton();
         btnNutBatTat.setIcon(taoBieuTuongMat(false));
         btnNutBatTat.setSelectedIcon(taoBieuTuongMat(true));
@@ -44,7 +35,6 @@ public class TruongMatKhauAnHien extends JPanel {
         add(txtTruongMatKhau, BorderLayout.CENTER);
         txtTruongMatKhau.putClientProperty("JTextField.trailingComponent", btnNutBatTat);
 
-        // Đặt đường viền cho khung chứa các thành phần bên trong
         setBorder(BorderFactory.createEmptyBorder());
     }
 
@@ -52,17 +42,16 @@ public class TruongMatKhauAnHien extends JPanel {
         matKhauHienThi = !matKhauHienThi;
 
         if (matKhauHienThi) {
-            txtTruongMatKhau.setEchoChar((char) 0); // Hiển thị nội dung thật
+            txtTruongMatKhau.setEchoChar((char) 0);
             btnNutBatTat.setToolTipText("Ẩn mật khẩu");
             btnNutBatTat.setSelected(true);
         } else {
-            txtTruongMatKhau.setEchoChar('●'); // Ẩn với ký tự ●
+            txtTruongMatKhau.setEchoChar('●');
             btnNutBatTat.setToolTipText("Hiển thị mật khẩu");
             btnNutBatTat.setSelected(false);
         }
     }
 
-    /** Vẽ biểu tượng bằng nét để giữ độ rõ trên màn hình có tỷ lệ phóng lớn. */
     private static Icon taoBieuTuongMat(boolean an) {
         return new Icon() {
             public int getIconWidth() {
@@ -96,7 +85,6 @@ public class TruongMatKhauAnHien extends JPanel {
         };
     }
 
-    // Chuyển thao tác cho trường nhập mật khẩu bên trong
     public char[] layMatKhau() {
         return txtTruongMatKhau.getPassword();
     }

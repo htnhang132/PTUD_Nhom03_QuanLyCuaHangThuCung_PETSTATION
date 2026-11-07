@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Mã lưu trữ phương thức thu tiền; KET_HOP chỉ biểu diễn tổng hợp trên hóa đơn. */
 public enum PhuongThuc {
     TIEN_MAT,
     CHUYEN_KHOAN,

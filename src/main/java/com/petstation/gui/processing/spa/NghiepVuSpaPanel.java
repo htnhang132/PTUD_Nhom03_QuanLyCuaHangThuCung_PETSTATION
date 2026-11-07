@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho Spa nghiệp vụ vùng hiển thị. */
 public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     protected NghiepVuSpaPanel(LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
@@ -93,13 +92,12 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     }
 
     protected void tiepNhan() {
-        // Lịch hẹn.
         String lichHen = "", thuCung = "";
         if (kieuNghiepVu == LoaiNghiepVu.LICH_HEN && tblBang.getSelectedRow() >= 0) {
             lichHen = layNoiDungDongChon(1);
             thuCung = chuyenThanhChuoi(SpaService.layMaLichHenThuCung(layDongChon()));
         }
-        // Trường thú cưng.
+
         if (lichHen.isEmpty() && banHang.layQuyTrinh().layLichHen() > 0) {
             var hen =
                     com.petstation.service.QuyTrinhService.layLichHen(
@@ -136,7 +134,6 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     }
 
     protected void themDichVu() {
-        // Phiếu Spa.
         long phieuSpa = layDongChon();
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(this, "Thêm dịch vụ vào phiếu", layCacGoiDichVu());

@@ -10,10 +10,6 @@ import java.util.function.IntConsumer;
 
 import javax.swing.*;
 
-/**
- * Biểu đồ cột có cuộn, trục âm, tự động co giãn theo chiều cao khung chứa và vùng tương tác riêng
- * cho mỗi cột.
- */
 public final class BieuDoCot extends JComponent implements Scrollable {
     private String[] nhan = new String[0];
     private double[] giaTri = new double[0];

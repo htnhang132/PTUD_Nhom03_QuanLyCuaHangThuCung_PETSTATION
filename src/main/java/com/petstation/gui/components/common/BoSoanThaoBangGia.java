@@ -7,7 +7,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-/** Nhập bảng giá Spa bằng ô nhập rõ ràng; giữ định dạng lưu cũ: Loài|Khoảng|Giá. */
 public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private final DefaultTableModel model = new DefaultTableModel(
         new String[]{"Loài", "Khoảng cân nặng", "Giá (₫)"}, 0) {
@@ -27,15 +26,15 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         DinhDangBang.apDung(bang);
         bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.setOpaque(false);
-        JPanel nhap = new JPanel(new GridLayout(0, 1, 0, 8));
+        JPanel nhap = new JPanel(new GridLayout(2, 2, 8, 6));
         nhap.setOpaque(false);
         nhap.add(hangNhap("Loài", loai));
-        nhap.add(hangNhap("Từ cân nặng (kg)", tuKg));
-        nhap.add(hangNhap("Đến cân nặng (kg, để trống nếu không giới hạn)", denKg));
         nhap.add(hangNhap("Giá dịch vụ (VNĐ)", gia));
-        gia.putClientProperty("JTextField.placeholderText", "Nhập giá rồi thêm mức giá");
-        // Xếp dọc để các nút không bị cắt trong form dùng chung rộng 380 px.
-        JPanel nut = new JPanel(new GridLayout(0, 1, 0, 6));
+        nhap.add(hangNhap("Từ cân (kg)", tuKg));
+        nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
+        gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
+
+        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
         nut.setOpaque(false);
         nut.add(them); nut.add(sua); nut.add(xoa);
         JPanel dau = new JPanel(new BorderLayout(0, 6));
@@ -43,7 +42,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         dau.add(nhap, BorderLayout.CENTER); dau.add(nut, BorderLayout.SOUTH);
         panel.add(dau, BorderLayout.NORTH);
         JScrollPane cuon = new JScrollPane(bang);
-        cuon.setPreferredSize(new Dimension(350, 150));
+        cuon.setPreferredSize(new Dimension(350, 140));
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         panel.add(cuon, BorderLayout.CENTER);
         them.addActionListener(e -> capNhat(false));

@@ -6,7 +6,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ hỗ trợ DAO. */
 public final class HoTroNghiepVuDAOImpl implements HoTroNghiepVuDAO {
     public HoTroNghiepVuDAOImpl() {}
 

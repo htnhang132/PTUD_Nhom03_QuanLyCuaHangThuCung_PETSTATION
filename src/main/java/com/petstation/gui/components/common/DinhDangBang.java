@@ -16,17 +16,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho bảng định dạng.
- *
- * <p>
- * Kiểu bảng dùng chung cho mọi màn danh sách: dòng chọn màu hồng nhạt (không
- * dùng xanh dương mặc
- * định), dòng xen kẽ, chữ số căn phải, cột trạng thái tô màu, tiêu đề đồng
- * nhất.
- * Cột ngắn có độ rộng giới hạn, cột dài (tên, mô tả, địa chỉ) tự động dãn để
- * không che dữ liệu.
- */
 public final class DinhDangBang {
     private DinhDangBang() {
     }
@@ -119,7 +108,6 @@ public final class DinhDangBang {
                     }
                 });
 
-        // Tiêu đề bảng
         JTableHeader tieuDeBang = tblBang.getTableHeader();
         tieuDeBang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         tieuDeBang.setBackground(new Color(0xF3, 0xED, 0xE5));
@@ -151,7 +139,6 @@ public final class DinhDangBang {
                     });
         }
 
-        // Khi kéo rộng cột, cho phép cuộn ngang thay vì ép các cột còn lại.
         tieuDeBang.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
@@ -160,7 +147,6 @@ public final class DinhDangBang {
             }
         });
 
-        // Định dạng bề rộng các cột thông minh
         canChinhDoRongCot(tblBang);
 
         Runnable resize = () -> {
@@ -204,15 +190,6 @@ public final class DinhDangBang {
         resize.run();
     }
 
-    /**
-     * Căn chỉnh độ rộng các cột dựa trên tên và kiểu dữ liệu:
-     * - Cột dữ liệu ngắn (STT, Mã, SĐT, Giới tính, ĐVT, Ngày, Trạng thái, Giá):
-     * giới hạn maxWidth
-     * để không bị dãn quá rộng vô lý.
-     * - Cột dữ liệu dài (Tên sản phẩm, Tên khách, Địa chỉ, Mô tả, Ghi chú): không
-     * đặt maxWidth,
-     * tự do dãn chiếm toàn bộ không gian còn lại để không bị cắt chữ (...).
-     */
     public static void canChinhDoRongCot(JTable tblBang) {
         if (tblBang == null || tblBang.getColumnCount() == 0)
             return;
@@ -320,7 +297,7 @@ public final class DinhDangBang {
                 cot.setMinWidth(Math.max(90, rongTieuDe));
                 cot.setPreferredWidth(Math.max(150, rongTieuDe + 20));
             }
-            // Giữ độ rộng gợi ý nhưng không giới hạn thao tác kéo của người dùng.
+
             cot.setMaxWidth(Integer.MAX_VALUE);
             cot.setResizable(true);
             cot.setPreferredWidth(Math.max(cot.getPreferredWidth(), rongTieuDe));

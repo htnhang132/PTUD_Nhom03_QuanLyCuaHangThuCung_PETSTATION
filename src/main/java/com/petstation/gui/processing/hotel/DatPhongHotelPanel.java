@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho hợp đồng lưu trú vùng hiển thị. */
 public final class DatPhongHotelPanel extends NghiepVuHotelPanel {
     public DatPhongHotelPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.DAT_PHONG_LUU_TRU, banHang, dieuHuong);

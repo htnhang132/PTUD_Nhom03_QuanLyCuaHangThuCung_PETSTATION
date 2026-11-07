@@ -9,7 +9,6 @@ import com.petstation.model.Quyen;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Quản lý mũi tiêm và sàng lọc điều kiện tiếp nhận Spa. */
 public final class TiemPhongService {
     private static final TiemPhongDAO tiemPhongDAO = new TiemPhongDAOImpl();
 
@@ -62,7 +61,6 @@ public final class TiemPhongService {
                 });
     }
 
-    /** Gọi trong transaction tiếp nhận, khóa hồ sơ cùng lúc với việc kiểm tra. */
     public static void kiemTraNhanSpa(String ma) {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
         Object[] thu = timThuCung(ma);

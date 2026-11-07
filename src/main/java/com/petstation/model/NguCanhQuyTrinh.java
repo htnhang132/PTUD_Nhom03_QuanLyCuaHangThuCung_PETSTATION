@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Bản ghi đang thao tác trong một cửa sổ; không dùng trạng thái toàn cục. */
 public final class NguCanhQuyTrinh {
     private long lichHen;
     private long phieuSpa;

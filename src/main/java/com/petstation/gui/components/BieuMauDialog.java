@@ -12,33 +12,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho biểu mẫu hộp thoại.
- *
- * <p>Hộp thoại nhập nhanh vài trường, cùng kiểu nút Đồng ý/Hủy với {@link HopThoai}.
- */
 public final class BieuMauDialog {
     private BieuMauDialog() {}
 
-    /**
-     * Lấy yêu cầu nhập trong BieuMauDialog.
-     *
-     * <p>Trả về giá trị theo thứ tự nhãn, hoặc null nếu bấm Hủy.
-     *
-     * @param cha cha
-     * @param tieuDe tiêu đề
-     * @param cacNhan các nhãn
-     * @param banDau ban đầu
-     * @return kết quả lấy yêu cầu nhập
-     */
     public static List<String> layYeuCauNhap(
             Component cha, String tieuDe, String[] cacNhan, String[] banDau) {
         JPanel pnlVungDangXet = new JPanel(new GridBagLayout());
-        // Giá trị đang xét.
+
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(4, 4, 4, 4);
         giaTriDangXet.fill = GridBagConstraints.HORIZONTAL;
-        // Các trường.
+
         JTextField[] cacTruong = new JTextField[cacNhan.length];
         for (int chiSo = 0; chiSo < cacNhan.length; chiSo++) {
             giaTriDangXet.gridx = 0;
@@ -52,9 +36,9 @@ public final class BieuMauDialog {
             giaTriDangXet.weightx = 1;
             pnlVungDangXet.add(cacTruong[chiSo], giaTriDangXet);
         }
-        // Các lựa chọn.
+
         Object[] cacLuaChon = {"Đồng ý", "Hủy"};
-        // Dòng dữ liệu.
+
         int dongDuLieu =
                 JOptionPane.showOptionDialog(
                         cha,
@@ -66,7 +50,7 @@ public final class BieuMauDialog {
                         cacLuaChon,
                         cacLuaChon[0]);
         if (dongDuLieu != 0) return null;
-        // Ra.
+
         List<String> ra = new ArrayList<>();
         for (JTextField txtTruongDangXet : cacTruong) ra.add(txtTruongDangXet.getText().trim());
         return ra;

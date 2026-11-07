@@ -13,11 +13,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/**
- * Biểu đồ tròn có chú giải nhỏ gọn.
- * Rê chuột lên từng lát để xem tên, giá trị và tỷ trọng;
- * nhấp vào lát hoặc mục chú giải để gửi chỉ số dữ liệu gốc về BaoCaoPanel.
- */
 public final class BieuDoTron extends JPanel {
     private static final Color[] MAU = {
         new Color(0xCF1730),
@@ -40,7 +35,7 @@ public final class BieuDoTron extends JPanel {
     private Consumer<int[]> chon = indices -> {};
 
     private final JLabel tieuDe = new JLabel("Cơ cấu trong phạm vi báo cáo");
-    // Chú giải nhỏ, tối đa 3 cột; không chiếm diện tích như danh sách chú giải cũ.
+
     private final JPanel chuGiai = new JPanel(new GridLayout(0, 3, 4, 1));
 
     private final JComponent hinh = new JComponent() {
@@ -88,12 +83,10 @@ public final class BieuDoTron extends JPanel {
                 g.setColor(MAU[i % MAU.length]);
                 g.fill(lat);
 
-                // Viền trắng giúp phân biệt các lát khi nằm sát nhau.
                 g.setColor(Color.WHITE);
                 g.setStroke(new BasicStroke(2.0f));
                 g.draw(lat);
 
-                // Làm nổi lát đang rê chuột, không cần chú giải thường trực.
                 if (i == latDangHover) {
                     g.setColor(new Color(0xFDD631));
                     g.setStroke(new BasicStroke(3.0f));
@@ -134,14 +127,13 @@ public final class BieuDoTron extends JPanel {
         hinh.setOpaque(false);
         hinh.setPreferredSize(new Dimension(240, 190));
         hinh.setMinimumSize(new Dimension(140, 110));
-        hinh.setToolTipText(""); // Bật cơ chế tooltip của Swing.
+        hinh.setToolTipText("");
 
         hinh.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int index = timLat(e.getPoint());
                 if (index >= 0) {
-                    // Giữ nguyên quy ước cũ: một lát có thể đại diện nhiều dòng gốc (Khác).
                     chon.accept(dongGocTheoLat.get(index).clone());
                 }
             }
@@ -181,7 +173,6 @@ public final class BieuDoTron extends JPanel {
         chon = callback == null ? indices -> {} : callback;
     }
 
-    /** Cập nhật dữ liệu; giữ API tương thích với BaoCaoPanel hiện tại. */
     public void datDuLieu(String[] labels, double[] values, boolean money) {
         String[] ten = labels == null ? new String[0] : labels;
         double[] soGoc = values == null ? new double[0] : values;
@@ -226,7 +217,8 @@ public final class BieuDoTron extends JPanel {
         for (int j = 0; j < soLatTrucTiep; j++) {
             int chiSoGoc = thuTu.get(j);
             tongTheoLat.add(soGoc[chiSoGoc]);
-            nhanHienThi.add(ten[chiSoGoc] == null ? "Mục " + (chiSoGoc + 1) : ten[chiSoGoc]);
+            String nhanGoc = ten[chiSoGoc] == null ? "Mục " + (chiSoGoc + 1) : ten[chiSoGoc];
+            nhanHienThi.add(DinhDangBang.tenTrangThai(nhanGoc));
             dongGocTheoLat.add(new int[] {chiSoGoc});
         }
 
@@ -242,7 +234,6 @@ public final class BieuDoTron extends JPanel {
 
         giaTri = tongTheoLat.stream().mapToDouble(Double::doubleValue).toArray();
 
-        // Mỗi mục chú giải dùng nút nhỏ, có màu tương ứng và vẫn bấm được để xem chi tiết.
         for (int i = 0; i < nhanHienThi.size(); i++) {
             final int index = i;
             String tenDayDu = nhanHienThi.get(i);

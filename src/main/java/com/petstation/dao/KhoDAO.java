@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho Kho; service gọi qua hợp đồng này. */
 public interface KhoDAO {
     int capNhatNhapKho(Object... cacThamSo);
 

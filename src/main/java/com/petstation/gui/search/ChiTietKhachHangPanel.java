@@ -16,7 +16,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/** Cung cấp giao diện và xử lý tương tác cho khách hàng chi tiết vùng hiển thị. */
 public final class ChiTietKhachHangPanel extends CoSoPanel {
     public ChiTietKhachHangPanel(
             String ma, String ten, String soDienThoai, String diaChi, String hang, String diem) {
@@ -34,10 +33,10 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                 + diem
                                 + " điểm"),
                 BorderLayout.NORTH);
-        // Khách hàng.
+
         long khachHang =
                 com.petstation.service.DanhMucService.layId("khach_hang", "ma_khach_hang", ma);
-        // Các tab.
+
         JTabbedPane tabCacTab = new JTabbedPane();
         tabCacTab.addTab(
                 "Thú cưng",
@@ -53,19 +52,19 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                             "Lưu ý sức khỏe"
                         },
                         LichSuKhachHangService.layThuCung(khachHang)));
-        // Các hóa đơn.
+
         List<Object[]> cacHoaDon = LichSuKhachHangService.layCacHoaDon(khachHang);
-        // Hóa đơn bảng.
+
         JScrollPane scrHoaDonBang =
                 layBang(
                         new String[] {
                             "Số hóa đơn", "Ngày", "Tổng tiền", "Thanh toán", "Trạng thái"
                         },
                         cacHoaDon);
-        // Các đơn hàng.
+
         JPanel pnlCacDonHang = taoVungTrongSuot(new BorderLayout(0, 8));
         pnlCacDonHang.add(scrHoaDonBang, BorderLayout.CENTER);
-        // Xem trước.
+
         NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
         btnXemTruoc.addActionListener(
                 suKien -> {
@@ -82,14 +81,14 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                                     tblGiaTriTam.convertRowIndexToModel(
                                                             tblGiaTriTam.getSelectedRow()),
                                                     0));
-                    // Văn bản.
+
                     JTextArea txtVanBan =
                             new JTextArea(
                                     InHoaDonPanel.hienThi(BanHangService.layBienLai(khong)),
                                     28,
                                     48);
                     txtVanBan.setEditable(false);
-                    // In.
+
                     NutDinhDang btnIn = new NutDinhDang("In", NutDinhDang.KieuNut.CHINH);
                     btnIn.addActionListener(
                             suKien2 -> {
@@ -145,16 +144,8 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
     }
 
     private JScrollPane layBang(String[] cacCot, List<Object[]> cacDong) {
-        // Mô hình.
         DefaultTableModel moHinh =
                 new DefaultTableModel(cacDong.toArray(Object[][]::new), cacCot) {
-                    /**
-                     * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                     *
-                     * @param dongDuLieu dòng dữ liệu
-                     * @param giaTriDangXet giá trị đang xét
-                     * @return kết quả kiểm tra điều kiện xử lý
-                     */
                     @Override
                     public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                         return false;

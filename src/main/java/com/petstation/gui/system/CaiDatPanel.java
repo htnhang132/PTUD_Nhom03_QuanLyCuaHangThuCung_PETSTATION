@@ -17,10 +17,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-/**
- * Cung cấp giao diện cài đặt hệ thống dạng Tabbed Pane 4 nhóm trực quan: 1. Cửa hàng & Hóa đơn 2.
- * Kho & Hàng hóa 3. Nhân sự & Phân lịch 4. Thư mục lưu trữ & Bảo trì
- */
 public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     private final Map<String, JTextField> cacDauVao = new LinkedHashMap<>();
     private final JCheckBox chkBlindCountDefault =
@@ -37,11 +33,9 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         setLayout(new BorderLayout(0, 12));
         add(taoTieuDeMuc("Cài đặt hệ thống"), BorderLayout.NORTH);
 
-        // 1. Tạo JTabbedPane chứa 4 Tab chức năng
         JTabbedPane tabCaiDat = new JTabbedPane();
         tabCaiDat.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        // --- TAB 1: Cửa hàng & Hóa đơn ---
         JPanel tab1 = taoTabPanel();
         JPanel pnlThongTinCuaHang = layNhomBox("Thông tin pháp nhân & Liên hệ");
         taoTruong(
@@ -67,7 +61,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
                 "Thuế VAT (%)",
                 "Thuế suất GTGT áp dụng chung (0 - 100%)");
 
-        // Máy in
         for (PrintService dichVu : PrintServiceLookup.lookupPrintServices(null, null)) {
             cboMayIn.addItem(dichVu.getName());
         }
@@ -87,7 +80,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         pnlHoaDonVaMayIn.add(btnKiemThu);
         pnlHoaDonVaMayIn.add(Box.createVerticalStrut(12));
 
-        // VietQR
         taoTruong(
                 pnlHoaDonVaMayIn,
                 "MA_BIN_NGAN_HANG",
@@ -108,7 +100,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         tab1.add(pnlHoaDonVaMayIn);
         tabCaiDat.addTab("Cửa hàng & Hóa đơn", tab1);
 
-        // --- TAB 2: Kho & Hàng hóa ---
         JPanel tab2 = taoTabPanel();
         JPanel pnlKho1 = layNhomBox("Cảnh báo tồn kho & Hạn dùng");
         taoTruong(
@@ -144,7 +135,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         tab2.add(pnlKho2);
         tabCaiDat.addTab("Kho & Hàng hóa", tab2);
 
-        // --- TAB 3: Nhân sự & Phân lịch ---
         JPanel tab3 = taoTabPanel();
         JPanel pnlNhanSu1 = layNhomBox("Chính sách làm việc & Ca trực");
         taoTruong(
@@ -174,7 +164,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
         tab3.add(pnlNhanSu2);
         tabCaiDat.addTab("Nhân sự & Phân lịch", tab3);
 
-        // --- TAB 4: Thư mục lưu trữ & Bảo trì ---
         JPanel tab4 = taoTabPanel();
         JPanel pnlHeThong1 = layNhomBox("Đường dẫn dữ liệu");
         taoTruongThuMuc(
@@ -205,7 +194,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
 
         add(tabCaiDat, BorderLayout.CENTER);
 
-        // 2. Thanh thao tác phía dưới
         JPanel pnlCacThaoTac = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 10, 8));
 
         NutDinhDang btnTaiLai = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -383,13 +371,11 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
             }
         }
 
-        // Blind count default
         boolean blind =
                 Boolean.parseBoolean(
                         CaiDatService.layTuyChonHoacMacDinh("MAC_DINH_KIEM_KE_MU", "false"));
         chkBlindCountDefault.setSelected(blind);
 
-        // Máy in
         String daChon = CaiDatService.lay("MAY_IN");
         if (!daChon.isBlank()) cboMayIn.setSelectedItem(daChon);
 
@@ -415,7 +401,6 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     public void xuLyLuu() {
         if (!coTheSua) return;
         try {
-            // Validation
             int vat = Integer.parseInt(cacDauVao.get("THUE_VAT_PHAN_TRAM").getText().trim());
             if (vat < 0 || vat > 100)
                 throw new IllegalArgumentException("Thuế VAT phải từ 0% đến 100%.");

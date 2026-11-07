@@ -23,41 +23,31 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-/** Cung cấp giao diện và xử lý tương tác cho thay đổi mật khẩu vùng hiển thị. */
 public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu {
-    /** Điều hướng. */
     private final java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong;
 
-    /** Trường hiện tại mật khẩu. */
     private TruongMatKhauAnHien pnlTruongHienTaiMatKhau;
 
-    /** Trường mới mật khẩu. */
     private TruongMatKhauAnHien pnlTruongMoiMatKhau;
 
-    /** Trường xác nhận mật khẩu. */
     private TruongMatKhauAnHien pnlTruongXacNhanMatKhau;
 
-    /** Bộ kiểm tra. */
     private KiemTraBieuMau boKiemTra;
 
     public DoiMatKhauPanel(java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong) {
         this.dieuHuong = dieuHuong;
         setLayout(new BorderLayout());
 
-        // Khung nội dung
-        // Nội dung.
         JPanel pnlNoiDung = layThe(new GridBagLayout());
-        // Giá trị đang xét.
+
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(8, 10, 8, 10);
         giaTriDangXet.fill = GridBagConstraints.HORIZONTAL;
         giaTriDangXet.weightx = 1;
 
-        // Tiêu đề và hướng dẫn
-        // Tiêu đề.
         JLabel lblTieuDe = taoTieuDeMuc("Đổi mật khẩu");
         lblTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
-        // Gợi ý.
+
         JLabel lblGoiY = new JLabel("Cập nhật mật khẩu đăng nhập của tài khoản hiện tại");
         lblGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
 
@@ -68,7 +58,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         giaTriDangXet.gridy++;
         pnlNoiDung.add(lblGoiY, giaTriDangXet);
 
-        // Trường mật khẩu có nút bật tắt hiển thị
         pnlTruongHienTaiMatKhau = taoTruongMatKhau();
         pnlTruongMoiMatKhau = taoTruongMatKhau();
         pnlTruongXacNhanMatKhau = taoTruongMatKhau();
@@ -77,8 +66,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         themDong(pnlNoiDung, giaTriDangXet, 3, "Mật khẩu mới", pnlTruongMoiMatKhau);
         themDong(pnlNoiDung, giaTriDangXet, 4, "Xác nhận mật khẩu", pnlTruongXacNhanMatKhau);
 
-        // Chỉ báo độ mạnh mật khẩu
-        // Nhãn độ mạnh.
         JLabel lblNhanDoManh = new JLabel("");
         lblNhanDoManh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         giaTriDangXet.gridy = 5;
@@ -86,54 +73,35 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         giaTriDangXet.gridwidth = 1;
         pnlNoiDung.add(lblNhanDoManh, giaTriDangXet);
 
-        // Thêm bộ lắng nghe để hiển thị độ mạnh mật khẩu
         pnlTruongMoiMatKhau
                 .layTruongMatKhau()
                 .getDocument()
                 .addDocumentListener(
                         new javax.swing.event.DocumentListener() {
-                            /**
-                             * Lấy đã thay đổi cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
                             public void changedUpdate(javax.swing.event.DocumentEvent suKien) {
                                 capNhatDoManh();
                             }
 
-                            /**
-                             * Xóa cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
                             public void removeUpdate(javax.swing.event.DocumentEvent suKien) {
                                 capNhatDoManh();
                             }
 
-                            /**
-                             * Thêm cập nhật trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
                             public void insertUpdate(javax.swing.event.DocumentEvent suKien) {
                                 capNhatDoManh();
                             }
 
-                            /** Cập nhật độ mạnh trong lớp xử lý giao diện. */
                             private void capNhatDoManh() {
-                                // Mật khẩu.
                                 String matKhau = pnlTruongMoiMatKhau.layVanBanMatKhau();
                                 if (matKhau.isEmpty()) {
                                     lblNhanDoManh.setText("");
                                     return;
                                 }
 
-                                // Độ mạnh.
                                 int doManh = tinhMatKhauDoManh(matKhau);
                                 if (doManh < 3) {
                                     lblNhanDoManh.setText("Mật khẩu yếu");
                                     lblNhanDoManh.setForeground(MauUngDung.NGUY_HIEM);
-                                } else 
+                                } else
                                 if (doManh < 4) {
                                     lblNhanDoManh.setText("Mật khẩu trung bình");
                                     lblNhanDoManh.setForeground(MauUngDung.CANH_BAO);
@@ -144,8 +112,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
                             }
                         });
 
-        // Các quy tắc kiểm tra
-        // Quy tắc.
         JLabel lblQuyTac =
                 new JLabel(
                         "Mật khẩu tối thiểu 8 ký tự; nên có chữ hoa, chữ thường, số và ký tự đặc"
@@ -157,20 +123,17 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         giaTriDangXet.gridwidth = 2;
         pnlNoiDung.add(lblQuyTac, giaTriDangXet);
 
-        // Các thao tác
-        // Các thao tác.
         JPanel pnlCacThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         pnlCacThaoTac.setOpaque(false);
-        // Hủy.
+
         NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
-        // Lưu.
+
         NutDinhDang btnLuu = new NutDinhDang("Lưu mật khẩu", NutDinhDang.KieuNut.CHINH);
         pnlCacThaoTac.add(btnHuy);
         pnlCacThaoTac.add(btnLuu);
         giaTriDangXet.gridy = 7;
         pnlNoiDung.add(pnlCacThaoTac, giaTriDangXet);
 
-        // Xử lý sự kiện
         btnHuy.addActionListener(
                 suKien -> {
                     pnlTruongHienTaiMatKhau.xoa();
@@ -181,7 +144,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
 
         btnLuu.addActionListener(suKien -> luuMatKhauMoi());
 
-        // Phím tắt
         dangKyBanPhimPhimTat("F4", suKien -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("ESCAPE", suKien -> btnHuy.doClick());
 
@@ -200,22 +162,18 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     }
 
     private TruongMatKhauAnHien taoTruongMatKhau() {
-        // Trường.
         TruongMatKhauAnHien pnlTruong = new TruongMatKhauAnHien(20);
         pnlTruong.setPreferredSize(new Dimension(300, 36));
         return pnlTruong;
     }
 
-    /** Kiểm tra mật khẩu hiện tại, xác nhận mật khẩu mới và lưu thay đổi cho phiên đăng nhập. */
     private void luuMatKhauMoi() {
-        // Hiện tại.
         String hienTai = pnlTruongHienTaiMatKhau.layVanBanMatKhau();
-        // Mới mật khẩu.
+
         String moiMatKhau = pnlTruongMoiMatKhau.layVanBanMatKhau();
-        // Xác nhận.
+
         String xacNhan = pnlTruongXacNhanMatKhau.layVanBanMatKhau();
 
-        // Kiểm tra dữ liệu trống
         if (hienTai.isEmpty()) {
             hienThiThongBao(
                     "Vui lòng nhập mật khẩu hiện tại.",
@@ -234,7 +192,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
             return;
         }
 
-        // Kiểm tra độ dài
         if (moiMatKhau.length() < 8) {
             hienThiThongBao(
                     "Mật khẩu mới phải có ít nhất 8 ký tự.",
@@ -244,7 +201,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
             return;
         }
 
-        // Kiểm tra mật khẩu xác nhận
         if (!moiMatKhau.equals(xacNhan)) {
             hienThiThongBao(
                     "Xác nhận mật khẩu không khớp.",
@@ -255,7 +211,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
             return;
         }
 
-        // Kiểm tra mật khẩu mới khác mật khẩu hiện tại
         if (moiMatKhau.equals(hienTai)) {
             hienThiThongBao(
                     "Mật khẩu mới phải khác mật khẩu hiện tại.",
@@ -273,23 +228,21 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         }
         hienThiThongBao("Đã cập nhật mật khẩu.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
 
-        // Xóa nội dung biểu mẫu sau khi thành công
         pnlTruongHienTaiMatKhau.xoa();
         pnlTruongMoiMatKhau.xoa();
         pnlTruongXacNhanMatKhau.xoa();
     }
 
     private int tinhMatKhauDoManh(String matKhau) {
-        // Độ mạnh.
         int doManh = 0;
 
         if (matKhau.length() >= 8) doManh++;
         if (matKhau.length() >= 12) doManh++;
-        if (matKhau.matches(".*[a-z].*")) doManh++; // Có chữ thường
-        if (matKhau.matches(".*[A-Z].*")) doManh++; // Có chữ hoa
-        if (matKhau.matches(".*\\d.*")) doManh++; // Có chữ số
+        if (matKhau.matches(".*[a-z].*")) doManh++;
+        if (matKhau.matches(".*[A-Z].*")) doManh++;
+        if (matKhau.matches(".*\\d.*")) doManh++;
         if (matKhau.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*"))
-            doManh++; // Có ký tự đặc biệt
+            doManh++;
 
         return Math.min(doManh, 5);
     }
@@ -303,18 +256,12 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     }
 
     private void dangKyBanPhimPhimTat(String khoa, java.awt.event.ActionListener thaoTac) {
-        // Khóa nét vẽ.
         javax.swing.KeyStroke khoaNetVe = javax.swing.KeyStroke.getKeyStroke(khoa);
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(khoaNetVe, khoa);
         getActionMap()
                 .put(
                         khoa,
                         new javax.swing.AbstractAction() {
-                            /**
-                             * Lấy thao tác đã thực hiện trong lớp xử lý giao diện.
-                             *
-                             * @param suKien sự kiện
-                             */
                             @Override
                             public void actionPerformed(java.awt.event.ActionEvent suKien) {
                                 thaoTac.actionPerformed(suKien);
@@ -331,7 +278,7 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         giaTriDangXet.gridwidth = 1;
         giaTriDangXet.gridx = 0;
         giaTriDangXet.gridy = toaDoDoc;
-        // Nhãn.
+
         JLabel lblNhan = new JLabel(nhan);
         lblNhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         pnlVungDangXet.add(lblNhan, giaTriDangXet);

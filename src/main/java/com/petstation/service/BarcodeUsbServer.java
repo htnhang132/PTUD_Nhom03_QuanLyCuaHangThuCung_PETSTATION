@@ -15,10 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-/**
- * HTTP receiver cho ứng dụng Android Scanner kết nối qua ADB reverse (USB).
- * Server chỉ bind vào loopback nên không mở cổng ra mạng LAN.
- */
 public final class BarcodeUsbServer implements AutoCloseable {
     public static final int DEFAULT_PORT = 8765;
     private static final int MAX_BODY_BYTES = 64;
@@ -40,7 +36,6 @@ public final class BarcodeUsbServer implements AutoCloseable {
         this.port = port;
         this.pairingCode = taoMaGhepNoi();
 
-        // Chỉ nhận kết nối loopback; adb reverse chuyển cổng từ điện thoại về đây.
         this.server = HttpServer.create(
                 new InetSocketAddress(InetAddress.getByName("127.0.0.1"), port), 0);
         this.executor = Executors.newFixedThreadPool(2, task -> {
@@ -112,11 +107,9 @@ public final class BarcodeUsbServer implements AutoCloseable {
             onBarcode.accept(barcode);
             send(exchange, 202, "{\"ok\":true,\"barcode\":\"" + barcode + "\"}");
         } catch (RuntimeException exception) {
-            // Không để lỗi callback làm dừng HTTP server.
             try {
                 send(exchange, 500, "{\"ok\":false,\"message\":\"Desktop handler error\"}");
             } catch (IOException ignored) {
-                // Client có thể đã ngắt kết nối.
             }
         }
     }

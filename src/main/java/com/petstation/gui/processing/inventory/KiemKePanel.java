@@ -26,10 +26,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-/**
- * Cung cấp giao diện Master-Detail Split-Pane cho kiểm kê tồn kho và Modal Workspace kiểm kê đa sản
- * phẩm với hỗ trợ máy quét Barcode và chế độ kiểm kê mù (Blind Count).
- */
 public final class KiemKePanel extends NghiepVuKhoPanel {
     private final DefaultTableModel moHinhChiTiet;
     private final JTable tblChiTiet;
@@ -41,14 +37,12 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     public KiemKePanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.KIEM_KE, banHang, dieuHuong);
 
-        // 1. Thêm các nút chức năng trên thanh công cụ
         themNut(pnlCacThaoTac, "+ Lập đợt kiểm kê", this::moWorkspaceKiemKe);
         if (PhienDangNhapService.layPhien().kiemTraCo(Quyen.XU_LY_PHE_DUYET)) {
             themNut(pnlCacThaoTac, "Cân bằng kho (Duyệt)", this::thucHienCanBangKho);
         }
         themNut(pnlCacThaoTac, "Xem chi tiết", this::xemChiTietBienBan);
 
-        // 2. Chuẩn bị bảng Chi tiết kiểm kê ở Master-Detail
         String[] cotChiTiet = {
             "ID",
             "Mã SP",
@@ -70,9 +64,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
 
         JScrollPane scrChiTiet = taoBangDinhDang(moHinhChiTiet);
         tblChiTiet = layBang(scrChiTiet);
-        tblChiTiet.removeColumn(tblChiTiet.getColumnModel().getColumn(0)); // Ẩn ID chi tiết
+        tblChiTiet.removeColumn(tblChiTiet.getColumnModel().getColumn(0));
 
-        // Renderer tô màu cho cột chênh lệch
         DefaultTableCellRenderer rendererChenhLech =
                 new DefaultTableCellRenderer() {
                     @Override
@@ -91,10 +84,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                             try {
                                 int val = Integer.parseInt(value.toString());
                                 if (val < 0) {
-                                    c.setForeground(new Color(220, 38, 38)); // Đỏ: Thất thoát
+                                    c.setForeground(new Color(220, 38, 38));
                                     setFont(getFont().deriveFont(Font.BOLD));
                                 } else if (val > 0) {
-                                    c.setForeground(new Color(37, 99, 235)); // Xanh dương: Dư thừa
+                                    c.setForeground(new Color(37, 99, 235));
                                     setFont(getFont().deriveFont(Font.BOLD));
                                 } else {
                                     c.setForeground(new Color(100, 116, 139));
@@ -106,10 +99,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         return c;
                     }
                 };
-        // Cột chênh lệch là cột thứ 6 sau khi ẩn cột 0 ID
+
         tblChiTiet.getColumnModel().getColumn(6).setCellRenderer(rendererChenhLech);
 
-        // Panel chi tiết bên dưới
         JPanel pnlDuoi = new JPanel(new BorderLayout(0, 8));
         pnlDuoi.setBorder(
                 BorderFactory.createCompoundBorder(
@@ -126,7 +118,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         pnlDuoi.add(pnlTieuDeChiTiet, BorderLayout.NORTH);
         pnlDuoi.add(scrChiTiet, BorderLayout.CENTER);
 
-        // 3. Tái cấu trúc layout thành Split-Pane Master-Detail
         BorderLayout layout = (BorderLayout) getLayout();
         Component centerComp = layout.getLayoutComponent(BorderLayout.CENTER);
         if (centerComp != null) {
@@ -138,7 +129,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             add(splitPane, BorderLayout.CENTER);
         }
 
-        // 4. Lắng nghe chọn dòng ở bảng biên bản kiểm kê để tải chi tiết
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
@@ -240,10 +230,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         taiChiTietBienBan(bienBanHienTaiId);
     }
 
-    /**
-     * Mở Modal Workspace Kiểm kê hàng loạt với tính năng lọc phạm vi, quét Barcode liên tục và chế
-     * độ kiểm kê mù (Blind Count).
-     */
     private void moWorkspaceKiemKe() {
         JDialog dlg =
                 new JDialog(
@@ -254,12 +240,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         dlg.setLocationRelativeTo(this);
         dlg.setLayout(new BorderLayout(0, 10));
 
-        // 1. Header Toolbar
         JPanel pnlHeader = new JPanel();
         pnlHeader.setLayout(new BoxLayout(pnlHeader, BoxLayout.Y_AXIS));
         pnlHeader.setBorder(new EmptyBorder(12, 14, 6, 14));
 
-        // Hàng 1: Kỳ kiểm kê + Phạm vi
         JPanel pnlHang1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
         JTextField txtKyKiemKe =
                 new JTextField(
@@ -301,7 +285,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 "Ẩn cột Tồn hệ thống và Chênh lệch để nhân viên đếm khách quan");
         pnlHang1.add(chkBlindCount);
 
-        // Hàng 2: Barcode Scanner input
         JPanel pnlHang2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
         pnlHang2.setBorder(
                 BorderFactory.createTitledBorder(
@@ -326,7 +309,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         pnlHeader.add(pnlHang2);
         dlg.add(pnlHeader, BorderLayout.NORTH);
 
-        // 2. Bảng dữ liệu kiểm kê nhiều sản phẩm
         String[] cacCotWs = {
             "ID Lô",
             "Mã SP",
@@ -354,10 +336,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         tblWs.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         tblWs.getTableHeader().setBackground(new Color(241, 245, 249));
 
-        // Ẩn cột ID Lô
         tblWs.removeColumn(tblWs.getColumnModel().getColumn(0));
 
-        // Đặt combobox editor cho cột Lý do chênh lệch (sau khi ẩn ID Lô, cột Lý do là index 8)
         JComboBox<String> cboLyDo =
                 new JComboBox<>(
                         new String[] {
@@ -371,7 +351,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         });
         tblWs.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(cboLyDo));
 
-        // Renderer tô màu chênh lệch
         tblWs.getColumnModel()
                 .getColumn(7)
                 .setCellRenderer(
@@ -412,7 +391,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         scrWs.setBorder(new EmptyBorder(0, 14, 0, 14));
         dlg.add(scrWs, BorderLayout.CENTER);
 
-        // Footer Toolbar
         JPanel pnlFooter = new JPanel(new BorderLayout(12, 0));
         pnlFooter.setBorder(new EmptyBorder(10, 14, 14, 14));
 
@@ -430,7 +408,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
 
         dlg.add(pnlFooter, BorderLayout.SOUTH);
 
-        // Helper tính toán chênh lệch và cập nhật thống kê
         Runnable capNhatThongKe =
                 () -> {
                     int tongMatHang = moHinhWs.getRowCount();
@@ -455,7 +432,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                     tongChenhLech));
                 };
 
-        // Lắng nghe sự kiện sửa cột Tồn thực tế trong bảng
         moHinhWs.addTableModelListener(
                 e -> {
                     if (e.getColumn() == 7 && e.getFirstRow() >= 0) {
@@ -476,7 +452,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     }
                 });
 
-        // Hàm tải danh sách lô hàng theo bộ lọc
         Runnable taiDuLieu =
                 () -> {
                     moHinhWs.setRowCount(0);
@@ -517,7 +492,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         chkSapHetHan.addActionListener(e -> taiDuLieu.run());
         txtTuKhoa.addActionListener(e -> taiDuLieu.run());
 
-        // Xử lý bật/tắt Chế độ kiểm kê mù (Blind count)
         Runnable capNhatBlindCount =
                 () -> {
                     boolean blind = chkBlindCount.isSelected();
@@ -539,7 +513,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 };
         chkBlindCount.addActionListener(e -> capNhatBlindCount.run());
 
-        // Xử lý quét Barcode
         txtBarcode.addKeyListener(
                 new KeyAdapter() {
                     @Override
@@ -580,7 +553,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     }
                 });
 
-        // Xử lý lưu biên bản
         btnLuu.addActionListener(
                 e -> {
                     if (moHinhWs.getRowCount() == 0) {
@@ -648,7 +620,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     }
                 });
 
-        // Tải dữ liệu ban đầu và áp dụng chế độ mù mặc định từ Cài đặt
         taiDuLieu.run();
         capNhatBlindCount.run();
         dlg.setVisible(true);

@@ -8,7 +8,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Dữ liệu mới nhất để kiểm tra chuyển bước và sơ đồ phòng. */
 public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
     public QuyTrinhDAOImpl() {}
 

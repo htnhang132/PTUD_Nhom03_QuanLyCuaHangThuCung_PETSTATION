@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/** Chọn một dòng hàng gốc, đổi cùng số lượng và chuyển tới thanh toán chung. */
 public final class DoiPhuKienDialog extends JDialog {
     private final GioHang gio;
     private final Consumer<MaManHinh> dieuHuong;
@@ -42,7 +41,7 @@ public final class DoiPhuKienDialog extends JDialog {
     private boolean dangChay;
     private boolean dangKhoiPhuc;
     private final long idDonTreo;
-    // Mỗi lựa chọn đổi làm mất hiệu lực kết quả tính giá cũ.
+
     private long phien;
     private long giaTriCu = -1;
 
@@ -184,7 +183,6 @@ public final class DoiPhuKienDialog extends JDialog {
     private record DuLieuNhap(List<Object[]> hoaDon, List<Object[]> dong, List<Object[]> hang, int chonHoaDon) {}
 
     private void khoiPhuc(DonDoiTreo nhap) {
-        // Điền ô nhập ngay; truy vấn lại giá, tồn kho và số lượng đã đổi ở thời điểm mở lại.
         timHoaDon.setText(nhap.timHoaDon());
         timHang.setText(nhap.timHang());
         lyDo.setText(nhap.lyDo());
@@ -351,7 +349,7 @@ public final class DoiPhuKienDialog extends JDialog {
     private <T> void chayNen(Callable<T> viec, Consumer<T> xong) {
         if (dangChay) return;
         dangChay = true; tiepTuc.setEnabled(false);
-        // Chặn chỉnh lựa chọn khi truy vấn đang dùng dữ liệu đã chụp.
+
         khoa(getContentPane(), false);
         var phienDangNhap = com.petstation.service.PhienDangNhapService.layPhienHienTai();
         new SwingWorker<T,Void>() {
@@ -386,7 +384,7 @@ public final class DoiPhuKienDialog extends JDialog {
     private static JTable bang(DefaultTableModel m) {
         JTable t = new JTable(m);
         DinhDangBang.apDung(t);
-        // Các danh sách nghiệp vụ được tra theo vị trí dòng, không bật sắp xếp tự động.
+
         t.setAutoCreateRowSorter(false);
         t.setRowSorter(null);
         t.setRowHeight(36);

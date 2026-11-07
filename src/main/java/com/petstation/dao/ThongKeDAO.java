@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho ThongKe; service gọi qua hợp đồng này. */
 public interface ThongKeDAO {
     List<Object[]> timKho(Object... cacThamSo);
 

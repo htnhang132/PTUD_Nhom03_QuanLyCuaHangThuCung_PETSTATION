@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.table.*;
 
-/** Lịch ngày/tuần và danh sách dùng chung selection, tìm kiếm và hành động. */
 public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private final JComboBox<String> cheDo =
         new JComboBox<>(new String[] {"Danh sách", "Ngày", "Tuần"});
@@ -26,11 +25,11 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
             new JComboBox<>(
                 new String[] {
                     "Tất cả",
-                    "Đã hẹn",
-                    "Đã tiếp nhận",
-                    "Hoàn thành",
-                    "Đã hủy",
-                    "Không đến"
+                    "DA_XAC_NHAN",
+                    "TIEP_NHAN",
+                    "HOAN_TAT",
+                    "DA_HUY",
+                    "KHONG_DEN"
                 });
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();

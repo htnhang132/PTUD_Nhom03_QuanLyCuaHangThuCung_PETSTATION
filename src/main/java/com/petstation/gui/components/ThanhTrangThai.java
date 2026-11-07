@@ -19,15 +19,11 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
-/** Cung cấp giao diện và xử lý tương tác cho màn hình thanh trạng thái. */
 public final class ThanhTrangThai extends JPanel {
-    /** Đồng hồ. */
     private final JLabel lblDongHo = layNhanGiaTri("");
 
-    /** Gợi ý. */
     private final JLabel lblGoiY = layNhanGiaTri("");
 
-    /** Nhãn ca làm việc. */
     private final JLabel lblNhanCaLamViec = layNhanGiaTri("");
 
     public ThanhTrangThai(PhienDangNhap phienDangNhap, CaThuNganService caLamViec) {
@@ -64,7 +60,6 @@ public final class ThanhTrangThai extends JPanel {
     }
 
     private static JLabel layNhanGiaTri(String giaTri) {
-        // Nhãn.
         JLabel lblNhan = new JLabel(giaTri);
         lblNhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblNhan.setForeground(MauUngDung.VAN_BAN_TOI);
@@ -73,7 +68,6 @@ public final class ThanhTrangThai extends JPanel {
     }
 
     private JSeparator layPhanCach() {
-        // Phân cách.
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);
         phanCach.setMaximumSize(new Dimension(1, 16));
         phanCach.setForeground(MauUngDung.VIEN);

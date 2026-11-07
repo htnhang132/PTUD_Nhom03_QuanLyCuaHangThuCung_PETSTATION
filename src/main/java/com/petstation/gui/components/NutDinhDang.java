@@ -6,14 +6,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho nút định dạng.
- *
- * <p>Nút bấm thống nhất. PRIMARY: hành động chính (nền đỏ). DANGER: hành động nguy hiểm (viền đỏ,
- * nền trắng - khác hẳn PRIMARY).
- */
 public class NutDinhDang extends JButton {
-    /** Cung cấp giao diện và xử lý tương tác cho kiểu. */
     public enum KieuNut {
         CHINH,
         PHU,
@@ -22,19 +15,14 @@ public class NutDinhDang extends JButton {
         TRONG_SUOT
     }
 
-    /** Màu nền. */
     private Color mauNen;
 
-    /** Màu rê chuột. */
     private Color mauReChuot;
 
-    /** Màu văn bản. */
     private Color mauVanBan;
 
-    /** Màu viền. */
     private Color mauVien;
 
-    /** Bán kính. */
     private final int banKinh = 8;
 
     public NutDinhDang(String vanBan, KieuNut kieu) {
@@ -50,21 +38,11 @@ public class NutDinhDang extends JButton {
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(
                 new MouseAdapter() {
-                    /**
-                     * Lấy chuột đã vào trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseEntered(MouseEvent suKien) {
                         repaint();
                     }
 
-                    /**
-                     * Lấy chuột đã ra trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseExited(MouseEvent suKien) {
                         repaint();
@@ -108,15 +86,13 @@ public class NutDinhDang extends JButton {
 
     @Override
     protected void paintComponent(Graphics doHoa) {
-        // Đồ họa 2.
         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
         doHoa2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        // Được bật.
+
         boolean duocBat = isEnabled();
-        // Rê chuột.
+
         boolean reChuot = duocBat && getModel().isRollover();
 
-        // Thụt lề 1px để đường viền bo góc không bị đè hoặc cắt ở mép trên/dưới
         int x = 1;
         int y = 1;
         int w = getWidth() - 2;

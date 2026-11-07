@@ -31,10 +31,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- * Bộ chọn nhiều khách hàng bằng danh sách hộp kiểm (checkbox) có hỗ trợ tìm kiếm nhanh và chọn tất
- * cả, dùng cho mục "Khách hàng sở hữu" khi phát hành voucher.
- */
 public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
     private final Supplier<List<String>> nguonLuaChon;
     private final JPanel pnlChinh = new JPanel(new BorderLayout(0, 6));
@@ -254,4 +250,3 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         }
     }
 }
-

@@ -11,14 +11,12 @@ import com.petstation.service.NhatKyHeThongService;
 
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho tài khoản danh sách vùng hiển thị. */
 public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
     public DanhSachTaiKhoanPanel() {
         super(taoCauHinh(), taoCacTruong(), DanhMucService.layTaiKhoan());
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Tài khoản", "tài khoản")
                         .timKiem("Tìm theo tên đăng nhập, nhân viên...")
@@ -26,7 +24,6 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                         .themThaoTacBoSung(
                                 "Khóa / Mở khóa",
                                 dongDuLieu -> {
-                                    // Đã khóa.
                                     boolean daKhoa = "Đã khóa".equals(dongDuLieu[3]);
                                     if ("admin".equals(dongDuLieu[0]) && !daKhoa)
                                         return "Không thể khóa tài khoản admin.";
@@ -41,7 +38,6 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                         .themThaoTacBoSung(
                                 "Đặt lại mật khẩu",
                                 dongDuLieu -> {
-                                    // Tạm.
                                     String tam =
                                             "PS-"
                                                     + java.util

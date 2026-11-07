@@ -6,7 +6,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ lựa chọn DAO. */
 public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
     public LuaChonNghiepVuDAOImpl() {}
 

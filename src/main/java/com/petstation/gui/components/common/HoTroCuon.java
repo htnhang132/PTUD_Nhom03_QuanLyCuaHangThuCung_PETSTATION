@@ -5,7 +5,6 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-/** Đồng bộ tốc độ cuộn, giữ nguyên cơ chế wheel/trackpad của Swing và Windows. */
 public final class HoTroCuon {
     private HoTroCuon() {}
 

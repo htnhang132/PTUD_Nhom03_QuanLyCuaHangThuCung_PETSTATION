@@ -14,7 +14,6 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 
-/** Biểu tượng vector nhỏ dùng cho năm nhóm menu chính. */
 final class BieuTuongMenu implements Icon {
     private static final int KICH_THUOC = 18;
     private final char nhom;
@@ -61,7 +60,6 @@ final class BieuTuongMenu implements Icon {
         }
     }
 
-    /** Bánh răng: Hệ thống. */
     private static void veHeThong(Graphics2D g) {
         g.draw(new Ellipse2D.Double(5.0, 5.0, 8.0, 8.0));
         g.draw(new Ellipse2D.Double(7.6, 7.6, 2.8, 2.8));
@@ -75,7 +73,6 @@ final class BieuTuongMenu implements Icon {
         g.draw(new Line2D.Double(3.7, 14.3, 5.4, 12.6));
     }
 
-    /** Lưới bốn ô: Danh mục. */
     private static void veDanhMuc(Graphics2D g) {
         g.draw(new RoundRectangle2D.Double(2.0, 2.0, 6.0, 6.0, 1.4, 1.4));
         g.draw(new RoundRectangle2D.Double(10.0, 2.0, 6.0, 6.0, 1.4, 1.4));
@@ -83,13 +80,11 @@ final class BieuTuongMenu implements Icon {
         g.draw(new RoundRectangle2D.Double(10.0, 10.0, 6.0, 6.0, 1.4, 1.4));
     }
 
-    /** Kính lúp: Tìm kiếm. */
     private static void veTimKiem(Graphics2D g) {
         g.draw(new Ellipse2D.Double(2.0, 2.0, 10.0, 10.0));
         g.draw(new Line2D.Double(10.0, 10.0, 16.0, 16.0));
     }
 
-    /** Bảng công việc có dấu kiểm: Xử lý. */
     private static void veXuLy(Graphics2D g) {
         g.draw(new RoundRectangle2D.Double(3.0, 3.0, 12.0, 13.0, 2.0, 2.0));
         g.draw(new RoundRectangle2D.Double(6.0, 1.5, 6.0, 3.0, 1.2, 1.2));
@@ -100,7 +95,6 @@ final class BieuTuongMenu implements Icon {
         g.draw(check);
     }
 
-    /** Các cột tăng trưởng: Thống kê. */
     private static void veThongKe(Graphics2D g) {
         g.draw(new Line2D.Double(2.0, 16.0, 16.0, 16.0));
         g.draw(new RoundRectangle2D.Double(3.0, 10.0, 2.8, 6.0, 0.8, 0.8));

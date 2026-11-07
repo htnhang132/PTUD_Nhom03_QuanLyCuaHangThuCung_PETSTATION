@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho kho nghiệp vụ vùng hiển thị. */
 public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     protected NghiepVuKhoPanel(LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
@@ -55,7 +54,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
 
     protected void thanhToanNhaCungCap() {
         yeuCau(com.petstation.model.Quyen.NHAP_KHO);
-        // Id.
+
         long id = layDongChon();
         int dong = tblBang.convertRowIndexToModel(tblBang.getSelectedRow());
         long tongTien =

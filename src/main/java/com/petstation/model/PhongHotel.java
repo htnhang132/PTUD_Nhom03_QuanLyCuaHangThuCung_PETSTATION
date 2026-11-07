@@ -6,14 +6,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Thực thể Phòng lưu trú khách sạn thú cưng khớp bảng [phong_hotel].
- * Khóa chính: ma (ma_phong).
- */
 public class PhongHotel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã phòng (ví dụ: PH00000001). */
     private String ma;
     private String loai;
     private long gia;
@@ -22,19 +17,16 @@ public class PhongHotel implements Serializable {
     private LichPhong dangO;
     private List<LichPhong> datTruoc;
 
-    /** Constructor mặc định. */
     public PhongHotel() {
         this.trangThai = "TRONG";
         this.sucChua = 1;
     }
 
-    /** Constructor chỉ có khóa chính. */
     public PhongHotel(String ma) {
         this();
         setMa(ma);
     }
 
-    /** Constructor đầy đủ thuộc tính. */
     public PhongHotel(
             String ma,
             String loai,
@@ -53,7 +45,6 @@ public class PhongHotel implements Serializable {
         setDatTruoc(datTruoc);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public PhongHotel(long id) {
         this();
         setId(id);
@@ -72,9 +63,6 @@ public class PhongHotel implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Lấy nhãn trạng thái tiếng Việt hiển thị trên giao diện (dẫn xuất từ trangThai). */
     public String layNhanTrangThai() {
         return switch (trangThai != null ? trangThai : "") {
             case "TRONG" -> "Trống";
@@ -85,17 +73,13 @@ public class PhongHotel implements Serializable {
         };
     }
 
-    /** Kiểm tra phòng hiện có đang trống sẵn sàng đón thú cưng hay không (dẫn xuất). */
     public boolean kiemTraPhongTrong() {
         return "TRONG".equalsIgnoreCase(trangThai);
     }
 
-    /** Tính tiền phòng theo số đêm lưu trú (dẫn xuất: soDem * gia). */
     public long tinhTienTheoSoDem(int soDem) {
         return Math.max(0, soDem) * gia;
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMa() { return this.ma; }
     public String layMa() { return this.ma; }
@@ -147,8 +131,6 @@ public class PhongHotel implements Serializable {
     public void setDatTruoc(List<LichPhong> datTruoc) { this.datTruoc = datTruoc; }
     public void datDatTruoc(List<LichPhong> datTruoc) { setDatTruoc(datTruoc); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, ma); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -159,8 +141,6 @@ public class PhongHotel implements Serializable {
         }
     }
     public void datId(long id) { setId(id); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (ma) ====================
 
     @Override
     public boolean equals(Object o) {

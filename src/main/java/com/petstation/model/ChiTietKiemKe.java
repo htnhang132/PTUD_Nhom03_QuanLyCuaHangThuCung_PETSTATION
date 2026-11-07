@@ -4,35 +4,23 @@ import java.io.Serializable;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Chi tiết kiểm kê khớp bảng [chi_tiet_kiem_ke].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính phức hợp là cặp (bienBan, loHang). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với BienBanKiemKe và LoHang.
- * - Có phương thức tính độ lệch tồn kho dẫn xuất và equals/hashCode theo khóa chính.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class ChiTietKiemKe implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Quan hệ kết hợp: Dòng chi tiết thuộc về một Biên bản kiểm kê. */
     private BienBanKiemKe bienBan;
-    /** Quan hệ kết hợp: Lô hàng được kiểm đếm. */
+
     private LoHang loHang;
     private int tonHeThong;
     private int tonThucTe;
     private String nguyenNhan;
 
-    /** Constructor mặc định. */
     public ChiTietKiemKe() {
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public ChiTietKiemKe(long id) {
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng BienBanKiemKe và LoHang. */
     public ChiTietKiemKe(
             BienBanKiemKe bienBan,
             LoHang loHang,
@@ -46,7 +34,6 @@ public class ChiTietKiemKe implements Serializable {
         setNguyenNhan(nguyenNhan);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public ChiTietKiemKe(
             long id,
             BienBanKiemKe bienBan,
@@ -58,7 +45,6 @@ public class ChiTietKiemKe implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public ChiTietKiemKe(
             long id,
             long bienBanId,
@@ -69,9 +55,6 @@ public class ChiTietKiemKe implements Serializable {
         this(id, new BienBanKiemKe(bienBanId), new LoHang(loHangId), tonHeThong, tonThucTe, nguyenNhan);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính chênh lệch kiểm kê (thuộc tính dẫn xuất: tonThucTe - tonHeThong - không có setter). */
     public int tinhChenhLech() {
         return tonThucTe - tonHeThong;
     }
@@ -84,14 +67,9 @@ public class ChiTietKiemKe implements Serializable {
         return tinhChenhLech();
     }
 
-    /**
-     * Kiểm tra lô hàng có bị lệch tồn kho thực tế so với sổ sách hay không (dẫn xuất).
-     */
     public boolean kiemTraCoLechKho() {
         return tonThucTe != tonHeThong;
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         String key = (bienBan != null ? bienBan.getSoBienBan() : "") + "_" + (loHang != null ? loHang.getMaLo() : "");
@@ -114,8 +92,6 @@ public class ChiTietKiemKe implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public BienBanKiemKe getBienBan() {
         return this.bienBan;
@@ -252,8 +228,6 @@ public class ChiTietKiemKe implements Serializable {
     public void datNguyenNhan(String nguyenNhan) {
         setNguyenNhan(nguyenNhan);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

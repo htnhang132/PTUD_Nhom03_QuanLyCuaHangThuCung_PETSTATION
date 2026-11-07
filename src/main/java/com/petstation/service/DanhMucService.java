@@ -15,15 +15,12 @@ import com.petstation.model.Quyen;
 
 import java.util.*;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho danh mục dịch vụ. */
 public final class DanhMucService {
     private static final DanhMucDAO danhMucDAO = new DanhMucDAOImpl();
     private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaDAOImpl();
     private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
 
-    /** Điều phối nghiệp vụ và kiểm tra dữ liệu cho các dòng. */
     public static final class CacDong extends ArrayList<Object[]> {
-        /** Loại. */
         public final LoaiDanhMuc loai;
 
         CacDong(LoaiDanhMuc loai) {
@@ -45,12 +42,10 @@ public final class DanhMucService {
         }
     }
 
-    /** Giá các bộ lắng nghe. */
     private static final List<Runnable> GIA_CAC_BO_LANG_NGHE = new ArrayList<>();
 
     private DanhMucService() {}
 
-    /** Khởi tạo bảng trống trên EDT; panel tải bản sao nền rồi cập nhật danh sách trên EDT. */
     public static CacDong chuanBi(LoaiDanhMuc loai, boolean docNgay) {
         return new CacDong(loai, docNgay);
     }
@@ -166,10 +161,9 @@ public final class DanhMucService {
 
     public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri){
         luu(cacDong, truoc, giaTri, false);
-    } 
+    }
     public static final class TrungSoDienThoaiException
     extends IllegalArgumentException {
-
 	public TrungSoDienThoaiException(String thongBao) {
 	    super(thongBao);
 		}
@@ -181,7 +175,7 @@ public final class DanhMucService {
             boolean xacNhanTrungSdt){
         if (!(cacDong instanceof CacDong danhMuc))
             throw new IllegalArgumentException("Danh mục chưa nối SQL Server.");
-        // Quyền.
+
         Quyen quyen =
                 switch (danhMuc.loai) {
                     case KHACH_HANG, VOUCHER -> Quyen.QUAN_LY_KHACH_HANG;
@@ -243,12 +237,10 @@ public final class DanhMucService {
                                     "Tên nhà cung cấp đã tồn tại.");
                         }
 
-                     // Chuẩn hóa số điện thoại cũ giống cách chuẩn hóa số mới.
                         String sdtCu = truoc == null
                                 ? ""
                                 : String.valueOf(truoc[3]).replaceAll("[\\s.]", "");
 
-                        // Chỉ kiểm tra trùng khi thêm mới hoặc thực sự đổi số điện thoại.
                         boolean canKiemTraTrungSdt =
                                 truoc == null || !sdt.equals(sdtCu);
 

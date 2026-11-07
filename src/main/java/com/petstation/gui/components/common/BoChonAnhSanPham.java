@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-/** Ô ảnh trong form danh mục; chỉ lưu đường dẫn tương đối sau khi sao chép thành công. */
 public final class BoChonAnhSanPham implements BoSoanThaoTruong {
     private final JPanel pnlAnh = new JPanel(new BorderLayout(0, 4));
     private final AnhSanPhamPanel pnlXem = new AnhSanPhamPanel(100);

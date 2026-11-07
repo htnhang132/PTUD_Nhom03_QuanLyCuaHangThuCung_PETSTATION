@@ -4,31 +4,15 @@ import com.petstation.model.MaManHinh;
 
 import java.util.List;
 
-/** Khai báo năm nhóm menu, các mục chức năng và phím tắt dùng trong điều hướng. */
 public final class CauTrucMenu {
-    /**
-     * Cung cấp giao diện và xử lý tương tác cho mục.
-     *
-     * @param nhan nhãn
-     * @param manHinh màn hình
-     * @param phimTat phím tắt
-     */
     public record Muc(String nhan, MaManHinh manHinh, String phimTat) {
         public boolean kiemTraPhanCach() {
             return manHinh == null;
         }
     }
 
-    /**
-     * Cung cấp giao diện và xử lý tương tác cho nhóm.
-     *
-     * @param phimTruyCap phím truy cập
-     * @param nhan nhãn
-     * @param cacMuc các mục
-     */
     public record Nhom(char phimTruyCap, String nhan, List<Muc> cacMuc) {}
 
-    /** Phân cách. */
     private static final Muc PHAN_CACH = new Muc(null, null, null);
 
     private static Muc layMuc(String nhan, MaManHinh manHinh) {
@@ -39,10 +23,9 @@ public final class CauTrucMenu {
         return new Muc(nhan, manHinh, khoa);
     }
 
-    /** Các nhóm. */
     private static final List<Nhom> CAC_NHOM =
             List.of(
-                    // 1. Hệ thống (Đăng xuất / Thoát do ThanhMenuChinh thêm vào cuối)
+
                     new Nhom(
                             'H',
                             "Hệ thống",
@@ -51,7 +34,7 @@ public final class CauTrucMenu {
                                     layMuc("Tài khoản & phân quyền", MaManHinh.TAI_KHOAN_PHAN_QUYEN),
                                     layMuc("Cài đặt", MaManHinh.CAI_DAT),
                                     layMuc("Nhật ký hệ thống", MaManHinh.NHAT_KY_HE_THONG))),
-                    // 2. Danh mục: chỉ CRUD
+
                     new Nhom(
                             'D',
                             "Danh mục",
@@ -65,7 +48,7 @@ public final class CauTrucMenu {
                                     layMuc("Nhà cung cấp", MaManHinh.DANH_MUC_NHA_CUNG_CAP),
                                     layMuc("Khuyến mãi", MaManHinh.DANH_MUC_KHUYEN_MAI),
                                     layMuc("Điểm thưởng và voucher", MaManHinh.TICH_DIEM_VOUCHER))),
-                    // 3. Tìm kiếm: chỉ xem
+
                     new Nhom(
                             'T',
                             "Tìm kiếm",
@@ -78,7 +61,7 @@ public final class CauTrucMenu {
                                     PHAN_CACH,
                                     layMuc("Lịch làm việc", MaManHinh.TRA_CUU_LICH_LAM_VIEC),
                                     layMuc("Lịch làm việc cá nhân", MaManHinh.LICH_CA_NHAN))),
-                    // 4. Xử lý: nghiệp vụ
+
                     new Nhom(
                             'X',
                             "Xử lý",
@@ -95,7 +78,7 @@ public final class CauTrucMenu {
                                     layMuc("Ca thu ngân", MaManHinh.CA_THU_NGAN),
                                     layMuc("Phân lịch nhân viên", MaManHinh.PHAN_LICH_NHAN_VIEN),
                                     layMuc("Phê duyệt yêu cầu", MaManHinh.PHE_DUYET_YEU_CAU))),
-                    // 5. Thống kê: chỉ xem và xuất
+
                     new Nhom(
                             'K',
                             "Thống kê",

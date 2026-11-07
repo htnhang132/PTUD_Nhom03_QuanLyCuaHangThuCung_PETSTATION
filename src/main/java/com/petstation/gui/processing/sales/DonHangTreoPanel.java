@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho đang chờ các hóa đơn vùng hiển thị. */
 public final class DonHangTreoPanel extends BangNghiepVuPanel {
     public DonHangTreoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.GIO_HANG_TREO, banHang, dieuHuong);

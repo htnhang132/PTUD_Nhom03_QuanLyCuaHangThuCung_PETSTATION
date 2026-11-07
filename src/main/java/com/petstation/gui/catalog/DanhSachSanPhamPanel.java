@@ -8,7 +8,6 @@ import com.petstation.service.DanhMucService;
 
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho sản phẩm danh sách vùng hiển thị. */
 public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
     public DanhSachSanPhamPanel() {
         super(

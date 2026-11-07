@@ -10,40 +10,25 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho thanh quy trình.
- *
- * <p>Thanh quy trình: hiển thị bước hiện tại của luồng nhiều bước (bán hàng, Spa, Hotel); bấm để
- * chuyển bước.
- */
 public final class ThanhQuyTrinh extends JPanel {
-    /** Tên. */
     private final JLabel lblTen = new JLabel();
 
-    /** Chỉ báo. */
     private final ChiBaoBuoc chiBao = new ChiBaoBuoc(java.util.List.of(""));
 
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
 
-    /** Vùng chứa. */
     private final JPanel pnlVungChua = new JPanel(new BorderLayout());
 
-    /** Quy trình. */
     private QuyTrinhManHinh.QuyTrinh quyTrinh;
 
-    /** Hiện tại màn hình. */
     private MaManHinh hienTaiManHinh;
 
-    /** Trước. */
     private final NutDinhDang btnTruoc =
             new NutDinhDang("‹ Bước trước", NutDinhDang.KieuNut.TRONG_SUOT);
 
-    /** Tiếp theo. */
     private final NutDinhDang btnTiepTheo =
             new NutDinhDang("Bước tiếp ›", NutDinhDang.KieuNut.CHINH);
 
-    /** Điều hướng. */
     private final JPanel pnlDieuHuong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
 
     public ThanhQuyTrinh(Consumer<MaManHinh> boDieuHuong) {
@@ -81,7 +66,6 @@ public final class ThanhQuyTrinh extends JPanel {
     }
 
     public void hienThi(MaManHinh manHinh) {
-        // Tìm thấy.
         Optional<QuyTrinhManHinh.QuyTrinh> timThay = QuyTrinhManHinh.tim(manHinh);
         if (timThay.isEmpty()) {
             quyTrinh = null;
@@ -92,10 +76,9 @@ public final class ThanhQuyTrinh extends JPanel {
         if (truongDangXet != quyTrinh) {
             quyTrinh = truongDangXet;
             pnlVungChua.removeAll();
-            // Mới.
+
             ChiBaoBuoc moi = new ChiBaoBuoc(truongDangXet.cacNhan());
-            // Luồng bán hàng không cho phép nhảy bước bằng cách bấm trực tiếp.
-            // Spa/Hotel vẫn giữ cơ chế chọn bước hiện có.
+
             moi.datKhiBam(
                     truongDangXet.tuanTu()
                             ? chiSo -> boDieuHuong.accept(truongDangXet.cacBuoc().get(chiSo))
@@ -104,7 +87,7 @@ public final class ThanhQuyTrinh extends JPanel {
             lblTen.setText(truongDangXet.ten());
             pnlVungChua.putClientProperty("indicator", moi);
         }
-        // Hiện tại.
+
         ChiBaoBuoc hienTai = (ChiBaoBuoc) pnlVungChua.getClientProperty("indicator");
         hienTai.datHienTai(truongDangXet.layChiSoCua(manHinh));
         hienTaiManHinh = manHinh;

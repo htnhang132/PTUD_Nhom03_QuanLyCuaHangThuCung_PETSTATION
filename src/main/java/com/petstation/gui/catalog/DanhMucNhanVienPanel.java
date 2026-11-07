@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho nhân viên danh mục vùng hiển thị. */
 public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
     private static final DateTimeFormatter DINH_DANG_NGAY =
             DateTimeFormatter.ofPattern("dd/MM/uuuu");

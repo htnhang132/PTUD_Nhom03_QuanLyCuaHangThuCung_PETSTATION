@@ -8,34 +8,14 @@ import java.util.List;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho SQL biểu mẫu. */
 public final class BieuMauSQL {
-    /**
-     * Cung cấp giao diện và xử lý tương tác cho lựa chọn.
-     *
-     * @param giaTri giá trị
-     * @param nhan nhãn
-     */
     public record LuaChon(String giaTri, String nhan) {
-        /**
-         * Biểu diễn đối tượng dưới dạng chuỗi.
-         *
-         * @return chuỗi mô tả đối tượng
-         */
         @Override
         public String toString() {
             return nhan;
         }
     }
 
-    /**
-     * Cung cấp giao diện và xử lý tương tác cho trường.
-     *
-     * @param khoa khóa
-     * @param nhan nhãn
-     * @param banDau ban đầu
-     * @param cacLuaChon các lựa chọn
-     */
     public record TruongDuLieu(String khoa, String nhan, String banDau, List<LuaChon> cacLuaChon) {
         public static TruongDuLieu chuyenThanhChuoi(String khoa, String nhan, String banDau) {
             return new TruongDuLieu(khoa, nhan, banDau, null);
@@ -60,13 +40,12 @@ public final class BieuMauSQL {
 
     public static Map<String, String> layYeuCauNhap(
             Component cha, String tieuDe, TruongDuLieu... cacTruong) {
-        // Biểu mẫu.
         JPanel pnlBieuMau = new JPanel(new GridBagLayout());
-        // Giá trị đang xét.
+
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(5, 5, 5, 5);
         giaTriDangXet.fill = GridBagConstraints.HORIZONTAL;
-        // Các đầu vào.
+
         Map<String, JComponent> cacDauVao = new LinkedHashMap<>();
         for (int chiSo = 0; chiSo < cacTruong.length; chiSo++) {
             TruongDuLieu truongDangXet = cacTruong[chiSo];
@@ -74,7 +53,7 @@ public final class BieuMauSQL {
             giaTriDangXet.gridx = 0;
             giaTriDangXet.weightx = 0;
             pnlBieuMau.add(new JLabel(truongDangXet.nhan()), giaTriDangXet);
-            // Đầu vào.
+
             JComponent dauVao;
             if (truongDangXet.cacLuaChon() == null)
                 dauVao = new JTextField(truongDangXet.banDau(), 28);
@@ -109,10 +88,9 @@ public final class BieuMauSQL {
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.PLAIN_MESSAGE)
                 != JOptionPane.OK_OPTION) return null;
-        // Các giá trị.
+
         Map<String, String> cacGiaTri = new LinkedHashMap<>();
         for (TruongDuLieu truongDangXet : cacTruong) {
-            // Đầu vào.
             JComponent dauVao = cacDauVao.get(truongDangXet.khoa());
             cacGiaTri.put(
                     truongDangXet.khoa(),

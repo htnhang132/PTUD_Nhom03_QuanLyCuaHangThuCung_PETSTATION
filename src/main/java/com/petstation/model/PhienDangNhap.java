@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
-/** Biểu diễn dữ liệu phiên đăng nhập dùng trong nghiệp vụ cửa hàng. */
 public class PhienDangNhap implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -41,11 +40,11 @@ public class PhienDangNhap implements Serializable {
     public VaiTro docVaiTro() {
         return taiKhoan != null ? taiKhoan.vaiTro() : null;
     }
-    
+
     public String layTenHienThi() {
         return nhanVien != null ? nhanVien.hoTen() : "";
     }
-    
+
     public boolean kiemTraCo(Quyen quyen) {
         return cacQuyen != null && cacQuyen.contains(quyen);
     }

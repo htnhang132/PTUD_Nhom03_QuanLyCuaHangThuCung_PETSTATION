@@ -7,7 +7,6 @@ import com.petstation.service.ThongKeService;
 
 import java.util.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho doanh thu báo cáo vùng hiển thị. */
 public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
     public ThongKeDoanhThuPanel() {
         super(

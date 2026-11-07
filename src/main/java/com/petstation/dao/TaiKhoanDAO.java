@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-/** Thao tác dữ liệu cho TaiKhoan; service gọi qua hợp đồng này. */
 public interface TaiKhoanDAO {
     Optional<TaiKhoan> timTheoTenDangNhap(Connection ketNoi, String tenDangNhap) throws Exception;
 

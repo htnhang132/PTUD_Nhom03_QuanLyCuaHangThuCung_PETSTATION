@@ -27,35 +27,21 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho khách hàng bộ chọn.
- *
- * <p>Chọn khách cho hóa đơn bằng MỘT ô tìm (SĐT, mã hoặc tên). Chọn xong hiện hạng, điểm và ô "Dùng
- * điểm". Không chọn thì là khách lẻ.
- */
 public final class BoChonKhachHang extends JPanel {
-    /** Bán hàng. */
     private final GioHang banHang;
 
-    /** Khi thay đổi. */
     private final Runnable khiThayDoi;
 
-    /** Đầu vào. */
     private final JTextField txtDauVao = new JTextField();
 
-    /** Nhãn. */
     private final JPanel pnlNhan = new JPanel();
 
-    /** Văn bản nhãn. */
     private final JLabel lblVanBanNhan = new JLabel();
 
-    /** Điểm. */
     private final JSpinner spnDiem = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
 
-    /** Điểm gợi ý. */
     private final JLabel lblDiemGoiY = new JLabel();
 
-    /** Đang cập nhật. */
     private boolean dangCapNhat;
 
     public BoChonKhachHang(GioHang banHang, Runnable khiThayDoi) {
@@ -65,7 +51,6 @@ public final class BoChonKhachHang extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Nhãn.
         JLabel lblNhan =
                 new JLabel("Khách hàng (SĐT, mã hoặc tên — Enter để tìm; bỏ trống = khách lẻ)");
         lblNhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
@@ -80,7 +65,7 @@ public final class BoChonKhachHang extends JPanel {
         txtDauVao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         txtDauVao.getAccessibleContext().setAccessibleName("Tìm khách hàng");
         txtDauVao.addActionListener(suKien -> timKiem());
-        // Tìm.
+
         JButton btnTim = new JButton("Tìm");
         btnTim.setFocusPainted(false);
         btnTim.addActionListener(suKien -> timKiem());
@@ -100,13 +85,12 @@ public final class BoChonKhachHang extends JPanel {
         JButton btnXoa = new JButton("Bỏ chọn");
         btnXoa.setFocusPainted(false);
         btnXoa.addActionListener(suKien -> xoa());
-     // Khu vực thông tin sử dụng điểm và đổi voucher.
+
         JPanel pnlSuDungDiem = new JPanel();
         pnlSuDungDiem.setOpaque(false);
         pnlSuDungDiem.setLayout(
                 new BoxLayout(pnlSuDungDiem, BoxLayout.Y_AXIS));
 
-        // Nội dung đổi điểm.
         JLabel lblNhanSuDung =
                 new JLabel("Đổi 200 điểm → voucher Spa 150.000đ / 60 ngày");
         lblNhanSuDung.setFont(
@@ -116,7 +100,6 @@ public final class BoChonKhachHang extends JPanel {
         pnlSuDungDiem.add(lblNhanSuDung);
         pnlSuDungDiem.add(Box.createVerticalStrut(4));
 
-        // Nút đổi voucher nằm riêng một hàng.
         JButton btnDoiVoucher = new JButton("Đổi voucher");
         btnDoiVoucher.setFocusPainted(false);
         btnDoiVoucher.addActionListener(e -> doiVoucher());
@@ -129,7 +112,6 @@ public final class BoChonKhachHang extends JPanel {
 
         pnlSuDungDiem.add(pnlDongDoiVoucher);
 
-        // Khu vực thông tin khách hàng.
         JPanel pnlVanBan = new JPanel();
         pnlVanBan.setOpaque(false);
         pnlVanBan.setLayout(
@@ -176,15 +158,14 @@ public final class BoChonKhachHang extends JPanel {
     }
 
     private void timKiem() {
-        // Từ khóa.
         String tuKhoa = txtDauVao.getText().trim();
         if (tuKhoa.isEmpty()) {
             xoa();
             return;
         }
-        // Các chữ số.
+
         String cacChuSo = tuKhoa.replaceAll("[\\s.]", "");
-        // Các kết quả.
+
         List<Object[]> cacKetQua = new ArrayList<>();
         for (Object[] dongDuLieu : DanhMucService.layKhachHang()) {
             if ("Ngừng hoạt động".equals(dongDuLieu[8])) continue;
@@ -227,10 +208,9 @@ public final class BoChonKhachHang extends JPanel {
             }
             return;
         }
-        // Đã chọn.
+
         Object[] daChon = cacKetQua.get(0);
         if (cacKetQua.size() > 1) {
-            // Các lựa chọn.
             String[] cacLuaChon =
                     cacKetQua.stream()
                             .map(
@@ -242,7 +222,7 @@ public final class BoChonKhachHang extends JPanel {
                                                     + dongDuLieu[2]
                                                     + ")")
                             .toArray(String[]::new);
-            // Chọn.
+
             Object chon =
                     JOptionPane.showInputDialog(
                             this,
@@ -255,7 +235,7 @@ public final class BoChonKhachHang extends JPanel {
             if (chon == null) return;
             for (int chiSo = 0;
                     chiSo < cacLuaChon.length;
-                    chiSo++) 
+                    chiSo++)
             if (cacLuaChon[chiSo].equals(chon)) daChon = cacKetQua.get(chiSo);
         }
         banHang.datKhachHang(
@@ -274,17 +254,10 @@ public final class BoChonKhachHang extends JPanel {
         khiThayDoi.run();
     }
 
-    /**
-     * Đồng bộ trong BoChonKhachHang.
-     *
-     * <p>Đồng bộ giao diện theo hóa đơn hiện tại (ví dụ sau khi thanh toán xong hóa đơn được xóa).
-     */
     public void dongBo() {
-        // Có.
         boolean co = !banHang.layMaKhachHang().isEmpty();
         pnlNhan.setVisible(co);
         if (co) {
-            // Hạng.
             String hang = "";
             for (Object[] dongDuLieu : DanhMucService.layKhachHang())
                 if (dongDuLieu[0].equals(banHang.layMaKhachHang()))
@@ -297,7 +270,7 @@ public final class BoChonKhachHang extends JPanel {
                             + banHang.layKhachHangDiem()
                             + " điểm");
             dangCapNhat = true;
-            // Lớn nhất.
+
             long lonNhat =
                     Math.max(
                             0,

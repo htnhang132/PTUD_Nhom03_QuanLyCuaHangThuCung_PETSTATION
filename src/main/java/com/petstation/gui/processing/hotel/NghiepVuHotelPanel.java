@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
-/** Cung cấp giao diện và xử lý tương tác cho Hotel nghiệp vụ vùng hiển thị. */
 public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     protected NghiepVuHotelPanel(
             LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
@@ -154,9 +153,9 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         long so = Long.parseLong(input.trim());
         if (so <= 0 || so > thieu)
             throw new IllegalArgumentException("Số thu vượt phần cọc còn thiếu.");
-        // QR hiển thị mã hợp đồng để dễ đối chiếu khoản chuyển.
+
         String maHopDong = layNoiDungDongChon(1);
-        // Mỗi lần thu vẫn có khóa riêng để cho phép thu cọc nhiều đợt trên cùng hợp đồng.
+
         String khoa = "COC" + UUID.randomUUID().toString().replace("-", "").substring(0, 22);
         var dong =
                 com.petstation.gui.components.common.ThuTienDialog.nhap(
@@ -179,7 +178,6 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     protected void ghiNhatKy() {
-        // Hợp đồng lưu trú.
         long hopDongLuuTru = layDongChon();
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(

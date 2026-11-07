@@ -5,36 +5,27 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-/**
- * Thực thể Phân ca / Lịch làm việc khớp bảng [lich_lam_viec].
- * Khóa chính: maLichLamViec.
- * Quan hệ kết hợp với đối tượng NhanVien và CaLamViec.
- */
 public class LichLamViec implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã lịch làm việc (ví dụ: LLV000001). */
     private String maLichLamViec;
-    /** Quan hệ kết hợp: Lịch làm việc của một Nhân viên. */
+
     private NhanVien nhanVien;
-    /** Quan hệ kết hợp: Lịch làm việc thuộc một Ca làm việc. */
+
     private CaLamViec caLamViec;
     private LocalDate ngayLam;
     private String trangThai;
     private String loai;
 
-    /** Constructor mặc định. */
     public LichLamViec() {
         this.trangThai = "DANG_MO";
     }
 
-    /** Constructor chỉ có khóa chính. */
     public LichLamViec(String maLichLamViec) {
         this();
         setMaLichLamViec(maLichLamViec);
     }
 
-    /** Constructor chuẩn OOP nhận khóa chính maLichLamViec và các đối tượng NhanVien, CaLamViec. */
     public LichLamViec(
             String maLichLamViec,
             NhanVien nhanVien,
@@ -51,7 +42,6 @@ public class LichLamViec implements Serializable {
         setLoai(loai);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public LichLamViec(long id) {
         this();
         setId(id);
@@ -78,14 +68,9 @@ public class LichLamViec implements Serializable {
         this(id, new NhanVien(nhanVienId), new CaLamViec(caLamViecId), ngayLam, trangThai, loai);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra lịch làm việc có phải trong ngày hôm nay hay không (dẫn xuất). */
     public boolean kiemTraNgayLamHomNay() {
         return ngayLam != null && ngayLam.equals(LocalDate.now());
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaLichLamViec() {
         if (this.maLichLamViec != null && !this.maLichLamViec.isBlank()) {
@@ -131,8 +116,6 @@ public class LichLamViec implements Serializable {
     public void setLoai(String loai) { this.loai = loai; }
     public void datLoai(String loai) { setLoai(loai); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maLichLamViec); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -155,8 +138,6 @@ public class LichLamViec implements Serializable {
     public long caLamViecId() { return getCaLamViecId(); }
     public void setCaLamViecId(long caLamViecId) { this.caLamViec = new CaLamViec(caLamViecId); }
     public void datCaLamViecId(long caLamViecId) { setCaLamViecId(caLamViecId); }
-
-    // ==================== EQUALS & HASHCODE THEO KHÓA PHỨC HỢP (nhanVien + ngayLam + caLamViec) ====================
 
     @Override
     public boolean equals(Object o) {

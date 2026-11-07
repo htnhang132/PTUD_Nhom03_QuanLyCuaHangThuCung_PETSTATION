@@ -24,12 +24,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 			String[] theCacTieuDe,
 			String[] theCacGiaTri) {}
 
-	/**
-	 * Cung cấp giao diện và xử lý tương tác cho hiển thị.
-	 *
-	 * @param ten tên
-	 * @param tao tạo
-	 */
 	public record KieuHienThi(
 			String ten,
 			Function<KhoangNgay, DuLieu> tao,
@@ -140,7 +134,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		top.add(pnlCacThe);
 		DinhDangBang.apDung(tblBang);
 
-		// Biểu đồ cột có thanh cuộn ngang khi nhiều mốc thời gian, không cuộn dọc
 		JScrollPane bar =
 				new JScrollPane(
 						bieuDo,
@@ -150,7 +143,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		bar.getViewport().setBackground(Color.WHITE);
 		bar.getHorizontalScrollBar().setUnitIncrement(24);
 
-		// Card bao bọc biểu đồ cột
 		JPanel pnlCot = layThe(new BorderLayout(0, 8));
 		pnlCot.setBorder(
 				BorderFactory.createCompoundBorder(
@@ -162,7 +154,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		pnlCot.add(lblTieuDeCot, BorderLayout.NORTH);
 		pnlCot.add(bar, BorderLayout.CENTER);
 
-		// Card bao bọc biểu đồ tròn
 		JPanel pnlTron = layThe(new BorderLayout(0, 8));
 		pnlTron.setBorder(
 				BorderFactory.createCompoundBorder(
@@ -170,11 +161,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 						BorderFactory.createEmptyBorder(10, 12, 10, 12)));
 		pnlTron.add(tron, BorderLayout.CENTER);
 
-
-		// ==========================================
-		// KHU VỰC BIỂU ĐỒ: TỶ LỆ CỐ ĐỊNH 58:42
-		// Không sử dụng JSplitPane để tránh kéo lệch biểu đồ
-		// ==========================================
 		JPanel khuVucBieuDo = taoVungTrongSuot(new GridBagLayout());
 		khuVucBieuDo.setMinimumSize(new Dimension(300, 250));
 		khuVucBieuDo.setPreferredSize(new Dimension(760, 270));
@@ -199,11 +185,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 
 		khuVucBieuDo.add(pnlTron, gbcTron);
 
-
-		// ==========================================
-		// KHU VỰC NỘI DUNG: BẢNG + BIỂU ĐỒ
-		// Bảng hiển thị tối thiểu 5 dòng dữ liệu, cố định hàng tiêu đề cột ở đầu bảng
-		// ==========================================
 		int chieuCao5Dong = tblBang.getRowHeight() * 5;
 		int chieuCaoTieuDeCot = tblBang.getTableHeader().getPreferredSize().height;
 		int chieuCaoBangToiThieu = chieuCao5Dong + chieuCaoTieuDeCot + 6;
@@ -226,15 +207,12 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		scrBang.setMinimumSize(new Dimension(300, chieuCaoBangToiThieu));
 		scrBang.setPreferredSize(new Dimension(760, chieuCaoBangToiThieu));
 
-		// Bố cục theo chiều dọc
 		JPanel khuVucNoiDung = taoVungTrongSuot(new GridBagLayout());
 
-		// Tỷ lệ phụ thuộc vào uuTienBang
 		double tyLeVungTren = 0.56;
 		double tyLeVungDuoi = 0.44;
 
 		if (uuTienBang) {
-			// Ưu tiên bảng: bảng ở trên, biểu đồ ở dưới
 			themVungTheoTyLe(
 					khuVucNoiDung,
 					scrBang,
@@ -249,7 +227,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 					tyLeVungDuoi
 					);
 		} else {
-			// Ưu tiên biểu đồ: biểu đồ ở trên, bảng ở dưới
 			themVungTheoTyLe(
 					khuVucNoiDung,
 					khuVucBieuDo,
@@ -313,13 +290,11 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		dungLai();
 	}
 
-
 	private static void themVungTheoTyLe(
 			JPanel parent,
 			Component component,
 			int row,
 			double weightY) {
-
 		GridBagConstraints gbc = new GridBagConstraints();
 
 		gbc.gridx = 0;
@@ -397,7 +372,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 	}
 
 	protected String layTieuDeBieuDo() {
-		// TODO Auto-generated method stub
 		return "BIỂU ĐỒ DIỄN BIẾN (Nhấp vào cột để xem chứng từ chi tiết)";
 	}
 
@@ -479,6 +453,10 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 
 	private void veBieuDo() {
 		if (duLieu == null) return;
+		boolean temporal =
+				duLieu.bieuDoCacNhan().length > 0
+				&& duLieu.bieuDoCacNhan()[0].matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*");
+		cboTongHop.setEnabled(temporal);
 		tongHop =
 				TongHopBieuDo.tao(
 						duLieu.bieuDoCacNhan(),
@@ -487,9 +465,6 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 						String.valueOf(cboTongHop.getSelectedItem()));
 		bieuDo.datDuLieu(tongHop.nhan(), tongHop.giaTri(), duLieu.tienTe(), duLieu.donVi());
 		pieDocs = null;
-		boolean temporal =
-				duLieu.bieuDoCacNhan().length > 0
-				&& duLieu.bieuDoCacNhan()[0].matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*");
 				boolean goods =
 						tenXuat.contains("hàng_hóa")
 						&& "Sản phẩm bán chạy".equals(cboHienThiHop.getSelectedItem());

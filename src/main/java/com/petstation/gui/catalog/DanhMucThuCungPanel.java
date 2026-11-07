@@ -8,7 +8,6 @@ import com.petstation.service.DanhMucService;
 
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho thú cưng danh mục vùng hiển thị. */
 public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
     public DanhMucThuCungPanel() {
         super(
@@ -48,11 +47,11 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Giới tính", Kieu.HOP_CHON).datLuaChon("Đực", "Cái"),
                 TruongDuLieu.tao("Ngày sinh", Kieu.NGAY),
                 TruongDuLieu.tao("Cân nặng (kg)", Kieu.VAN_BAN),
-                TruongDuLieu.tao("Màu lông", Kieu.VAN_BAN),
+                TruongDuLieu.tao("Màu lông", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Chủ nuôi", Kieu.HOP_CHON).layDong(DanhMucService::layLuaChonKhachHang).batBuoc(),
-                TruongDuLieu.tao("Tính trạng sức khỏe", Kieu.VUNG),
-                TruongDuLieu.tao("Dị ứng / Bệnh lý", Kieu.VUNG),
-                TruongDuLieu.tao("Tính cách", Kieu.VUNG),
+                TruongDuLieu.tao("Tính trạng sức khỏe", Kieu.VUNG).an(),
+                TruongDuLieu.tao("Dị ứng / Bệnh lý", Kieu.VUNG).an(),
+                TruongDuLieu.tao("Tính cách", Kieu.VUNG).an(),
                 TruongDuLieu.tao("Ảnh đại diện", Kieu.TEP).an(),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON).datLuaChon("Đang hoạt động", "Ngừng hoạt động"));
     }

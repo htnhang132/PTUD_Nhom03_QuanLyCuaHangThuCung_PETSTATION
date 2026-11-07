@@ -11,7 +11,6 @@ import com.petstation.model.Quyen;
 
 import java.util.Arrays;
 
-/** Đọc và cập nhật các tham số vận hành đang lưu trong bảng cai_dat. */
 public final class CaiDatService {
     private static final CaiDatDAO caiDatDAO = new CaiDatDAOImpl();
 
@@ -46,7 +45,6 @@ public final class CaiDatService {
         };
     }
 
-    /** Lưu toàn bộ biểu mẫu trong một transaction, tránh lưu dở tham số/ngân hàng/máy in. */
     public static void luuTatCa(java.util.Map<String, String> giaTri, String mayIn) {
         yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         java.util.Map<String, String> chuanHoa = new java.util.LinkedHashMap<>();
@@ -142,9 +140,22 @@ public final class CaiDatService {
     public static String lay(String khoa) {
         String khoaChuan = chuanHoaKhoa(khoa);
         Object giaTri = caiDatDAO.timGiaTri(khoaChuan);
-        if (giaTri == null)
+        if (giaTri == null) {
+            String macDinh =
+                    switch (khoaChuan) {
+                        case "NGUONG_TON_KHO_THAP" -> "10";
+                        case "SO_NGAY_CANH_BAO_HET_HAN" -> "30";
+                        case "PHI_TRA_PHONG_TRE" -> "100000";
+                        case "MAY_IN" -> "";
+                        case "THUE_VAT_PHAN_TRAM" -> "8";
+                        case "HAN_MUC_XUAT_HUY_CAN_DUYET" -> "500000";
+                        case "SO_NGAY_DOI_TRA" -> "3";
+                        default -> null;
+                    };
+            if (macDinh != null) return macDinh;
             throw new IllegalStateException(
                     "Thiếu cài đặt " + khoaChuan + ". Chạy database/002_sample_data.sql.");
+        }
         return chuyenThanhChuoi(giaTri);
     }
 

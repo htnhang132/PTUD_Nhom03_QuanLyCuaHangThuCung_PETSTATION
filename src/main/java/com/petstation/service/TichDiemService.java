@@ -9,7 +9,6 @@ import com.petstation.model.Quyen;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Quy tắc tích điểm và đổi voucher Spa của khách hàng. */
 public final class TichDiemService {
     private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
 
@@ -26,7 +25,6 @@ public final class TichDiemService {
                 && ((Number) dong.get(0)[0]).longValue() == 0;
     }
 
-    /** Khóa thao tác được giữ nguyên khi gửi lại để tránh trừ điểm hai lần. */
     public static String doiVoucher(String maKhachHang, String khoa) {
         PhienDangNhapService.yeuCau(Quyen.BAN_HANG);
         if (khoa == null || khoa.isBlank() || khoa.length() > 80)
@@ -53,10 +51,6 @@ public final class TichDiemService {
                 });
     }
 
-    /**
-     * Kiểm tra trước khi hiển thị giảm giá; thanh toán còn giữ khóa và nhận lượt dùng trong
-     * transaction.
-     */
     public static long kiemTraVoucher(String ma, String khachHang, String nguon, long tamTinh) {
         PhienDangNhapService.layPhien();
         var cacDong = tichDiemDAO.timVoucher(ma);

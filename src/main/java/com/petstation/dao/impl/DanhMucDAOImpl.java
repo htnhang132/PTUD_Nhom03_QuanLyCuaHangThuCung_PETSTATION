@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/** Thực hiện truy vấn JDBC cho JDBC danh mục DAO. */
 public final class DanhMucDAOImpl implements DanhMucDAO {
     private static final DateTimeFormatter DINH_DANG_ISO =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
@@ -83,7 +82,6 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
     }
 
     public List<Object[]> nap(LoaiDanhMuc loai) {
-        // SQL.
         String sql =
                 switch (loai) {
                     case KHACH_HANG ->
@@ -227,7 +225,6 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
             if (dong.isBlank()) continue;
             String[] vungDangXet = dong.split("\\|", -1);
             if (vungDangXet.length == 5) {
-                // Chuẩn hóa cả dữ liệu SQL truyền trực tiếp qua đường lưu.
                 ketQua.add(chuyenBangGiaSpaSangCSDL(chuyenBangGiaSpaSangUI(dong)));
                 continue;
             }

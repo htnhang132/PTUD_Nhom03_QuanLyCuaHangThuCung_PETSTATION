@@ -9,14 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Thực thể Sản phẩm ánh xạ bảng [san_pham] trong SQL Server.
- * Khóa chính: maSanPham.
- */
 public class SanPham implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã sản phẩm (ví dụ: SP000015). */
     private String maSanPham;
     private String barcode;
     private String tenSanPham;
@@ -36,10 +31,8 @@ public class SanPham implements Serializable {
     private LocalDateTime thoiDiemTao;
     private byte[] phienBanBanGhi;
 
-    /** Quan hệ 1-nhiều: Một sản phẩm gồm nhiều lô hàng tồn kho. */
     private List<LoHang> danhSachLoHang = new ArrayList<>();
 
-    /** Constructor mặc định. */
     public SanPham() {
         this.canDonThuoc = false;
         this.dangHoatDong = true;
@@ -49,13 +42,11 @@ public class SanPham implements Serializable {
         this.giaVon = BigDecimal.ZERO;
     }
 
-    /** Constructor chỉ có khóa chính (dùng khi tham chiếu đối tượng từ ChiTietHoaDon, LoHang...). */
     public SanPham(String maSanPham) {
         this();
         setMaSanPham(maSanPham);
     }
 
-    /** Constructor đầy đủ các thuộc tính chính. */
     public SanPham(String maSanPham, String tenSanPham, String nhomHang, String donVi, BigDecimal giaBan) {
         this();
         setMaSanPham(maSanPham);
@@ -65,7 +56,6 @@ public class SanPham implements Serializable {
         setGiaBan(giaBan);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public SanPham(Long id) {
         this();
         setId(id);
@@ -79,9 +69,6 @@ public class SanPham implements Serializable {
         setGiaBan(giaBan);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tổng tồn kho khả dụng (thuộc tính dẫn xuất từ danh sách các lô hàng còn hạn). */
     public int tinhTongTonKhoKhaDung() {
         if (danhSachLoHang == null || danhSachLoHang.isEmpty()) {
             return 0;
@@ -99,20 +86,16 @@ public class SanPham implements Serializable {
         return tong;
     }
 
-    /** Kiểm tra sản phẩm có đang chạm ngưỡng cảnh báo tồn kho thấp hay không (dẫn xuất). */
     public boolean kiemTraTonKhoThap() {
         int nguong = nguongTonThap == null ? 5 : nguongTonThap;
         return tinhTongTonKhoKhaDung() <= nguong;
     }
 
-    /** Tính lợi nhuận dự kiến trên 1 đơn vị sản phẩm (dẫn xuất: giaBan - giaVon). */
     public BigDecimal tinhLoiNhuanDonVi() {
         BigDecimal ban = giaBan == null ? BigDecimal.ZERO : giaBan;
         BigDecimal von = giaVon == null ? BigDecimal.ZERO : giaVon;
         return ban.subtract(von);
     }
-
-    // ==================== GETTER & SETTER (CÓ KIỂM TRA RÀNG BUỘC) ====================
 
     public String getMaSanPham() {
         return maSanPham;
@@ -444,8 +427,6 @@ public class SanPham implements Serializable {
         this.danhSachLoHang = danhSachLoHang == null ? new ArrayList<>() : new ArrayList<>(danhSachLoHang);
     }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, maSanPham);
     }
@@ -471,8 +452,6 @@ public class SanPham implements Serializable {
     public void datId(Long id) {
         setId(id);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maSanPham) ====================
 
     @Override
     public boolean equals(Object o) {

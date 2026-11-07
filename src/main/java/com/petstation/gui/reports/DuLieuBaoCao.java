@@ -7,7 +7,6 @@ import com.petstation.util.TienTe;
 import java.util.*;
 import java.util.function.Function;
 
-/** Cung cấp giao diện và xử lý tương tác cho báo cáo các kiểu hiển thị. */
 public final class DuLieuBaoCao {
     private DuLieuBaoCao() {}
 

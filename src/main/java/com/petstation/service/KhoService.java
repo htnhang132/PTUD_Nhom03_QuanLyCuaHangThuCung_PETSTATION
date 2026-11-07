@@ -12,9 +12,12 @@ import com.petstation.model.Quyen;
 import java.time.*;
 import java.util.*;
 
-/** Kiểm tra nghiệp vụ nhập kho, xuất hủy và kiểm kê trước khi lưu dữ liệu. */
 public final class KhoService {
-    private static final KhoDAO khoDAO = new KhoDAOImpl();
+    private static KhoDAO khoDAO = new KhoDAOImpl();
+
+    public static void cauHinhDAO(KhoDAO dao) {
+        if (dao != null) khoDAO = dao;
+    }
 
     public static long nhapKho(
             String nhaCungCap,
@@ -39,10 +42,10 @@ public final class KhoService {
                                 "Sản phẩm theo dõi HSD cần ngày hết hạn còn hiệu lực.");
                     if (khoDAO.demNhaCungCapDangHopTac(chuoi) == 0)
                         throw new IllegalArgumentException("Nhà cung cấp đã ngừng hợp tác.");
-                    // Biên lai.
+
                     long bienLai = khoDAO.themNhapKho(
                             taoMa("PN"), chuoi, layIdTaiKhoan(), soLuong * giaNhap, daTra);
-                    // Các lô hàng.
+
                     List<Object[]> cacLoHang = khoDAO.timNhapKho(vungDangXet, loHang);
                     String maLo;
                     if (cacLoHang.isEmpty()) {
@@ -50,10 +53,9 @@ public final class KhoService {
                         List<Object[]> vuaTao = khoDAO.timNhapKho(vungDangXet, loHang);
                         maLo = vuaTao.isEmpty() ? loHang : String.valueOf(vuaTao.get(0)[0]);
                     } else {
-                        // Giá trị sau.
                         Object[] giaTriSau = cacLoHang.get(0);
                         maLo = String.valueOf(giaTriSau[0]);
-                        // Cũ.
+
                         LocalDate cu = giaTriSau[1] == null
                                 ? null
                                 : ((java.sql.Date) giaTriSau[1]).toLocalDate();
@@ -78,13 +80,12 @@ public final class KhoService {
             throw new IllegalArgumentException("Cần lý do xuất kho.");
         return thucHienGiaoDich(
                 ketNoi -> {
-                    // Các lô hàng.
                     List<Object[]> cacLoHang = khoDAO.timXuatHuy(loHang);
                     if (cacLoHang.isEmpty() || layGiaTri(cacLoHang.get(0)[0]) < soLuong)
                         throw new IllegalArgumentException("Không đủ tồn lô.");
-                    // Giá nhập.
+
                     long giaNhap = layGiaTri(cacLoHang.get(0)[1]) * soLuong;
-                    // Xuất kho.
+
                     long xuatKho = khoDAO.themXuatHuy(taoMa("PX"), layIdTaiKhoan(), lyDo, giaNhap);
                     khoDAO.capNhatXuatHuy(xuatKho, loHang, soLuong, giaNhap);
                     if (giaNhap >= CaiDatService.ghiGioiHanHuyPheDuyet())
@@ -249,7 +250,7 @@ public final class KhoService {
                     List<Object[]> cacDong = khoDAO.timKiemKe(loHang);
                     if (cacDong.isEmpty())
                         throw new IllegalArgumentException("Không tìm thấy lô.");
-                    // Đặt phòng.
+
                     int datPhong = ((Number) cacDong.get(0)[0]).intValue();
                     if (datPhong != thucTe && lyDo.isBlank())
                         throw new IllegalArgumentException("Cần lý do chênh lệch.");

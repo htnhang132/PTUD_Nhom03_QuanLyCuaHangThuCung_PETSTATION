@@ -17,29 +17,21 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/** Cung cấp giao diện và xử lý tương tác cho nghiệp vụ bảng vùng hiển thị. */
 public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhCongCu {
-    /** Kiểu nghiệp vụ. */
     protected final LoaiNghiepVu kieuNghiepVu;
 
-    /** Bán hàng. */
     protected final GioHang banHang;
 
-    /** Điều hướng. */
     protected final Consumer<MaManHinh> dieuHuong;
 
-    /** Mô hình. */
     protected final DefaultTableModel moHinh;
 
-    /** Bảng. */
     protected final JTable tblBang;
 
-    /** Các thao tác. */
     protected final JPanel pnlCacThaoTac;
 
     protected final JTextField txtTimKiem;
 
-    /** Số lượng. */
     private final JLabel lblSoLuong = new JLabel();
 
     protected BangNghiepVuPanel(
@@ -47,16 +39,16 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         this.kieuNghiepVu = kieuNghiepVu;
         this.banHang = banHang;
         this.dieuHuong = dieuHuong;
-        // Hiển thị.
+
         NghiepVuService.DinhNghia hienThi = NghiepVuService.layDinhNghia(kieuNghiepVu);
         setLayout(new BorderLayout(0, 12));
-        // Trên.
+
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout());
         pnlTren.add(
                 ThanhDanhSach.tieuDe(taoTieuDeMuc(hienThi.tieuDe()), lblSoLuong),
                 BorderLayout.NORTH);
         pnlCacThaoTac = new ThanhDanhSach();
-        // Tìm kiếm.
+
         txtTimKiem = taoOTimKiem("Tìm trong danh sách...");
         pnlCacThaoTac.add(txtTimKiem);
         NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -75,19 +67,12 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         add(pnlTren, BorderLayout.NORTH);
         moHinh =
                 new DefaultTableModel(hienThi.cacCot(), 0) {
-                    /**
-                     * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                     *
-                     * @param dongDuLieu dòng dữ liệu
-                     * @param giaTriDangXet giá trị đang xét
-                     * @return kết quả kiểm tra điều kiện xử lý
-                     */
                     @Override
                     public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                         return false;
                     }
                 };
-        // Cuộn.
+
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         tblBang.removeColumn(tblBang.getColumnModel().getColumn(0));
@@ -99,7 +84,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                                         ThanhDanhSach.soKetQua(
                                                 tblBang.getRowCount(), moHinh.getRowCount())));
         add(scrCuon, BorderLayout.CENTER);
-        // Xuất.
+
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuat.addActionListener(suKien -> XuatExcel.xuatBang(this, tblBang, hienThi.tieuDe()));
         pnlCacThaoTac.add(btnXuat);
@@ -122,7 +107,6 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
     }
 
     protected void themNut(JPanel pnlVungChua, String nhan, Runnable thaoTac) {
-        // Nút.
         NutDinhDang btnNut =
                 new NutDinhDang(
                         nhan,
@@ -150,11 +134,6 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
 
     private boolean dangTai;
 
-    /**
-     * Các màn mặc định vẫn lấy dữ liệu như trước.
-     * Khi ghi đè, giữ cấu trúc cột và không truy cập thành phần Swing vì hàm có thể chạy nền.
-     * Hàm cũng có thể được gọi trong lúc constructor lớp cha đang chạy.
-     */
     protected List<Object[]> layDuLieu() {
         return NghiepVuService.layCacDong(kieuNghiepVu);
     }
@@ -249,22 +228,14 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
     }
 
     protected void hienThiChiTiet(String tieuDe, String[] cacCot, List<Object[]> cacDong) {
-        // Chi tiết.
         DefaultTableModel chiTiet =
                 new DefaultTableModel(cacDong.toArray(Object[][]::new), cacCot) {
-                    /**
-                     * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                     *
-                     * @param dongDuLieu dòng dữ liệu
-                     * @param giaTriDangXet giá trị đang xét
-                     * @return kết quả kiểm tra điều kiện xử lý
-                     */
                     @Override
                     public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                         return false;
                     }
                 };
-        // Cuộn.
+
         JScrollPane scrCuon = taoBangDinhDang(chiTiet);
         scrCuon.setPreferredSize(new Dimension(800, 320));
         HopThoai.hienThiThongBaoHopThoai(this, scrCuon, tieuDe, JOptionPane.PLAIN_MESSAGE);

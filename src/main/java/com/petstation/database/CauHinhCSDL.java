@@ -8,14 +8,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Đọc cấu hình SQL Server cục bộ; biến môi trường được ưu tiên hơn tệp.
- *
- * @param url URL
- * @param nguoiDung người dùng
- * @param matKhau mật khẩu
- * @param thoiGianChoDangNhapGiay thời gian chờ đăng nhập giây
- */
 public record CauHinhCSDL(
         String url, String nguoiDung, String matKhau, int thoiGianChoDangNhapGiay) {
     public static CauHinhCSDL nap() {
@@ -23,7 +15,6 @@ public record CauHinhCSDL(
     }
 
     static CauHinhCSDL nap(Map<String, String> moiTruong, Path thuMuc) {
-        // Các thuộc tính.
         Properties cacThuocTinh = new Properties();
         String chiDinh = moiTruong.get("PETSTATION_DB_CONFIG");
         Path tepCauHinh =
@@ -44,14 +35,13 @@ public record CauHinhCSDL(
             throw new IllegalStateException("Không thể đọc cấu hình cơ sở dữ liệu.", ngoaiLe);
         }
 
-        // URL.
         String url = layGiaTri(moiTruong, "PETSTATION_DB_URL", cacThuocTinh, "db.url", "");
-        // Người dùng.
+
         String nguoiDung = layGiaTri(moiTruong, "PETSTATION_DB_USER", cacThuocTinh, "db.user", "");
-        // Mật khẩu.
+
         String matKhau =
                 layGiaTri(moiTruong, "PETSTATION_DB_PASSWORD", cacThuocTinh, "db.password", "");
-        // Thời gian chờ.
+
         int thoiGianCho =
                 Integer.parseInt(
                         layGiaTri(
@@ -69,7 +59,6 @@ public record CauHinhCSDL(
         return new CauHinhCSDL(url, nguoiDung, matKhau, thoiGianCho);
     }
 
-    /** Không để record tự sinh toString làm lộ mật khẩu khi debug/log. */
     @Override
     public String toString() {
         return "CauHinhCSDL[cauHinh=***, thoiGianChoDangNhapGiay=" + thoiGianChoDangNhapGiay + "]";
@@ -81,7 +70,6 @@ public record CauHinhCSDL(
             Properties cacThuocTinh,
             String thuocTinhKhoa,
             String thayThe) {
-        // Giá trị môi trường.
         String giaTriMoiTruong = moiTruong.get(moiTruongKhoa);
         if (giaTriMoiTruong != null && !giaTriMoiTruong.isBlank()) {
             return giaTriMoiTruong.trim();

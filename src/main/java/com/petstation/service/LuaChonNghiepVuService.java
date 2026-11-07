@@ -5,7 +5,6 @@ import com.petstation.dao.impl.LuaChonNghiepVuDAOImpl;
 
 import java.util.List;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho nghiệp vụ lựa chọn dịch vụ. */
 public final class LuaChonNghiepVuService {
     private static final LuaChonNghiepVuDAO luaChonNghiepVuDAO = new LuaChonNghiepVuDAOImpl();
 

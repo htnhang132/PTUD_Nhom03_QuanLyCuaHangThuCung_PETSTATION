@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** Hồ sơ tiêm phòng được lưu trực tiếp trong bảng thu_cung (tiem_chung, so_mui_tiem, ngay_tiem_gan_nhat). */
 public final class TiemPhongDAOImpl implements TiemPhongDAO {
     public TiemPhongDAOImpl() {}
 

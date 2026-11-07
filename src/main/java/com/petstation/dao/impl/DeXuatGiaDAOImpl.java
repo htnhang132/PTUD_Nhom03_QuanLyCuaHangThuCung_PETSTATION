@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/** Giá đề xuất được lưu trực tiếp trong cột de_xuat_gia của bảng san_pham. */
 public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     private static final DateTimeFormatter DINH_DANG_ISO =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");

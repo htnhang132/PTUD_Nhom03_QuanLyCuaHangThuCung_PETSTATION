@@ -10,7 +10,6 @@ import com.petstation.service.DanhMucService;
 
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho khách hàng danh mục vùng hiển thị. */
 public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
     public DanhMucKhachHangPanel() {
         super(
@@ -22,10 +21,6 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
-    /**
-     * Mở biểu mẫu khách hàng hiện có.
-     * Trả về khách vừa lưu; trả null nếu đóng cửa sổ.
-     */
     public static Object[] moThem(
         java.awt.Component cha,
         String soDienThoai
@@ -44,8 +39,6 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
 
         var cacTruong = taoCacTruong();
 
-        // Trường số điện thoại nằm ở vị trí 2
-        // trong cấu hình danh mục khách hàng hiện tại.
         cacTruong.get(2).datMacDinh(soDienThoai);
 
         var cauHinh = taoCauHinh().xuLySauLuu(
@@ -76,7 +69,6 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục khách hàng", "khách hàng")
                         .themBoLoc("Hạng thành viên", d -> String.valueOf(d[6]))

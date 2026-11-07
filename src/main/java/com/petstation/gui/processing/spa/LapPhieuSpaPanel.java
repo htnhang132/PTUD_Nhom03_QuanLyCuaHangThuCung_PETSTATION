@@ -24,7 +24,6 @@ import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 
-/** Biểu mẫu riêng của Spa; dùng lại danh mục, phân quyền và nghiệp vụ lưu hiện có. */
 public final class LapPhieuSpaPanel extends CoSoPanel {
     private final JTextField txtSoDienThoai = new JTextField(16);
     private final JLabel lblKhachHang = new JLabel("Chưa chọn khách hàng");
@@ -109,7 +108,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         cuon.getVerticalScrollBar().setUnitIncrement(18);
         add(cuon, BorderLayout.CENTER);
         add(thaoTac, BorderLayout.SOUTH);
-
     }
 
     private void themDong(JPanel panel, String nhan, Component dauVao) {
@@ -158,13 +156,12 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
 
     private void treoPhieu() {
         PhieuSpaTreoService.treo(idPhieuTreo, chupNhap());
-        // Chỉ xóa màn nhập sau khi SQL Server đã lưu thành công.
+
         datLaiForm();
         HopThoai.hienThiThanhCong(this, "Đã treo phiếu Spa. Chọn Phiếu đang treo để tiếp tục sau.");
         khiTreo.run();
     }
 
-    /** Dùng khi đóng hộp thoại tiếp nhận để tránh mất nội dung nhập dở. */
     public boolean xacNhanDong() {
         if (!chupNhap().coNoiDung()) return true;
         String[] luaChon = {"Treo phiếu", "Bỏ thay đổi", "Tiếp tục nhập"};
@@ -228,7 +225,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
 
     private void khoiPhucPhieu(long id) {
         PhieuSpaTreo p = PhieuSpaTreoService.lay(id);
-        // Nạp hồ sơ hiện tại trước khi thay biểu mẫu để lỗi không làm mất nội dung đang nhập.
+
         Object[] khach = p.maKhach().isBlank() ? null : DanhMucService.layKhachHang().stream()
             .filter(k -> p.maKhach().equals(String.valueOf(k[0])) && "Đang hoạt động".equals(k[8]))
             .findFirst().orElseThrow(() -> new IllegalArgumentException("Khách của phiếu treo không còn hoạt động."));
@@ -331,7 +328,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     private void timKhach() {
-        // Bỏ lựa chọn cũ trước khi tìm để tránh lập nhầm phiếu cho khách trước.
         if (!maHen.isBlank())
             throw new IllegalArgumentException("Nhấn Lập phiếu mới để chuyển sang khách đến trực tiếp.");
         chonKhach(null);
@@ -388,7 +384,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private void moHoSoThuCung() {
         if (khachHang == null)
             throw new IllegalArgumentException("Chọn khách hàng trước khi thêm thú cưng.");
-        // Dùng nguyên màn hình hiện có. Chọn đúng chủ nuôi đang hiển thị trên phiếu.
+
         HopThoai.hienThiThongTin(this, "Trong hồ sơ thú cưng, chọn chủ nuôi: "
             + khachHang[0] + " - " + khachHang[1]);
         JDialog hoSo = new JDialog(SwingUtilities.getWindowAncestor(this), "Hồ sơ thú cưng", Dialog.ModalityType.APPLICATION_MODAL);
@@ -414,7 +410,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         if (goi == null) throw new IllegalArgumentException("Cần chọn dịch vụ.");
         long id = PhieuSpaTreoService.taoPhieu(idPhieuTreo, thuCung.giaTri(), goi.giaTri(), maHen,
             canNang(), txtGhiChu.getText(), txtYeuCau.getText());
-        // Xóa sau khi lưu thành công để không tạo trùng khi nhấn lại.
+
         khachHang = null;
         datLaiForm();
         HopThoai.hienThiThanhCong(this, "Đã lập phiếu Spa. Có thể xem trong danh sách phiếu Spa.");

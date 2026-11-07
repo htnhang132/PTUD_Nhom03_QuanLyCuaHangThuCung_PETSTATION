@@ -5,7 +5,6 @@ import static com.petstation.database.ThaoTacSQL.*;
 import com.petstation.dao.DonDoiTreoDAO;
 import com.petstation.model.DonDoiTreo;
 
-/** Nháp dùng hóa đơn GIO_TREO hiện có; ghi_chu lưu JSON có phiên bản, không ghi nhận đổi/thu tiền. */
 public final class DonDoiTreoDAOImpl implements DonDoiTreoDAO {
     @Override
     public DonDoiTreo lay(long id) {
@@ -31,7 +30,6 @@ public final class DonDoiTreoDAOImpl implements DonDoiTreoDAO {
 
     @Override
     public void luu(long id, DonDoiTreo don) {
-        // Kiểm tra độ dài trước UPDATE để không mất nội dung khi cột ghi_chu giới hạn 1000 ký tự.
         capNhat("""
                 DECLARE @nhap nvarchar(max) = (SELECT 'DOI_PHU_KIEN' loai, 1 v,
                     CAST(? AS nvarchar(max)) timHoaDon, CAST(? AS bigint) dongGoc,

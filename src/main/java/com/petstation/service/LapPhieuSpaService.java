@@ -6,7 +6,6 @@ import com.petstation.database.ThaoTacSQL;
 import com.petstation.model.Quyen;
 import java.util.List;
 
-/** Ghép các nghiệp vụ Spa đã có; không thay đổi cách lưu của các phân hệ khác. */
 public final class LapPhieuSpaService {
     private static final PhieuTiepNhanSpaDAO dao = new PhieuTiepNhanSpaDAOImpl();
 
@@ -34,7 +33,7 @@ public final class LapPhieuSpaService {
             + "\nYêu cầu khách hàng / vật dụng: " + (yeuCau == null ? "" : yeuCau.trim());
         return ThaoTacSQL.thucHienGiaoDich(c -> {
             long id = SpaService.tiepNhan(maThu, maHen, canNang, ghiChu);
-            // Tiếp nhận từ lịch đã tự thêm gói trong SpaService hiện có.
+
             if (maHen == null || maHen.isBlank()) SpaService.themDichVuSpa(id, maGoi);
             return id;
         });

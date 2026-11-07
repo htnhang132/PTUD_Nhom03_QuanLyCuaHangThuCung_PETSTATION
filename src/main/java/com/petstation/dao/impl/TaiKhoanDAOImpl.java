@@ -16,12 +16,10 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 
-/** Thực hiện truy vấn JDBC cho JDBC người dùng tài khoản DAO. */
 public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     @Override
     public Optional<TaiKhoan> timTheoTenDangNhap(Connection ketNoi, String tenDangNhap)
             throws Exception {
-        // SQL.
         String sql = """
                 SELECT ten_dang_nhap, ma_nhan_vien, mat_khau_hash, vai_tro, trang_thai,
                        so_lan_dang_nhap_sai, khoa_den, bat_buoc_doi_mat_khau
@@ -31,11 +29,10 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, tenDangNhap);
             try (ResultSet ketQua = cauLenh.executeQuery()) {
-                // Chỉ đọc bản ghi khi truy vấn trả về dữ liệu.
                 if (!ketQua.next()) {
                     return Optional.empty();
                 }
-                // Khóa đến lúc.
+
                 Timestamp khoaDenLuc = ketQua.getTimestamp("khoa_den");
                 return Optional.of(
                         new TaiKhoan(
@@ -121,7 +118,6 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     public void ghiNhanDangNhapThatBai(
             Connection ketNoi, String tenDangNhap, int soLuongThatBai, LocalDateTime khoaDenLuc)
             throws Exception {
-        // SQL.
         String sql = "UPDATE tai_khoan SET so_lan_dang_nhap_sai = ?, khoa_den = ? WHERE ten_dang_nhap = ?";
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setInt(1, soLuongThatBai);
@@ -133,7 +129,6 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
 
     @Override
     public void ghiNhanDangNhapThanhCong(Connection ketNoi, String tenDangNhap) throws Exception {
-        // SQL.
         String sql = """
                 UPDATE tai_khoan
                 SET so_lan_dang_nhap_sai = 0, khoa_den = NULL, dang_nhap_cuoi = SYSUTCDATETIME()

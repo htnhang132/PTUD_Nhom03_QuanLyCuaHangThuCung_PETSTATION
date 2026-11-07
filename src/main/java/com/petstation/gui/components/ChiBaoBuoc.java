@@ -8,19 +8,11 @@ import java.util.function.IntConsumer;
 
 import javax.swing.*;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho bước chỉ báo.
- *
- * <p>Thanh các bước của một quy trình. Bước đã qua hiện dấu tick, bước hiện tại tô đỏ.
- */
 public final class ChiBaoBuoc extends JComponent {
-    /** Các bước. */
     private final List<String> cacBuoc;
 
-    /** Hiện tại. */
     private int hienTai;
 
-    /** Khi bấm. */
     private IntConsumer khiBam;
 
     public ChiBaoBuoc(List<String> cacBuoc) {
@@ -29,15 +21,10 @@ public final class ChiBaoBuoc extends JComponent {
         setOpaque(false);
         addMouseListener(
                 new MouseAdapter() {
-                    /**
-                     * Lấy chuột đã bấm trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
                         if (khiBam == null) return;
-                        // Chỉ số.
+
                         int chiSo = layChiSoTai(suKien.getX());
                         if (chiSo >= 0) khiBam.accept(chiSo);
                     }
@@ -53,13 +40,6 @@ public final class ChiBaoBuoc extends JComponent {
         return hienTai;
     }
 
-    /**
-     * Đặt khi bấm trong ChiBaoBuoc.
-     *
-     * <p>Cho phép bấm vào từng bước (dùng trong thanh luồng của khung chính).
-     *
-     * @param khiBam khi bấm
-     */
     public void datKhiBam(IntConsumer khiBam) {
         this.khiBam = khiBam;
         setCursor(
@@ -70,48 +50,46 @@ public final class ChiBaoBuoc extends JComponent {
 
     private int layChiSoTai(int toaDoNgang) {
         if (cacBuoc.isEmpty()) return -1;
-        // Ô.
+
         int o = getWidth() / cacBuoc.size();
-        // Chỉ số.
+
         int chiSo = toaDoNgang / Math.max(o, 1);
         return chiSo >= 0 && chiSo < cacBuoc.size() ? chiSo : -1;
     }
 
     @Override
     protected void paintComponent(Graphics doHoa) {
-        // Đồ họa.
         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
         doHoa2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         doHoa2.setRenderingHint(
                 RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // Số phần tử.
+
         int soPhanTu = cacBuoc.size();
         if (soPhanTu == 0) {
             doHoa2.dispose();
             return;
         }
-        // Ô.
+
         int o = getWidth() / soPhanTu;
-        // Tâm dọc.
+
         int tamDoc = getHeight() / 2;
-        // Dòng dữ liệu.
+
         int dongDuLieu = 11;
         doHoa2.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-        // Thông số phông chữ.
+
         FontMetrics thongSoPhongChu = doHoa2.getFontMetrics();
         for (int chiSo = 0; chiSo < soPhanTu; chiSo++) {
-            // Trái.
             int trai = chiSo * o;
-            // Tâm ngang.
+
             int tamNgang = trai + 16 + dongDuLieu;
-            // Đã hoàn tất.
+
             boolean daHoanTat = chiSo < hienTai;
-            // Hoạt động.
+
             boolean hoatDong = chiSo == hienTai;
             if (chiSo < soPhanTu - 1) {
                 doHoa2.setColor(daHoanTat ? MauUngDung.XANH_LA : MauUngDung.VIEN);
                 doHoa2.setStroke(new BasicStroke(2f));
-                // Nhãn kết thúc.
+
                 int nhanKetThuc =
                         tamNgang + dongDuLieu + 8 + thongSoPhongChu.stringWidth(cacBuoc.get(chiSo));
                 doHoa2.drawLine(
@@ -137,7 +115,6 @@ public final class ChiBaoBuoc extends JComponent {
                 doHoa2.drawLine(tamNgang - 4, tamDoc, tamNgang - 1, tamDoc + 3);
                 doHoa2.drawLine(tamNgang - 1, tamDoc + 3, tamNgang + 5, tamDoc - 3);
             } else {
-                // Số.
                 String so = String.valueOf(chiSo + 1);
                 doHoa2.drawString(
                         so,

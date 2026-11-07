@@ -8,7 +8,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC nghiệp vụ DAO. */
 public final class NghiepVuDAOImpl implements NghiepVuDAO {
     private record KieuHienThi(String tieuDe, String[] cacCot, String sql) {}
 
@@ -35,7 +34,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Trạng thái"
                             },
                             "SELECT h.ma_hoa_don AS ma_khoa, h.ma_hoa_don, COALESCE(k.ho_ten, N'Khách lẻ'), COALESCE(n.ho_ten, N'Thu ngân'), h.thanh_toan_luc, h.tong_tien,"
-                                + " CASE h.hinh_thuc_thanh_toan WHEN 'TIEN_MAT' THEN N'Tiền mặt' WHEN 'CHUYEN_KHOAN' THEN N'Chuyển khoản' WHEN 'THE_NGAN_HANG' THEN N'Thẻ' WHEN 'KET_HOP' THEN N'Kết hợp' ELSE COALESCE(h.hinh_thuc_thanh_toan, N'Tiền mặt') END,"
+                                + " CASE h.hinh_thuc_thanh_toan WHEN 'TIEN_MAT' THEN N'Tiền mặt' WHEN 'CHUYEN_KHOAN' THEN N'Chuyển khoản' WHEN 'THE_NGAN_HANG' THEN N'Thẻ' WHEN 'THE' THEN N'Thẻ' WHEN 'DIEM_TICH_LUY' THEN N'Điểm tích lũy' WHEN 'KET_HOP' THEN N'Kết hợp' ELSE COALESCE(h.hinh_thuc_thanh_toan, N'Tiền mặt') END,"
                                 + " CASE h.trang_thai WHEN 'DA_THANH_TOAN' THEN N'Đã thanh toán' WHEN 'DA_HUY' THEN N'Đã hủy' ELSE COALESCE(h.trang_thai, N'Đã thanh toán') END"
                                 + " FROM hoa_don h"
                                 + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap = h.ten_dang_nhap"

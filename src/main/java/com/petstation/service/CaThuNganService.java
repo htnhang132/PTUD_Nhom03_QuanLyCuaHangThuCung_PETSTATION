@@ -13,14 +13,19 @@ import com.petstation.util.DuLieu;
 import java.time.LocalTime;
 import java.util.*;
 
-/** Quản lý mở ca, doanh thu, tiền bàn giao và đóng ca của tài khoản hiện tại. */
 public final class CaThuNganService {
-    private static final CaLamViecDAO caThuNganDAO = new CaLamViecDAOImpl();
+    private final CaLamViecDAO caThuNganDAO;
 
-    /** Các bộ lắng nghe. */
+    public CaThuNganService() {
+        this(new CaLamViecDAOImpl());
+    }
+
+    public CaThuNganService(CaLamViecDAO caThuNganDAO) {
+        this.caThuNganDAO = Objects.requireNonNull(caThuNganDAO);
+    }
+
     private final List<Runnable> cacBoLangNghe = new ArrayList<>();
 
-    /** Tiêu đề đang chờ. */
     private String tieuDeDangCho = "", cuoiCungBanGiao = "";
 
     private Object[] layHienTai() {
@@ -35,7 +40,6 @@ public final class CaThuNganService {
     }
 
     public long layId() {
-        // Dòng dữ liệu.
         Object[] dongDuLieu = layHienTai();
         return dongDuLieu == null ? 0 : DuLieu.layIdCauNoi(null, chuyenThanhChuoi(dongDuLieu[0]));
     }
@@ -45,13 +49,11 @@ public final class CaThuNganService {
     }
 
     public String layTenCa() {
-        // Dòng dữ liệu.
         Object[] dongDuLieu = layHienTai();
         return dongDuLieu == null ? "" : chuyenThanhChuoi(dongDuLieu[1]);
     }
 
     public LocalTime layGioMoCa() {
-        // Dòng dữ liệu.
         Object[] dongDuLieu = layHienTai();
         return dongDuLieu == null
                 ? null
@@ -59,7 +61,6 @@ public final class CaThuNganService {
     }
 
     public long layTienDauCa() {
-        // Dòng dữ liệu.
         Object[] dongDuLieu = layHienTai();
         return dongDuLieu == null ? 0 : ((Number) dongDuLieu[3]).longValue();
     }
@@ -167,7 +168,6 @@ public final class CaThuNganService {
                 .toList();
     }
 
-    /** Kết ca và lưu người nhận bằng khóa ngoại, cùng giao dịch với số tiền. */
     public void dong(long daDem, String ghiChu, HinhThucBanGiao hinhThuc, Long nguoiNhan) {
         yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
         Objects.requireNonNull(hinhThuc, "Chưa chọn hình thức bàn giao.");
@@ -176,11 +176,10 @@ public final class CaThuNganService {
         if (daDem < 0) throw new IllegalArgumentException("Tiền thực đếm phải không âm.");
         thucHienGiaoDich(
                 ketNoi -> {
-                    // Mã phiên hiện tại.
                     String maPhienHienTai = layMaPhien();
                     if (maPhienHienTai.isBlank()) throw new IllegalStateException("Chưa mở ca.");
                     caThuNganDAO.demDong(maPhienHienTai);
-                    // Dự kiến.
+
                     long duKien = layTienMatDuKien();
                     if (daDem != duKien && (ghiChu == null || ghiChu.isBlank()))
                         throw new IllegalArgumentException("Cần nhập lý do chênh lệch tiền mặt.");

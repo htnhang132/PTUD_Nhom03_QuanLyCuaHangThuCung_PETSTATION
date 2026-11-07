@@ -3,17 +3,12 @@ package com.petstation.database;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/**
- * Thực thi công việc JDBC trong một transaction, commit khi thành công và rollback khi thất bại.
- */
 public final class QuanLyGiaoDich {
-    /** Khai báo thao tác truy cập dữ liệu của giao dịch làm việc. */
     @FunctionalInterface
     public interface CongViecGiaoDich<KieuDuLieu> {
         KieuDuLieu thucThi(Connection ketNoi) throws Exception;
     }
 
-    /** CSDL. */
     private final KetNoiCSDL csdl;
 
     public QuanLyGiaoDich(KetNoiCSDL csdl) {

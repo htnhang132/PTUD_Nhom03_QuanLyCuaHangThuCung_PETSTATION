@@ -1,13 +1,11 @@
 package com.petstation.model;
 
-/** Biểu diễn dữ liệu vai trò dùng trong nghiệp vụ cửa hàng. */
 public enum VaiTro {
     QUAN_LY_CUA_HANG("Cửa hàng trưởng"),
     NHAN_VIEN_KHO("Nhân viên kho"),
     NHAN_VIEN_BAN_HANG("Nhân viên bán hàng"),
     NHAN_VIEN_SPA_HOTEL("Nhân viên Spa/Hotel");
 
-    /** Tên hiển thị. */
     private final String tenHienThi;
 
     VaiTro(String tenHienThi) {

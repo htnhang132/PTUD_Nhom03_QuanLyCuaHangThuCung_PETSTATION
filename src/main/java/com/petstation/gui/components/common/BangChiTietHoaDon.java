@@ -7,7 +7,6 @@ import java.awt.Component;
 import javax.swing.*;
 import javax.swing.table.*;
 
-/** Giữ tên hàng đầy đủ, căn số lượng và tiền trên bảng thanh toán. */
 public final class BangChiTietHoaDon {
     private BangChiTietHoaDon() {}
 
@@ -76,7 +75,6 @@ public final class BangChiTietHoaDon {
         capNhatChieuCao(bang);
     }
 
-    /** Tính trước khi vẽ để khung cắt của ô đã đủ cao ngay từ lần hiển thị đầu. */
     private static void capNhatChieuCao(JTable bang) {
         if (bang.getColumnCount() == 0) return;
         JTextArea txtDo = new JTextArea();

@@ -7,7 +7,6 @@ import com.petstation.util.DuLieu;
 
 import java.util.List;
 
-/** Truy vấn ChamSocService; quyền và transaction do tầng service quyết định. */
 public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
     public NhatKyChamSocDAOImpl() {}
 
@@ -45,7 +44,6 @@ public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
             String viec,
             String anhTruoc,
             String anhSau) {
-
         String maSpa = null;
         if (spa != null) {
             maSpa = String.valueOf(spa);

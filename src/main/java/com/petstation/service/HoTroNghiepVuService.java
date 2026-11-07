@@ -8,7 +8,6 @@ import com.petstation.dao.impl.HoTroNghiepVuDAOImpl;
 import java.time.*;
 import java.util.*;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho nghiệp vụ hỗ trợ. */
 final class HoTroNghiepVuService {
     private static final HoTroNghiepVuDAO hoTroNghiepVuDAO = new HoTroNghiepVuDAOImpl();
 

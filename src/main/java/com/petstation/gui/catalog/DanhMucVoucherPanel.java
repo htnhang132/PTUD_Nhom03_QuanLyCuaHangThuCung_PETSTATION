@@ -12,7 +12,6 @@ import com.petstation.util.TienTe;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Cung cấp giao diện và xử lý tương tác cho voucher danh mục vùng hiển thị. */
 public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     @Override
     protected boolean coTheChinhSua() {
@@ -37,7 +36,6 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     }
 
     private static CauHinh taoCauHinh() {
-        // Cấu hình.
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục voucher", "voucher")
                         .themBoLoc("Chủ sở hữu", d -> String.valueOf(d[7]))
@@ -46,19 +44,18 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                         .datTrangThai(6, "Còn hiệu lực", "Ngừng")
                         .datBoChuanHoa(
                                 dongDuLieu -> {
-                                    // Hạn dùng.
                                     LocalDate hanDung = docNgay(dongDuLieu[2]);
-                                    // Trạng thái.
+
                                     String trangThai = String.valueOf(dongDuLieu[6]);
-                                    // Số lượng.
+
                                     long soLuong = TienTe.doc(String.valueOf(dongDuLieu[3]));
-                                    // Đã dùng.
+
                                     long daDung = TienTe.doc(String.valueOf(dongDuLieu[4]));
                                     if ("Ngừng".equals(trangThai)) return;
                                     if (hanDung != null && hanDung.isBefore(LocalDate.now()))
                                         dongDuLieu[6] = "Hết hạn";
-                                    else 
-                                    // ứng.
+                                    else
+
                                     if (soLuong >= 0 && daDung >= soLuong)
                                         dongDuLieu[6] = "Hết lượt";
                                     else dongDuLieu[6] = "Còn hiệu lực";

@@ -5,28 +5,19 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Phiếu tiếp nhận Spa khớp bảng [phieu_tiep_nhan_spa].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã phiếu (maPhieu). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với LichHen, ThuCung, GoiDichVuSpa, NhanVien, HoaDon.
- * - Có phương thức tính tổng tiền dịch vụ dẫn xuất và equals/hashCode theo khóa chính maPhieu.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class PhieuTiepNhanSpa implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Phiếu tiếp nhận Spa */
     private String maPhieu;
-    /** Quan hệ kết hợp: Lịch hẹn nguồn (null nếu khách đến trực tiếp walk-in). */
+
     private LichHen lichHen;
-    /** Quan hệ kết hợp: Thú cưng sử dụng dịch vụ Spa. */
+
     private ThuCung thuCung;
-    /** Quan hệ kết hợp: Gói dịch vụ Spa áp dụng. */
+
     private GoiDichVuSpa goiDichVu;
-    /** Quan hệ kết hợp: Kỹ thuật viên thực hiện Spa. */
+
     private NhanVien nhanVien;
-    /** Quan hệ kết hợp: Hóa đơn thanh toán (null khi chưa thanh toán). */
+
     private HoaDon hoaDon;
 
     private String moTaDichVu;
@@ -39,26 +30,22 @@ public class PhieuTiepNhanSpa implements Serializable {
     private String ghiChu;
     private String anh;
 
-    /** Constructor mặc định. */
     public PhieuTiepNhanSpa() {
         this.soLuong = 1;
         this.trangThai = "TIEP_NHAN";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maPhieu. */
     public PhieuTiepNhanSpa(String maPhieu) {
         this();
         setMaPhieu(maPhieu);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public PhieuTiepNhanSpa(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận các đối tượng thực thể liên kết và khóa chính maPhieu. */
     public PhieuTiepNhanSpa(
             String maPhieu,
             LichHen lichHen,
@@ -90,7 +77,6 @@ public class PhieuTiepNhanSpa implements Serializable {
         setHoaDon(hoaDon);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public PhieuTiepNhanSpa(
             long id,
             String maPhieu,
@@ -111,7 +97,6 @@ public class PhieuTiepNhanSpa implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public PhieuTiepNhanSpa(
             long id,
             String maPhieu,
@@ -148,20 +133,14 @@ public class PhieuTiepNhanSpa implements Serializable {
         this.tongTien = Math.max(0L, tongTien);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tổng tiền dịch vụ Spa (thuộc tính dẫn xuất: soLuong * donGia). */
     public long tinhTongTien() {
         long thanhTien = (long) Math.max(0, soLuong) * Math.max(0L, donGia);
         return thanhTien > 0 ? thanhTien : Math.max(0L, this.tongTien);
     }
 
-    /** Kiểm tra phiếu Spa đã được lập hóa đơn thanh toán hay chưa (dẫn xuất). */
     public boolean kiemTraDaThanhToan() {
         return hoaDon != null && (hoaDon.getSoHoaDon() != null || (hoaDon.getId() != null && hoaDon.getId() > 0));
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maPhieu);
@@ -185,8 +164,6 @@ public class PhieuTiepNhanSpa implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaPhieu() {
         return this.maPhieu;
@@ -414,7 +391,6 @@ public class PhieuTiepNhanSpa implements Serializable {
         return tinhTongTien();
     }
 
-    /** Phương thức nội bộ gán snapshot từ CSDL (không cung cấp setter công khai vì thuộc tính dẫn xuất). */
     void napTongTienSnapshot(long tongTien) {
         this.tongTien = Math.max(0L, tongTien);
     }
@@ -586,8 +562,6 @@ public class PhieuTiepNhanSpa implements Serializable {
     public void setSoHoaDon(String soHoaDon) {
         setMaHoaDon(soHoaDon);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

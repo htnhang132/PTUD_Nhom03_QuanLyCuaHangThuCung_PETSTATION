@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Tiện ích thuần, không mở kết nối và không giữ trạng thái ứng dụng. */
 public final class DuLieu {
     private static final DateTimeFormatter DINH_DANG_NGAY_HD =
             DateTimeFormatter.ofPattern("yyMMdd");

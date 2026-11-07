@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho DeXuatGia; service gọi qua hợp đồng này. */
 public interface DeXuatGiaDAO {
     List<Object[]> timSanPham(String ma);
 

@@ -11,10 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Thực hiện truy vấn JDBC cho JDBC khách hàng DAO. */
 public class KhachHangDAOImpl implements KhachHangDAO {
-
-    /** Kết nối. */
     private final Connection ketNoi;
 
     public KhachHangDAOImpl(Connection ketNoi) {

@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho DoiTra; service gọi qua hợp đồng này. */
 public interface PhieuDoiTraDAO {
     int capNhatApDungDoiTra(Object... cacThamSo);
 

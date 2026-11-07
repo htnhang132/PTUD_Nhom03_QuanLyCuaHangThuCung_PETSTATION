@@ -7,7 +7,6 @@ import com.petstation.model.VaiTro;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC quyền DAO. */
 public final class QuyenVaiTroDAOImpl implements QuyenVaiTroDAO {
     public QuyenVaiTroDAOImpl() {}
 

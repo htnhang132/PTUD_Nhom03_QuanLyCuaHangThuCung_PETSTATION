@@ -9,7 +9,6 @@ import com.petstation.model.Quyen;
 import com.petstation.util.DuLieu;
 import java.util.List;
 
-/** Treo nháp không tiếp nhận thú cưng, không thay đổi lịch hẹn hoặc doanh thu. */
 public final class PhieuSpaTreoService {
     private static final PhieuSpaTreoDAO dao = new PhieuSpaTreoDAOImpl();
     private PhieuSpaTreoService() {}
@@ -46,7 +45,6 @@ public final class PhieuSpaTreoService {
         thucHienGiaoDich(c -> { yeuCauConTonTai(id); dao.xoa(id); return null; });
     }
 
-    /** Tạo phiếu và xóa nháp trong cùng giao dịch; lỗi nghiệp vụ giữ nguyên nháp. */
     public static long taoPhieu(long idTreo, String maThu, String maGoi, String maHen,
             double canNang, String tinhTrang, String yeuCau) {
         yeuCau(Quyen.QUAN_LY_SPA);

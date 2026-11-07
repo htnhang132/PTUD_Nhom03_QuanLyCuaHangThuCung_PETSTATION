@@ -29,15 +29,7 @@ import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho bán hàng vùng hiển thị.
- *
- * <p>Lập đơn hàng POS: tìm/quét sản phẩm, nhận barcode từ ứng dụng Android qua USB,
- * quản lý giỏ hàng, khách hàng, đơn treo và chuyển sang thanh toán.
- */
 public class LapHoaDonPanel extends CoSoPanel {
-
-	/** Dữ liệu sản phẩm dùng để hiển thị và bán hàng. */
 	private record SanPham(
 			String ma,
 			String ten,
@@ -47,7 +39,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 			String anh,
 			String barcode) {}
 
-	/** Đọc các sản phẩm đang kinh doanh; barcode là cột thứ 7 của truy vấn DAO. */
 	private static List<SanPham> laySanPham() {
 		List<SanPham> ra = new ArrayList<>();
 		for (Object[] dongDuLieu : BanHangService.layCoTheBanCacSanPham()) {
@@ -69,7 +60,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 	}
 
 	private static final String[] CAC_NHOM_HANG = {
-			"Tất cả", "Thức ăn", "Phụ kiện", "Grooming", "Vệ sinh", "Thuốc"
+			"Tất cả", "Thức ăn", "Phụ kiện", "Grooming", "Vệ sinh", "Thuốc", "Chuồng - Nệm", "Sức khỏe"
 	};
 
 	private final GioHang banHang;
@@ -93,7 +84,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private final List<GioHang.DongHang> gioHang = new ArrayList<>();
 	private final Deque<String> lichSuThem = new ArrayDeque<>();
 
-	/** Cache sản phẩm để lọc lưới mà không truy vấn SQL mỗi lần gõ một ký tự. */
 	private List<SanPham> danhSachSanPham = new ArrayList<>();
 	private final JLabel lblTrangThaiQuet =
 			new JLabel("Sẵn sàng nhận mã vạch từ điện thoại.");
@@ -181,20 +171,15 @@ public class LapHoaDonPanel extends CoSoPanel {
 		scrLuoiCuon.getVerticalScrollBar().setUnitIncrement(18);
 		pnlTrai.add(scrLuoiCuon, BorderLayout.CENTER);
 
-		// Bố cục cố định: danh sách sản phẩm bên trái, giỏ hàng bên phải.
-		// Khu vực hiển thị giỏ hàng
 		BoGocPanel pnlGioHang = taoGioHang();
 
-		// Thiết lập kích thước tối thiểu cho hai khu vực
 		pnlTrai.setMinimumSize(new Dimension(340, 260));
 		pnlGioHang.setMinimumSize(new Dimension(340, 260));
 		pnlGioHang.setPreferredSize(new Dimension(480, 0));
 
-		// Hiển thị sản phẩm bên trái, giỏ hàng bên phải
 		add(pnlTrai, BorderLayout.CENTER);
 		add(pnlGioHang, BorderLayout.EAST);
 
-		// Nạp dữ liệu một lần khi tạo màn hình. Các lần lọc chỉ dùng cache.
 		danhSachSanPham = laySanPham();
 		dungLaiLuoi();
 		lamMoiGioHang();
@@ -204,7 +189,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		dangKyPhimTat("F8", "retrieve", suKien -> hienThiTreoCacGioHang());
 		dangKyPhimTat("Ctrl+K", "search", suKien -> txtTimKiem.requestFocusInWindow());
 
-		// CardLayout giữ panel trong cây component. Chỉ đóng receiver khi cửa sổ chính bị hủy.
 		addHierarchyListener(
 				suKien -> {
 					if ((suKien.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0
@@ -214,7 +198,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 				});
 	}
 
-	/** Khu vực tìm kiếm duy nhất, tránh đưa cùng một JTextField vào hai panel khác nhau. */
 	private JPanel taoKhuVucQuet() {
 		JPanel panel = taoVungTrongSuot(new BorderLayout(0, 7));
 		panel.setBorder(
@@ -260,7 +243,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 				});
 	}
 
-	// ── Bên trái: lưới sản phẩm ───────────────────────────────────
 	private JPanel layNhomHangCacNhan() {
 		JPanel pnlDong = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
 		pnlDong.setOpaque(false);
@@ -370,7 +352,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		return pnlThe;
 	}
 
-	/** Gắn cùng thao tác lên ảnh và nhãn vì sự kiện chuột Swing không nổi lên panel cha. */
 	private void ganThaoTacThe(Component thanhPhan, MouseAdapter thaoTac) {
 		thanhPhan.addMouseListener(thaoTac);
 		thanhPhan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -379,7 +360,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		}
 	}
 
-	/** Xử lý Enter trên ô tìm kiếm: barcode, mã SP, 6 số cuối hoặc tên sản phẩm. */
 	private void themTheoQuet() {
 		String tuKhoa = txtTimKiem.getText().trim();
 		if (tuKhoa.isEmpty()) return;
@@ -454,7 +434,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		}
 	}
 
-	// ── Bên phải: giỏ hàng ────────────────────────────────────────
 	private BoGocPanel taoGioHang() {
 		BoGocPanel pnlGioHangVungHienThi = layThe(new BorderLayout(0, 10));
 		pnlGioHangVungHienThi.setPreferredSize(new Dimension(480, 0));
@@ -545,7 +524,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		return pnlDong;
 	}
 
-	/** Thêm một đơn vị sản phẩm vào giỏ nếu chưa vượt tồn khả dụng. */
 	private boolean themDenGioHang(SanPham sanPham) {
 		for (int chiSo = 0; chiSo < gioHang.size(); chiSo++) {
 			GioHang.DongHang dongDangXet = gioHang.get(chiSo);
@@ -728,7 +706,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlPhai.add(pnlSoLuong, BorderLayout.WEST);
 		pnlPhai.add(lblSoTien, BorderLayout.EAST);
 		pnlDong.add(pnlPhai, BorderLayout.EAST);
-		// Phải trả về cả dòng, không phải riêng pnlPhai.
+
 		return pnlDong;
 	}
 
@@ -847,7 +825,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		pnlBoChon.dongBo();
 		lamMoiGioHang();
 
-		// Màn hình được cache bởi CardLayout nên chỉ khởi tạo receiver một lần.
 		khoiDongBarcodeUsb();
 
 		if (banHang.kiemTraTrong() && !gioHang.isEmpty()) {
@@ -859,7 +836,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		txtTimKiem.requestFocusInWindow();
 	}
 
-	/** Khởi tạo HTTP receiver một lần cho màn hình POS. */
 	private void khoiDongBarcodeUsb() {
 		if (barcodeUsbServer != null) {
 			lblKetNoiUsb.setText(
@@ -894,17 +870,12 @@ public class LapHoaDonPanel extends CoSoPanel {
 		}
 	}
 
-	/** Đóng server khi cửa sổ chính kết thúc, không đóng khi chỉ chuyển màn hình. */
 	private void dongBarcodeUsbServer() {
 		if (barcodeUsbServer == null) return;
 		barcodeUsbServer.close();
 		barcodeUsbServer = null;
 	}
 
-	/**
-	 * Xử lý barcode đã được BarcodeUsbServer xác thực và chuyển sang Swing EDT.
-	 * Truy vấn dữ liệu chạy nền, cập nhật giỏ hàng chỉ khi POS vẫn đang hiển thị.
-	 */
 	private void xuLyBarcodeTuDienThoai(String barcode) {
 		if (barcode == null || !barcode.matches("\\d{13}")) {
 			capNhatTrangThaiQuet(
@@ -945,7 +916,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 				try {
 					List<SanPham> sanPhamMoi = get();
 
-					// Người dùng có thể đã chuyển màn hình hoặc đăng xuất trong lúc truy vấn.
 					if (!isShowing()
 							|| PhienDangNhapService.layPhienHienTai() != phienXuLy) {
 						return;
@@ -1019,9 +989,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		return "Lập đơn hàng";
 	}
 
-	/**
-	 * Panel luôn co theo bề rộng khung cuộn, tránh thanh cuộn ngang.
-	 */
 	private static final class TheoChieuRongPanel extends JPanel implements Scrollable {
 		TheoChieuRongPanel() {
 			super(new BorderLayout());

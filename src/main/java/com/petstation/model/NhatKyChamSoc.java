@@ -5,24 +5,15 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Nhật ký chăm sóc thú cưng khớp bảng [nhat_ky_cham_soc].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã nhật ký (maNhatKy). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với HopDongLuuTru, PhieuTiepNhanSpa, NhanVien.
- * - Phương thức kiểm tra hình ảnh đối chứng dẫn xuất và equals/hashCode theo khóa chính maNhatKy.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class NhatKyChamSoc implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Nhật ký chăm sóc */
     private String maNhatKy;
-    /** Quan hệ kết hợp: Hợp đồng lưu trú khách sạn liên quan (có thể null nếu là nhật ký Spa). */
+
     private HopDongLuuTru hopDong;
-    /** Quan hệ kết hợp: Phiếu tiếp nhận Spa liên quan (có thể null nếu là nhật ký lưu trú). */
+
     private PhieuTiepNhanSpa phieuSpa;
-    /** Quan hệ kết hợp: Nhân viên thực hiện ghi nhật ký chăm sóc. */
+
     private NhanVien nhanVien;
 
     private LocalDateTime thoiGian;
@@ -35,24 +26,20 @@ public class NhatKyChamSoc implements Serializable {
     private String anhSau;
     private String tepDinhKem;
 
-    /** Constructor mặc định. */
     public NhatKyChamSoc() {
         this.thoiGian = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maNhatKy. */
     public NhatKyChamSoc(String maNhatKy) {
         this();
         setMaNhatKy(maNhatKy);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public NhatKyChamSoc(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng HopDongLuuTru, PhieuTiepNhanSpa, NhanVien và khóa chính maNhatKy. */
     public NhatKyChamSoc(
             String maNhatKy,
             HopDongLuuTru hopDong,
@@ -82,7 +69,6 @@ public class NhatKyChamSoc implements Serializable {
         setTepDinhKem(tepDinhKem);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public NhatKyChamSoc(
             long id,
             String maNhatKy,
@@ -102,7 +88,6 @@ public class NhatKyChamSoc implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public NhatKyChamSoc(
             long id,
             String maNhatKy,
@@ -135,14 +120,9 @@ public class NhatKyChamSoc implements Serializable {
                 tepDinhKem);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra bản ghi nhật ký đã có ảnh đối chứng trước/sau hay chưa (dẫn xuất). */
     public boolean kiemTraCoHinhAnhDoiChung() {
         return (anhTruoc != null && !anhTruoc.isBlank()) || (anhSau != null && !anhSau.isBlank());
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
@@ -166,8 +146,6 @@ public class NhatKyChamSoc implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaNhatKy() {
         return this.maNhatKy;
@@ -476,8 +454,6 @@ public class NhatKyChamSoc implements Serializable {
     public void datTepDinhKem(String tepDinhKem) {
         setTepDinhKem(tepDinhKem);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

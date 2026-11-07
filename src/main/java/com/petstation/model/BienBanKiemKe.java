@@ -7,47 +7,34 @@ import java.util.List;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Biên bản kiểm kê khớp bảng [bien_ban_kiem_ke].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là số biên bản (soBienBan). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với TaiKhoan (người lập) và danh sách ChiTietKiemKe.
- * - Có phương thức tính số lô lệch kho dẫn xuất và equals/hashCode theo khóa chính soBienBan.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class BienBanKiemKe implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Biên bản kiểm kê (ma_bien_ban / so_bien_ban) */
     private String maBienBan;
-    /** Quan hệ kết hợp: Tài khoản nhân viên lập biên bản kiểm kê. */
+
     private TaiKhoan nguoiLap;
-    /** Quan hệ 1-nhiều: Danh sách dòng chi tiết kiểm kê. */
+
     private List<ChiTietKiemKe> danhSachChiTiet = new ArrayList<>();
 
     private String kyKiemKe;
     private String trangThai;
     private LocalDateTime taoLuc;
 
-    /** Constructor mặc định. */
     public BienBanKiemKe() {
         this.trangThai = "DA_DUYET";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maBienBan. */
     public BienBanKiemKe(String maBienBan) {
         this();
         setMaBienBan(maBienBan);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public BienBanKiemKe(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính soBienBan. */
     public BienBanKiemKe(
             String soBienBan,
             TaiKhoan nguoiLap,
@@ -61,7 +48,6 @@ public class BienBanKiemKe implements Serializable {
         setTaoLuc(taoLuc);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public BienBanKiemKe(
             long id,
             String soBienBan,
@@ -73,7 +59,6 @@ public class BienBanKiemKe implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public BienBanKiemKe(
             long id,
             String soBienBan,
@@ -84,9 +69,6 @@ public class BienBanKiemKe implements Serializable {
         this(id, soBienBan, new TaiKhoan(nguoiLapId), kyKiemKe, trangThai, taoLuc);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tổng số lô hàng có chênh lệch tồn kho trong biên bản (thuộc tính dẫn xuất - không có setter). */
     public int tinhSoLoLechKho() {
         if (danhSachChiTiet == null || danhSachChiTiet.isEmpty()) {
             return 0;
@@ -107,8 +89,6 @@ public class BienBanKiemKe implements Serializable {
     public int laySoLoLechKho() {
         return tinhSoLoLechKho();
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaBienBan());
@@ -133,8 +113,6 @@ public class BienBanKiemKe implements Serializable {
         setId(id);
     }
 
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
-
     public String getMaBienBan() {
         return this.maBienBan;
     }
@@ -155,7 +133,6 @@ public class BienBanKiemKe implements Serializable {
         setMaBienBan(maBienBan);
     }
 
-    // Alias soBienBan tương thích ngược
     public String getSoBienBan() {
         return getMaBienBan();
     }
@@ -279,8 +256,6 @@ public class BienBanKiemKe implements Serializable {
     public void datTaoLuc(LocalDateTime taoLuc) {
         setTaoLuc(taoLuc);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maBienBan) ====================
 
     @Override
     public boolean equals(Object o) {

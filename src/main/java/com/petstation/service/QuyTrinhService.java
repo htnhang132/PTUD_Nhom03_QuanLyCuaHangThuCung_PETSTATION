@@ -7,7 +7,6 @@ import com.petstation.model.Quyen;
 
 import java.util.List;
 
-/** Kiểm tra chuyển bước bằng trạng thái lưu trong SQL Server. */
 public final class QuyTrinhService {
     private static final QuyTrinhDAO quyTrinhDAO = new QuyTrinhDAOImpl();
 

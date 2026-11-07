@@ -6,14 +6,9 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
 
-/**
- * Thực thể Nhân viên ánh xạ bảng [nhan_vien] trong SQL Server.
- * Khóa chính: maNhanVien.
- */
 public class NhanVien implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã nhân viên (ví dụ: NV0001). */
     private String maNhanVien;
     private String hoTen;
     private LocalDate ngaySinh;
@@ -23,18 +18,15 @@ public class NhanVien implements Serializable {
     private LocalDate ngayBatDau;
     private boolean hoatDong;
 
-    /** Constructor mặc định. */
     public NhanVien() {
         this.hoatDong = true;
     }
 
-    /** Constructor chỉ có khóa chính (dùng khi tham chiếu khóa ngoại từ TaiKhoan, LichLamViec...). */
     public NhanVien(String maNhanVien) {
         this();
         setMaNhanVien(maNhanVien);
     }
 
-    /** Constructor đầy đủ thuộc tính thường (gọi qua setter để kiểm tra ràng buộc). */
     public NhanVien(
             String maNhanVien,
             String hoTen,
@@ -55,7 +47,6 @@ public class NhanVien implements Serializable {
         setHoatDong(hoatDong);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public NhanVien(long id) {
         this();
         setId(id);
@@ -75,9 +66,6 @@ public class NhanVien implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tuổi nhân viên (thuộc tính dẫn xuất từ ngaySinh - không có setter). */
     public int tinhTuoi() {
         if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
             return 0;
@@ -93,7 +81,6 @@ public class NhanVien implements Serializable {
         return tinhTuoi();
     }
 
-    /** Tính thâm niên làm việc theo số năm (thuộc tính dẫn xuất từ ngayBatDau - không có setter). */
     public int tinhThamNienNam() {
         if (ngayBatDau == null || ngayBatDau.isAfter(LocalDate.now())) {
             return 0;
@@ -108,8 +95,6 @@ public class NhanVien implements Serializable {
     public int layThamNienNam() {
         return tinhThamNienNam();
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaNhanVien() {
         return this.maNhanVien;
@@ -271,8 +256,6 @@ public class NhanVien implements Serializable {
         setHoatDong(hoatDong);
     }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() {
         return DuLieu.layIdCauNoi(this, maNhanVien);
     }
@@ -296,8 +279,6 @@ public class NhanVien implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maNhanVien) ====================
 
     @Override
     public boolean equals(Object o) {

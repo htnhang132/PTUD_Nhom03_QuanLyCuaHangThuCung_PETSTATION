@@ -11,12 +11,10 @@ import java.awt.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-/** Cung cấp giao diện và xử lý tương tác cho nhanh các quy trình. */
 public final class ThaoTacNhanh {
     private ThaoTacNhanh() {}
 
     public static void layNghiPhep(Component cha) {
-        // Các giá trị.
         var cacGiaTri =
                 BieuMauSQL.layYeuCauNhap(
                         cha,
@@ -28,7 +26,6 @@ public final class ThaoTacNhanh {
                         BieuMauSQL.TruongDuLieu.chuyenThanhChuoi("reason", "Lý do", ""));
         if (cacGiaTri == null) return;
         try {
-            // Ngày.
             LocalDate ngay =
                     LocalDate.parse(
                             cacGiaTri.get("date"),

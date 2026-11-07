@@ -11,7 +11,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
-/** Chạy trên CSDL test riêng; toàn bộ dữ liệu mỗi tình huống được rollback. */
 @EnabledIfEnvironmentVariable(named = "PETSTATION_EXCHANGE_HOLD_SQL_TESTS", matches = "true")
 class DonDoiTreoSQLTest {
     private static class HoanTac extends RuntimeException {}
@@ -55,7 +54,6 @@ class DonDoiTreoSQLTest {
                 throw new HoanTac();
             });
         } catch (HoanTac duKien) {
-            // Giữ schema, không để lại dữ liệu giao dịch test.
         } finally {
             PhienDangNhapService.datPhienDangNhap(null);
         }

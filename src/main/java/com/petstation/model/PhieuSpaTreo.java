@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Dữ liệu nhập dở, kể cả cân nặng chưa hợp lệ hoặc chưa chọn dịch vụ. */
 public record PhieuSpaTreo(String maKhach, String soDienThoai, String maThu, String maGoi,
                           String maHen, String canNang, String tinhTrang, String yeuCau) implements java.io.Serializable {
     private static final long serialVersionUID = 1L;

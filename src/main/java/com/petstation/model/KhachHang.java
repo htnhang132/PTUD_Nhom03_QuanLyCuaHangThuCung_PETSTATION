@@ -7,14 +7,9 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Objects;
 
-/**
- * Thực thể Khách hàng khớp bảng [khach_hang] trong SQL Server.
- * Khóa chính: maKhachHang.
- */
 public class KhachHang implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã khách hàng (ví dụ: KH000001). */
     private String maKhachHang;
     private String hoTen;
     private String soDienThoai;
@@ -25,20 +20,17 @@ public class KhachHang implements Serializable {
     private LocalDateTime thoiDiemTao;
     private byte[] phienBanBanGhi;
 
-    /** Constructor mặc định. */
     public KhachHang() {
         this.diemTichLuy = 0;
         this.hangThanhVien = "Đồng";
         this.thoiDiemTao = LocalDateTime.now();
     }
 
-    /** Constructor chỉ có khóa chính (dùng khi tham chiếu khóa ngoại từ thực thể khác). */
     public KhachHang(String maKhachHang) {
         this();
         setMaKhachHang(maKhachHang);
     }
 
-    /** Constructor đầy đủ thuộc tính thường (gọi qua setter để kiểm tra ràng buộc). */
     public KhachHang(
             String maKhachHang,
             String hoTen,
@@ -59,7 +51,6 @@ public class KhachHang implements Serializable {
         setThoiDiemTao(thoiDiemTao);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public KhachHang(Long id) {
         this();
         setId(id);
@@ -87,9 +78,6 @@ public class KhachHang implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính tuổi khách hàng (thuộc tính dẫn xuất từ ngaySinh). */
     public int tinhTuoi() {
         if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now())) {
             return 0;
@@ -97,17 +85,13 @@ public class KhachHang implements Serializable {
         return Period.between(ngaySinh, LocalDate.now()).getYears();
     }
 
-    /** Kiểm tra khách hàng có đủ điểm đổi Voucher Spa (tối thiểu 200 điểm) hay không. */
     public boolean kiemTraDuDiemDoiVoucher() {
         return diemTichLuy != null && diemTichLuy >= 200;
     }
 
-    /** Tính số lượng Voucher tối đa có thể đổi từ điểm tích lũy hiện tại (dẫn xuất). */
     public int tinhSoVoucherCoTheDoi() {
         return diemTichLuy == null ? 0 : Math.max(0, diemTichLuy / 200);
     }
-
-    // ==================== GETTER & SETTER (CÓ KIỂM TRA RÀNG BUỘC) ====================
 
     public String getMaKhachHang() {
         return maKhachHang;
@@ -287,8 +271,6 @@ public class KhachHang implements Serializable {
         setPhienBanBanGhi(phienBanBanGhi);
     }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, maKhachHang);
     }
@@ -314,8 +296,6 @@ public class KhachHang implements Serializable {
     public void datId(Long id) {
         setId(id);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maKhachHang) ====================
 
     @Override
     public boolean equals(Object o) {

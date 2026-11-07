@@ -2,7 +2,6 @@ package com.petstation.service;
 
 import com.petstation.model.MaManHinh;
 
-/** Giữ yêu cầu mở bản ghi giữa các lần tải; không thao tác thành phần Swing. */
 public final class DieuHuongBanGhiService {
     private DieuHuongBanGhiService() {}
 

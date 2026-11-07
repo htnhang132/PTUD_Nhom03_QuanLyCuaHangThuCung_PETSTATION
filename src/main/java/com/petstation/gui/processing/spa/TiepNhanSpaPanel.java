@@ -13,12 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-/**
- * Hiển thị danh sách phiếu Spa.
- * Mở hộp thoại khi cần lập phiếu mới.
- */
 public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
-
     public TiepNhanSpaPanel(
         GioHang banHang,
         Consumer<MaManHinh> dieuHuong

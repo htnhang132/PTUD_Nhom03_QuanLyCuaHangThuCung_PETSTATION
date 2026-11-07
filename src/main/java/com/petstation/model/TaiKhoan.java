@@ -5,17 +5,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Thực thể Tài khoản đăng nhập ánh xạ bảng [tai_khoan] trong SQL Server.
- * Khóa chính: tenDangNhap.
- * Quan hệ kết hợp 1-1 với đối tượng NhanVien.
- */
 public class TaiKhoan implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Tên đăng nhập. */
     private String tenDangNhap;
-    /** Quan hệ kết hợp (Association): Tài khoản thuộc về một Nhân viên. */
+
     private NhanVien nhanVien;
     private String maBamMatKhau;
     private VaiTro vaiTro;
@@ -24,18 +18,15 @@ public class TaiKhoan implements Serializable {
     private LocalDateTime khoaDenLuc;
     private boolean batBuocDoiMatKhau;
 
-    /** Constructor mặc định. */
     public TaiKhoan() {
         this.trangThai = TrangThaiTaiKhoan.HOAT_DONG;
     }
 
-    /** Constructor chỉ có khóa chính (dùng khi tham chiếu từ HoaDon, PhienLamViec...). */
     public TaiKhoan(String tenDangNhap) {
         this();
         setTenDangNhap(tenDangNhap);
     }
 
-    /** Constructor chuẩn OOP nhận khóa chính tenDangNhap và đối tượng NhanVien. */
     public TaiKhoan(
             String tenDangNhap,
             NhanVien nhanVien,
@@ -56,7 +47,6 @@ public class TaiKhoan implements Serializable {
         setBatBuocDoiMatKhau(batBuocDoiMatKhau);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public TaiKhoan(long id) {
         this();
         setId(id);
@@ -98,14 +88,9 @@ public class TaiKhoan implements Serializable {
                 batBuocDoiMatKhau);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra tài khoản có đang bị khóa tạm thời tại thời điểm xét hay không (dẫn xuất). */
     public boolean layTamThoiDaKhoa(LocalDateTime hienTai) {
         return khoaDenLuc != null && khoaDenLuc.isAfter(hienTai);
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getTenDangNhap() {
         return this.tenDangNhap;
@@ -273,8 +258,6 @@ public class TaiKhoan implements Serializable {
         setBatBuocDoiMatKhau(batBuocDoiMatKhau);
     }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() {
         if (nhanVien != null && nhanVien.getId() > 0) {
             return nhanVien.getId();
@@ -322,14 +305,12 @@ public class TaiKhoan implements Serializable {
         setIdNhanVien(idNhanVien);
     }
 
-    // ==================== EQUALS & HASHCODE THEO KHÓA CHÍNH (nhanVien / tenDangNhap) ====================
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TaiKhoan that = (TaiKhoan) o;
-        if (this.nhanVien != null && that.nhanVien != null 
+        if (this.nhanVien != null && that.nhanVien != null
                 && this.nhanVien.getMaNhanVien() != null && that.nhanVien.getMaNhanVien() != null) {
             return Objects.equals(this.nhanVien.getMaNhanVien(), that.nhanVien.getMaNhanVien());
         }

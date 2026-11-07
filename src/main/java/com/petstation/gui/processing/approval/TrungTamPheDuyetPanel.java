@@ -31,55 +31,35 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho phê duyệt giữa vùng hiển thị.
- *
- * <p>Xử lý ▸ Phê duyệt yêu cầu (chỉ Cửa hàng trưởng): xem nội dung trước/sau, Duyệt hoặc Từ chối
- * kèm lý do.
- */
 public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanhCongCu {
-    /** Mô hình. */
     private final DefaultTableModel moHinh =
             new DefaultTableModel(
                     new String[] {"Mã", "Loại yêu cầu", "Người gửi", "Thời gian", "Trạng thái"},
                     0) {
-                /**
-                 * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                 *
-                 * @param dongDuLieu dòng dữ liệu
-                 * @param giaTriDangXet giá trị đang xét
-                 * @return kết quả kiểm tra điều kiện xử lý
-                 */
                 @Override
                 public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                     return false;
                 }
             };
 
-    /** Bảng. */
     private final JTable tblBang;
 
-    /** Đã hiển thị. */
     private final List<YeuCau> daHienThi = new ArrayList<>();
 
-    /** Đang chờ chỉ. */
     private final JCheckBox btnDangChoChi = new JCheckBox("Chỉ hiện yêu cầu chờ duyệt", true);
 
-    /** Chi tiết. */
     private final JPanel pnlChiTiet = new JPanel(new BorderLayout(0, 8));
 
-    /** Bộ đếm. */
     private final JLabel lblBoDem = new JLabel();
 
-    /** Đã chọn. */
     private YeuCau daChon;
 
     public TrungTamPheDuyetPanel() {
         setLayout(new BorderLayout(0, 10));
-        // Trên.
+
         JPanel pnlTren = taoVungTrongSuot(new BorderLayout(10, 0));
         pnlTren.add(taoTieuDeMuc("Danh sách yêu cầu"), BorderLayout.WEST);
-        // Phải.
+
         JPanel pnlPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         pnlPhai.setOpaque(false);
         lblBoDem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
@@ -91,14 +71,13 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         pnlTren.add(pnlPhai, BorderLayout.EAST);
         add(pnlTren, BorderLayout.NORTH);
 
-        // Cuộn.
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         suKien -> {
                             if (suKien.getValueIsAdjusting()) return;
-                            // Dòng dữ liệu.
+
                             int dongDuLieu = tblBang.getSelectedRow();
                             daChon =
                                     dongDuLieu < 0
@@ -113,11 +92,11 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.VIEN),
                         new EmptyBorder(14, 16, 14, 16)));
-        // Vùng chứa.
+
         JPanel pnlVungChua = new JPanel(new BorderLayout());
         pnlVungChua.setPreferredSize(new Dimension(420, 0));
         pnlVungChua.add(pnlChiTiet);
-        // Tách.
+
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, pnlVungChua);
         tach.setResizeWeight(1.0);
         tach.setBorder(null);
@@ -136,11 +115,10 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
     }
 
     private void taiLai() {
-        // Giữ.
         YeuCau giu = daChon;
         daHienThi.clear();
         moHinh.setRowCount(0);
-        // Tất cả.
+
         List<YeuCau> tatCa = new ArrayList<>(PheDuyetService.layTatCa());
 
         for (YeuCau dongDuLieu : tatCa) {
@@ -155,11 +133,11 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
                         dongDuLieu.trangThai
                     });
         }
-        // Đang chờ.
+
         long dangCho = PheDuyetService.demChoDuyet();
         lblBoDem.setText(
                 dangCho == 0 ? "Không có yêu cầu chờ duyệt" : dangCho + " yêu cầu chờ duyệt");
-        // Chỉ số.
+
         int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
         if (chiSo >= 0) tblBang.setRowSelectionInterval(chiSo, chiSo);
         else {
@@ -171,14 +149,12 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
     private void hienThiChiTiet() {
         pnlChiTiet.removeAll();
         if (daChon == null) {
-            // Gợi ý.
             JLabel lblGoiY = new JLabel("Chọn một yêu cầu để xem chi tiết.", JLabel.CENTER);
             lblGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
             pnlChiTiet.add(lblGoiY, BorderLayout.CENTER);
         } else {
-            // Dòng dữ liệu.
             YeuCau dongDuLieu = daChon;
-            // Đầu.
+
             JPanel pnlDau = new JPanel(new GridLayout(0, 1, 0, 3));
             pnlDau.setOpaque(false);
             JLabel lblGiaTriTam = new JLabel(dongDuLieu.id + " · " + dongDuLieu.loai.nhan);
@@ -201,16 +177,14 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
                                             : " (" + dongDuLieu.tuChoiLyDo + ")")));
             pnlChiTiet.add(pnlDau, BorderLayout.NORTH);
 
-            // So sánh.
             JPanel pnlSoSanh = new JPanel(new GridLayout(1, 2, 10, 0));
             pnlSoSanh.setOpaque(false);
             pnlSoSanh.add(layHop("Trước khi sửa", dongDuLieu.truoc, new Color(0xF5, 0xF5, 0xF5)));
             pnlSoSanh.add(layHop("Sau khi sửa", dongDuLieu.sau, new Color(0xE6, 0xF4, 0xEA)));
             pnlChiTiet.add(pnlSoSanh, BorderLayout.CENTER);
 
-            // Đang chờ.
             boolean dangCho = dongDuLieu.trangThai.equals("Chờ duyệt");
-            // Các nút.
+
             JPanel pnlCacNut = new JPanel(new GridLayout(1, 3, 8, 0));
 
             NutDinhDang btnBoSung = new NutDinhDang(
@@ -236,9 +210,9 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             });
 
             pnlCacNut.setOpaque(false);
-            // Duyệt.
+
             NutDinhDang btnDuyet = new NutDinhDang("Duyệt", NutDinhDang.KieuNut.THANH_CONG);
-            // Từ chối.
+
             NutDinhDang btnTuChoi = new NutDinhDang("Từ chối", NutDinhDang.KieuNut.NGUY_HIEM);
             btnDuyet.setEnabled(dangCho);
             btnTuChoi.setEnabled(dangCho);
@@ -254,7 +228,6 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
     }
 
     private static JLabel layDong(String khoaDangXet, String giaTri) {
-        // Dòng đang xét.
         JLabel lblDongDangXet =
                 new JLabel(
                         "<html><span style='color:#7a7a7a'>"
@@ -269,11 +242,11 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
     private static JPanel layHop(String tieuDe, String vanBan, Color nen) {
         JPanel pnlVungDangXet = new JPanel(new BorderLayout(0, 4));
         pnlVungDangXet.setOpaque(false);
-        // Dòng đang xét.
+
         JLabel lblDongDangXet = new JLabel(tieuDe);
         lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         lblDongDangXet.setForeground(MauUngDung.VAN_BAN_XAM);
-        // Giá trị đầu.
+
         JTextArea txtGiaTriDau = new JTextArea(vanBan);
         txtGiaTriDau.setEditable(false);
         txtGiaTriDau.setLineWrap(true);

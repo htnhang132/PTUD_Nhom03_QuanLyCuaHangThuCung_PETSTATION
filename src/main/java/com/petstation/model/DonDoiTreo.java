@@ -1,6 +1,5 @@
 package com.petstation.model;
 
-/** Nháp đổi phụ kiện; cho phép chưa chọn hàng gốc hoặc hàng thay thế. */
 public record DonDoiTreo(
         String timHoaDon, long dongGoc, String maThayThe, String timHang,
         int soLuong, String lyDo, boolean nguyenTem, boolean chuaDung) implements java.io.Serializable {

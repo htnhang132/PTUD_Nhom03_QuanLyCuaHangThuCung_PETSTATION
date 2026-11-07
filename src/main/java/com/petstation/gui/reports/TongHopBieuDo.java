@@ -6,7 +6,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/** Tổng hợp chỉ cho biểu đồ; không rút gọn bảng hoặc dữ liệu xuất. */
 public final class TongHopBieuDo {
     private TongHopBieuDo() {}
 

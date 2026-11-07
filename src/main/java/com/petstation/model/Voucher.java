@@ -5,16 +5,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Thực thể Voucher / Phiếu giảm giá khớp bảng [voucher].
- * Khóa chính: maVoucher.
- */
 public class Voucher implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã voucher (ví dụ: VOUCHER000001). */
     private String maVoucher;
-    /** Quan hệ kết hợp: Voucher có thể thuộc sở hữu riêng của một Khách hàng (null nếu dùng chung). */
+
     private KhachHang khachHang;
     private long menhGia;
     private LocalDateTime hieuLucDen;
@@ -26,19 +21,16 @@ public class Voucher implements Serializable {
     private String trangThai;
     private String khoaDoiDiem;
 
-    /** Constructor mặc định. */
     public Voucher() {
         this.soLuong = 1;
         this.trangThai = "CON_HAN";
     }
 
-    /** Constructor chỉ có khóa chính. */
     public Voucher(String maVoucher) {
         this();
         setMaVoucher(maVoucher);
     }
 
-    /** Constructor chuẩn OOP nhận khóa chính maVoucher và đối tượng KhachHang. */
     public Voucher(
             String maVoucher,
             KhachHang khachHang,
@@ -65,7 +57,6 @@ public class Voucher implements Serializable {
         setKhoaDoiDiem(khoaDoiDiem);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public Voucher(long id) {
         this();
         setId(id);
@@ -116,21 +107,15 @@ public class Voucher implements Serializable {
                 khoaDoiDiem);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính số lượt sử dụng còn lại của voucher (thuộc tính dẫn xuất: soLuong - daDung). */
     public int tinhSoLuotConLai() {
         return Math.max(0, soLuong - daDung);
     }
 
-    /** Kiểm tra voucher còn hiệu lực sử dụng hay không (dẫn xuất). */
     public boolean kiemTraConHieuLuc() {
         return "CON_HAN".equalsIgnoreCase(trangThai)
                 && tinhSoLuotConLai() > 0
                 && (hieuLucDen == null || hieuLucDen.isAfter(LocalDateTime.now()));
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaVoucher() { return this.maVoucher; }
     public String layMaVoucher() { return this.maVoucher; }
@@ -214,8 +199,6 @@ public class Voucher implements Serializable {
     public void setKhoaDoiDiem(String khoaDoiDiem) { this.khoaDoiDiem = khoaDoiDiem; }
     public void datKhoaDoiDiem(String khoaDoiDiem) { setKhoaDoiDiem(khoaDoiDiem); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maVoucher); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -235,8 +218,6 @@ public class Voucher implements Serializable {
         this.khachHang = khachHangId == null ? null : new KhachHang(khachHangId);
     }
     public void datKhachHangId(Long khachHangId) { setKhachHangId(khachHangId); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maVoucher) ====================
 
     @Override
     public boolean equals(Object o) {

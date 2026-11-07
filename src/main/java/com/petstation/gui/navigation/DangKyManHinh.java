@@ -60,43 +60,32 @@ import java.util.function.Consumer;
 
 import javax.swing.JPanel;
 
-/** Đăng ký panel, tiêu đề, quyền và điều kiện mở ca cho từng mã màn hình. */
 public final class DangKyManHinh {
-    /** Các màn bán hàng chỉ dùng được khi đã mở ca. */
-    /** Cần mở ca làm việc. */
     private static final Set<MaManHinh> CAN_MO_CA_LAM_VIEC =
             EnumSet.of(MaManHinh.LAP_HOA_DON, MaManHinh.THANH_TOAN);
 
-    /** Phiên đăng nhập. */
     private final PhienDangNhap phienDangNhap;
 
-    /** Bộ điều hướng. */
     private final Consumer<MaManHinh> boDieuHuong;
-    /** Đường quay lại riêng từ màn hình thanh toán. */
+
     private final Consumer<MaManHinh> quayLaiTuThanhToan;
 
-    /** Các định nghĩa. */
     private final Map<MaManHinh, DinhNghiaManHinh> cacDinhNghia = new EnumMap<>(MaManHinh.class);
 
-    /** Ca làm việc. */
     private final CaThuNganService caLamViec = new CaThuNganService();
 
-    /** Bán hàng. */
     private final GioHang banHang = com.petstation.service.GioHangService.tao();
 
-    /** Tương thích với các điểm khởi tạo cũ. */
     public DangKyManHinh(
             PhienDangNhap phienDangNhap,
             Consumer<MaManHinh> boDieuHuong) {
         this(phienDangNhap, boDieuHuong, boDieuHuong);
     }
 
-    /** Khởi tạo với callback quay lại thanh toán riêng. */
     public DangKyManHinh(
             PhienDangNhap phienDangNhap,
             Consumer<MaManHinh> boDieuHuong,
             Consumer<MaManHinh> quayLaiTuThanhToan) {
-
         this.phienDangNhap = phienDangNhap;
         this.boDieuHuong = boDieuHuong;
         this.quayLaiTuThanhToan =
@@ -121,7 +110,6 @@ public final class DangKyManHinh {
     private void dangKyTatCa() {
         dangKy(MaManHinh.TONG_QUAN, "Màn hình chính", "Chọn một công việc để bắt đầu.", null);
 
-        // 1. Hệ thống
         dangKy(
                 MaManHinh.DOI_MAT_KHAU,
                 "Đổi mật khẩu",
@@ -143,7 +131,6 @@ public final class DangKyManHinh {
                 "Chỉ đọc: thời gian, người dùng, thao tác, đối tượng.",
                 Quyen.XEM_NHAT_KY);
 
-        // 2. Danh mục (chỉ CRUD)
         dangKy(
                 MaManHinh.DANH_MUC_KHACH_HANG,
                 "Khách hàng",
@@ -186,7 +173,6 @@ public final class DangKyManHinh {
                 "Quy tắc điểm, hạng thành viên và voucher.",
                 Quyen.QUAN_LY_KHACH_HANG);
 
-        // 3. Tìm kiếm (chỉ xem)
         dangKy(
                 MaManHinh.TIM_KIEM_HOA_DON,
                 "Tìm kiếm hóa đơn",
@@ -223,7 +209,6 @@ public final class DangKyManHinh {
                 "Ca của bạn, ngày nghỉ, tổng giờ trong tháng.",
                 Quyen.XEM_LICH_LAM_VIEC);
 
-        // 4. Xử lý: bán hàng
         dangKy(
                 MaManHinh.LAP_HOA_DON,
                 "Lập hóa đơn",
@@ -246,7 +231,6 @@ public final class DangKyManHinh {
                 "Tìm hóa đơn gốc và đổi phụ kiện, thu chênh lệch.",
                 Quyen.BAN_HANG);
 
-        // 4. Xử lý: Spa (danh sách phiếu đang chạy, rồi 5 bước)
         dangKy(
                 MaManHinh.QUAN_LY_SPA,
                 "Lập phiếu Spa",
@@ -278,7 +262,6 @@ public final class DangKyManHinh {
                 "Chốt tổng tiền rồi chuyển sang Thanh toán.",
                 Quyen.QUAN_LY_SPA);
 
-        // 4. Xử lý: ThuCung Hotel (danh sách thú đang lưu trú, rồi 3 bước)
         dangKy(
                 MaManHinh.QUAN_LY_LUU_TRU,
                 "Quản lý lưu trú",
@@ -300,7 +283,6 @@ public final class DangKyManHinh {
                 "Số ngày × giá phòng + phụ phí trễ + dịch vụ − tiền cọc.",
                 Quyen.QUAN_LY_LUU_TRU);
 
-        // 4. Xử lý: kho, ca, lịch, phê duyệt
         dangKy(
                 MaManHinh.NHAP_KHO,
                 "Lập phiếu nhập kho",
@@ -332,7 +314,6 @@ public final class DangKyManHinh {
                 "Duyệt hoặc từ chối yêu cầu (chỉ Cửa hàng trưởng).",
                 Quyen.XU_LY_PHE_DUYET);
 
-        // 5. Thống kê (chỉ xem và xuất)
         dangKy(
                 MaManHinh.THONG_KE_DOANH_THU,
                 "Thống kê doanh thu",
@@ -379,7 +360,6 @@ public final class DangKyManHinh {
     }
 
     public boolean coTheTruyCap(MaManHinh id) {
-        // Ngày đang xét.
         DinhNghiaManHinh ngayDangXet = layDinhNghia(id);
         return ngayDangXet != null
                 && (ngayDangXet.quyen() == null || phienDangNhap.kiemTraCo(ngayDangXet.quyen()));
@@ -397,7 +377,7 @@ public final class DangKyManHinh {
                     "Bạn không có quyền mở màn hình này.");
         return switch (id) {
             case TONG_QUAN -> new TongQuanPanel(boDieuHuong, this::coTheTruyCap, caLamViec);
-            // Hệ thống
+
             case DOI_MAT_KHAU -> new DoiMatKhauPanel(boDieuHuong);
             case TAI_KHOAN_PHAN_QUYEN -> new TaiKhoanPhanQuyenPanel();
             case CAI_DAT ->
@@ -406,7 +386,7 @@ public final class DangKyManHinh {
                                     || phienDangNhap.docVaiTro()
                                             == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG);
             case NHAT_KY_HE_THONG -> new NhatKyHeThongPanel();
-            // Danh mục
+
             case DANH_MUC_KHACH_HANG -> new DanhMucKhachHangPanel();
             case DANH_MUC_THU_CUNG -> new DanhMucThuCungPanel();
             case DANH_MUC_NHAN_VIEN -> new DanhMucNhanVienPanel();
@@ -416,7 +396,7 @@ public final class DangKyManHinh {
             case DANH_MUC_NHA_CUNG_CAP -> new DanhMucNhaCungCapPanel();
             case DANH_MUC_KHUYEN_MAI -> new DanhMucKhuyenMaiPanel();
             case TICH_DIEM_VOUCHER -> new TichDiemVoucherPanel();
-            // Tìm kiếm
+
             case TIM_KIEM_HOA_DON -> new TimKiemHoaDonPanel(banHang, boDieuHuong);
             case TRA_CUU_KHACH_HANG -> new LichSuKhachHangPanel();
             case TRA_CUU_LO_HANG -> new TimKiemTonTheoLoPanel(banHang, boDieuHuong);
@@ -428,7 +408,7 @@ public final class DangKyManHinh {
             case LICH_CA_NHAN ->
                     new LichCaNhanPanel(
                             phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
-            // Xử lý: bán hàng
+
             case LAP_HOA_DON -> new LapHoaDonPanel(banHang, boDieuHuong);
             case THANH_TOAN ->
             new ThanhToanPanel(
@@ -440,8 +420,7 @@ public final class DangKyManHinh {
             case IN_HOA_DON -> new InHoaDonPanel(banHang, boDieuHuong);
             case HOA_DON_CHO -> new DonHangTreoPanel(banHang, boDieuHuong);
             case DOI_TRA_HANG_HOA -> new DoiTraPanel(banHang, boDieuHuong);
-            // Xử lý: Spa
-            // Các bước xử lý và quay lại từ thanh toán dùng cùng giao diện danh sách.
+
             case QUAN_LY_SPA,
                  TIEP_NHAN_SPA,
                  CHON_GOI_SPA,
@@ -451,12 +430,11 @@ public final class DangKyManHinh {
 
             case DAT_LICH_HEN_SPA -> new LichHenSpaPanel(banHang, boDieuHuong);
 
-            // Xử lý: ThuCung Hotel
             case QUAN_LY_LUU_TRU -> new LuuTruHotelPanel(banHang, boDieuHuong);
             case DAT_PHONG_LUU_TRU -> new DatPhongHotelPanel(banHang, boDieuHuong);
             case NHAT_KY_CHAM_SOC -> new NhatKyLuuTruPanel(banHang, boDieuHuong);
             case TRA_PHONG_LUU_TRU -> new QuyetToanLuuTruPanel(banHang, boDieuHuong);
-            // Xử lý: kho, ca, lịch, phê duyệt
+
             case NHAP_KHO -> new NhapKhoPanel(banHang, boDieuHuong);
             case XUAT_HUY_KHO -> new XuatHuyKhoPanel(banHang, boDieuHuong);
             case KIEM_KE_TON_KHO -> new KiemKePanel(banHang, boDieuHuong);
@@ -465,7 +443,7 @@ public final class DangKyManHinh {
                     new PhanLichNhanVienPanel(
                             phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
             case PHE_DUYET_YEU_CAU -> new TrungTamPheDuyetPanel();
-            // Thống kê
+
             case THONG_KE_DOANH_THU -> new ThongKeDoanhThuPanel();
             case THONG_KE_HANG_HOA -> new ThongKeHangHoaPanel();
             case THONG_KE_SPA -> new ThongKeSpaPanel();

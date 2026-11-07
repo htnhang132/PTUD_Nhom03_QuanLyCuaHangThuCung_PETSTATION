@@ -19,32 +19,19 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho lịch sử khách hàng vùng hiển thị.
- *
- * <p>Tìm kiếm ▸ Lịch sử khách hàng. Bước 1: tìm và chọn khách. Bước 2: xem hóa đơn, phiếu Spa, lưu
- * trú, thú cưng, điểm của khách đó (chỉ đọc).
- */
 public final class LichSuKhachHangPanel extends CoSoPanel {
-    /** Chọn. */
     private static final String CHON = "pick";
 
-    /** Chi tiết. */
     private static final String CHI_TIET = "detail";
 
-    /** Các thẻ. */
     private final CardLayout cacThe = new CardLayout();
 
-    /** Gốc. */
     private final JPanel pnlGoc = new JPanel(cacThe);
 
-    /** Chi tiết vùng chứa. */
     private final JPanel pnlChiTietVungChua = new JPanel(new BorderLayout());
 
-    /** Bảng. */
     private final JTable tblBang;
 
-    /** Mô hình. */
     private DefaultTableModel moHinh;
 
     private static void taiLaiCacKhachHang(DefaultTableModel moHinhDangXet) {
@@ -62,7 +49,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         }
     }
 
-    /** Hiển thị. */
     private final NutDinhDang btnHienThi =
             new NutDinhDang("Xem lịch sử ▸", NutDinhDang.KieuNut.CHINH);
 
@@ -70,20 +56,18 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         setLayout(new BorderLayout());
         pnlGoc.setOpaque(false);
 
-        // ── Bước 1: chọn khách
-        // Chọn.
         JPanel pnlChon = new JPanel(new BorderLayout(0, 12));
         pnlChon.setOpaque(false);
-        // Tiêu đề.
+
         JLabel lblTieuDe = taoTieuDeMuc("Chọn khách hàng cần xem lịch sử");
-        // Tìm kiếm.
+
         JTextField txtTimKiem = taoOTimKiem("Nhập tên, SĐT hoặc mã khách...");
         btnHienThi.setEnabled(false);
-        // Thanh.
+
         JPanel pnlThanh = new JPanel(new BorderLayout(10, 0));
         pnlThanh.setOpaque(false);
         pnlThanh.add(lblTieuDe, BorderLayout.NORTH);
-        // Phải.
+
         JPanel pnlPhai = new com.petstation.gui.components.ThanhDanhSach();
         pnlPhai.setOpaque(false);
         pnlPhai.add(txtTimKiem);
@@ -91,18 +75,10 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         pnlThanh.add(pnlPhai, BorderLayout.CENTER);
         pnlChon.add(pnlThanh, BorderLayout.NORTH);
 
-        // Các cột.
         String[] cacCot = {"Mã KH", "Họ và tên", "Số điện thoại", "Địa chỉ", "Hạng thẻ", "Điểm"};
-        // Mô hình.
+
         DefaultTableModel moHinh =
                 new DefaultTableModel(cacCot, 0) {
-                    /**
-                     * Kiểm tra ô có thể sửa trong lớp xử lý giao diện.
-                     *
-                     * @param dongDuLieu dòng dữ liệu
-                     * @param giaTriDangXet giá trị đang xét
-                     * @return kết quả kiểm tra điều kiện xử lý
-                     */
                     @Override
                     public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                         return false;
@@ -110,13 +86,13 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                 };
         taiLaiCacKhachHang(moHinh);
         this.moHinh = moHinh;
-        // Cuộn.
+
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         DinhDangBang.apDung(tblBang);
         lienKetBoLoc(txtTimKiem, tblBang);
         pnlChon.add(scrCuon, BorderLayout.CENTER);
-        // Gợi ý.
+
         JLabel lblGoiY =
                 new JLabel("Bấm 2 lần vào một dòng hoặc chọn dòng rồi bấm \"Xem lịch sử\".");
         lblGoiY.setFont(MauUngDung.taoPhongChu(java.awt.Font.PLAIN, 12));
@@ -129,11 +105,6 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         btnHienThi.addActionListener(suKien -> moDaChon());
         tblBang.addMouseListener(
                 new MouseAdapter() {
-                    /**
-                     * Lấy chuột đã bấm trong lớp xử lý giao diện.
-                     *
-                     * @param suKien sự kiện
-                     */
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
                         if (suKien.getClickCount() == 2 && tblBang.getSelectedRow() >= 0)
@@ -141,15 +112,13 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                     }
                 });
 
-        // ── Bước 2: chi tiết
-        // Chi tiết.
         JPanel pnlChiTiet = new JPanel(new BorderLayout(0, 8));
         pnlChiTiet.setOpaque(false);
-        // Quay lại.
+
         NutDinhDang btnQuayLai =
                 new NutDinhDang("◀ Chọn khách khác", NutDinhDang.KieuNut.TRONG_SUOT);
         btnQuayLai.addActionListener(suKien -> cacThe.show(pnlGoc, CHON));
-        // Quay lại thanh.
+
         JPanel pnlQuayLaiThanh = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlQuayLaiThanh.setOpaque(false);
         pnlQuayLaiThanh.setBorder(new EmptyBorder(0, 0, 4, 0));
@@ -166,7 +135,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private void moDaChon() {
         int dong = tblBang.getSelectedRow();
         if (dong < 0) return;
-        // Mô hình đang xét.
+
         int moHinhDangXet = tblBang.convertRowIndexToModel(dong);
         java.util.function.IntFunction<String> giaTri =
                 giaTriDangXet ->

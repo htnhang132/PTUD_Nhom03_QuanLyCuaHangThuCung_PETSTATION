@@ -4,7 +4,6 @@ import com.petstation.model.LoaiDanhMuc;
 
 import java.util.*;
 
-/** Thao tác dữ liệu cho DanhMuc; service gọi qua hợp đồng này. */
 public interface DanhMucDAO {
     List<Object[]> layLichSuGia();
 

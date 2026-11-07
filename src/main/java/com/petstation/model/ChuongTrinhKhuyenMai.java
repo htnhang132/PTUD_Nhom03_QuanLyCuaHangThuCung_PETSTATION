@@ -5,14 +5,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Thực thể Chương trình khuyến mãi khớp bảng [chuong_trinh_khuyen_mai].
- * Khóa chính: maChuongTrinh.
- */
 public class ChuongTrinhKhuyenMai implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã chương trình khuyến mãi (ví dụ: KM000001). */
     private String maChuongTrinh;
     private String ten;
     private String loaiGiam;
@@ -23,18 +18,15 @@ public class ChuongTrinhKhuyenMai implements Serializable {
     private String trangThai;
     private long donToiThieu;
 
-    /** Constructor mặc định. */
     public ChuongTrinhKhuyenMai() {
         this.trangThai = "Đang áp dụng";
     }
 
-    /** Constructor chỉ có khóa chính. */
     public ChuongTrinhKhuyenMai(String maChuongTrinh) {
         this();
         setMaChuongTrinh(maChuongTrinh);
     }
 
-    /** Constructor đầy đủ thuộc tính thường. */
     public ChuongTrinhKhuyenMai(
             String maChuongTrinh,
             String ten,
@@ -57,7 +49,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         setDonToiThieu(donToiThieu);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public ChuongTrinhKhuyenMai(long id) {
         this();
         setId(id);
@@ -78,9 +69,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         setId(id);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra chương trình khuyến mãi có đang trong thời hạn hiệu lực hay không (dẫn xuất). */
     public boolean kiemTraDangHieuLuc() {
         LocalDateTime hienTai = LocalDateTime.now();
         return !"Ngừng áp dụng".equalsIgnoreCase(trangThai)
@@ -88,7 +76,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
                 && (ketThuc == null || !hienTai.isAfter(ketThuc));
     }
 
-    /** Tính số tiền giảm giá cho một mức tiền cơ sở (thuộc tính dẫn xuất). */
     public long tinhSoTienGiam(long tienCoSo) {
         if (tienCoSo <= 0 || tienCoSo < donToiThieu || !kiemTraDangHieuLuc()) {
             return 0L;
@@ -98,8 +85,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         }
         return Math.min(tienCoSo, Math.round(giaTri));
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaChuongTrinh() {
         return this.maChuongTrinh;
@@ -285,8 +270,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         setDonToiThieu(donToiThieu);
     }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() {
         return DuLieu.layIdCauNoi(this, maChuongTrinh);
     }
@@ -311,8 +294,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maChuongTrinh) ====================
 
     @Override
     public boolean equals(Object o) {

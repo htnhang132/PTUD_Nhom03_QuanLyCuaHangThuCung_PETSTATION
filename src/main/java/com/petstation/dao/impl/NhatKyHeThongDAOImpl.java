@@ -8,11 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-/** Thực hiện truy vấn JDBC cho JDBC nhật ký hệ thống DAO. */
 public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
     @Override
     public void them(Connection ketNoi, NhatKyHeThong muc) throws Exception {
-        // SQL.
         String sql =
                 """
                 INSERT INTO nhat_ky_he_thong

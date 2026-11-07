@@ -20,43 +20,32 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Cung cấp giao diện và xử lý tương tác cho tích lũy các quy tắc vùng hiển thị.
- *
- * <p>Điểm thưởng và voucher ▸ Quy tắc điểm: bao nhiêu đồng được 1 điểm, 1 điểm đổi bao nhiêu đồng,
- * ngưỡng hạng thành viên.
- */
 public final class QuyTacTichDiemPanel extends CoSoPanel {
-    /** Tích điểm. */
     private final JTextField txtTichDiem = taoTruong();
 
-    /** Đổi điểm. */
     private final JTextField txtDoiDiem = taoTruong();
 
-    /** Các hạng. */
     private final JTextField[] cacHang = {taoTruong(), taoTruong(), taoTruong(), taoTruong()};
 
-    /** Hạng các tên. */
     private static final String[] HANG_CAC_TEN = {"Bạc", "Vàng", "Bạch Kim", "Kim Cương"};
 
-    /** Thông báo. */
     private final JLabel lblThongBao = new JLabel(" ");
 
     public QuyTacTichDiemPanel() {
         setLayout(new BorderLayout(0, 10));
         add(taoTieuDeMuc("Quy tắc tích điểm và hạng thành viên"), BorderLayout.NORTH);
-        // Thẻ.
+
         JPanel pnlThe = new JPanel(new GridBagLayout());
         pnlThe.setBackground(java.awt.Color.WHITE);
         pnlThe.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.VIEN),
                         new EmptyBorder(16, 18, 16, 18)));
-        // Giá trị đang xét.
+
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(6, 0, 6, 12);
         giaTriDangXet.anchor = GridBagConstraints.WEST;
-        // Tọa độ dọc.
+
         int toaDoDoc = 0;
         layDong(
                 pnlThe,
@@ -72,7 +61,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 "200 điểm đổi voucher Spa (hạn 60 ngày)",
                 txtDoiDiem,
                 "₫");
-        // Đầu.
+
         JLabel lblDau = new JLabel("Hạng thành viên (theo tổng chi tiêu từ):");
         lblDau.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         giaTriDangXet.gridx = 0;
@@ -95,7 +84,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         giaTriDangXet.gridy = toaDoDoc++;
         giaTriDangXet.gridwidth = 3;
         pnlThe.add(lblThongBao, giaTriDangXet);
-        // Lưu.
+
         NutDinhDang btnLuu = new NutDinhDang("Lưu quy tắc", NutDinhDang.KieuNut.THANH_CONG);
         btnLuu.setEnabled(
                 com.petstation.service.PhienDangNhapService.layPhien()
@@ -111,7 +100,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         giaTriDangXet.gridy = toaDoDoc;
         giaTriDangXet.fill = GridBagConstraints.NONE;
         pnlThe.add(btnLuu, giaTriDangXet);
-        // Vùng chứa.
+
         JPanel pnlVungChua = taoVungTrongSuot(new BorderLayout());
         pnlVungChua.add(pnlThe, BorderLayout.NORTH);
         add(pnlVungChua, BorderLayout.CENTER);
@@ -152,9 +141,8 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
     }
 
     private void luu() {
-        // Sự kiện.
         long suKien = TienTe.doc(txtTichDiem.getText());
-        // Dòng dữ liệu.
+
         long dongDuLieu = 0;
         long[] giaTriTam = new long[4];
         for (int chiSo = 0; chiSo < 4; chiSo++)

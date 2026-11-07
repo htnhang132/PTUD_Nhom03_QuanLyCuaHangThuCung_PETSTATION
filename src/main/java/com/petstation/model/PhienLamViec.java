@@ -6,18 +6,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Thực thể Phiên làm việc / Ca thu ngân khớp bảng [phien_lam_viec].
- * Khóa chính: maPhien.
- */
 public class PhienLamViec implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính (PK): Mã phiên làm việc (ví dụ: MPI00000001). */
     private String maPhien;
-    /** Quan hệ kết hợp: Phiên làm việc gắn với một Lịch phân ca (có thể null nếu mở ca đột xuất). */
+
     private LichLamViec lichLamViec;
-    /** Quan hệ kết hợp: Tài khoản nhân viên mở phiên làm việc. */
+
     private TaiKhoan taiKhoan;
     private LocalDateTime moLuc;
     private LocalDateTime dongLuc;
@@ -27,23 +22,20 @@ public class PhienLamViec implements Serializable {
     private String giaiTrinh;
     private String trangThai;
     private String tenCa;
-    /** Quan hệ kết hợp: Tài khoản người nhận bàn giao ca (có thể null). */
+
     private TaiKhoan nguoiNhanBanGiao;
     private String hinhThucBanGiao;
 
-    /** Constructor mặc định. */
     public PhienLamViec() {
         this.trangThai = "DANG_MO";
         this.moLuc = LocalDateTime.now();
     }
 
-    /** Constructor chỉ có khóa chính. */
     public PhienLamViec(String maPhien) {
         this();
         setMaPhien(maPhien);
     }
 
-    /** Constructor chuẩn OOP nhận khóa chính maPhien và đối tượng thực thể liên kết. */
     public PhienLamViec(
             String maPhien,
             LichLamViec lichLamViec,
@@ -74,7 +66,6 @@ public class PhienLamViec implements Serializable {
         setHinhThucBanGiao(hinhThucBanGiao);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public PhienLamViec(long id) {
         this();
         setId(id);
@@ -131,21 +122,15 @@ public class PhienLamViec implements Serializable {
                 hinhThucBanGiao);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Tính chênh lệch két tiền mặt cuối ca (thuộc tính dẫn xuất: tienThucTe - (tienDauCa + tongThuTienMatTrongCa)). */
     public long tinhChenhLechKetTien(long tongThuTienMatTrongCa) {
         return tienThucTe - (tienDauCa + tongThuTienMatTrongCa);
     }
 
-    /** Tính thời lượng phiên làm việc theo số phút (thuộc tính dẫn xuất từ moLuc và dongLuc). */
     public long tinhSoPhutPhien() {
         if (moLuc == null) return 0L;
         LocalDateTime ketThuc = dongLuc != null ? dongLuc : LocalDateTime.now();
         return Math.max(0L, Duration.between(moLuc, ketThuc).toMinutes());
     }
-
-    // ==================== GETTER & SETTER ====================
 
     public String getMaPhien() { return this.maPhien; }
     public String layMaPhien() { return this.maPhien; }
@@ -228,8 +213,6 @@ public class PhienLamViec implements Serializable {
     public void setHinhThucBanGiao(String hinhThucBanGiao) { this.hinhThucBanGiao = hinhThucBanGiao; }
     public void datHinhThucBanGiao(String hinhThucBanGiao) { setHinhThucBanGiao(hinhThucBanGiao); }
 
-    // ==================== CẦU NỐI TƯƠNG THÍCH TẦNG DAO ====================
-
     public long getId() { return DuLieu.layIdCauNoi(this, maPhien); }
     public long layId() { return getId(); }
     public long id() { return getId(); }
@@ -262,8 +245,6 @@ public class PhienLamViec implements Serializable {
         this.nguoiNhanBanGiao = nguoiNhanBanGiaoId == null ? null : new TaiKhoan(nguoiNhanBanGiaoId);
     }
     public void datNguoiNhanBanGiaoId(Long nguoiNhanBanGiaoId) { setNguoiNhanBanGiaoId(nguoiNhanBanGiaoId); }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (maPhien) ====================
 
     @Override
     public boolean equals(Object o) {

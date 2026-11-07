@@ -7,7 +7,6 @@ import com.petstation.model.*;
 
 import java.util.*;
 
-/** Dữ liệu chứng từ sau cùng phạm vi quyền với báo cáo, không dùng truy vấn GUI không giới hạn. */
 public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
     public ChiTietThongKeDAOImpl() {}
 
@@ -18,6 +17,9 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
         String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, 3, 20) AS BIGINT) = " + nhanVien + ")";
         Object tu = ky.tuNgay(), den = ky.layCanTren();
         if (baoCao.contains("doanh thu")) {
+            if (goc.equals("Theo khung giờ") || goc.equals("Theo thứ trong tuần")) {
+                return null;
+            }
             String source =
                     "CASE WHEN EXISTS(SELECT 1 FROM phieu_tiep_nhan_spa t WHERE t.ma_hoa_don=h.ma_hoa_don)"
                             + " THEN 'Spa' WHEN EXISTS(SELECT 1 FROM hop_dong_luu_tru t WHERE"
@@ -285,6 +287,9 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                                       + " AS date))"
                                                 : "")),
                         1);
+            if (goc.equals("Hàng tồn đọng / chôn vốn") || goc.equals("Hao hụt từ kiểm kê")) {
+                return null;
+            }
             String ledger =
                     "SELECT n.ma_phieu_nhap chung_tu,p.ma_san_pham,p.ten,N'Nhập kho' loai,n.ngay_nhap"
                         + " ngay,c.so_luong FROM chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n ON"

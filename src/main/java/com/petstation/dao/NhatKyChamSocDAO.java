@@ -2,7 +2,6 @@ package com.petstation.dao;
 
 import java.util.List;
 
-/** Thao tác dữ liệu cho ChamSoc; service gọi qua hợp đồng này. */
 public interface NhatKyChamSocDAO {
     List<Object[]> layLichSu(boolean spa, long id);
 

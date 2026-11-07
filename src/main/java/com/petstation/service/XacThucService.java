@@ -18,24 +18,17 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/** Điều phối nghiệp vụ và kiểm tra dữ liệu cho xác thực dịch vụ. */
 public final class XacThucService {
-    /** Lớn nhất thất bại số lần thử. */
     private static final int LON_NHAT_THAT_BAI_SO_LAN_THU = 5;
 
-    /** Khóa số phút. */
     private static final int KHOA_SO_PHUT = 15;
 
-    /** Các giao dịch. */
     private final QuanLyGiaoDich cacGiaoDich;
 
-    /** Danh sách tài khoản. */
     private final TaiKhoanDAO danhSachTaiKhoan;
 
-    /** Các nhân viên. */
     private final NhanVienDAO cacNhanVien;
 
-    /** Nhật ký hệ thống các nhật ký. */
     private final NhatKyHeThongDAO nhatKyHeThongCacNhatKy;
 
     public XacThucService(
@@ -50,7 +43,6 @@ public final class XacThucService {
     }
 
     public PhienDangNhap dangNhap(String chuaXuLyTenDangNhap, char[] matKhau) {
-        // Tên đăng nhập.
         String tenDangNhap = chuaXuLyTenDangNhap == null ? "" : chuaXuLyTenDangNhap.trim();
         if (tenDangNhap.isEmpty()) {
             throw new XacThucException("Vui lòng nhập tên đăng nhập.");
@@ -63,7 +55,6 @@ public final class XacThucService {
             KetQuaDangNhap ketQua =
                     cacGiaoDich.thucThi(
                             ketNoi -> {
-                                // Tài khoản.
                                 TaiKhoan taiKhoan =
                                         danhSachTaiKhoan
                                                 .timTheoTenDangNhap(ketNoi, tenDangNhap)
@@ -72,7 +63,7 @@ public final class XacThucService {
                                     return KetQuaDangNhap.taoLoi(
                                             "Tên đăng nhập hoặc mật khẩu không đúng.");
                                 }
-                                // Hiện tại.
+
                                 LocalDateTime hienTai = LocalDateTime.now();
 
                                 if (taiKhoan.trangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
@@ -97,12 +88,10 @@ public final class XacThucService {
                                                     + ".");
                                 }
 
-                                // Được cung cấp mật khẩu.
                                 String duocCungCapMatKhau = new String(matKhau);
                                 if (!BCrypt.checkpw(duocCungCapMatKhau, taiKhoan.maBamMatKhau())) {
-                                    // Số lượng thất bại.
                                     int soLuongThatBai = taiKhoan.soLanDangNhapSai() + 1;
-                                    // Khóa đến lúc.
+
                                     LocalDateTime khoaDenLuc =
                                             soLuongThatBai >= LON_NHAT_THAT_BAI_SO_LAN_THU
                                                     ? hienTai.plusMinutes(KHOA_SO_PHUT)
@@ -126,7 +115,6 @@ public final class XacThucService {
                                                     + "lần thử.");
                                 }
 
-                                // Nhân viên.
                                 NhanVien nhanVien =
                                         cacNhanVien
                                                 .timTheoId(ketNoi, taiKhoan.getMaNhanVien())
@@ -141,7 +129,7 @@ public final class XacThucService {
                                     return KetQuaDangNhap.taoLoi("Nhân viên đã ngừng làm việc.");
                                 }
                                 danhSachTaiKhoan.ghiNhanDangNhapThanhCong(ketNoi, taiKhoan.tenDangNhap());
-                                // Các quyền.
+
                                 Set<Quyen> cacQuyen =
                                         danhSachTaiKhoan.timCacQuyen(ketNoi, taiKhoan.tenDangNhap());
                                 ghiNhatKyHeThong(
@@ -178,12 +166,6 @@ public final class XacThucService {
                         LocalDateTime.now()));
     }
 
-    /**
-     * Điều phối nghiệp vụ và kiểm tra dữ liệu cho đăng nhập kết quả.
-     *
-     * @param phienDangNhap phiên đăng nhập
-     * @param loiThongBao lỗi thông báo
-     */
     private record KetQuaDangNhap(PhienDangNhap phienDangNhap, String loiThongBao) {
         static KetQuaDangNhap hienThiThanhCong(PhienDangNhap phienDangNhap) {
             return new KetQuaDangNhap(phienDangNhap, null);

@@ -5,40 +5,28 @@ import java.time.LocalDate;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Chi tiết phiếu nhập kho khớp bảng [chi_tiet_phieu_nhap].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính phức hợp là cặp (phieuNhap, sanPham, soLo). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với PhieuNhapKho và SanPham.
- * - Phương thức tính thành tiền dòng nhập dẫn xuất và equals/hashCode theo khóa chính.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class ChiTietPhieuNhap implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Quan hệ kết hợp: Dòng chi tiết thuộc về một Phiếu nhập kho. */
     private PhieuNhapKho phieuNhap;
-    /** Quan hệ kết hợp: Sản phẩm nhập kho. */
+
     private SanPham sanPham;
-    /** Mã lô hàng (chuẩn hóa khóa ngoại sang lo_hang) */
+
     private String maLo;
     private String soLo;
     private LocalDate hanSuDung;
     private int soLuong;
     private long giaNhap;
 
-    /** Constructor mặc định. */
     public ChiTietPhieuNhap() {
         this.soLuong = 1;
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public ChiTietPhieuNhap(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng PhieuNhapKho và SanPham. */
     public ChiTietPhieuNhap(
             PhieuNhapKho phieuNhap,
             SanPham sanPham,
@@ -54,7 +42,6 @@ public class ChiTietPhieuNhap implements Serializable {
         setGiaNhap(giaNhap);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public ChiTietPhieuNhap(
             long id,
             PhieuNhapKho phieuNhap,
@@ -67,7 +54,6 @@ public class ChiTietPhieuNhap implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public ChiTietPhieuNhap(
             long id,
             long phieuNhapId,
@@ -79,11 +65,6 @@ public class ChiTietPhieuNhap implements Serializable {
         this(id, new PhieuNhapKho(phieuNhapId), new SanPham(sanPhamId), soLo, hanSuDung, soLuong, giaNhap);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính thành tiền của dòng phiếu nhập kho (thuộc tính dẫn xuất: soLuong * giaNhap - không có setter).
-     */
     public long tinhThanhTien() {
         return (long) Math.max(0, soLuong) * Math.max(0L, giaNhap);
     }
@@ -95,8 +76,6 @@ public class ChiTietPhieuNhap implements Serializable {
     public long layThanhTien() {
         return tinhThanhTien();
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         String key = (phieuNhap != null ? phieuNhap.getSoPhieu() : "") + "_" + (sanPham != null ? sanPham.getMaSanPham() : "") + "_" + soLo;
@@ -119,8 +98,6 @@ public class ChiTietPhieuNhap implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public PhieuNhapKho getPhieuNhap() {
         return this.phieuNhap;
@@ -296,8 +273,6 @@ public class ChiTietPhieuNhap implements Serializable {
     public void datGiaNhap(long giaNhap) {
         setGiaNhap(giaNhap);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH (phieuNhap, sanPham, maLo) ====================
 
     @Override
     public boolean equals(Object o) {

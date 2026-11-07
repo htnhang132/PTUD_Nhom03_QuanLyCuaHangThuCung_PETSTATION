@@ -5,29 +5,18 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Yêu cầu phê duyệt khớp bảng [yeu_cau_phe_duyet].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã yêu cầu (maYeuCau). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với TaiKhoan (người gửi và người xử lý).
- * - Phương thức kiểm tra trạng thái xử lý dẫn xuất và equals/hashCode theo khóa chính maYeuCau.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class YeuCauPheDuyet implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Yêu cầu phê duyệt */
     private String maYeuCau;
     private String loai;
-    /** Quan hệ kết hợp: Tài khoản nhân viên gửi yêu cầu phê duyệt. */
+
     private TaiKhoan nguoiGui;
     private String loaiDoiTuong;
     private String maDoiTuong;
     private String lyDo;
     private String trangThai;
-    /**
-     * Quan hệ kết hợp: Tài khoản quản lý phê duyệt/từ chối yêu cầu (có thể null khi đang chờ).
-     */
+
     private TaiKhoan nguoiXuLy;
     private String phanHoi;
     private LocalDateTime guiLuc;
@@ -36,25 +25,21 @@ public class YeuCauPheDuyet implements Serializable {
     private String noiDungSau;
     private String payload;
 
-    /** Constructor mặc định. */
     public YeuCauPheDuyet() {
         this.trangThai = "CHO_DUYET";
         this.guiLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maYeuCau. */
     public YeuCauPheDuyet(String maYeuCau) {
         this();
         setMaYeuCau(maYeuCau);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public YeuCauPheDuyet(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng TaiKhoan và khóa chính maYeuCau. */
     public YeuCauPheDuyet(
             String maYeuCau,
             String loai,
@@ -86,7 +71,6 @@ public class YeuCauPheDuyet implements Serializable {
         setPayload(payload);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public YeuCauPheDuyet(
             long id,
             String maYeuCau,
@@ -107,7 +91,6 @@ public class YeuCauPheDuyet implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public YeuCauPheDuyet(
             long id,
             String maYeuCau,
@@ -142,14 +125,9 @@ public class YeuCauPheDuyet implements Serializable {
                 payload);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /** Kiểm tra yêu cầu phê duyệt đã được xử lý hay chưa (dẫn xuất). */
     public boolean kiemTraDaXuLy() {
         return xuLyLuc != null || (trangThai != null && !"CHO_DUYET".equalsIgnoreCase(trangThai));
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maYeuCau);
@@ -173,8 +151,6 @@ public class YeuCauPheDuyet implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaYeuCau() {
         return this.maYeuCau;
@@ -471,8 +447,6 @@ public class YeuCauPheDuyet implements Serializable {
     public void datPayload(String payload) {
         setPayload(payload);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

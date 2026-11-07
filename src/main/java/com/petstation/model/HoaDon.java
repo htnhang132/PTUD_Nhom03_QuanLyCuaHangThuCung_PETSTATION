@@ -7,30 +7,19 @@ import java.util.List;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Hóa đơn bán hàng khớp bảng [hoa_don].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính chuẩn hóa là mã hóa đơn (maHoaDon / soHoaDon).
- * - Quan hệ kết hợp (Association) với đối tượng PhienLamViec, TaiKhoan, KhachHang, Voucher.
- * - Quan hệ hợp thành (Composition) 1-nhiều với danh sách ChiTietHoaDon.
- * - Các thuộc tính dẫn xuất: tamTinh, tongTien, tienThoi, diemCong được tính toán động
- *   thông qua các phương thức getter tương ứng và tuyệt đối KHÔNG có setter công khai.
- * - Equals/hashCode chỉ theo khóa chính maHoaDon.
- */
 public class HoaDon implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Hóa đơn (ma_hoa_don) */
     private String maHoaDon;
-    /** Quan hệ kết hợp: Hóa đơn được lập trong một Phiên làm việc / Ca thu ngân. */
+
     private PhienLamViec phienLamViec;
-    /** Quan hệ kết hợp: Tài khoản nhân viên thu ngân lập hóa đơn. */
+
     private TaiKhoan taiKhoan;
-    /** Quan hệ kết hợp: Khách hàng mua hàng (null nếu khách vãng lai). */
+
     private KhachHang khachHang;
-    /** Quan hệ kết hợp: Voucher áp dụng cho hóa đơn (null nếu không dùng). */
+
     private Voucher voucher;
-    /** Quan hệ hợp thành 1-nhiều: Danh sách các dòng chi tiết hóa đơn. */
+
     private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
 
     private String hinhThucThanhToan;
@@ -44,33 +33,26 @@ public class HoaDon implements Serializable {
     private String ghiChu;
     private String chiTietThanhToan;
 
-    // Các giá trị snapshot lưu từ CSDL khi truy vấn mà chưa nạp danh sách ChiTietHoaDon
     private long tamTinh;
     private long tongTien;
     private long tienThoi;
     private int diemCong;
 
-    /** Constructor mặc định. */
     public HoaDon() {
         this.trangThai = "DA_THANH_TOAN";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maHoaDon. */
     public HoaDon(String maHoaDon) {
         this();
         setMaHoaDon(maHoaDon);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public HoaDon(long id) {
         this();
         setId(id);
     }
 
-    /**
-     * Constructor chuẩn OOP nhận các đối tượng thực thể liên kết và khóa chính maHoaDon.
-     */
     public HoaDon(
             String maHoaDon,
             PhienLamViec phienLamViec,
@@ -101,7 +83,6 @@ public class HoaDon implements Serializable {
         setGhiChu(ghiChu);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public HoaDon(
             long id,
             String maHoaDon,
@@ -121,7 +102,6 @@ public class HoaDon implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO và Service khi đọc từ CSDL. */
     public HoaDon(
             long id,
             String maHoaDon,
@@ -165,11 +145,6 @@ public class HoaDon implements Serializable {
         setChiTietThanhToan(chiTietThanhToan);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính tạm tính của hóa đơn (thuộc tính dẫn xuất bằng tổng thành tiền của danh sách ChiTietHoaDon).
-     */
     public long tinhTamTinh() {
         if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
             long tong = 0L;
@@ -183,9 +158,6 @@ public class HoaDon implements Serializable {
         return Math.max(0L, this.tamTinh);
     }
 
-    /**
-     * Thuộc tính dẫn xuất tamTinh: Không có setter công khai để đảm bảo an toàn bảo mật.
-     */
     public long getTamTinh() {
         return tinhTamTinh();
     }
@@ -198,9 +170,6 @@ public class HoaDon implements Serializable {
         return tinhTamTinh();
     }
 
-    /**
-     * Tính tổng tiền thanh toán cuối cùng của hóa đơn (thuộc tính dẫn xuất: max(0, tamTinh - giamGia)).
-     */
     public long tinhTongTien() {
         if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
             return Math.max(0L, tinhTamTinh() - giamGia);
@@ -211,9 +180,6 @@ public class HoaDon implements Serializable {
         return Math.max(0L, this.tamTinh - this.giamGia);
     }
 
-    /**
-     * Thuộc tính dẫn xuất tongTien: Không có setter công khai để đảm bảo tính an toàn dữ liệu.
-     */
     public long getTongTien() {
         return tinhTongTien();
     }
@@ -226,9 +192,6 @@ public class HoaDon implements Serializable {
         return tinhTongTien();
     }
 
-    /**
-     * Tính tiền thối lại cho khách (thuộc tính dẫn xuất: max(0, tienKhachDua - tongTien)).
-     */
     public long tinhTienThoi() {
         long phaiThu = tinhTongTien();
         if (tienKhachDua >= phaiThu && phaiThu > 0) {
@@ -237,9 +200,6 @@ public class HoaDon implements Serializable {
         return Math.max(0L, this.tienThoi);
     }
 
-    /**
-     * Thuộc tính dẫn xuất tienThoi: Không có setter công khai.
-     */
     public long getTienThoi() {
         return tinhTienThoi();
     }
@@ -252,9 +212,6 @@ public class HoaDon implements Serializable {
         return tinhTienThoi();
     }
 
-    /**
-     * Tính điểm tích lũy cộng thêm cho khách hàng từ hóa đơn (thuộc tính dẫn xuất: 10.000đ = 1 điểm).
-     */
     public int tinhDiemCong() {
         if (khachHang == null) {
             return 0;
@@ -266,9 +223,6 @@ public class HoaDon implements Serializable {
         return Math.max(0, this.diemCong);
     }
 
-    /**
-     * Thuộc tính dẫn xuất diemCong: Không có setter công khai.
-     */
     public int getDiemCong() {
         return tinhDiemCong();
     }
@@ -281,7 +235,6 @@ public class HoaDon implements Serializable {
         return tinhDiemCong();
     }
 
-    /** Phương thức nội bộ ghi nhận snapshot dẫn xuất khi đọc từ CSDL */
     public void napSnapshot(long tamTinh, long tongTien, long tienThoi, int diemCong) {
         this.tamTinh = Math.max(0L, tamTinh);
         this.tongTien = Math.max(0L, tongTien);
@@ -289,7 +242,6 @@ public class HoaDon implements Serializable {
         this.diemCong = Math.max(0, diemCong);
     }
 
-    /** Thêm một dòng chi tiết vào hóa đơn và gắn kết hai chiều. */
     public void themChiTietHoaDon(ChiTietHoaDon chiTiet) {
         if (chiTiet == null)
             return;
@@ -299,8 +251,6 @@ public class HoaDon implements Serializable {
         chiTiet.setHoaDon(this);
         this.danhSachChiTiet.add(chiTiet);
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaHoaDon());
@@ -325,8 +275,6 @@ public class HoaDon implements Serializable {
         setId(id);
     }
 
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
-
     public String getMaHoaDon() {
         return this.maHoaDon;
     }
@@ -347,7 +295,6 @@ public class HoaDon implements Serializable {
         setMaHoaDon(maHoaDon);
     }
 
-    // Alias soHoaDon tương thích ngược
     public String getSoHoaDon() {
         return getMaHoaDon();
     }
@@ -735,8 +682,6 @@ public class HoaDon implements Serializable {
     public void datChiTietThanhToan(String chiTietThanhToan) {
         setChiTietThanhToan(chiTietThanhToan);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

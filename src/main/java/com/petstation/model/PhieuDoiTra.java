@@ -7,28 +7,17 @@ import java.util.List;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Phiếu đổi trả hàng khớp bảng [phieu_doi_tra].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính là mã phiếu (maPhieu). Đã bỏ thuộc tính id.
- * - Quan hệ kết hợp với HoaDon (hóa đơn gốc & hóa đơn thay thế), TaiKhoan (người lập) và danh sách ChiTietDoiTra.
- * - Có phương thức tính tổng tiền hoàn dẫn xuất và equals/hashCode theo khóa chính maPhieu.
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class PhieuDoiTra implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Khóa chính nghiệp vụ của Phiếu đổi trả */
     private String maPhieu;
-    /** Quan hệ kết hợp: Hóa đơn gốc phát sinh đổi trả. */
+
     private HoaDon hoaDonGoc;
-    /** Quan hệ kết hợp: Tài khoản nhân viên lập phiếu đổi trả. */
+
     private TaiKhoan nguoiLap;
-    /**
-     * Quan hệ kết hợp: Hóa đơn mua hàng thay thế (có thể null nếu chỉ trả hàng hoàn tiền).
-     */
+
     private HoaDon hoaDonThayThe;
-    /** Quan hệ 1-nhiều: Danh sách dòng chi tiết hàng đổi trả. */
+
     private List<ChiTietDoiTra> danhSachChiTiet = new ArrayList<>();
 
     private long chenhLech;
@@ -39,25 +28,21 @@ public class PhieuDoiTra implements Serializable {
     private long giaTriDuocDoi;
     private String khoaThaoTac;
 
-    /** Constructor mặc định. */
     public PhieuDoiTra() {
         this.trangThai = "HOAN_TAT";
         this.taoLuc = LocalDateTime.now();
     }
 
-    /** Constructor theo khóa chính nghiệp vụ maPhieu. */
     public PhieuDoiTra(String maPhieu) {
         this();
         setMaPhieu(maPhieu);
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public PhieuDoiTra(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng HoaDon, TaiKhoan và khóa chính maPhieu. */
     public PhieuDoiTra(
             String maPhieu,
             HoaDon hoaDonGoc,
@@ -83,7 +68,6 @@ public class PhieuDoiTra implements Serializable {
         setKhoaThaoTac(khoaThaoTac);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public PhieuDoiTra(
             long id,
             String maPhieu,
@@ -101,7 +85,6 @@ public class PhieuDoiTra implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích ngược với tầng DAO. */
     public PhieuDoiTra(
             long id,
             String maPhieu,
@@ -130,11 +113,6 @@ public class PhieuDoiTra implements Serializable {
                 khoaThaoTac);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính tổng giá trị hàng được đổi/hoàn từ danh sách ChiTietDoiTra (thuộc tính dẫn xuất).
-     */
     public long tinhTongGiaTriHoan() {
         if (danhSachChiTiet != null && !danhSachChiTiet.isEmpty()) {
             long tong = 0L;
@@ -147,8 +125,6 @@ public class PhieuDoiTra implements Serializable {
         }
         return Math.max(0L, this.giaTriDuocDoi);
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maPhieu);
@@ -172,8 +148,6 @@ public class PhieuDoiTra implements Serializable {
     public void datId(long id) {
         setId(id);
     }
-
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
 
     public String getMaPhieu() {
         return this.maPhieu;
@@ -428,8 +402,6 @@ public class PhieuDoiTra implements Serializable {
     public void datKhoaThaoTac(String khoaThaoTac) {
         setKhoaThaoTac(khoaThaoTac);
     }
-
-    // ==================== EQUALS & HASHCODE CHỈ THEO KHÓA CHÍNH ====================
 
     @Override
     public boolean equals(Object o) {

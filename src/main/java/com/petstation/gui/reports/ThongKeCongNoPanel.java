@@ -7,7 +7,6 @@ import com.petstation.service.ThongKeService;
 
 import java.util.List;
 
-/** Giao diện báo cáo công nợ nhà cung cấp. */
 public final class ThongKeCongNoPanel extends BaoCaoPanel {
     public ThongKeCongNoPanel() {
         super(
@@ -43,8 +42,8 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         true,
                                         ThongKeService::layCongNoNhaCungCap)
                                 .chiQuanLy()),
-                false, // Báo cáo công nợ không cần bộ lọc gộp Ngày/Tuần/Tháng.
-                true);  // Ưu tiên bảng dữ liệu hơn biểu đồ.
+                false,
+                true);
     }
 
     @Override

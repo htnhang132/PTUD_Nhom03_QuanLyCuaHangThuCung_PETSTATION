@@ -23,13 +23,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Màn hình thanh toán hóa đơn.
- *
- * <p>Hỗ trợ tiền mặt, chuyển khoản VietQR và thẻ. QR nhúng số tiền phải trả
- * cùng mã hóa đơn dự kiến; thu ngân vẫn phải xác nhận đã kiểm tra giao dịch
- * thực tế vì ứng dụng chưa kết nối webhook/API ngân hàng.
- */
 public final class ThanhToanPanel extends CoSoPanel {
     private final GioHang banHang;
     private final CaThuNganService caLamViec;
@@ -85,7 +78,6 @@ public final class ThanhToanPanel extends CoSoPanel {
     private boolean qrHopLe;
     private String noiDungChuyenKhoanQR = "";
 
-    /** Constructor tương thích với những nơi khởi tạo màn hình thanh toán cũ. */
     public ThanhToanPanel(
             GioHang banHang,
             CaThuNganService caLamViec,
@@ -94,10 +86,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         this(banHang, caLamViec, thuNgan, boDieuHuong, boDieuHuong);
     }
 
-    /**
-     * Constructor có callback riêng cho nút Quay lại.
-     * Callback này được ChinhFrame kiểm tra trước khi cho phép trở về bước lập hóa đơn.
-     */
     public ThanhToanPanel(
             GioHang banHang,
             CaThuNganService caLamViec,
@@ -147,7 +135,6 @@ public final class ThanhToanPanel extends CoSoPanel {
                 "empty");
         add(pnlGoc, BorderLayout.CENTER);
 
-        // Phím Space để xác nhận nhanh tiền chuyển khoản VietQR
         InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = getActionMap();
         im.put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, 0), "xacNhanVietQRSpace");
@@ -174,9 +161,7 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         lamMoi();
     }
-    /**
-     * Xác định màn hình quay lại theo nghiệp vụ đang thanh toán.
-     */
+
     private MaManHinh layManHinhQuayLaiTheoNguon() {
         String nguon = banHang.layKieuNguon();
 
@@ -191,10 +176,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         return MaManHinh.LAP_HOA_DON;
     }
 
-    /**
-     * Quay lại màn hình nguồn bằng callback riêng.
-     * Không sử dụng callback chuyển bước của thanh quy trình.
-     */
     private void quayLaiManHinhNguon() {
         if ("DOI_HANG".equals(banHang.layKieuNguon())) {
             treoDonDoi(true);
@@ -213,7 +194,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         try {
             long id = DonDoiTreoService.treo(banHang);
             var nhap = suaLai ? DonDoiTreoService.lay(id) : null;
-            // Chỉ giải phóng giỏ sau khi lưu SQL Server thành công.
+
             banHang.xoa();
             boDieuHuong.accept(suaLai ? MaManHinh.DOI_TRA_HANG_HOA : MaManHinh.LAP_HOA_DON);
             if (suaLai) {
@@ -231,9 +212,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         }
     }
 
-    /**
-     * Cập nhật nội dung nút theo nghiệp vụ hiện tại.
-     */
     private void capNhatNhanNutQuayLai() {
         String nguon = banHang.layKieuNguon();
         btnTreoDoi.setVisible("DOI_HANG".equals(nguon));
@@ -257,7 +235,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         JPanel pnlBieuMau = new JPanel(new GridLayout(1, 2, 16, 0));
         pnlBieuMau.setOpaque(false);
 
-        // Cột trái: thông tin hóa đơn.
         JPanel pnlTrai = layThe(new BorderLayout(0, 12));
         pnlTrai.add(taoTieuDeMuc("Hóa đơn"), BorderLayout.NORTH);
         pnlTrai.add(pnlDongVungChua, BorderLayout.CENTER);
@@ -282,14 +259,13 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlCacTong.add(lblTong);
         pnlTrai.add(pnlCacTong, BorderLayout.SOUTH);
 
-        // Cột phải: phương thức thanh toán.
         JPanel pnlPhai = layThe(new BorderLayout(0, 12));
         pnlPhai.add(taoTieuDeMuc("Phương thức thanh toán"), BorderLayout.NORTH);
 
         JPanel pnlNoiDung = new JPanel();
         pnlNoiDung.setOpaque(false);
         pnlNoiDung.setLayout(new BoxLayout(pnlNoiDung, BoxLayout.Y_AXIS));
-        // Khoảng đệm đồng đều quanh nội dung cột phải.
+
         pnlNoiDung.setBorder(new EmptyBorder(8, 10, 8, 10));
 
         ButtonGroup nhom = new ButtonGroup();
@@ -313,7 +289,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlNoiDung.add(pnlCacPhuongThuc);
         pnlNoiDung.add(Box.createVerticalStrut(14));
 
-        // Voucher.
         pnlNoiDung.add(layNhan("Mã voucher"));
 
         JPanel pnlVoucherDong = new JPanel(new BorderLayout(8, 0));
@@ -336,7 +311,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         lblVoucherThongBao.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
         pnlNoiDung.add(lblVoucherThongBao);
 
-        // Tách nút chọn voucher khỏi ô nhập bằng một khoảng dọc nhỏ.
         pnlNoiDung.add(Box.createVerticalStrut(8));
 
         JPanel pnlVoucherKhach =
@@ -355,14 +329,12 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlNoiDung.add(pnlVoucherKhach);
         pnlNoiDung.add(Box.createVerticalStrut(12));
 
-
         dieuKhienVoucher.addAll(
             java.util.List.of(
                 txtTruongVoucher,
                 btnApDung,
                 btnChonVoucher));
 
-        // Khu vực tiền mặt.
         pnlNhapTienMat.setOpaque(false);
         pnlNhapTienMat.setLayout(new BoxLayout(pnlNhapTienMat, BoxLayout.Y_AXIS));
         pnlNhapTienMat.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -408,7 +380,6 @@ public final class ThanhToanPanel extends CoSoPanel {
 
         pnlNoiDung.add(pnlNhapTienMat);
 
-        // Khu vực QR: QR + tài khoản nhận + số tiền + mã hóa đơn.
         taoKhuVucQR();
         pnlNoiDung.add(pnlQRThanhToan);
 
@@ -471,9 +442,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlQRThanhToan.add(lblTieuDeQR);
         pnlQRThanhToan.add(Box.createVerticalStrut(8));
 
-        // Đặt QR trong một vùng rộng toàn bộ và căn giữa bằng FlowLayout.
-        // Cách này bảo đảm QR vẫn nằm chính giữa kể cả khi cột thanh toán
-        // rộng hơn kích thước ảnh QR.
         lblQR.setHorizontalAlignment(SwingConstants.CENTER);
         lblQR.setPreferredSize(new Dimension(220, 220));
         lblQR.setMinimumSize(new Dimension(220, 220));
@@ -634,7 +602,6 @@ public final class ThanhToanPanel extends CoSoPanel {
             return;
         }
 
-
         cacThe.show(pnlGoc, "form");
 
         DefaultTableModel moHinh =
@@ -669,11 +636,9 @@ public final class ThanhToanPanel extends CoSoPanel {
         boolean doiHang =
             "DOI_HANG".equals(banHang.layKieuNguon());
 
-        // Đổi hàng thì khóa toàn bộ điều khiển voucher.
         dieuKhienVoucher.forEach(
             c -> c.setEnabled(!doiHang));
 
-        // Với giao dịch khác, nút chọn voucher vẫn cần có khách hàng.
         if (!doiHang) {
             capNhatTrangThaiVoucherKhach();
         }
@@ -684,7 +649,6 @@ public final class ThanhToanPanel extends CoSoPanel {
                 "Voucher Spa không áp dụng cho đổi phụ kiện.");
         }
 
-        // Đổi ngang giá: không thu thêm tiền.
         txtDaNhan.setText(
             doiHang && banHang.tinhTong() == 0 ? "0" : "");
 
@@ -730,7 +694,6 @@ public final class ThanhToanPanel extends CoSoPanel {
             btnGiaTriSau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
             btnGiaTriSau.setFocusPainted(false);
 
-            // Nút đầu tiên sát lề trái; các nút sau cách nhau 8px.
             if (pnlNhanhCacSoTien.getComponentCount() > 0) {
                 pnlNhanhCacSoTien.add(Box.createHorizontalStrut(8));
             }
@@ -744,10 +707,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlNhanhCacSoTien.repaint();
     }
 
-    /**
-     * Tạo QR theo đúng số tiền phải trả và mã hóa đơn dự kiến.
-     * Mã hóa đơn này được BanHangService dùng lại khi ghi hóa đơn.
-     */
     private void capNhatQR() {
         boolean laTienMat = layPhuongThuc() == PhuongThuc.TIEN_MAT;
         boolean chuyenKhoan =
@@ -762,7 +721,6 @@ public final class ThanhToanPanel extends CoSoPanel {
                         ? "Tôi đã kiểm tra và nhận đủ tiền trên tài khoản ngân hàng (Phím Space)"
                         : "Tôi đã xác nhận giao dịch thẻ thành công");
 
-        // Mỗi lần số tiền/phương thức thay đổi phải xác nhận lại.
         chkDaNhanTien.setSelected(false);
         banHang.xacNhanDaNhanTien(layPhuongThuc(), false);
 
@@ -787,7 +745,6 @@ public final class ThanhToanPanel extends CoSoPanel {
             com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(
                     bin, taiKhoan, tenChuTaiKhoan);
 
-            // Quan trọng: dùng mã hóa đơn HD... thay cho khóa nội bộ PAY-...
             String maHoaDon = banHang.layMaHoaDonDuKien();
             long soTienCanChuyen = banHang.tinhTong();
 

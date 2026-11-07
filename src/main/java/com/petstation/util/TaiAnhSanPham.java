@@ -8,11 +8,9 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
-/** Nạp ảnh cục bộ hoặc ảnh đóng gói trong JAR; không truy cập mạng khi bán hàng. */
 public final class TaiAnhSanPham {
     private TaiAnhSanPham() {}
 
-    /** Thư mục chứa ảnh người dùng chọn, đặt cạnh JAR để dùng được khi đổi thư mục chạy. */
     public static Path layThuMucNgoai() {
         try {
             Path nguon =
@@ -23,8 +21,7 @@ public final class TaiAnhSanPham {
                                     .getLocation()
                                     .toURI());
             Path thuMuc = nguon.getParent();
-            // Khi chạy từ target, ảnh người dùng phải sống ngoài thư mục build để không mất khi
-            // clean.
+
             if (thuMuc != null
                     && "target".equals(thuMuc.getFileName().toString())
                     && Files.isRegularFile(thuMuc.getParent().resolve("pom.xml")))
@@ -35,13 +32,11 @@ public final class TaiAnhSanPham {
         }
     }
 
-    /** Kiểm tra đường dẫn tương đối thuộc thư mục ảnh sản phẩm. */
     public static boolean kiemTraDuongDan(String duongDan) {
         return duongDan != null
                 && duongDan.matches("images/products/[A-Za-z0-9_-]+\\.(?i:jpg|jpeg|png)");
     }
 
-    /** Đọc ảnh theo đường dẫn SQL, ưu tiên ảnh bổ sung bên ngoài JAR. */
     public static BufferedImage doc(String duongDan) throws IOException {
         if (!kiemTraDuongDan(duongDan)) return null;
         Path tep = layThuMucNgoai().resolve(duongDan);
@@ -70,7 +65,6 @@ public final class TaiAnhSanPham {
         return nho;
     }
 
-    /** Sao chép ảnh hợp lệ thành PNG với tên mới; trả đường dẫn tương đối để lưu SQL. */
     public static String saoChep(Path nguon) throws IOException {
         if (Files.size(nguon) > 12L * 1024 * 1024)
             throw new IOException("Ảnh không được lớn hơn 12 MB.");

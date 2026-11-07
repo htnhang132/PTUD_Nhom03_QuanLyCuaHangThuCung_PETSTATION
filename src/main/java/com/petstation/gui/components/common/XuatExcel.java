@@ -17,7 +17,6 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-/** Xuất XLSX thật, giữ thứ tự cột/dòng đang hiển thị và bộ lọc của bảng. */
 public final class XuatExcel {
     private XuatExcel() {}
 
@@ -78,7 +77,6 @@ public final class XuatExcel {
         }.execute();
     }
 
-    /** Chuỗi luôn được ghi như văn bản, không thực thi công thức từ dữ liệu nhập. */
     public static void ghiBang(JTable bang, File tep, String tieuDe) throws IOException {
         if (bang.getColumnCount() == 0)
             throw new IllegalArgumentException("Bảng chưa có cột để xuất.");

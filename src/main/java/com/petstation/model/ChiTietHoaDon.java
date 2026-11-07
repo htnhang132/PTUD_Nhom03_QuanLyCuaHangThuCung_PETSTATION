@@ -4,24 +4,13 @@ import java.io.Serializable;
 import java.util.Objects;
 import com.petstation.util.DuLieu;
 
-/**
- * Thực thể Chi tiết hóa đơn khớp bảng [chi_tiet_hoa_don].
- * Tuân thủ chuẩn OOP môn PTUD:
- * - Khóa chính phức hợp theo thực thể yếu là cặp (hoaDon, sanPham).
- * - Quan hệ kết hợp với đối tượng HoaDon, SanPham, LoHang.
- * - Thuộc tính dẫn xuất: thanhTien được tính động qua getThanhTien() / tinhThanhTien()
- *   tuyệt đối KHÔNG có setter công khai.
- * - Equals/hashCode theo cặp khóa chính phức hợp (hoaDon, sanPham).
- * - Cung cấp hàm cầu nối getId()/setId() tương thích với tầng DAO/GUI.
- */
 public class ChiTietHoaDon implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Quan hệ kết hợp (Association): Dòng chi tiết thuộc về một Hóa đơn (Thành phần khóa chính 1). */
     private HoaDon hoaDon;
-    /** Quan hệ kết hợp: Sản phẩm hoặc dịch vụ bán ra (Thành phần khóa chính 2). */
+
     private SanPham sanPham;
-    /** Quan hệ kết hợp: Lô hàng xuất kho theo FEFO (có thể null nếu là dịch vụ Spa/Hotel). */
+
     private LoHang loHang;
 
     private int soLuong;
@@ -31,23 +20,19 @@ public class ChiTietHoaDon implements Serializable {
     private String maDichVu;
     private String tenHang;
 
-    /** Constructor mặc định. */
     public ChiTietHoaDon() {
         this.soLuong = 1;
     }
 
-    /** Constructor theo mã cầu nối. */
     public ChiTietHoaDon(String maChiTietHoaDon) {
         this();
     }
 
-    /** Constructor cầu nối nhận id từ DAO. */
     public ChiTietHoaDon(long id) {
         this();
         setId(id);
     }
 
-    /** Constructor chuẩn OOP nhận đối tượng HoaDon, SanPham, LoHang. */
     public ChiTietHoaDon(
             HoaDon hoaDon,
             SanPham sanPham,
@@ -69,7 +54,6 @@ public class ChiTietHoaDon implements Serializable {
         setTenHang(tenHang);
     }
 
-    /** Constructor tương thích ngược có tham số maChiTietHoaDon. */
     public ChiTietHoaDon(
             String maChiTietHoaDon,
             HoaDon hoaDon,
@@ -84,7 +68,6 @@ public class ChiTietHoaDon implements Serializable {
         this(hoaDon, sanPham, loHang, soLuong, donGia, giamGia, thueGtgt, maDichVu, tenHang);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ (có tham số id). */
     public ChiTietHoaDon(
             long id,
             HoaDon hoaDon,
@@ -100,7 +83,6 @@ public class ChiTietHoaDon implements Serializable {
         setId(id);
     }
 
-    /** Constructor cầu nối tương thích DAO cũ với foreign key ids. */
     public ChiTietHoaDon(
             long id,
             long hoaDonId,
@@ -125,11 +107,6 @@ public class ChiTietHoaDon implements Serializable {
                 tenHang);
     }
 
-    // ==================== PHƯƠNG THỨC TÍNH THUỘC TÍNH DẪN XUẤT ====================
-
-    /**
-     * Tính thành tiền trước giảm giá của dòng hàng (thuộc tính dẫn xuất: soLuong * donGia).
-     */
     public long tinhThanhTienTruocGiam() {
         return (long) Math.max(0, soLuong) * Math.max(0L, donGia);
     }
@@ -142,7 +119,6 @@ public class ChiTietHoaDon implements Serializable {
         return tinhThanhTienTruocGiam();
     }
 
-    /** Tính tiền thuế GTGT của dòng hàng (thuộc tính dẫn xuất). */
     public long tinhTienThueGtgt() {
         long sauGiam = Math.max(0L, tinhThanhTienTruocGiam() - giamGia);
         if (thueGtgt <= 0) {
@@ -159,10 +135,6 @@ public class ChiTietHoaDon implements Serializable {
         return tinhTienThueGtgt();
     }
 
-    /**
-     * Tính thành tiền cuối cùng của dòng chi tiết hóa đơn (thuộc tính dẫn xuất).
-     * Tuyệt đối KHÔNG có setter công khai.
-     */
     public long tinhThanhTien() {
         return Math.max(0L, tinhThanhTienTruocGiam() - giamGia) + tinhTienThueGtgt();
     }
@@ -178,8 +150,6 @@ public class ChiTietHoaDon implements Serializable {
     public long thanhTien() {
         return tinhThanhTien();
     }
-
-    // ==================== GETTER & SETTER CẦU NỐI ID ====================
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaChiTietHoaDon());
@@ -201,9 +171,6 @@ public class ChiTietHoaDon implements Serializable {
         setId(id);
     }
 
-    // ==================== GETTER & SETTER THUỘC TÍNH ====================
-
-    /** Mã tổng hợp đại diện dòng chi tiết (hoaDon-sanPham) tương thích ngược */
     public String getMaChiTietHoaDon() {
         String hd = (hoaDon != null && hoaDon.getMaHoaDon() != null) ? hoaDon.getMaHoaDon() : "";
         String sp = (sanPham != null && sanPham.getMaSanPham() != null) ? sanPham.getMaSanPham() : (maDichVu != null ? maDichVu : "");
@@ -220,7 +187,6 @@ public class ChiTietHoaDon implements Serializable {
     }
 
     public void setMaChiTietHoaDon(String maChiTietHoaDon) {
-        // Tương thích ngược, khóa chính thực sự là (hoaDon, sanPham)
     }
 
     public void datMaChiTietHoaDon(String maChiTietHoaDon) {
@@ -486,8 +452,6 @@ public class ChiTietHoaDon implements Serializable {
     public void datTenHang(String tenHang) {
         setTenHang(tenHang);
     }
-
-    // ==================== EQUALS & HASHCODE THEO KHÓA PHỨC HỢP (hoaDon + sanPham) ====================
 
     @Override
     public boolean equals(Object o) {
