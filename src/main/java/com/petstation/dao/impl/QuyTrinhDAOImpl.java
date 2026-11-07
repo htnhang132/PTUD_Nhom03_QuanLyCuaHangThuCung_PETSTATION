@@ -1,7 +1,6 @@
 package com.petstation.dao.impl;
 
 import static com.petstation.database.ThaoTacSQL.*;
-import static com.petstation.util.DuLieu.*;
 
 import com.petstation.dao.QuyTrinhDAO;
 import com.petstation.util.DuLieu;

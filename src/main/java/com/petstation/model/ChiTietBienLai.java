@@ -35,8 +35,6 @@ public class ChiTietBienLai implements Serializable {
     }
 
     public GioHang.BienLai getBienLai() { return this.bienLai; }
-    public GioHang.BienLai layBienLai() { return this.bienLai; }
-    public GioHang.BienLai bienLai() { return this.bienLai; }
     public void setBienLai(GioHang.BienLai bienLai) { this.bienLai = bienLai; }
 
     public String getTenCuaHang() { return this.tenCuaHang; }

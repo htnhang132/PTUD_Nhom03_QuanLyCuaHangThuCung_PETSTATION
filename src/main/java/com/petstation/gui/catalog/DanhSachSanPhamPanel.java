@@ -5,7 +5,7 @@ import com.petstation.service.DanhMucService;
 
 import java.util.List;
 
-public final class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
+public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
         public DanhSachSanPhamPanel() {
                 super(
                                 taoCauHinh(),
