@@ -140,7 +140,7 @@ public final class LuuTruService {
                         throw new IllegalArgumentException(
                                 "Chỉ nhận cọc khi hợp đồng đang chờ nhận phòng.");
                     long thu = 0;
-                    for (var d : dong) thu = Math.addExact(thu, d.soTien());
+                    for (var d : dong) thu = Math.addExact(thu, d.getSoTien());
                     com.petstation.model.DongThuTien.kiemTra(dong, thu);
                     if (thu <= 0 || thu > layGiaTri(r.get(0)[1]) - layGiaTri(r.get(0)[2]))
                         throw new IllegalArgumentException(

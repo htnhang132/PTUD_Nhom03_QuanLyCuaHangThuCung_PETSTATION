@@ -131,7 +131,7 @@ public final class BoChonKhachHang extends JPanel {
     private String khoaDoiVoucher;
 
     private void doiVoucher() {
-        if (banHang.layMaKhachHang().isBlank()) return;
+        if (banHang.getMaKhachHang().isBlank()) return;
         if (JOptionPane.showConfirmDialog(
                         this,
                         "Trừ 200 điểm để nhận voucher Spa 150.000đ, hạn 60 ngày?",
@@ -142,12 +142,12 @@ public final class BoChonKhachHang extends JPanel {
             if (khoaDoiVoucher == null) khoaDoiVoucher = "DOI-" + java.util.UUID.randomUUID();
             String ma =
                     com.petstation.service.TichDiemService.doiVoucher(
-                            banHang.layMaKhachHang(), khoaDoiVoucher);
+                            banHang.getMaKhachHang(), khoaDoiVoucher);
             khoaDoiVoucher = null;
-            banHang.datKhachHang(
-                    banHang.layMaKhachHang(),
-                    banHang.layTenKhachHang(),
-                    banHang.layKhachHangDiem() - 200);
+            banHang.setKhachHang(
+                    banHang.getMaKhachHang(),
+                    banHang.getTenKhachHang(),
+                    banHang.getKhachHangDiem() - 200);
             dongBo();
             khiThayDoi.run();
             HopThoai.hienThiThongTin(
@@ -194,7 +194,7 @@ public final class BoChonKhachHang extends JPanel {
                                     this, "Khách vừa lưu đã ngừng hoạt động. Vui lòng chọn hồ sơ đang hoạt động.");
                             return;
                         }
-                        banHang.datKhachHang(
+                        banHang.setKhachHang(
                                 String.valueOf(moi[0]),
                                 String.valueOf(moi[1]),
                                 TienTe.doc(String.valueOf(moi[7])));
@@ -238,7 +238,7 @@ public final class BoChonKhachHang extends JPanel {
                     chiSo++)
             if (cacLuaChon[chiSo].equals(chon)) daChon = cacKetQua.get(chiSo);
         }
-        banHang.datKhachHang(
+        banHang.setKhachHang(
                 String.valueOf(daChon[0]),
                 String.valueOf(daChon[1]),
                 TienTe.doc(String.valueOf(daChon[7])));
@@ -248,26 +248,26 @@ public final class BoChonKhachHang extends JPanel {
     }
 
     public void xoa() {
-        banHang.datKhachHang("", "", 0);
+        banHang.setKhachHang("", "", 0);
         txtDauVao.setText("");
         dongBo();
         khiThayDoi.run();
     }
 
     public void dongBo() {
-        boolean co = !banHang.layMaKhachHang().isEmpty();
+        boolean co = !banHang.getMaKhachHang().isEmpty();
         pnlNhan.setVisible(co);
         if (co) {
             String hang = "";
             for (Object[] dongDuLieu : DanhMucService.layKhachHang())
-                if (dongDuLieu[0].equals(banHang.layMaKhachHang()))
+                if (dongDuLieu[0].equals(banHang.getMaKhachHang()))
                     hang = String.valueOf(dongDuLieu[6]);
             lblVanBanNhan.setText(
-                    banHang.layTenKhachHang()
+                    banHang.getTenKhachHang()
                             + "  ·  Hạng "
                             + hang
                             + "  ·  "
-                            + banHang.layKhachHangDiem()
+                            + banHang.getKhachHangDiem()
                             + " điểm");
             dangCapNhat = true;
 
@@ -275,17 +275,17 @@ public final class BoChonKhachHang extends JPanel {
                     Math.max(
                             0,
                             Math.min(
-                                    banHang.layKhachHangDiem(),
+                                    banHang.getKhachHangDiem(),
                                     (banHang.tinhTamTinh()
-                                                    - banHang.layKhuyenMaiGiamGia()
-                                                    - banHang.laySoTienVoucher())
+                                                    - banHang.getKhuyenMaiGiamGia()
+                                                    - banHang.getSoTienVoucher())
                                             / Math.max(
                                                     1,
                                                     com.petstation.service.CaiDatService
                                                             .layGiaTriQuyDoiMoiDiem())));
             spnDiem.setModel(
                     new SpinnerNumberModel(
-                            (int) Math.min(banHang.layDiemDaDung(), lonNhat), 0, (int) lonNhat, 1));
+                            (int) Math.min(banHang.getDiemDaDung(), lonNhat), 0, (int) lonNhat, 1));
             dangCapNhat = false;
             lamMoiDiemGoiY();
         }
@@ -296,7 +296,7 @@ public final class BoChonKhachHang extends JPanel {
     private void lamMoiDiemGoiY() {
         lblDiemGoiY.setText(
                 "= "
-                        + TienTe.dinhDang(banHang.layGiaTriDiem())
+                        + TienTe.dinhDang(banHang.getGiaTriDiem())
                         + " (1 điểm = "
                         + TienTe.dinhDang(
                                 com.petstation.service.CaiDatService.layGiaTriQuyDoiMoiDiem())

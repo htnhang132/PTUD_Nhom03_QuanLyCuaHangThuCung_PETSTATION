@@ -116,7 +116,7 @@ public final class InHoaDonPanel extends CoSoPanel {
     }
 
     private void lamMoi() {
-        GioHang.BienLai dongDuLieu = banHang.layBienLaiCuoi();
+        GioHang.BienLai dongDuLieu = banHang.getBienLaiCuoi();
         if (dongDuLieu == null) {
             cacThe.show(pnlGoc, "empty");
             return;
@@ -124,21 +124,21 @@ public final class InHoaDonPanel extends CoSoPanel {
         cacThe.show(pnlGoc, "receipt");
 
         String thayDoi =
-                dongDuLieu.phuongThuc() == PhuongThuc.TIEN_MAT
-                        ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.thayDoi())
+                dongDuLieu.getPhuongThuc() == PhuongThuc.TIEN_MAT
+                        ? "  ·  Tiền thừa " + TienTe.dinhDang(dongDuLieu.getThayDoi())
                         : "";
         lblBieuNgu.setText(
                 "Đã thanh toán  "
-                        + dongDuLieu.soHoaDon()
+                        + dongDuLieu.getSoHoaDon()
                         + "  ·  Tổng "
-                        + TienTe.dinhDang(dongDuLieu.tong())
+                        + TienTe.dinhDang(dongDuLieu.getTong())
                         + thayDoi);
         pnlHoaDon.datDuLieu(
-                com.petstation.service.BanHangService.layChiTietBienLai(dongDuLieu.soHoaDon()));
+                com.petstation.service.BanHangService.layChiTietBienLai(dongDuLieu.getSoHoaDon()));
     }
 
     public static String hienThi(GioHang.BienLai dongDuLieu) {
-        var nguon = com.petstation.service.BanHangService.layNguonBienLai(dongDuLieu.soHoaDon());
+        var nguon = com.petstation.service.BanHangService.layNguonBienLai(dongDuLieu.getSoHoaDon());
 
         StringBuilder boGhepChuoi = new StringBuilder();
         boGhepChuoi
@@ -160,16 +160,16 @@ public final class InHoaDonPanel extends CoSoPanel {
                                                 : "Hóa đơn bán hàng"))
                 .append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
-        boGhepChuoi.append("Số HĐ : ").append(dongDuLieu.soHoaDon()).append('\n');
+        boGhepChuoi.append("Số HĐ : ").append(dongDuLieu.getSoHoaDon()).append('\n');
         boGhepChuoi
                 .append("Ngày  : ")
                 .append(
                         dongDuLieu
-                                .thoiGian()
+                                .getThoiGian()
                                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
                 .append('\n');
-        boGhepChuoi.append("Thu ngân: ").append(dongDuLieu.thuNgan()).append('\n');
-        boGhepChuoi.append("Khách : ").append(dongDuLieu.khachHang()).append('\n');
+        boGhepChuoi.append("Thu ngân: ").append(dongDuLieu.getThuNgan()).append('\n');
+        boGhepChuoi.append("Khách : ").append(dongDuLieu.getKhachHang()).append('\n');
         if (!nguon.ma().isBlank()) boGhepChuoi.append("Nguồn : ").append(nguon.ma()).append('\n');
         if (!nguon.hoaDonGoc().isBlank())
             boGhepChuoi.append("HĐ gốc: ").append(nguon.hoaDonGoc()).append('\n');
@@ -178,37 +178,37 @@ public final class InHoaDonPanel extends CoSoPanel {
                     .append(layCap("Tiền cọc đã trừ", TienTe.dinhDang(nguon.daCanTru())))
                     .append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
-        for (GioHang.DongHang dongDangXet : dongDuLieu.cacDong()) {
-            boGhepChuoi.append(dongDangXet.ten()).append('\n');
+        for (GioHang.DongHang dongDangXet : dongDuLieu.getCacDong()) {
+            boGhepChuoi.append(dongDangXet.getTen()).append('\n');
             boGhepChuoi
                     .append(
                             layCap(
                                     ""
-                                            + dongDangXet.soLuong()
+                                            + dongDangXet.getSoLuong()
                                             + "x "
-                                            + TienTe.dinhDang(dongDangXet.donGia()),
+                                            + TienTe.dinhDang(dongDangXet.getDonGia()),
                                     TienTe.dinhDang(dongDangXet.docSoTien())))
                     .append('\n');
         }
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
-        boGhepChuoi.append(layCap("Tạm tính", TienTe.dinhDang(dongDuLieu.tamTinh()))).append('\n');
-        if (dongDuLieu.giamGia() > 0) {
+        boGhepChuoi.append(layCap("Tạm tính", TienTe.dinhDang(dongDuLieu.getTamTinh()))).append('\n');
+        if (dongDuLieu.getGiamGia() > 0) {
             boGhepChuoi
                     .append(
                             layCap(
                                     (nguon.loai().equals("DOI_HANG")
                                                     ? "Giá trị hàng được đổi"
                                                     : "Giảm giá")
-                                            + (dongDuLieu.voucher().isEmpty()
+                                            + (dongDuLieu.getVoucher().isEmpty()
                                                     ? ""
-                                                    : "(" + dongDuLieu.voucher() + ")"),
-                                    "-" + TienTe.dinhDang(dongDuLieu.giamGia())))
+                                                    : "(" + dongDuLieu.getVoucher() + ")"),
+                                    "-" + TienTe.dinhDang(dongDuLieu.getGiamGia())))
                     .append('\n');
         }
-        boGhepChuoi.append(layCap("TỔNG CỘNG", TienTe.dinhDang(dongDuLieu.tong()))).append('\n');
+        boGhepChuoi.append(layCap("TỔNG CỘNG", TienTe.dinhDang(dongDuLieu.getTong()))).append('\n');
 
         String phuongThuc =
-                switch (dongDuLieu.phuongThuc()) {
+                switch (dongDuLieu.getPhuongThuc()) {
                     case TIEN_MAT -> "Tiền mặt";
                     case CHUYEN_KHOAN -> "Chuyển khoản/QR";
                     case THE_NGAN_HANG -> "Thẻ";
@@ -219,15 +219,15 @@ public final class InHoaDonPanel extends CoSoPanel {
                 .append(
                         layCap(
                                 "Thanh toán (" + phuongThuc + ")",
-                                TienTe.dinhDang(dongDuLieu.daNhan())))
+                                TienTe.dinhDang(dongDuLieu.getDaNhan())))
                 .append('\n');
-        for (var d : dongDuLieu.cacKhoanThu())
+        for (var d : dongDuLieu.getCacKhoanThu())
             boGhepChuoi
-                    .append(layCap(tenPhuongThuc(d.phuongThuc()), TienTe.dinhDang(d.soTien())))
+                    .append(layCap(tenPhuongThuc(d.getPhuongThuc()), TienTe.dinhDang(d.getSoTien())))
                     .append('\n');
-        if (dongDuLieu.thayDoi() > 0)
+        if (dongDuLieu.getThayDoi() > 0)
             boGhepChuoi
-                    .append(layCap("Tiền thừa", TienTe.dinhDang(dongDuLieu.thayDoi())))
+                    .append(layCap("Tiền thừa", TienTe.dinhDang(dongDuLieu.getThayDoi())))
                     .append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         boGhepChuoi.append(layGiua("Cảm ơn quý khách!")).append('\n');
@@ -235,7 +235,7 @@ public final class InHoaDonPanel extends CoSoPanel {
     }
 
     public static String hienThiHTML(GioHang.BienLai bienLai) {
-        var nguon = com.petstation.service.BanHangService.layNguonBienLai(bienLai.soHoaDon());
+        var nguon = com.petstation.service.BanHangService.layNguonBienLai(bienLai.getSoHoaDon());
         StringBuilder html =
                 new StringBuilder(
                         "<html><head><style>body{font-family:Arial;font-size:12px;color:#61341D;margin:20px}h1{color:#CE1D2D;text-align:center;margin:0;font-size:20px}h2{margin:6px"
@@ -254,13 +254,13 @@ public final class InHoaDonPanel extends CoSoPanel {
                 .append(maHoa(com.petstation.service.CaiDatService.lay("STORE_PHONE")))
                 .append("</td></tr></table>");
         html.append("<h2 align='center'>HÓA ĐƠN</h2><table><tr><td>Số hóa đơn: <b>")
-                .append(maHoa(bienLai.soHoaDon()))
+                .append(maHoa(bienLai.getSoHoaDon()))
                 .append("</b></td><td>Ngày: ")
-                .append(bienLai.thoiGian().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+                .append(bienLai.getThoiGian().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
                 .append("</td></tr><tr><td>Khách hàng: ")
-                .append(maHoa(bienLai.khachHang()))
+                .append(maHoa(bienLai.getKhachHang()))
                 .append("</td><td>Thu ngân: ")
-                .append(maHoa(bienLai.thuNgan()))
+                .append(maHoa(bienLai.getThuNgan()))
                 .append("</td></tr></table>");
         if (!nguon.ma().isBlank())
             html.append("<p>Chứng từ: ").append(maHoa(nguon.ma())).append("</p>");
@@ -270,39 +270,39 @@ public final class InHoaDonPanel extends CoSoPanel {
                 "<table><tr><th align='left' width='52%'>Tên hàng / dịch vụ</th><th align='center'"
                         + " width='8%'>SL</th><th align='right' width='20%'>Đơn giá</th><th"
                         + " align='right' width='20%'>Thành tiền</th></tr>");
-        for (var dong : bienLai.cacDong())
+        for (var dong : bienLai.getCacDong())
             html.append("<tr><td>")
-                    .append(maHoa(dong.ten()))
+                    .append(maHoa(dong.getTen()))
                     .append("</td><td align='center'>")
-                    .append(dong.soLuong())
+                    .append(dong.getSoLuong())
                     .append("</td><td align='right'>")
-                    .append(TienTe.dinhDang(dong.donGia()))
+                    .append(TienTe.dinhDang(dong.getDonGia()))
                     .append("</td><td align='right'>")
                     .append(TienTe.dinhDang(dong.docSoTien()))
                     .append("</td></tr>");
         html.append("</table><table>");
-        themTong(html, "Tạm tính", bienLai.tamTinh());
-        if (bienLai.giamGia() > 0)
+        themTong(html, "Tạm tính", bienLai.getTamTinh());
+        if (bienLai.getGiamGia() > 0)
             themTong(
                     html,
                     nguon.loai().equals("DOI_HANG")
                             ? "Giá trị hàng được đổi"
-                            : "Giảm giá " + bienLai.voucher(),
-                    -bienLai.giamGia());
+                            : "Giảm giá " + bienLai.getVoucher(),
+                    -bienLai.getGiamGia());
         if (nguon.loai().equals("LUU_TRU")) themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
-        themTong(html, "TỔNG THANH TOÁN", bienLai.tong());
+        themTong(html, "TỔNG THANH TOÁN", bienLai.getTong());
         String phuongThuc =
-                switch (bienLai.phuongThuc()) {
+                switch (bienLai.getPhuongThuc()) {
                     case TIEN_MAT -> "Tiền mặt";
                     case CHUYEN_KHOAN -> "Chuyển khoản / QR";
                     case THE_NGAN_HANG -> "Thẻ";
                     case DIEM_TICH_LUY -> "Điểm tích lũy";
                     case KET_HOP -> "Kết hợp";
                 };
-        themTong(html, "Đã nhận — " + phuongThuc, bienLai.daNhan());
-        for (var d : bienLai.cacKhoanThu())
-            themTong(html, tenPhuongThuc(d.phuongThuc()), d.soTien());
-        if (bienLai.thayDoi() > 0) themTong(html, "Tiền thừa", bienLai.thayDoi());
+        themTong(html, "Đã nhận — " + phuongThuc, bienLai.getDaNhan());
+        for (var d : bienLai.getCacKhoanThu())
+            themTong(html, tenPhuongThuc(d.getPhuongThuc()), d.getSoTien());
+        if (bienLai.getThayDoi() > 0) themTong(html, "Tiền thừa", bienLai.getThayDoi());
         return html.append("</table><p align='center'>Cảm ơn quý khách!</p></body></html>")
                 .toString();
     }
@@ -352,15 +352,15 @@ public final class InHoaDonPanel extends CoSoPanel {
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(
-                false, false, false, banHang.layBienLaiCuoi() != null, false, true);
+                false, false, false, banHang.getBienLaiCuoi() != null, false, true);
     }
 
     @Override
     public void xuLyIn() {
-        if (banHang.layBienLaiCuoi() == null) return;
+        if (banHang.getBienLaiCuoi() == null) return;
         try {
             java.awt.print.PrinterJob congViec = java.awt.print.PrinterJob.getPrinterJob();
-            congViec.setJobName("Hóa đơn " + banHang.layBienLaiCuoi().soHoaDon());
+            congViec.setJobName("Hóa đơn " + banHang.getBienLaiCuoi().getSoHoaDon());
             congViec.setPrintable(pnlHoaDon);
             javax.print.attribute.PrintRequestAttributeSet thuocTinh =
                     new javax.print.attribute.HashPrintRequestAttributeSet();

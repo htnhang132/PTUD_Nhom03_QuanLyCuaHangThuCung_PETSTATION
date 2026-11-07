@@ -12,7 +12,7 @@ public enum VaiTro {
         this.tenHienThi = tenHienThi;
     }
 
-    public String layTenHienThi() {
+    public String getTenHienThi() {
         return tenHienThi;
     }
 

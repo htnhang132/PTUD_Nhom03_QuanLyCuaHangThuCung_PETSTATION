@@ -115,10 +115,6 @@ public class ChiTietHoaDon implements Serializable {
         return tinhThanhTienTruocGiam();
     }
 
-    public long layThanhTienTruocGiam() {
-        return tinhThanhTienTruocGiam();
-    }
-
     public long tinhTienThueGtgt() {
         long sauGiam = Math.max(0L, tinhThanhTienTruocGiam() - giamGia);
         if (thueGtgt <= 0) {
@@ -131,10 +127,6 @@ public class ChiTietHoaDon implements Serializable {
         return tinhTienThueGtgt();
     }
 
-    public long layTienThueGtgt() {
-        return tinhTienThueGtgt();
-    }
-
     public long tinhThanhTien() {
         return Math.max(0L, tinhThanhTienTruocGiam() - giamGia) + tinhTienThueGtgt();
     }
@@ -143,32 +135,12 @@ public class ChiTietHoaDon implements Serializable {
         return tinhThanhTien();
     }
 
-    public long layThanhTien() {
-        return tinhThanhTien();
-    }
-
-    public long thanhTien() {
-        return tinhThanhTien();
-    }
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaChiTietHoaDon());
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, getMaChiTietHoaDon());
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
-    }
-
-    public void datId(long id) {
-        setId(id);
     }
 
     public String getMaChiTietHoaDon() {
@@ -178,35 +150,15 @@ public class ChiTietHoaDon implements Serializable {
         return hd + "-" + sp + (lo.isEmpty() ? "" : "-" + lo);
     }
 
-    public String layMaChiTietHoaDon() {
-        return getMaChiTietHoaDon();
-    }
-
-    public String maChiTietHoaDon() {
-        return getMaChiTietHoaDon();
-    }
-
     public void setMaChiTietHoaDon(String maChiTietHoaDon) {
-    }
-
-    public void datMaChiTietHoaDon(String maChiTietHoaDon) {
-        setMaChiTietHoaDon(maChiTietHoaDon);
     }
 
     public HoaDon getHoaDon() {
         return this.hoaDon;
     }
 
-    public HoaDon layHoaDon() {
-        return this.hoaDon;
-    }
-
     public void setHoaDon(HoaDon hoaDon) {
         this.hoaDon = hoaDon;
-    }
-
-    public void datHoaDon(HoaDon hoaDon) {
-        setHoaDon(hoaDon);
     }
 
     public String getMaHoaDon() {
@@ -221,36 +173,16 @@ public class ChiTietHoaDon implements Serializable {
         return hoaDon == null ? 0L : hoaDon.getId();
     }
 
-    public long layHoaDonId() {
-        return getHoaDonId();
-    }
-
-    public long hoaDonId() {
-        return getHoaDonId();
-    }
-
     public void setHoaDonId(long hoaDonId) {
         this.hoaDon = new HoaDon(hoaDonId);
-    }
-
-    public void datHoaDonId(long hoaDonId) {
-        setHoaDonId(hoaDonId);
     }
 
     public SanPham getSanPham() {
         return this.sanPham;
     }
 
-    public SanPham laySanPham() {
-        return this.sanPham;
-    }
-
     public void setSanPham(SanPham sanPham) {
         this.sanPham = sanPham;
-    }
-
-    public void datSanPham(SanPham sanPham) {
-        setSanPham(sanPham);
     }
 
     public String getMaSanPham() {
@@ -265,36 +197,16 @@ public class ChiTietHoaDon implements Serializable {
         return sanPham == null ? null : sanPham.getId();
     }
 
-    public Long laySanPhamId() {
-        return getSanPhamId();
-    }
-
-    public Long sanPhamId() {
-        return getSanPhamId();
-    }
-
     public void setSanPhamId(Long sanPhamId) {
         this.sanPham = sanPhamId == null ? null : new SanPham(sanPhamId);
-    }
-
-    public void datSanPhamId(Long sanPhamId) {
-        setSanPhamId(sanPhamId);
     }
 
     public LoHang getLoHang() {
         return this.loHang;
     }
 
-    public LoHang layLoHang() {
-        return this.loHang;
-    }
-
     public void setLoHang(LoHang loHang) {
         this.loHang = loHang;
-    }
-
-    public void datLoHang(LoHang loHang) {
-        setLoHang(loHang);
     }
 
     public String getMaLo() {
@@ -309,31 +221,11 @@ public class ChiTietHoaDon implements Serializable {
         return loHang == null ? null : loHang.getId();
     }
 
-    public Long layLoHangId() {
-        return getLoHangId();
-    }
-
-    public Long loHangId() {
-        return getLoHangId();
-    }
-
     public void setLoHangId(Long loHangId) {
         this.loHang = loHangId == null ? null : new LoHang(loHangId);
     }
 
-    public void datLoHangId(Long loHangId) {
-        setLoHangId(loHangId);
-    }
-
     public int getSoLuong() {
-        return this.soLuong;
-    }
-
-    public int laySoLuong() {
-        return this.soLuong;
-    }
-
-    public int soLuong() {
         return this.soLuong;
     }
 
@@ -343,19 +235,7 @@ public class ChiTietHoaDon implements Serializable {
         this.soLuong = soLuong;
     }
 
-    public void datSoLuong(int soLuong) {
-        setSoLuong(soLuong);
-    }
-
     public long getDonGia() {
-        return this.donGia;
-    }
-
-    public long layDonGia() {
-        return this.donGia;
-    }
-
-    public long donGia() {
         return this.donGia;
     }
 
@@ -365,19 +245,7 @@ public class ChiTietHoaDon implements Serializable {
         this.donGia = donGia;
     }
 
-    public void datDonGia(long donGia) {
-        setDonGia(donGia);
-    }
-
     public long getGiamGia() {
-        return this.giamGia;
-    }
-
-    public long layGiamGia() {
-        return this.giamGia;
-    }
-
-    public long giamGia() {
         return this.giamGia;
     }
 
@@ -387,19 +255,7 @@ public class ChiTietHoaDon implements Serializable {
         this.giamGia = giamGia;
     }
 
-    public void datGiamGia(long giamGia) {
-        setGiamGia(giamGia);
-    }
-
     public double getThueGtgt() {
-        return this.thueGtgt;
-    }
-
-    public double layThueGtgt() {
-        return this.thueGtgt;
-    }
-
-    public double thueGtgt() {
         return this.thueGtgt;
     }
 
@@ -409,19 +265,7 @@ public class ChiTietHoaDon implements Serializable {
         this.thueGtgt = thueGtgt;
     }
 
-    public void datThueGtgt(double thueGtgt) {
-        setThueGtgt(thueGtgt);
-    }
-
     public String getMaDichVu() {
-        return this.maDichVu;
-    }
-
-    public String layMaDichVu() {
-        return this.maDichVu;
-    }
-
-    public String maDichVu() {
         return this.maDichVu;
     }
 
@@ -429,28 +273,12 @@ public class ChiTietHoaDon implements Serializable {
         this.maDichVu = maDichVu;
     }
 
-    public void datMaDichVu(String maDichVu) {
-        setMaDichVu(maDichVu);
-    }
-
     public String getTenHang() {
-        return this.tenHang;
-    }
-
-    public String layTenHang() {
-        return this.tenHang;
-    }
-
-    public String tenHang() {
         return this.tenHang;
     }
 
     public void setTenHang(String tenHang) {
         this.tenHang = tenHang;
-    }
-
-    public void datTenHang(String tenHang) {
-        setTenHang(tenHang);
     }
 
     @Override

@@ -19,18 +19,18 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME())
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setString(1, muc.maNhatKy());
+            cauLenh.setString(1, muc.getMaNhatKy());
             if (muc.getNguoiThucHien() == null) {
                 cauLenh.setNull(2, java.sql.Types.VARCHAR);
             } else {
-                cauLenh.setString(2, muc.getNguoiThucHien().tenDangNhap());
+                cauLenh.setString(2, muc.getNguoiThucHien().getTenDangNhap());
             }
-            cauLenh.setString(3, muc.thaoTac());
-            cauLenh.setString(4, muc.kieuThucThe());
-            cauLenh.setString(5, muc.idThucThe());
-            cauLenh.setString(6, muc.giaTriCu());
-            cauLenh.setString(7, muc.giaTriMoi());
-            cauLenh.setString(8, muc.ghiChu());
+            cauLenh.setString(3, muc.getThaoTac());
+            cauLenh.setString(4, muc.getKieuThucThe());
+            cauLenh.setString(5, muc.getIdThucThe());
+            cauLenh.setString(6, muc.getGiaTriCu());
+            cauLenh.setString(7, muc.getGiaTriMoi());
+            cauLenh.setString(8, muc.getGhiChu());
             cauLenh.executeUpdate();
         }
     }

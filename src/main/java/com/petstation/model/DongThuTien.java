@@ -29,8 +29,6 @@ public class DongThuTien implements Serializable {
     }
 
     public PhuongThuc getPhuongThuc() { return this.phuongThuc; }
-    public PhuongThuc layPhuongThuc() { return this.phuongThuc; }
-    public PhuongThuc phuongThuc() { return this.phuongThuc; }
     public void setPhuongThuc(PhuongThuc phuongThuc) {
         Objects.requireNonNull(phuongThuc, "Phương thức thanh toán không được rỗng.");
         if (phuongThuc == PhuongThuc.KET_HOP) {
@@ -38,22 +36,16 @@ public class DongThuTien implements Serializable {
         }
         this.phuongThuc = phuongThuc;
     }
-    public void datPhuongThuc(PhuongThuc phuongThuc) { setPhuongThuc(phuongThuc); }
 
     public long getSoTien() { return this.soTien; }
-    public long laySoTien() { return this.soTien; }
-    public long soTien() { return this.soTien; }
     public void setSoTien(long soTien) {
         if (soTien < 0) {
             throw new IllegalArgumentException("Số tiền thu không được âm.");
         }
         this.soTien = soTien;
     }
-    public void datSoTien(long soTien) { setSoTien(soTien); }
 
     public long getKhachDua() { return this.khachDua; }
-    public long layKhachDua() { return this.khachDua; }
-    public long khachDua() { return this.khachDua; }
     public void setKhachDua(long khachDua) {
         if (khachDua < this.soTien) {
             throw new IllegalArgumentException("Tiền khách đưa không được nhỏ hơn số tiền thu.");
@@ -63,13 +55,9 @@ public class DongThuTien implements Serializable {
         }
         this.khachDua = khachDua;
     }
-    public void datKhachDua(long khachDua) { setKhachDua(khachDua); }
 
     public boolean isDaXacNhan() { return this.daXacNhan; }
-    public boolean layDaXacNhan() { return this.daXacNhan; }
-    public boolean daXacNhan() { return this.daXacNhan; }
     public void setDaXacNhan(boolean daXacNhan) { this.daXacNhan = daXacNhan; }
-    public void datDaXacNhan(boolean daXacNhan) { this.daXacNhan = daXacNhan; }
 
     public long tienThua() {
         return khachDua - soTien;
@@ -81,11 +69,11 @@ public class DongThuTien implements Serializable {
         java.util.Set<PhuongThuc> used = java.util.EnumSet.noneOf(PhuongThuc.class);
         long sum = 0;
         for (var d : cacDong) {
-            if (!used.add(d.phuongThuc()))
+            if (!used.add(d.getPhuongThuc()))
                 throw new IllegalArgumentException("Mỗi phương thức chỉ một dòng.");
-            if (d.phuongThuc() != PhuongThuc.TIEN_MAT && !d.daXacNhan())
+            if (d.getPhuongThuc() != PhuongThuc.TIEN_MAT && !d.isDaXacNhan())
                 throw new IllegalArgumentException("Cần xác nhận đã nhận tiền QR/thẻ.");
-            sum = Math.addExact(sum, d.soTien());
+            sum = Math.addExact(sum, d.getSoTien());
         }
         if (sum != canThu) throw new IllegalArgumentException("Tổng phân bổ phải bằng số cần thu.");
         return java.util.List.copyOf(cacDong);

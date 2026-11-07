@@ -78,30 +78,11 @@ public class ChiTietDoiTra implements Serializable {
         return DuLieu.layIdCauNoiObj(this, key);
     }
 
-    public long layId() {
-        String key = (phieuDoiTra != null ? phieuDoiTra.getMaPhieu() : "") + "_"
-                + (chiTietHoaDon != null ? chiTietHoaDon.getMaChiTietHoaDon() : "") + "_"
-                + (loHang != null ? loHang.getMaLo() : "");
-        return DuLieu.layIdCauNoi(this, key);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public PhieuDoiTra getPhieuDoiTra() {
-        return this.phieuDoiTra;
-    }
-
-    public PhieuDoiTra layPhieuDoiTra() {
         return this.phieuDoiTra;
     }
 
@@ -109,35 +90,15 @@ public class ChiTietDoiTra implements Serializable {
         this.phieuDoiTra = phieuDoiTra;
     }
 
-    public void datPhieuDoiTra(PhieuDoiTra phieuDoiTra) {
-        setPhieuDoiTra(phieuDoiTra);
-    }
-
     public long getPhieuDoiTraId() {
         return phieuDoiTra == null ? 0L : phieuDoiTra.getId();
-    }
-
-    public long layPhieuDoiTraId() {
-        return getPhieuDoiTraId();
-    }
-
-    public long phieuDoiTraId() {
-        return getPhieuDoiTraId();
     }
 
     public void setPhieuDoiTraId(long phieuDoiTraId) {
         this.phieuDoiTra = new PhieuDoiTra(phieuDoiTraId);
     }
 
-    public void datPhieuDoiTraId(long phieuDoiTraId) {
-        setPhieuDoiTraId(phieuDoiTraId);
-    }
-
     public ChiTietHoaDon getChiTietHoaDon() {
-        return this.chiTietHoaDon;
-    }
-
-    public ChiTietHoaDon layChiTietHoaDon() {
         return this.chiTietHoaDon;
     }
 
@@ -145,35 +106,15 @@ public class ChiTietDoiTra implements Serializable {
         this.chiTietHoaDon = chiTietHoaDon;
     }
 
-    public void datChiTietHoaDon(ChiTietHoaDon chiTietHoaDon) {
-        setChiTietHoaDon(chiTietHoaDon);
-    }
-
     public long getChiTietHoaDonId() {
         return chiTietHoaDon == null ? 0L : chiTietHoaDon.getId();
-    }
-
-    public long layChiTietHoaDonId() {
-        return getChiTietHoaDonId();
-    }
-
-    public long chiTietHoaDonId() {
-        return getChiTietHoaDonId();
     }
 
     public void setChiTietHoaDonId(long chiTietHoaDonId) {
         this.chiTietHoaDon = new ChiTietHoaDon(chiTietHoaDonId);
     }
 
-    public void datChiTietHoaDonId(long chiTietHoaDonId) {
-        setChiTietHoaDonId(chiTietHoaDonId);
-    }
-
     public LoHang getLoHang() {
-        return this.loHang;
-    }
-
-    public LoHang layLoHang() {
         return this.loHang;
     }
 
@@ -181,39 +122,15 @@ public class ChiTietDoiTra implements Serializable {
         this.loHang = loHang;
     }
 
-    public void datLoHang(LoHang loHang) {
-        setLoHang(loHang);
-    }
-
     public Long getLoHangId() {
         return loHang == null ? null : loHang.getId();
-    }
-
-    public Long layLoHangId() {
-        return getLoHangId();
-    }
-
-    public Long loHangId() {
-        return getLoHangId();
     }
 
     public void setLoHangId(Long loHangId) {
         this.loHang = loHangId == null ? null : new LoHang(loHangId);
     }
 
-    public void datLoHangId(Long loHangId) {
-        setLoHangId(loHangId);
-    }
-
     public int getSoLuong() {
-        return this.soLuong;
-    }
-
-    public int laySoLuong() {
-        return this.soLuong;
-    }
-
-    public int soLuong() {
         return this.soLuong;
     }
 
@@ -223,19 +140,7 @@ public class ChiTietDoiTra implements Serializable {
         this.soLuong = soLuong;
     }
 
-    public void datSoLuong(int soLuong) {
-        setSoLuong(soLuong);
-    }
-
     public long getTienHoan() {
-        return tinhTienHoan();
-    }
-
-    public long layTienHoan() {
-        return tinhTienHoan();
-    }
-
-    public long tienHoan() {
         return tinhTienHoan();
     }
 

@@ -32,9 +32,9 @@ public final class ThanhTrangThai extends JPanel {
         setBackground(new Color(0xF3, 0xED, 0xE5));
         setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, MauUngDung.VIEN));
 
-        add(layNhanGiaTri("Người dùng: " + phienDangNhap.layTenHienThi()));
+        add(layNhanGiaTri("Người dùng: " + phienDangNhap.getTenHienThi()));
         add(layPhanCach());
-        add(layNhanGiaTri("Vai trò: " + phienDangNhap.docVaiTro().layTenHienThi()));
+        add(layNhanGiaTri("Vai trò: " + phienDangNhap.docVaiTro().getTenHienThi()));
         add(layPhanCach());
         add(lblNhanCaLamViec);
         lblNhanCaLamViec.setText("Ca hiện tại: " + caLamViec.layNhan());

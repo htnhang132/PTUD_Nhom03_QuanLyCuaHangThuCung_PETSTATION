@@ -83,31 +83,11 @@ public class NhaCungCap implements Serializable {
         return this.maNhaCungCap;
     }
 
-    public String layMaNhaCungCap() {
-        return this.maNhaCungCap;
-    }
-
-    public String maNhaCungCap() {
-        return this.maNhaCungCap;
-    }
-
     public void setMaNhaCungCap(String maNhaCungCap) {
         this.maNhaCungCap = maNhaCungCap == null ? null : maNhaCungCap.trim();
     }
 
-    public void datMaNhaCungCap(String maNhaCungCap) {
-        setMaNhaCungCap(maNhaCungCap);
-    }
-
     public String getMaNcc() {
-        return getMaNhaCungCap();
-    }
-
-    public String layMaNcc() {
-        return getMaNhaCungCap();
-    }
-
-    public String maNcc() {
         return getMaNhaCungCap();
     }
 
@@ -115,74 +95,40 @@ public class NhaCungCap implements Serializable {
         setMaNhaCungCap(maNcc);
     }
 
-    public void datMaNcc(String maNcc) {
-        setMaNhaCungCap(maNcc);
-    }
-
     public String getTen() { return this.ten; }
-    public String layTen() { return this.ten; }
-    public String ten() { return this.ten; }
     public void setTen(String ten) { this.ten = ten == null ? null : ten.trim(); }
-    public void datTen(String ten) { setTen(ten); }
 
     public String getSoDienThoai() { return this.soDienThoai; }
-    public String laySoDienThoai() { return this.soDienThoai; }
-    public String soDienThoai() { return this.soDienThoai; }
     public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim(); }
-    public void datSoDienThoai(String soDienThoai) { setSoDienThoai(soDienThoai); }
 
     public String getDiaChi() { return this.diaChi; }
-    public String layDiaChi() { return this.diaChi; }
-    public String diaChi() { return this.diaChi; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    public void datDiaChi(String diaChi) { setDiaChi(diaChi); }
 
     public String getNguoiDaiDien() { return this.nguoiDaiDien; }
-    public String layNguoiDaiDien() { return this.nguoiDaiDien; }
-    public String nguoiDaiDien() { return this.nguoiDaiDien; }
     public void setNguoiDaiDien(String nguoiDaiDien) { this.nguoiDaiDien = nguoiDaiDien; }
-    public void datNguoiDaiDien(String nguoiDaiDien) { setNguoiDaiDien(nguoiDaiDien); }
 
     public String getNhomMatHang() { return this.nhomMatHang; }
-    public String layNhomMatHang() { return this.nhomMatHang; }
-    public String nhomMatHang() { return this.nhomMatHang; }
     public void setNhomMatHang(String nhomMatHang) { this.nhomMatHang = nhomMatHang; }
-    public void datNhomMatHang(String nhomMatHang) { setNhomMatHang(nhomMatHang); }
 
     public String getGhiChu() { return this.ghiChu; }
-    public String layGhiChu() { return this.ghiChu; }
-    public String ghiChu() { return this.ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
-    public void datGhiChu(String ghiChu) { setGhiChu(ghiChu); }
 
     public String getTrangThai() { return this.trangThai; }
-    public String layTrangThai() { return this.trangThai; }
-    public String trangThai() { return this.trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public void datTrangThai(String trangThai) { setTrangThai(trangThai); }
 
     public String getMaSoThue() { return this.maSoThue; }
-    public String layMaSoThue() { return this.maSoThue; }
-    public String maSoThue() { return this.maSoThue; }
     public void setMaSoThue(String maSoThue) { this.maSoThue = maSoThue; }
-    public void datMaSoThue(String maSoThue) { setMaSoThue(maSoThue); }
 
     public String getDieuKhoan() { return this.dieuKhoan; }
-    public String layDieuKhoan() { return this.dieuKhoan; }
-    public String dieuKhoan() { return this.dieuKhoan; }
     public void setDieuKhoan(String dieuKhoan) { this.dieuKhoan = dieuKhoan; }
-    public void datDieuKhoan(String dieuKhoan) { setDieuKhoan(dieuKhoan); }
 
     public long getId() { return DuLieu.layIdCauNoi(this, maNhaCungCap); }
-    public long layId() { return getId(); }
-    public long id() { return getId(); }
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maNhaCungCap == null || this.maNhaCungCap.isBlank()) && id > 0) {
             this.maNhaCungCap = DuLieu.taoMaTuId("NCC", 4, id);
         }
     }
-    public void datId(long id) { setId(id); }
 
     @Override
     public boolean equals(Object o) {

@@ -19,11 +19,11 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
                     dong.stream()
                             .map(
                                     d ->
-                                            d.phuongThuc().name()
+                                            d.getPhuongThuc().name()
                                                     + ":"
-                                                    + d.soTien()
+                                                    + d.getSoTien()
                                                     + ":"
-                                                    + d.khachDua()
+                                                    + d.getKhachDua()
                                                     + ":"
                                                     + d.tienThua())
                             .collect(Collectors.joining(";"));
@@ -57,15 +57,15 @@ public final class KhoanThuDAOImpl implements KhoanThuDAO {
                                 + " VALUES(?,?,?,?,?,?,?,?,?)",
                         maHopDong,
                         khoa,
-                        d.phuongThuc().name(),
-                        d.soTien(),
-                        d.khachDua(),
+                        d.getPhuongThuc().name(),
+                        d.getSoTien(),
+                        d.getKhachDua(),
                         d.tienThua(),
                         maPhien,
                         tenDangNhapThu,
                         thoiDiemThu);
             }
-            String phuongThuc = dong.size() == 1 ? dong.get(0).phuongThuc().name() : "KET_HOP";
+            String phuongThuc = dong.size() == 1 ? dong.get(0).getPhuongThuc().name() : "KET_HOP";
             capNhat(
                     "UPDATE hop_dong_luu_tru SET phuong_thuc_coc=?, khoa_thu_coc=? WHERE ma_hop_dong = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)",
                     phuongThuc,

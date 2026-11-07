@@ -101,31 +101,11 @@ public class SanPham implements Serializable {
         return maSanPham;
     }
 
-    public String layMaSanPham() {
-        return maSanPham;
-    }
-
-    public String maSanPham() {
-        return maSanPham;
-    }
-
     public void setMaSanPham(String maSanPham) {
         this.maSanPham = maSanPham == null ? null : maSanPham.trim();
     }
 
-    public void datMaSanPham(String maSanPham) {
-        setMaSanPham(maSanPham);
-    }
-
     public String getBarcode() {
-        return barcode;
-    }
-
-    public String layBarcode() {
-        return barcode;
-    }
-
-    public String barcode() {
         return barcode;
     }
 
@@ -133,19 +113,7 @@ public class SanPham implements Serializable {
         this.barcode = barcode == null ? null : barcode.trim();
     }
 
-    public void datBarcode(String barcode) {
-        setBarcode(barcode);
-    }
-
     public String getTenSanPham() {
-        return tenSanPham;
-    }
-
-    public String layTenSanPham() {
-        return tenSanPham;
-    }
-
-    public String tenSanPham() {
         return tenSanPham;
     }
 
@@ -153,15 +121,7 @@ public class SanPham implements Serializable {
         this.tenSanPham = tenSanPham == null ? null : tenSanPham.trim();
     }
 
-    public void datTenSanPham(String tenSanPham) {
-        setTenSanPham(tenSanPham);
-    }
-
     public String getNhomHang() {
-        return nhomHang;
-    }
-
-    public String layNhomHang() {
         return nhomHang;
     }
 
@@ -169,11 +129,7 @@ public class SanPham implements Serializable {
         this.nhomHang = nhomHang;
     }
 
-    public void datNhomHang(String nhomHang) {
-        setNhomHang(nhomHang);
-    }
-
-    public Long layIdNhomHang() {
+    public Long getIdNhomHang() {
         if (nhomHang == null || nhomHang.isBlank()) return null;
         try {
             return Long.parseLong(nhomHang);
@@ -182,15 +138,7 @@ public class SanPham implements Serializable {
         }
     }
 
-    public void datIdNhomHang(Long idNhomHang) {
-        this.nhomHang = idNhomHang == null ? null : String.valueOf(idNhomHang);
-    }
-
     public String getDonVi() {
-        return donVi;
-    }
-
-    public String layDonVi() {
         return donVi;
     }
 
@@ -198,15 +146,7 @@ public class SanPham implements Serializable {
         this.donVi = donVi;
     }
 
-    public void datDonVi(String donVi) {
-        setDonVi(donVi);
-    }
-
     public BigDecimal getGiaBan() {
-        return giaBan;
-    }
-
-    public BigDecimal layGiaBan() {
         return giaBan;
     }
 
@@ -217,15 +157,7 @@ public class SanPham implements Serializable {
         this.giaBan = giaBan;
     }
 
-    public void datGiaBan(BigDecimal giaBan) {
-        setGiaBan(giaBan);
-    }
-
     public BigDecimal getGiaVon() {
-        return giaVon;
-    }
-
-    public BigDecimal layGiaVon() {
         return giaVon;
     }
 
@@ -236,15 +168,7 @@ public class SanPham implements Serializable {
         this.giaVon = giaVon;
     }
 
-    public void datGiaVon(BigDecimal giaVon) {
-        setGiaVon(giaVon);
-    }
-
     public Integer getNguongTonThap() {
-        return nguongTonThap;
-    }
-
-    public Integer layNguongTonThap() {
         return nguongTonThap;
     }
 
@@ -255,15 +179,7 @@ public class SanPham implements Serializable {
         this.nguongTonThap = nguongTonThap;
     }
 
-    public void datNguongTonThap(Integer nguongTonThap) {
-        setNguongTonThap(nguongTonThap);
-    }
-
     public Boolean getTheoDoiHsd() {
-        return theoDoiHsd;
-    }
-
-    public Boolean layTheoDoiHsd() {
         return theoDoiHsd;
     }
 
@@ -271,15 +187,7 @@ public class SanPham implements Serializable {
         this.theoDoiHsd = theoDoiHsd;
     }
 
-    public void datTheoDoiHsd(Boolean theoDoiHsd) {
-        setTheoDoiHsd(theoDoiHsd);
-    }
-
     public String getUrlAnh() {
-        return urlAnh;
-    }
-
-    public String layURLAnh() {
         return urlAnh;
     }
 
@@ -287,15 +195,7 @@ public class SanPham implements Serializable {
         this.urlAnh = urlAnh;
     }
 
-    public void datURLAnh(String urlAnh) {
-        setUrlAnh(urlAnh);
-    }
-
     public String getThuongHieu() {
-        return thuongHieu;
-    }
-
-    public String layThuongHieu() {
         return thuongHieu;
     }
 
@@ -303,15 +203,7 @@ public class SanPham implements Serializable {
         this.thuongHieu = thuongHieu;
     }
 
-    public void datThuongHieu(String thuongHieu) {
-        setThuongHieu(thuongHieu);
-    }
-
     public String getQuyCach() {
-        return quyCach;
-    }
-
-    public String layQuyCach() {
         return quyCach;
     }
 
@@ -319,15 +211,7 @@ public class SanPham implements Serializable {
         this.quyCach = quyCach;
     }
 
-    public void datQuyCach(String quyCach) {
-        setQuyCach(quyCach);
-    }
-
     public String getDoiTuongSuDung() {
-        return doiTuongSuDung;
-    }
-
-    public String layDoiTuongSuDung() {
         return doiTuongSuDung;
     }
 
@@ -335,15 +219,7 @@ public class SanPham implements Serializable {
         this.doiTuongSuDung = doiTuongSuDung;
     }
 
-    public void datDoiTuongSuDung(String doiTuongSuDung) {
-        setDoiTuongSuDung(doiTuongSuDung);
-    }
-
     public String getMoTa() {
-        return moTa;
-    }
-
-    public String layMoTa() {
         return moTa;
     }
 
@@ -351,15 +227,7 @@ public class SanPham implements Serializable {
         this.moTa = moTa;
     }
 
-    public void datMoTa(String moTa) {
-        setMoTa(moTa);
-    }
-
     public Boolean getCanDonThuoc() {
-        return canDonThuoc;
-    }
-
-    public Boolean layCanDonThuoc() {
         return canDonThuoc;
     }
 
@@ -367,15 +235,7 @@ public class SanPham implements Serializable {
         this.canDonThuoc = canDonThuoc;
     }
 
-    public void datCanDonThuoc(Boolean canDonThuoc) {
-        setCanDonThuoc(canDonThuoc);
-    }
-
     public Boolean getDangHoatDong() {
-        return dangHoatDong;
-    }
-
-    public Boolean layDangHoatDong() {
         return dangHoatDong;
     }
 
@@ -383,15 +243,7 @@ public class SanPham implements Serializable {
         this.dangHoatDong = dangHoatDong;
     }
 
-    public void datDangHoatDong(Boolean dangHoatDong) {
-        setDangHoatDong(dangHoatDong);
-    }
-
     public LocalDateTime getThoiDiemTao() {
-        return thoiDiemTao;
-    }
-
-    public LocalDateTime layThoiDiemTao() {
         return thoiDiemTao;
     }
 
@@ -399,24 +251,12 @@ public class SanPham implements Serializable {
         this.thoiDiemTao = thoiDiemTao;
     }
 
-    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
-        setThoiDiemTao(thoiDiemTao);
-    }
-
     public byte[] getPhienBanBanGhi() {
-        return phienBanBanGhi;
-    }
-
-    public byte[] layPhienBanBanGhi() {
         return phienBanBanGhi;
     }
 
     public void setPhienBanBanGhi(byte[] phienBanBanGhi) {
         this.phienBanBanGhi = phienBanBanGhi;
-    }
-
-    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
-        setPhienBanBanGhi(phienBanBanGhi);
     }
 
     public List<LoHang> getDanhSachLoHang() {
@@ -431,14 +271,6 @@ public class SanPham implements Serializable {
         return DuLieu.layIdCauNoiObj(this, maSanPham);
     }
 
-    public Long layId() {
-        return getId();
-    }
-
-    public Long id() {
-        return getId();
-    }
-
     public void setId(Long id) {
         if (id != null && id < 0) {
             throw new IllegalArgumentException("Mã định danh sản phẩm không hợp lệ.");
@@ -447,10 +279,6 @@ public class SanPham implements Serializable {
         if ((this.maSanPham == null || this.maSanPham.isBlank()) && id != null && id > 0) {
             this.maSanPham = DuLieu.taoMaTuId("SP", 6, id);
         }
-    }
-
-    public void datId(Long id) {
-        setId(id);
     }
 
     @Override

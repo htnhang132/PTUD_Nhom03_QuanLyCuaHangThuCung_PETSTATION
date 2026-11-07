@@ -21,7 +21,7 @@ public final class MaTranQuyenPanel extends CoSoPanel {
         String[] cacCot = new String[cacVaiTro.length + 1];
         cacCot[0] = "Chức năng";
         for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
-            cacCot[chiSo + 1] = cacVaiTro[chiSo].layTenHienThi();
+            cacCot[chiSo + 1] = cacVaiTro[chiSo].getTenHienThi();
 
         DefaultTableModel moHinh =
                 new DefaultTableModel(cacCot, 0) {

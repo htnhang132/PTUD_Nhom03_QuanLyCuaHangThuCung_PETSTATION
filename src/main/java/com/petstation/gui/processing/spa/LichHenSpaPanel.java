@@ -89,7 +89,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         if (giaTri == null) return;
         long id = SpaService.datLichHen(giaTri.get("pet"), giaTri.get("package"),
             giaTri.get("staff"), docThoiGian(giaTri, "start"));
-        banHang.layQuyTrinh().chonLichHen(id);
+        banHang.getQuyTrinh().chonLichHen(id);
     }
 
     private java.util.List<Object[]> thuCuaKhach(String maKhach) {

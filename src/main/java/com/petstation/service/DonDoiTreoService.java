@@ -37,16 +37,16 @@ public final class DonDoiTreoService {
 
     public static long treo(GioHang gio) {
         yeuCau(Quyen.BAN_HANG);
-        if (gio.dangGhiThanhToan()) throw new IllegalStateException("Đang ghi thanh toán, vui lòng chờ.");
-        if (!"DOI_HANG".equals(gio.layKieuNguon()) || gio.layDoiHang() == null
-                || gio.layCacDong().size() != 1)
+        if (gio.isDangGhiThanhToan()) throw new IllegalStateException("Đang ghi thanh toán, vui lòng chờ.");
+        if (!"DOI_HANG".equals(gio.getKieuNguon()) || gio.getDoiHang() == null
+                || gio.getCacDong().size() != 1)
             throw new IllegalArgumentException("Không có đơn đổi phụ kiện để treo.");
-        var yc = gio.layDoiHang();
-        var hang = gio.layCacDong().get(0);
-        if (hang.soLuong() != yc.soLuong())
+        var yc = gio.getDoiHang();
+        var hang = gio.getCacDong().get(0);
+        if (hang.getSoLuong() != yc.getSoLuong())
             throw new IllegalArgumentException("Số lượng phụ kiện thay thế phải bằng số lượng hàng đổi.");
-        return treo(0, new DonDoiTreo(dao.layMaHoaDonGoc(yc.dongGoc()), yc.dongGoc(),
-                hang.ma(), hang.ma(), yc.soLuong(), yc.lyDo(), true, true));
+        return treo(0, new DonDoiTreo(dao.layMaHoaDonGoc(yc.getDongGoc()), yc.getDongGoc(),
+                hang.getMa(), hang.getMa(), yc.getSoLuong(), yc.getLyDo(), true, true));
     }
 
     public static void chuyenThanhToan(long id, GioHang gio, long dong, int sl, String ma, String lyDo) {

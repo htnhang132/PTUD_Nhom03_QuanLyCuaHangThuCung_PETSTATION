@@ -25,8 +25,8 @@ public final class BoiCanhDangNhap {
         if (p == null) {
             p = phienHienTai;
         }
-        if (p != null && p.taiKhoan() != null) {
-            return p.taiKhoan().tenDangNhap();
+        if (p != null && p.getTaiKhoan() != null) {
+            return p.getTaiKhoan().getTenDangNhap();
         }
         return "";
     }

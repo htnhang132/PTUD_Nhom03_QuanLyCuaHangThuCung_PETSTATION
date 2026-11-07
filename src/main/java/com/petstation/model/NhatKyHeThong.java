@@ -94,14 +94,6 @@ public class NhatKyHeThong implements Serializable {
         return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maNhatKy);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
@@ -109,28 +101,12 @@ public class NhatKyHeThong implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaNhatKy() {
-        return this.maNhatKy;
-    }
-
-    public String layMaNhatKy() {
-        return this.maNhatKy;
-    }
-
-    public String maNhatKy() {
         return this.maNhatKy;
     }
 
     public void setMaNhatKy(String maNhatKy) {
         this.maNhatKy = maNhatKy == null ? null : maNhatKy.trim();
-    }
-
-    public void datMaNhatKy(String maNhatKy) {
-        setMaNhatKy(maNhatKy);
     }
 
     public TaiKhoan getNguoiThucHien() {
@@ -145,31 +121,11 @@ public class NhatKyHeThong implements Serializable {
         return nguoiThucHien == null ? null : nguoiThucHien.getId();
     }
 
-    public Long layIdNguoiThucHienTaiKhoan() {
-        return getIdNguoiThucHienTaiKhoan();
-    }
-
-    public Long idNguoiThucHienTaiKhoan() {
-        return getIdNguoiThucHienTaiKhoan();
-    }
-
     public void setIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) {
         this.nguoiThucHien = idNguoiThucHienTaiKhoan == null ? null : new TaiKhoan(idNguoiThucHienTaiKhoan);
     }
 
-    public void datIdNguoiThucHienTaiKhoan(Long idNguoiThucHienTaiKhoan) {
-        setIdNguoiThucHienTaiKhoan(idNguoiThucHienTaiKhoan);
-    }
-
     public String getThaoTac() {
-        return this.thaoTac;
-    }
-
-    public String layThaoTac() {
-        return this.thaoTac;
-    }
-
-    public String thaoTac() {
         return this.thaoTac;
     }
 
@@ -177,19 +133,7 @@ public class NhatKyHeThong implements Serializable {
         this.thaoTac = thaoTac;
     }
 
-    public void datThaoTac(String thaoTac) {
-        setThaoTac(thaoTac);
-    }
-
     public String getKieuThucThe() {
-        return this.kieuThucThe;
-    }
-
-    public String layKieuThucThe() {
-        return this.kieuThucThe;
-    }
-
-    public String kieuThucThe() {
         return this.kieuThucThe;
     }
 
@@ -197,19 +141,7 @@ public class NhatKyHeThong implements Serializable {
         this.kieuThucThe = kieuThucThe;
     }
 
-    public void datKieuThucThe(String kieuThucThe) {
-        setKieuThucThe(kieuThucThe);
-    }
-
     public String getIdThucThe() {
-        return this.idThucThe;
-    }
-
-    public String layIdThucThe() {
-        return this.idThucThe;
-    }
-
-    public String idThucThe() {
         return this.idThucThe;
     }
 
@@ -217,19 +149,7 @@ public class NhatKyHeThong implements Serializable {
         this.idThucThe = idThucThe;
     }
 
-    public void datIdThucThe(String idThucThe) {
-        setIdThucThe(idThucThe);
-    }
-
     public String getGiaTriCu() {
-        return this.giaTriCu;
-    }
-
-    public String layGiaTriCu() {
-        return this.giaTriCu;
-    }
-
-    public String giaTriCu() {
         return this.giaTriCu;
     }
 
@@ -237,19 +157,7 @@ public class NhatKyHeThong implements Serializable {
         this.giaTriCu = giaTriCu;
     }
 
-    public void datGiaTriCu(String giaTriCu) {
-        setGiaTriCu(giaTriCu);
-    }
-
     public String getGiaTriMoi() {
-        return this.giaTriMoi;
-    }
-
-    public String layGiaTriMoi() {
-        return this.giaTriMoi;
-    }
-
-    public String giaTriMoi() {
         return this.giaTriMoi;
     }
 
@@ -257,19 +165,7 @@ public class NhatKyHeThong implements Serializable {
         this.giaTriMoi = giaTriMoi;
     }
 
-    public void datGiaTriMoi(String giaTriMoi) {
-        setGiaTriMoi(giaTriMoi);
-    }
-
     public String getGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String layGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String ghiChu() {
         return this.ghiChu;
     }
 
@@ -277,28 +173,12 @@ public class NhatKyHeThong implements Serializable {
         this.ghiChu = ghiChu;
     }
 
-    public void datGhiChu(String ghiChu) {
-        setGhiChu(ghiChu);
-    }
-
     public LocalDateTime getThoiDiemXayRa() {
-        return this.thoiDiemXayRa;
-    }
-
-    public LocalDateTime layThoiDiemXayRa() {
-        return this.thoiDiemXayRa;
-    }
-
-    public LocalDateTime thoiDiemXayRa() {
         return this.thoiDiemXayRa;
     }
 
     public void setThoiDiemXayRa(LocalDateTime thoiDiemXayRa) {
         this.thoiDiemXayRa = thoiDiemXayRa;
-    }
-
-    public void datThoiDiemXayRa(LocalDateTime thoiDiemXayRa) {
-        setThoiDiemXayRa(thoiDiemXayRa);
     }
 
     @Override

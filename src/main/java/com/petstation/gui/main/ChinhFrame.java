@@ -83,7 +83,7 @@ public final class ChinhFrame extends JFrame {
                 new DangKyManHinh(
                         phienDangNhap, this::dieuHuong, this::quayLaiTuThanhToan);
 
-        setTitle("Pet Station – " + phienDangNhap.docVaiTro().layTenHienThi());
+        setTitle("Pet Station – " + phienDangNhap.docVaiTro().getTenHienThi());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setUndecorated(true);
         setSize(1366, 768);
@@ -151,7 +151,7 @@ public final class ChinhFrame extends JFrame {
                             }
                         });
 
-        NhatKyHeThongService.datNguoiDung(phienDangNhap.layTenHienThi());
+        NhatKyHeThongService.datNguoiDung(phienDangNhap.getTenHienThi());
         NhatKyHeThongService.ghiNhatKy("Đăng nhập", "Hệ thống");
         dieuHuong(MaManHinh.TONG_QUAN);
     }
@@ -168,7 +168,7 @@ public final class ChinhFrame extends JFrame {
 
     private void quayLaiTuThanhToan(MaManHinh dich) {
         var gio = manHinhBoDangKy.layGioHang();
-        String nguon = gio.layKieuNguon();
+        String nguon = gio.getKieuNguon();
 
         boolean quayLaiHotel =
                 "HOTEL".equals(nguon) && dich == MaManHinh.TRA_PHONG_LUU_TRU;
@@ -192,7 +192,7 @@ public final class ChinhFrame extends JFrame {
     }
 
     public void dieuHuong(MaManHinh id) {
-        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+        if (manHinhBoDangKy.layGioHang().isDangGhiThanhToan()) {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
             return;
         }
@@ -249,7 +249,7 @@ public final class ChinhFrame extends JFrame {
         }
         var yeuCau = com.petstation.gui.navigation.NguCanhMoBanGhi.lay();
         if (yeuCau != null && yeuCau.manHinh() == id) {
-            var q = manHinhBoDangKy.layGioHang().layQuyTrinh();
+            var q = manHinhBoDangKy.layGioHang().getQuyTrinh();
             switch (id) {
                 case DAT_LICH_HEN_SPA -> q.chonLichHen(yeuCau.id());
                 case TIEP_NHAN_SPA -> q.chonSpa(yeuCau.id());
@@ -395,7 +395,7 @@ public final class ChinhFrame extends JFrame {
     }
 
     private void dangXuat() {
-        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+        if (manHinhBoDangKy.layGioHang().isDangGhiThanhToan()) {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
             return;
         }
@@ -410,7 +410,7 @@ public final class ChinhFrame extends JFrame {
         if (ketQua == JOptionPane.YES_OPTION) {
             NhatKyHeThongService.ghiNhatKy("Đăng xuất", "Hệ thống");
             manHinhBoDangKy.layGioHang().xoa();
-            manHinhBoDangKy.layGioHang().layQuyTrinh().xoa();
+            manHinhBoDangKy.layGioHang().getQuyTrinh().xoa();
             nguCanh.layNguCanhPhien().xoa();
             PhienDangNhapService.datPhienDangNhap(null);
             dispose();
@@ -419,7 +419,7 @@ public final class ChinhFrame extends JFrame {
     }
 
     private void yeuCauThoat() {
-        if (manHinhBoDangKy.layGioHang().dangGhiThanhToan()) {
+        if (manHinhBoDangKy.layGioHang().isDangGhiThanhToan()) {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
             return;
         }

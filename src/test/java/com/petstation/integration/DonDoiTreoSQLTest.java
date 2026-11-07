@@ -82,7 +82,7 @@ class DonDoiTreoSQLTest {
             DoiTraService.lapDoiHang(gio, dong, 1, maHang, 1, "Đổi cỡ");
             gio.xacNhanDaNhanTien(PhuongThuc.CHUYEN_KHOAN, true);
             long id = BanHangService.treo(gio);
-            assertThat(gio.layKieuNguon()).isEqualTo("DOI_HANG");
+            assertThat(gio.getKieuNguon()).isEqualTo("DOI_HANG");
             gio.xoa();
             var nhap = DonDoiTreoService.lay(id);
             assertThat(nhap.dongGoc()).isEqualTo(dong);
@@ -91,7 +91,7 @@ class DonDoiTreoSQLTest {
             assertThat(DonDoiTreoService.lay(id)).isNotNull();
             capNhat("UPDATE san_pham SET gia_ban=140000 WHERE ma_san_pham=?", maHang);
             DonDoiTreoService.chuyenThanhToan(id, gio, nhap.dongGoc(), nhap.soLuong(), nhap.maThayThe(), nhap.lyDo());
-            assertThat(gio.layKieuNguon()).isEqualTo("DOI_HANG");
+            assertThat(gio.getKieuNguon()).isEqualTo("DOI_HANG");
             assertThat(gio.tinhTong()).isEqualTo(40000);
             assertThat(gio.kiemTraDaNhanTien(PhuongThuc.CHUYEN_KHOAN)).isFalse();
             assertThat(DonDoiTreoService.lay(id)).isNull();
@@ -107,10 +107,10 @@ class DonDoiTreoSQLTest {
             long id = DonDoiTreoService.treo(0,
                 new DonDoiTreo(soHoaDon, dong, maHang, "", 1, "Đổi", true, true));
             GioHang gio = GioHangService.tao();
-            gio.datCacDong(java.util.List.of(new GioHang.DongHang(maHang, "Khách khác", 120000, 1)));
+            gio.setCacDong(java.util.List.of(new GioHang.DongHang(maHang, "Khách khác", 120000, 1)));
             assertThatThrownBy(() -> DonDoiTreoService.chuyenThanhToan(id, gio, dong, 1, maHang, "Đổi"))
                 .hasMessageContaining("giỏ hiện tại");
-            assertThat(gio.layCacDong()).hasSize(1);
+            assertThat(gio.getCacDong()).hasSize(1);
             assertThat(DonDoiTreoService.lay(id)).isNotNull();
             gio.xoa();
             capNhat("UPDATE hoa_don SET thanh_toan_luc=DATEADD(hour,-73,SYSDATETIME()) WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", hoaDon, hoaDon);
@@ -125,15 +125,15 @@ class DonDoiTreoSQLTest {
     void donBanHangVanTreoVaMoLaiBinhThuong() {
         tinhHuong(() -> {
             GioHang gio = GioHangService.tao();
-            gio.datCacDong(java.util.List.of(new GioHang.DongHang(maHang, "Phụ kiện", 120000, 1)));
+            gio.setCacDong(java.util.List.of(new GioHang.DongHang(maHang, "Phụ kiện", 120000, 1)));
             long id = BanHangService.treo(gio);
             capNhat("UPDATE hoa_don SET ghi_chu=N'Khách đang đi lựa' WHERE (ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id);
             assertThat(DonDoiTreoService.lay(id)).isNull();
             gio.xoa();
             BanHangService.moLai(id, gio);
-            assertThat(gio.layKieuNguon()).isEmpty();
-            assertThat(gio.layCacDong()).hasSize(1);
-            assertThat(gio.layCacDong().get(0).ma()).isEqualTo(maHang);
+            assertThat(gio.getKieuNguon()).isEmpty();
+            assertThat(gio.getCacDong()).hasSize(1);
+            assertThat(gio.getCacDong().get(0).getMa()).isEqualTo(maHang);
         });
     }
 

@@ -274,9 +274,9 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 								.flatMap(i -> java.util.Arrays.stream(pieDocs.get(i)))
 								.toArray();
 						moBang(
-								chungTu.cot(),
+								chungTu.getCot(),
 								java.util.Arrays.stream(rows)
-								.mapToObj(i -> chungTu.dong().get(i))
+								.mapToObj(i -> chungTu.getDong().get(i))
 								.toArray(Object[][]::new));
 					} else
 						chiTiet(
@@ -408,12 +408,12 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 							k.hienTai()
 							? "Hiện tại (không theo kỳ)"
 									: "Đã áp dụng: "
-									+ ky.tuNgay()
+									+ ky.getTuNgay()
 									.format(
 											DateTimeFormatter.ofPattern(
 													"dd/MM/yyyy"))
 									+ " – "
-									+ ky.denNgay()
+									+ ky.getDenNgay()
 									.format(
 											DateTimeFormatter.ofPattern(
 													"dd/MM/yyyy")));
@@ -468,15 +468,15 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 				boolean goods =
 						tenXuat.contains("hàng_hóa")
 						&& "Sản phẩm bán chạy".equals(cboHienThiHop.getSelectedItem());
-				if ((temporal || goods) && chungTu != null && !chungTu.dong().isEmpty()) {
+				if ((temporal || goods) && chungTu != null && !chungTu.getDong().isEmpty()) {
 					int group = goods ? 6 : 2;
 					int amount = goods ? 5 : tenXuat.contains("doanh_thu") ? 6 : 3;
 					java.util.Set<String> included = new java.util.HashSet<>();
 					for (Object[] row : duLieu.cacDong()) included.add(khoa(row[0]));
 					java.util.Map<String, Double> sums = new java.util.LinkedHashMap<>();
 					java.util.Map<String, java.util.List<Integer>> rows = new java.util.LinkedHashMap<>();
-					for (int i = 0; i < chungTu.dong().size(); i++) {
-						Object[] r = chungTu.dong().get(i);
+					for (int i = 0; i < chungTu.getDong().size(); i++) {
+						Object[] r = chungTu.getDong().get(i);
 						if (goods && !included.contains(khoa(r[1]))) continue;
 						String key = String.valueOf(r[group]);
 						sums.merge(key, ((Number) r[amount]).doubleValue(), Double::sum);
@@ -510,12 +510,12 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 							khoa(duLieu.cacDong()[i][0])
 							+ (movement ? "|" + duLieu.cacDong()[i][2] : ""));
 			moBang(
-					chungTu.cot(),
-					chungTu.dong().stream()
+					chungTu.getCot(),
+					chungTu.getDong().stream()
 					.filter(
 							r ->
 							keys.contains(
-									khoa(r[chungTu.cotNhom()])
+									khoa(r[chungTu.getCotNhom()])
 									+ (movement ? "|" + r[3] : "")))
 					.toArray(Object[][]::new));
 		} else

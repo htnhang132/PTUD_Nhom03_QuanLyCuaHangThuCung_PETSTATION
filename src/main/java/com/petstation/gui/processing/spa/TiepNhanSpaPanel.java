@@ -82,7 +82,7 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
 
         LapPhieuSpaPanel bieuMau = new LapPhieuSpaPanel(
             id -> {
-                banHang.layQuyTrinh().chonSpa(id);
+                banHang.getQuyTrinh().chonSpa(id);
                 hopThoai.dispose();
             },
 

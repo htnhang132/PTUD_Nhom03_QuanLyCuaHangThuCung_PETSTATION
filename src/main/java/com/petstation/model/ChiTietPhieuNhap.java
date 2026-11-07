@@ -73,37 +73,16 @@ public class ChiTietPhieuNhap implements Serializable {
         return tinhThanhTien();
     }
 
-    public long layThanhTien() {
-        return tinhThanhTien();
-    }
-
     public Long getId() {
         String key = (phieuNhap != null ? phieuNhap.getSoPhieu() : "") + "_" + (sanPham != null ? sanPham.getMaSanPham() : "") + "_" + soLo;
         return DuLieu.layIdCauNoiObj(this, key);
-    }
-
-    public long layId() {
-        String key = (phieuNhap != null ? phieuNhap.getSoPhieu() : "") + "_" + (sanPham != null ? sanPham.getMaSanPham() : "") + "_" + soLo;
-        return DuLieu.layIdCauNoi(this, key);
-    }
-
-    public long id() {
-        return layId();
     }
 
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public PhieuNhapKho getPhieuNhap() {
-        return this.phieuNhap;
-    }
-
-    public PhieuNhapKho layPhieuNhap() {
         return this.phieuNhap;
     }
 
@@ -111,35 +90,15 @@ public class ChiTietPhieuNhap implements Serializable {
         this.phieuNhap = phieuNhap;
     }
 
-    public void datPhieuNhap(PhieuNhapKho phieuNhap) {
-        setPhieuNhap(phieuNhap);
-    }
-
     public long getPhieuNhapId() {
         return phieuNhap == null ? 0L : phieuNhap.getId();
-    }
-
-    public long layPhieuNhapId() {
-        return getPhieuNhapId();
-    }
-
-    public long phieuNhapId() {
-        return getPhieuNhapId();
     }
 
     public void setPhieuNhapId(long phieuNhapId) {
         this.phieuNhap = new PhieuNhapKho(phieuNhapId);
     }
 
-    public void datPhieuNhapId(long phieuNhapId) {
-        setPhieuNhapId(phieuNhapId);
-    }
-
     public SanPham getSanPham() {
-        return this.sanPham;
-    }
-
-    public SanPham laySanPham() {
         return this.sanPham;
     }
 
@@ -147,36 +106,16 @@ public class ChiTietPhieuNhap implements Serializable {
         this.sanPham = sanPham;
     }
 
-    public void datSanPham(SanPham sanPham) {
-        setSanPham(sanPham);
-    }
-
     public long getSanPhamId() {
         return (sanPham == null || sanPham.getId() == null) ? 0L : sanPham.getId();
-    }
-
-    public long laySanPhamId() {
-        return getSanPhamId();
-    }
-
-    public long sanPhamId() {
-        return getSanPhamId();
     }
 
     public void setSanPhamId(long sanPhamId) {
         this.sanPham = new SanPham(sanPhamId);
     }
 
-    public void datSanPhamId(long sanPhamId) {
-        setSanPhamId(sanPhamId);
-    }
-
     public String getMaLo() {
         return this.maLo != null ? this.maLo : this.soLo;
-    }
-
-    public String layMaLo() {
-        return getMaLo();
     }
 
     public void setMaLo(String maLo) {
@@ -186,39 +125,15 @@ public class ChiTietPhieuNhap implements Serializable {
         }
     }
 
-    public void datMaLo(String maLo) {
-        setMaLo(maLo);
-    }
-
     public String getSoLo() {
         return this.soLo != null ? this.soLo : this.maLo;
-    }
-
-    public String laySoLo() {
-        return this.soLo;
-    }
-
-    public String soLo() {
-        return this.soLo;
     }
 
     public void setSoLo(String soLo) {
         this.soLo = soLo == null ? null : soLo.trim();
     }
 
-    public void datSoLo(String soLo) {
-        setSoLo(soLo);
-    }
-
     public LocalDate getHanSuDung() {
-        return this.hanSuDung;
-    }
-
-    public LocalDate layHanSuDung() {
-        return this.hanSuDung;
-    }
-
-    public LocalDate hanSuDung() {
         return this.hanSuDung;
     }
 
@@ -226,19 +141,7 @@ public class ChiTietPhieuNhap implements Serializable {
         this.hanSuDung = hanSuDung;
     }
 
-    public void datHanSuDung(LocalDate hanSuDung) {
-        setHanSuDung(hanSuDung);
-    }
-
     public int getSoLuong() {
-        return this.soLuong;
-    }
-
-    public int laySoLuong() {
-        return this.soLuong;
-    }
-
-    public int soLuong() {
         return this.soLuong;
     }
 
@@ -248,19 +151,7 @@ public class ChiTietPhieuNhap implements Serializable {
         this.soLuong = soLuong;
     }
 
-    public void datSoLuong(int soLuong) {
-        setSoLuong(soLuong);
-    }
-
     public long getGiaNhap() {
-        return this.giaNhap;
-    }
-
-    public long layGiaNhap() {
-        return this.giaNhap;
-    }
-
-    public long giaNhap() {
         return this.giaNhap;
     }
 
@@ -268,10 +159,6 @@ public class ChiTietPhieuNhap implements Serializable {
         if (giaNhap < 0)
             throw new IllegalArgumentException("Giá nhập không được âm.");
         this.giaNhap = giaNhap;
-    }
-
-    public void datGiaNhap(long giaNhap) {
-        setGiaNhap(giaNhap);
     }
 
     @Override

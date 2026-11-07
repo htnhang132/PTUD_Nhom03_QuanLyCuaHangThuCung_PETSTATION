@@ -133,118 +133,70 @@ public class PhienLamViec implements Serializable {
     }
 
     public String getMaPhien() { return this.maPhien; }
-    public String layMaPhien() { return this.maPhien; }
-    public String maPhien() { return this.maPhien; }
     public void setMaPhien(String maPhien) { this.maPhien = maPhien == null ? null : maPhien.trim(); }
-    public void datMaPhien(String maPhien) { setMaPhien(maPhien); }
 
     public LichLamViec getLichLamViec() { return this.lichLamViec; }
-    public LichLamViec layLichLamViec() { return this.lichLamViec; }
     public void setLichLamViec(LichLamViec lichLamViec) { this.lichLamViec = lichLamViec; }
-    public void datLichLamViec(LichLamViec lichLamViec) { setLichLamViec(lichLamViec); }
 
     public TaiKhoan getTaiKhoan() { return this.taiKhoan; }
-    public TaiKhoan layTaiKhoan() { return this.taiKhoan; }
     public void setTaiKhoan(TaiKhoan taiKhoan) { this.taiKhoan = taiKhoan; }
-    public void datTaiKhoan(TaiKhoan taiKhoan) { setTaiKhoan(taiKhoan); }
 
     public LocalDateTime getMoLuc() { return this.moLuc; }
-    public LocalDateTime layMoLuc() { return this.moLuc; }
-    public LocalDateTime moLuc() { return this.moLuc; }
     public void setMoLuc(LocalDateTime moLuc) { this.moLuc = moLuc; }
-    public void datMoLuc(LocalDateTime moLuc) { setMoLuc(moLuc); }
 
     public LocalDateTime getDongLuc() { return this.dongLuc; }
-    public LocalDateTime layDongLuc() { return this.dongLuc; }
-    public LocalDateTime dongLuc() { return this.dongLuc; }
     public void setDongLuc(LocalDateTime dongLuc) { this.dongLuc = dongLuc; }
-    public void datDongLuc(LocalDateTime dongLuc) { setDongLuc(dongLuc); }
 
     public long getTienDauCa() { return this.tienDauCa; }
-    public long layTienDauCa() { return this.tienDauCa; }
-    public long tienDauCa() { return this.tienDauCa; }
     public void setTienDauCa(long tienDauCa) {
         if (tienDauCa < 0) throw new IllegalArgumentException("Tiền đầu ca không được âm.");
         this.tienDauCa = tienDauCa;
     }
-    public void datTienDauCa(long tienDauCa) { setTienDauCa(tienDauCa); }
 
     public long getTienThucTe() { return this.tienThucTe; }
-    public long layTienThucTe() { return this.tienThucTe; }
-    public long tienThucTe() { return this.tienThucTe; }
     public void setTienThucTe(long tienThucTe) {
         if (tienThucTe < 0) throw new IllegalArgumentException("Tiền thực tế không được âm.");
         this.tienThucTe = tienThucTe;
     }
-    public void datTienThucTe(long tienThucTe) { setTienThucTe(tienThucTe); }
 
     public long getChenhLech() { return this.chenhLech; }
-    public long layChenhLech() { return this.chenhLech; }
-    public long chenhLech() { return this.chenhLech; }
     public void setChenhLech(long chenhLech) { this.chenhLech = chenhLech; }
-    public void datChenhLech(long chenhLech) { setChenhLech(chenhLech); }
 
     public String getGiaiTrinh() { return this.giaiTrinh; }
-    public String layGiaiTrinh() { return this.giaiTrinh; }
-    public String giaiTrinh() { return this.giaiTrinh; }
     public void setGiaiTrinh(String giaiTrinh) { this.giaiTrinh = giaiTrinh; }
-    public void datGiaiTrinh(String giaiTrinh) { setGiaiTrinh(giaiTrinh); }
 
     public String getTrangThai() { return this.trangThai; }
-    public String layTrangThai() { return this.trangThai; }
-    public String trangThai() { return this.trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public void datTrangThai(String trangThai) { setTrangThai(trangThai); }
 
     public String getTenCa() { return this.tenCa; }
-    public String layTenCa() { return this.tenCa; }
-    public String tenCa() { return this.tenCa; }
     public void setTenCa(String tenCa) { this.tenCa = tenCa; }
-    public void datTenCa(String tenCa) { setTenCa(tenCa); }
 
     public TaiKhoan getNguoiNhanBanGiao() { return this.nguoiNhanBanGiao; }
-    public TaiKhoan layNguoiNhanBanGiao() { return this.nguoiNhanBanGiao; }
     public void setNguoiNhanBanGiao(TaiKhoan nguoiNhanBanGiao) { this.nguoiNhanBanGiao = nguoiNhanBanGiao; }
-    public void datNguoiNhanBanGiao(TaiKhoan nguoiNhanBanGiao) { setNguoiNhanBanGiao(nguoiNhanBanGiao); }
 
     public String getHinhThucBanGiao() { return this.hinhThucBanGiao; }
-    public String layHinhThucBanGiao() { return this.hinhThucBanGiao; }
-    public String hinhThucBanGiao() { return this.hinhThucBanGiao; }
     public void setHinhThucBanGiao(String hinhThucBanGiao) { this.hinhThucBanGiao = hinhThucBanGiao; }
-    public void datHinhThucBanGiao(String hinhThucBanGiao) { setHinhThucBanGiao(hinhThucBanGiao); }
 
     public long getId() { return DuLieu.layIdCauNoi(this, maPhien); }
-    public long layId() { return getId(); }
-    public long id() { return getId(); }
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maPhien == null || this.maPhien.isBlank()) && id > 0) {
             this.maPhien = DuLieu.taoMaTuId("MPI", 8, id);
         }
     }
-    public void datId(long id) { setId(id); }
 
     public Long getLichLamViecId() { return lichLamViec == null ? null : lichLamViec.getId(); }
-    public Long layLichLamViecId() { return getLichLamViecId(); }
-    public Long lichLamViecId() { return getLichLamViecId(); }
     public void setLichLamViecId(Long lichLamViecId) {
         this.lichLamViec = lichLamViecId == null ? null : new LichLamViec(lichLamViecId);
     }
-    public void datLichLamViecId(Long lichLamViecId) { setLichLamViecId(lichLamViecId); }
 
     public long getTaiKhoanId() { return taiKhoan == null ? 0L : taiKhoan.getId(); }
-    public long layTaiKhoanId() { return getTaiKhoanId(); }
-    public long taiKhoanId() { return getTaiKhoanId(); }
     public void setTaiKhoanId(long taiKhoanId) { this.taiKhoan = new TaiKhoan(taiKhoanId); }
-    public void datTaiKhoanId(long taiKhoanId) { setTaiKhoanId(taiKhoanId); }
 
     public Long getNguoiNhanBanGiaoId() { return nguoiNhanBanGiao == null ? null : nguoiNhanBanGiao.getId(); }
-    public Long layNguoiNhanBanGiaoId() { return getNguoiNhanBanGiaoId(); }
-    public Long nguoiNhanBanGiaoId() { return getNguoiNhanBanGiaoId(); }
     public void setNguoiNhanBanGiaoId(Long nguoiNhanBanGiaoId) {
         this.nguoiNhanBanGiao = nguoiNhanBanGiaoId == null ? null : new TaiKhoan(nguoiNhanBanGiaoId);
     }
-    public void datNguoiNhanBanGiaoId(Long nguoiNhanBanGiaoId) { setNguoiNhanBanGiaoId(nguoiNhanBanGiaoId); }
 
     @Override
     public boolean equals(Object o) {

@@ -63,7 +63,7 @@ public class PhongHotel implements Serializable {
         setId(id);
     }
 
-    public String layNhanTrangThai() {
+    public String getNhanTrangThai() {
         return switch (trangThai != null ? trangThai : "") {
             case "TRONG" -> "Trống";
             case "DANG_O" -> "Có thú";
@@ -82,65 +82,41 @@ public class PhongHotel implements Serializable {
     }
 
     public String getMa() { return this.ma; }
-    public String layMa() { return this.ma; }
-    public String ma() { return this.ma; }
     public String getMaPhong() { return this.ma; }
     public void setMa(String ma) { this.ma = ma == null ? null : ma.trim(); }
-    public void datMa(String ma) { setMa(ma); }
     public void setMaPhong(String maPhong) { setMa(maPhong); }
 
     public String getLoai() { return this.loai; }
-    public String layLoai() { return this.loai; }
-    public String loai() { return this.loai; }
     public void setLoai(String loai) { this.loai = loai; }
-    public void datLoai(String loai) { setLoai(loai); }
 
     public long getGia() { return this.gia; }
-    public long layGia() { return this.gia; }
-    public long gia() { return this.gia; }
     public void setGia(long gia) {
         if (gia < 0) throw new IllegalArgumentException("Giá phòng không được âm.");
         this.gia = gia;
     }
-    public void datGia(long gia) { setGia(gia); }
 
     public String getTrangThai() { return this.trangThai; }
-    public String layTrangThai() { return this.trangThai; }
-    public String trangThai() { return this.trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public void datTrangThai(String trangThai) { setTrangThai(trangThai); }
 
     public int getSucChua() { return this.sucChua; }
-    public int laySucChua() { return this.sucChua; }
-    public int sucChua() { return this.sucChua; }
     public void setSucChua(int sucChua) {
         if (sucChua < 0) throw new IllegalArgumentException("Sức chứa phòng không được âm.");
         this.sucChua = sucChua;
     }
-    public void datSucChua(int sucChua) { setSucChua(sucChua); }
 
     public LichPhong getDangO() { return this.dangO; }
-    public LichPhong layDangO() { return this.dangO; }
-    public LichPhong dangO() { return this.dangO; }
     public void setDangO(LichPhong dangO) { this.dangO = dangO; }
-    public void datDangO(LichPhong dangO) { setDangO(dangO); }
 
     public List<LichPhong> getDatTruoc() { return this.datTruoc; }
-    public List<LichPhong> layDatTruoc() { return this.datTruoc; }
-    public List<LichPhong> datTruoc() { return this.datTruoc; }
     public void setDatTruoc(List<LichPhong> datTruoc) { this.datTruoc = datTruoc; }
-    public void datDatTruoc(List<LichPhong> datTruoc) { setDatTruoc(datTruoc); }
 
     public long getId() { return DuLieu.layIdCauNoi(this, ma); }
-    public long layId() { return getId(); }
-    public long id() { return getId(); }
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.ma == null || this.ma.isBlank()) && id > 0) {
             this.ma = DuLieu.taoMaTuId("PH", 8, id);
         }
     }
-    public void datId(long id) { setId(id); }
 
     @Override
     public boolean equals(Object o) {
@@ -196,39 +172,24 @@ public class PhongHotel implements Serializable {
         public void setMaHopDong(String maHopDong) { this.maHopDong = maHopDong; }
 
         public long getId() { return DuLieu.layIdCauNoi(this, maHopDong); }
-        public long layId() { return getId(); }
-        public long id() { return getId(); }
         public void setId(long id) {
             DuLieu.luuIdCauNoi(this, id);
             if ((this.maHopDong == null || this.maHopDong.isBlank()) && id > 0) {
                 this.maHopDong = DuLieu.taoMaTuId("HDHT", 6, id);
             }
         }
-        public void datId(long id) { setId(id); }
 
         public String getThuCung() { return this.thuCung; }
-        public String layThuCung() { return this.thuCung; }
-        public String thuCung() { return this.thuCung; }
         public void setThuCung(String thuCung) { this.thuCung = thuCung; }
-        public void datThuCung(String thuCung) { this.thuCung = thuCung; }
 
         public String getKhachHang() { return this.khachHang; }
-        public String layKhachHang() { return this.khachHang; }
-        public String khachHang() { return this.khachHang; }
         public void setKhachHang(String khachHang) { this.khachHang = khachHang; }
-        public void datKhachHang(String khachHang) { this.khachHang = khachHang; }
 
         public LocalDateTime getNgayVao() { return this.ngayVao; }
-        public LocalDateTime layNgayVao() { return this.ngayVao; }
-        public LocalDateTime ngayVao() { return this.ngayVao; }
         public void setNgayVao(LocalDateTime ngayVao) { this.ngayVao = ngayVao; }
-        public void datNgayVao(LocalDateTime ngayVao) { this.ngayVao = ngayVao; }
 
         public LocalDateTime getNgayRa() { return this.ngayRa; }
-        public LocalDateTime layNgayRa() { return this.ngayRa; }
-        public LocalDateTime ngayRa() { return this.ngayRa; }
         public void setNgayRa(LocalDateTime ngayRa) { this.ngayRa = ngayRa; }
-        public void datNgayRa(LocalDateTime ngayRa) { this.ngayRa = ngayRa; }
 
         @Override
         public boolean equals(Object o) {

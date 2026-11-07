@@ -88,7 +88,7 @@ public class TaiKhoan implements Serializable {
                 batBuocDoiMatKhau);
     }
 
-    public boolean layTamThoiDaKhoa(LocalDateTime hienTai) {
+    public boolean isTamThoiDaKhoa(LocalDateTime hienTai) {
         return khoaDenLuc != null && khoaDenLuc.isAfter(hienTai);
     }
 
@@ -96,36 +96,16 @@ public class TaiKhoan implements Serializable {
         return this.tenDangNhap;
     }
 
-    public String layTenDangNhap() {
-        return this.tenDangNhap;
-    }
-
-    public String tenDangNhap() {
-        return this.tenDangNhap;
-    }
-
     public void setTenDangNhap(String tenDangNhap) {
         this.tenDangNhap = tenDangNhap == null ? null : tenDangNhap.trim();
-    }
-
-    public void datTenDangNhap(String tenDangNhap) {
-        setTenDangNhap(tenDangNhap);
     }
 
     public NhanVien getNhanVien() {
         return this.nhanVien;
     }
 
-    public NhanVien layNhanVien() {
-        return this.nhanVien;
-    }
-
     public void setNhanVien(NhanVien nhanVien) {
         this.nhanVien = nhanVien;
-    }
-
-    public void datNhanVien(NhanVien nhanVien) {
-        setNhanVien(nhanVien);
     }
 
     public String getMaNhanVien() {
@@ -140,31 +120,11 @@ public class TaiKhoan implements Serializable {
         return this.maBamMatKhau;
     }
 
-    public String layMaBamMatKhau() {
-        return this.maBamMatKhau;
-    }
-
-    public String maBamMatKhau() {
-        return this.maBamMatKhau;
-    }
-
     public void setMaBamMatKhau(String maBamMatKhau) {
         this.maBamMatKhau = maBamMatKhau;
     }
 
-    public void datMaBamMatKhau(String maBamMatKhau) {
-        setMaBamMatKhau(maBamMatKhau);
-    }
-
     public VaiTro getVaiTro() {
-        return this.vaiTro;
-    }
-
-    public VaiTro layVaiTro() {
-        return this.vaiTro;
-    }
-
-    public VaiTro vaiTro() {
         return this.vaiTro;
     }
 
@@ -172,19 +132,7 @@ public class TaiKhoan implements Serializable {
         this.vaiTro = vaiTro;
     }
 
-    public void datVaiTro(VaiTro vaiTro) {
-        setVaiTro(vaiTro);
-    }
-
     public TrangThaiTaiKhoan getTrangThai() {
-        return this.trangThai;
-    }
-
-    public TrangThaiTaiKhoan layTrangThai() {
-        return this.trangThai;
-    }
-
-    public TrangThaiTaiKhoan trangThai() {
         return this.trangThai;
     }
 
@@ -192,19 +140,7 @@ public class TaiKhoan implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(TrangThaiTaiKhoan trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public int getSoLanDangNhapSai() {
-        return this.soLanDangNhapSai;
-    }
-
-    public int laySoLanDangNhapSai() {
-        return this.soLanDangNhapSai;
-    }
-
-    public int soLanDangNhapSai() {
         return this.soLanDangNhapSai;
     }
 
@@ -214,19 +150,7 @@ public class TaiKhoan implements Serializable {
         this.soLanDangNhapSai = soLanDangNhapSai;
     }
 
-    public void datSoLanDangNhapSai(int soLanDangNhapSai) {
-        setSoLanDangNhapSai(soLanDangNhapSai);
-    }
-
     public LocalDateTime getKhoaDenLuc() {
-        return this.khoaDenLuc;
-    }
-
-    public LocalDateTime layKhoaDenLuc() {
-        return this.khoaDenLuc;
-    }
-
-    public LocalDateTime khoaDenLuc() {
         return this.khoaDenLuc;
     }
 
@@ -234,19 +158,7 @@ public class TaiKhoan implements Serializable {
         this.khoaDenLuc = khoaDenLuc;
     }
 
-    public void datKhoaDenLuc(LocalDateTime khoaDenLuc) {
-        setKhoaDenLuc(khoaDenLuc);
-    }
-
     public boolean isBatBuocDoiMatKhau() {
-        return this.batBuocDoiMatKhau;
-    }
-
-    public boolean layBatBuocDoiMatKhau() {
-        return this.batBuocDoiMatKhau;
-    }
-
-    public boolean batBuocDoiMatKhau() {
         return this.batBuocDoiMatKhau;
     }
 
@@ -254,23 +166,11 @@ public class TaiKhoan implements Serializable {
         this.batBuocDoiMatKhau = batBuocDoiMatKhau;
     }
 
-    public void datBatBuocDoiMatKhau(boolean batBuocDoiMatKhau) {
-        setBatBuocDoiMatKhau(batBuocDoiMatKhau);
-    }
-
     public long getId() {
         if (nhanVien != null && nhanVien.getId() > 0) {
             return nhanVien.getId();
         }
         return DuLieu.layIdCauNoi(this, tenDangNhap);
-    }
-
-    public long layId() {
-        return getId();
-    }
-
-    public long id() {
-        return getId();
     }
 
     public void setId(long id) {
@@ -281,28 +181,12 @@ public class TaiKhoan implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public long getIdNhanVien() {
         return nhanVien == null ? 0L : nhanVien.getId();
     }
 
-    public long layIdNhanVien() {
-        return getIdNhanVien();
-    }
-
-    public long idNhanVien() {
-        return getIdNhanVien();
-    }
-
     public void setIdNhanVien(long idNhanVien) {
         this.nhanVien = new NhanVien(idNhanVien);
-    }
-
-    public void datIdNhanVien(long idNhanVien) {
-        setIdNhanVien(idNhanVien);
     }
 
     @Override

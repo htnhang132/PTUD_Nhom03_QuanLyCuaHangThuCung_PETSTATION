@@ -21,22 +21,13 @@ public class ChiTietBaoCao implements Serializable {
     }
 
     public String[] getCot() { return this.cot; }
-    public String[] layCot() { return this.cot; }
-    public String[] cot() { return this.cot; }
     public void setCot(String[] cot) { this.cot = cot; }
-    public void datCot(String[] cot) { this.cot = cot; }
 
     public List<Object[]> getDong() { return this.dong; }
-    public List<Object[]> layDong() { return this.dong; }
-    public List<Object[]> dong() { return this.dong; }
     public void setDong(List<Object[]> dong) { this.dong = dong; }
-    public void datDong(List<Object[]> dong) { this.dong = dong; }
 
     public int getCotNhom() { return this.cotNhom; }
-    public int layCotNhom() { return this.cotNhom; }
-    public int cotNhom() { return this.cotNhom; }
     public void setCotNhom(int cotNhom) { this.cotNhom = cotNhom; }
-    public void datCotNhom(int cotNhom) { this.cotNhom = cotNhom; }
 
     @Override
     public boolean equals(Object o) {

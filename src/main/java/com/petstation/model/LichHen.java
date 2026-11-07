@@ -115,14 +115,6 @@ public class LichHen implements Serializable {
         return DuLieu.layIdCauNoiObj(this, this.maLichHen);
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maLichHen);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maLichHen == null || this.maLichHen.isBlank()) && id > 0) {
@@ -130,19 +122,7 @@ public class LichHen implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaLichHen() {
-        return this.maLichHen;
-    }
-
-    public String layMaLichHen() {
-        return this.maLichHen;
-    }
-
-    public String maLichHen() {
         return this.maLichHen;
     }
 
@@ -150,15 +130,7 @@ public class LichHen implements Serializable {
         this.maLichHen = maLichHen == null ? null : maLichHen.trim();
     }
 
-    public void datMaLichHen(String maLichHen) {
-        setMaLichHen(maLichHen);
-    }
-
     public KhachHang getKhachHang() {
-        return this.khachHang;
-    }
-
-    public KhachHang layKhachHang() {
         return this.khachHang;
     }
 
@@ -166,35 +138,15 @@ public class LichHen implements Serializable {
         this.khachHang = khachHang;
     }
 
-    public void datKhachHang(KhachHang khachHang) {
-        setKhachHang(khachHang);
-    }
-
     public long getKhachHangId() {
         return (khachHang == null || khachHang.getId() == null) ? 0L : khachHang.getId();
-    }
-
-    public long layKhachHangId() {
-        return getKhachHangId();
-    }
-
-    public long khachHangId() {
-        return getKhachHangId();
     }
 
     public void setKhachHangId(long khachHangId) {
         this.khachHang = new KhachHang(khachHangId);
     }
 
-    public void datKhachHangId(long khachHangId) {
-        setKhachHangId(khachHangId);
-    }
-
     public ThuCung getThuCung() {
-        return this.thuCung;
-    }
-
-    public ThuCung layThuCung() {
         return this.thuCung;
     }
 
@@ -202,39 +154,15 @@ public class LichHen implements Serializable {
         this.thuCung = thuCung;
     }
 
-    public void datThuCung(ThuCung thuCung) {
-        setThuCung(thuCung);
-    }
-
     public long getThuCungId() {
         return thuCung == null ? 0L : thuCung.getId();
-    }
-
-    public long layThuCungId() {
-        return getThuCungId();
-    }
-
-    public long thuCungId() {
-        return getThuCungId();
     }
 
     public void setThuCungId(long thuCungId) {
         this.thuCung = new ThuCung(thuCungId);
     }
 
-    public void datThuCungId(long thuCungId) {
-        setThuCungId(thuCungId);
-    }
-
     public String getLoaiDichVu() {
-        return this.loaiDichVu;
-    }
-
-    public String layLoaiDichVu() {
-        return this.loaiDichVu;
-    }
-
-    public String loaiDichVu() {
         return this.loaiDichVu;
     }
 
@@ -242,19 +170,7 @@ public class LichHen implements Serializable {
         this.loaiDichVu = loaiDichVu;
     }
 
-    public void datLoaiDichVu(String loaiDichVu) {
-        setLoaiDichVu(loaiDichVu);
-    }
-
     public LocalDateTime getBatDau() {
-        return this.batDau;
-    }
-
-    public LocalDateTime layBatDau() {
-        return this.batDau;
-    }
-
-    public LocalDateTime batDau() {
         return this.batDau;
     }
 
@@ -262,19 +178,7 @@ public class LichHen implements Serializable {
         this.batDau = batDau;
     }
 
-    public void datBatDau(LocalDateTime batDau) {
-        setBatDau(batDau);
-    }
-
     public LocalDateTime getKetThuc() {
-        return this.ketThuc;
-    }
-
-    public LocalDateTime layKetThuc() {
-        return this.ketThuc;
-    }
-
-    public LocalDateTime ketThuc() {
         return this.ketThuc;
     }
 
@@ -282,19 +186,7 @@ public class LichHen implements Serializable {
         this.ketThuc = ketThuc;
     }
 
-    public void datKetThuc(LocalDateTime ketThuc) {
-        setKetThuc(ketThuc);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
@@ -302,19 +194,7 @@ public class LichHen implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public String getGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String layGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String ghiChu() {
         return this.ghiChu;
     }
 
@@ -322,15 +202,7 @@ public class LichHen implements Serializable {
         this.ghiChu = ghiChu;
     }
 
-    public void datGhiChu(String ghiChu) {
-        setGhiChu(ghiChu);
-    }
-
     public NhanVien getNhanVien() {
-        return this.nhanVien;
-    }
-
-    public NhanVien layNhanVien() {
         return this.nhanVien;
     }
 
@@ -338,35 +210,15 @@ public class LichHen implements Serializable {
         this.nhanVien = nhanVien;
     }
 
-    public void datNhanVien(NhanVien nhanVien) {
-        setNhanVien(nhanVien);
-    }
-
     public Long getNhanVienId() {
         return nhanVien == null ? null : nhanVien.getId();
-    }
-
-    public Long layNhanVienId() {
-        return getNhanVienId();
-    }
-
-    public Long nhanVienId() {
-        return getNhanVienId();
     }
 
     public void setNhanVienId(Long nhanVienId) {
         this.nhanVien = nhanVienId == null ? null : new NhanVien(nhanVienId);
     }
 
-    public void datNhanVienId(Long nhanVienId) {
-        setNhanVienId(nhanVienId);
-    }
-
     public GoiDichVuSpa getDichVu() {
-        return this.dichVu;
-    }
-
-    public GoiDichVuSpa layDichVu() {
         return this.dichVu;
     }
 
@@ -374,28 +226,12 @@ public class LichHen implements Serializable {
         this.dichVu = dichVu;
     }
 
-    public void datDichVu(GoiDichVuSpa dichVu) {
-        setDichVu(dichVu);
-    }
-
     public Long getDichVuId() {
         return dichVu == null ? null : dichVu.getId();
     }
 
-    public Long layDichVuId() {
-        return getDichVuId();
-    }
-
-    public Long dichVuId() {
-        return getDichVuId();
-    }
-
     public void setDichVuId(Long dichVuId) {
         this.dichVu = dichVuId == null ? null : new GoiDichVuSpa(dichVuId);
-    }
-
-    public void datDichVuId(Long dichVuId) {
-        setDichVuId(dichVuId);
     }
 
     @Override

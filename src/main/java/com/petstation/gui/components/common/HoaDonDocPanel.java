@@ -35,91 +35,91 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     public void datDuLieu(ChiTietBienLai thongTin) {
         List<Khoi> khoi = new ArrayList<>();
         if (LOGO != null) khoi.add(new Khoi(51, List.of(), false, true));
-        themChu(khoi, thongTin.tenCuaHang(), 12, true, 1);
-        themChu(khoi, thongTin.diaChi(), 8, false, 1);
-        themChu(khoi, thongTin.dienThoaiCuaHang(), 8, false, 1);
+        themChu(khoi, thongTin.getTenCuaHang(), 12, true, 1);
+        themChu(khoi, thongTin.getDiaChi(), 8, false, 1);
+        themChu(khoi, thongTin.getDienThoaiCuaHang(), 8, false, 1);
         khoi.add(new Khoi(8, List.of(), false, false));
         themChu(khoi, "HÓA ĐƠN", 12, true, 1);
-        var bienLai = thongTin.bienLai();
-        themChu(khoi, "Số: " + bienLai.soHoaDon(), 9, true, 1);
+        var bienLai = thongTin.getBienLai();
+        themChu(khoi, "Số: " + bienLai.getSoHoaDon(), 9, true, 1);
         gach(khoi);
         themChu(
                 khoi,
                 "Ngày: "
-                        + bienLai.thoiGian()
+                        + bienLai.getThoiGian()
                                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                 8,
                 false,
                 0);
-        themChu(khoi, "KH: " + bienLai.khachHang(), 8, false, 0);
-        if (!thongTin.dienThoaiKhach().isBlank())
-            themChu(khoi, "SĐT: " + thongTin.dienThoaiKhach(), 8, false, 0);
-        themChu(khoi, "NVBH: " + bienLai.thuNgan(), 8, false, 0);
-        if (!thongTin.maNguon().isBlank())
-            themChu(khoi, "Chứng từ: " + thongTin.maNguon(), 8, false, 0);
-        if (!thongTin.hoaDonGoc().isBlank())
-            themChu(khoi, "Hóa đơn gốc: " + thongTin.hoaDonGoc(), 8, false, 0);
+        themChu(khoi, "KH: " + bienLai.getKhachHang(), 8, false, 0);
+        if (!thongTin.getDienThoaiKhach().isBlank())
+            themChu(khoi, "SĐT: " + thongTin.getDienThoaiKhach(), 8, false, 0);
+        themChu(khoi, "NVBH: " + bienLai.getThuNgan(), 8, false, 0);
+        if (!thongTin.getMaNguon().isBlank())
+            themChu(khoi, "Chứng từ: " + thongTin.getMaNguon(), 8, false, 0);
+        if (!thongTin.getHoaDonGoc().isBlank())
+            themChu(khoi, "Hóa đơn gốc: " + thongTin.getHoaDonGoc(), 8, false, 0);
         gach(khoi);
         themHang(khoi, "#", "Tên hàng / dịch vụ", "SL", "ĐG", "TT", true);
         int stt = 0;
-        for (var dong : bienLai.cacDong())
+        for (var dong : bienLai.getCacDong())
             themHang(
                     khoi,
                     String.valueOf(++stt),
-                    dong.ten(),
-                    String.valueOf(dong.soLuong()),
-                    TienTe.dinhDang(dong.donGia()),
+                    dong.getTen(),
+                    String.valueOf(dong.getSoLuong()),
+                    TienTe.dinhDang(dong.getDonGia()),
                     TienTe.dinhDang(dong.docSoTien()),
                     false);
         gach(khoi);
         themCap(khoi, "Tổng SL mua", String.valueOf(thongTin.tongSoLuong()), false);
         themCap(
                 khoi,
-                thongTin.loaiNguon().equals("LUU_TRU") ? "Phải thu sau cọc" : "Tiền hàng",
-                TienTe.dinhDang(bienLai.tamTinh()),
+                thongTin.getLoaiNguon().equals("LUU_TRU") ? "Phải thu sau cọc" : "Tiền hàng",
+                TienTe.dinhDang(bienLai.getTamTinh()),
                 false);
-        if (bienLai.giamGia() > 0)
+        if (bienLai.getGiamGia() > 0)
             themCap(
                     khoi,
-                    thongTin.loaiNguon().equals("DOI_HANG")
+                    thongTin.getLoaiNguon().equals("DOI_HANG")
                             ? "Giá trị hàng được đổi"
                             : "Giảm giá / voucher",
-                    "−" + TienTe.dinhDang(bienLai.giamGia()),
+                    "−" + TienTe.dinhDang(bienLai.getGiamGia()),
                     false);
-        if (!bienLai.voucher().isBlank())
-            themChu(khoi, "Voucher: " + bienLai.voucher(), 8, false, 0);
-        if (thongTin.loaiNguon().equals("LUU_TRU"))
-            themCap(khoi, "Cọc đã cấn trừ", TienTe.dinhDang(thongTin.daCanTru()), false);
-        themCap(khoi, "Tổng thanh toán", TienTe.dinhDang(bienLai.tong()), true);
+        if (!bienLai.getVoucher().isBlank())
+            themChu(khoi, "Voucher: " + bienLai.getVoucher(), 8, false, 0);
+        if (thongTin.getLoaiNguon().equals("LUU_TRU"))
+            themCap(khoi, "Cọc đã cấn trừ", TienTe.dinhDang(thongTin.getDaCanTru()), false);
+        themCap(khoi, "Tổng thanh toán", TienTe.dinhDang(bienLai.getTong()), true);
         String phuongThuc =
-                switch (bienLai.phuongThuc()) {
+                switch (bienLai.getPhuongThuc()) {
                     case TIEN_MAT -> "Tiền mặt";
                     case CHUYEN_KHOAN -> "Chuyển khoản / QR";
                     case THE_NGAN_HANG -> "Thẻ";
                     case DIEM_TICH_LUY -> "Điểm tích lũy";
                     case KET_HOP -> "Kết hợp";
                 };
-        if (bienLai.cacKhoanThu().isEmpty())
-            themCap(khoi, phuongThuc, TienTe.dinhDang(bienLai.daNhan()), false);
+        if (bienLai.getCacKhoanThu().isEmpty())
+            themCap(khoi, phuongThuc, TienTe.dinhDang(bienLai.getDaNhan()), false);
         else
-            for (var d : bienLai.cacKhoanThu())
+            for (var d : bienLai.getCacKhoanThu())
                 themCap(
                         khoi,
-                        switch (d.phuongThuc()) {
+                        switch (d.getPhuongThuc()) {
                             case TIEN_MAT -> "Tiền mặt";
                             case CHUYEN_KHOAN -> "Chuyển khoản / QR";
                             case THE_NGAN_HANG -> "Thẻ";
                             case DIEM_TICH_LUY -> "Điểm tích lũy";
                     case KET_HOP -> "Kết hợp";
                         },
-                        TienTe.dinhDang(d.soTien()),
+                        TienTe.dinhDang(d.getSoTien()),
                         false);
-        if (bienLai.thayDoi() > 0)
-            themCap(khoi, "Trả lại khách", TienTe.dinhDang(bienLai.thayDoi()), false);
+        if (bienLai.getThayDoi() > 0)
+            themCap(khoi, "Trả lại khách", TienTe.dinhDang(bienLai.getThayDoi()), false);
         gach(khoi);
-        themCap(khoi, "Điểm tích thêm", String.valueOf(thongTin.diemCong()), false);
-        if (thongTin.soDuDiemSau() != null)
-            themCap(khoi, "Điểm sau giao dịch", String.valueOf(thongTin.soDuDiemSau()), false);
+        themCap(khoi, "Điểm tích thêm", String.valueOf(thongTin.getDiemCong()), false);
+        if (thongTin.getSoDuDiemSau() != null)
+            themCap(khoi, "Điểm sau giao dịch", String.valueOf(thongTin.getSoDuDiemSau()), false);
         gach(khoi);
         themChu(khoi, "Tích đủ 200 điểm, đổi voucher Spa 150.000đ — hạn 60 ngày.", 9, true, 1);
         themChu(khoi, "10.000đ = 1 điểm", 9, true, 1);

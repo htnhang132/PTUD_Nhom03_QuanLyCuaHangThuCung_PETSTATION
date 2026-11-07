@@ -404,17 +404,17 @@ public final class DangKyManHinh {
             case SO_DO_PHONG_LUU_TRU -> new TraCuuPhongHotelPanel(banHang, boDieuHuong);
             case TRA_CUU_LICH_LAM_VIEC ->
                     new TraCuuLichLamViecPanel(
-                            phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
+                            phienDangNhap == null || phienDangNhap.getNhanVien() == null ? "" : phienDangNhap.getNhanVien().getMaNhanVien());
             case LICH_CA_NHAN ->
                     new LichCaNhanPanel(
-                            phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
+                            phienDangNhap == null || phienDangNhap.getNhanVien() == null ? "" : phienDangNhap.getNhanVien().getMaNhanVien());
 
             case LAP_HOA_DON -> new LapHoaDonPanel(banHang, boDieuHuong);
             case THANH_TOAN ->
             new ThanhToanPanel(
                     banHang,
                     caLamViec,
-                    phienDangNhap.layTenHienThi(),
+                    phienDangNhap.getTenHienThi(),
                     boDieuHuong,
                     quayLaiTuThanhToan);
             case IN_HOA_DON -> new InHoaDonPanel(banHang, boDieuHuong);
@@ -441,7 +441,7 @@ public final class DangKyManHinh {
             case CA_THU_NGAN -> new CaThuNganPanel(caLamViec);
             case PHAN_LICH_NHAN_VIEN ->
                     new PhanLichNhanVienPanel(
-                            phienDangNhap == null ? "" : phienDangNhap.nhanVien().maNhanVien());
+                            phienDangNhap == null || phienDangNhap.getNhanVien() == null ? "" : phienDangNhap.getNhanVien().getMaNhanVien());
             case PHE_DUYET_YEU_CAU -> new TrungTamPheDuyetPanel();
 
             case THONG_KE_DOANH_THU -> new ThongKeDoanhThuPanel();

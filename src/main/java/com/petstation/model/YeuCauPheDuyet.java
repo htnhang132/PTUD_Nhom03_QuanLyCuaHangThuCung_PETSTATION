@@ -133,14 +133,6 @@ public class YeuCauPheDuyet implements Serializable {
         return DuLieu.layIdCauNoiObj(this, this.maYeuCau);
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maYeuCau);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maYeuCau == null || this.maYeuCau.isBlank()) && id > 0) {
@@ -148,19 +140,7 @@ public class YeuCauPheDuyet implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaYeuCau() {
-        return this.maYeuCau;
-    }
-
-    public String layMaYeuCau() {
-        return this.maYeuCau;
-    }
-
-    public String maYeuCau() {
         return this.maYeuCau;
     }
 
@@ -168,28 +148,12 @@ public class YeuCauPheDuyet implements Serializable {
         this.maYeuCau = maYeuCau == null ? null : maYeuCau.trim();
     }
 
-    public void datMaYeuCau(String maYeuCau) {
-        setMaYeuCau(maYeuCau);
-    }
-
     public String getLoai() {
-        return this.loai;
-    }
-
-    public String layLoai() {
-        return this.loai;
-    }
-
-    public String loai() {
         return this.loai;
     }
 
     public void setLoai(String loai) {
         this.loai = loai;
-    }
-
-    public void datLoai(String loai) {
-        setLoai(loai);
     }
 
     public TaiKhoan getNguoiGui() {
@@ -204,31 +168,11 @@ public class YeuCauPheDuyet implements Serializable {
         return nguoiGui == null ? 0L : nguoiGui.getId();
     }
 
-    public long layNguoiGuiId() {
-        return getNguoiGuiId();
-    }
-
-    public long nguoiGuiId() {
-        return getNguoiGuiId();
-    }
-
     public void setNguoiGuiId(long nguoiGuiId) {
         this.nguoiGui = new TaiKhoan(nguoiGuiId);
     }
 
-    public void datNguoiGuiId(long nguoiGuiId) {
-        setNguoiGuiId(nguoiGuiId);
-    }
-
     public String getLoaiDoiTuong() {
-        return this.loaiDoiTuong;
-    }
-
-    public String layLoaiDoiTuong() {
-        return this.loaiDoiTuong;
-    }
-
-    public String loaiDoiTuong() {
         return this.loaiDoiTuong;
     }
 
@@ -236,19 +180,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.loaiDoiTuong = loaiDoiTuong;
     }
 
-    public void datLoaiDoiTuong(String loaiDoiTuong) {
-        setLoaiDoiTuong(loaiDoiTuong);
-    }
-
     public String getMaDoiTuong() {
-        return this.maDoiTuong;
-    }
-
-    public String layMaDoiTuong() {
-        return this.maDoiTuong;
-    }
-
-    public String maDoiTuong() {
         return this.maDoiTuong;
     }
 
@@ -256,19 +188,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.maDoiTuong = maDoiTuong;
     }
 
-    public void datMaDoiTuong(String maDoiTuong) {
-        setMaDoiTuong(maDoiTuong);
-    }
-
     public String getLyDo() {
-        return this.lyDo;
-    }
-
-    public String layLyDo() {
-        return this.lyDo;
-    }
-
-    public String lyDo() {
         return this.lyDo;
     }
 
@@ -276,28 +196,12 @@ public class YeuCauPheDuyet implements Serializable {
         this.lyDo = lyDo;
     }
 
-    public void datLyDo(String lyDo) {
-        setLyDo(lyDo);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
-    }
-
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
     }
 
     public TaiKhoan getNguoiXuLy() {
@@ -312,31 +216,11 @@ public class YeuCauPheDuyet implements Serializable {
         return nguoiXuLy == null ? null : nguoiXuLy.getId();
     }
 
-    public Long layNguoiXuLyId() {
-        return getNguoiXuLyId();
-    }
-
-    public Long nguoiXuLyId() {
-        return getNguoiXuLyId();
-    }
-
     public void setNguoiXuLyId(Long nguoiXuLyId) {
         this.nguoiXuLy = nguoiXuLyId == null ? null : new TaiKhoan(nguoiXuLyId);
     }
 
-    public void datNguoiXuLyId(Long nguoiXuLyId) {
-        setNguoiXuLyId(nguoiXuLyId);
-    }
-
     public String getPhanHoi() {
-        return this.phanHoi;
-    }
-
-    public String layPhanHoi() {
-        return this.phanHoi;
-    }
-
-    public String phanHoi() {
         return this.phanHoi;
     }
 
@@ -344,19 +228,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.phanHoi = phanHoi;
     }
 
-    public void datPhanHoi(String phanHoi) {
-        setPhanHoi(phanHoi);
-    }
-
     public LocalDateTime getGuiLuc() {
-        return this.guiLuc;
-    }
-
-    public LocalDateTime layGuiLuc() {
-        return this.guiLuc;
-    }
-
-    public LocalDateTime guiLuc() {
         return this.guiLuc;
     }
 
@@ -364,19 +236,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.guiLuc = guiLuc;
     }
 
-    public void datGuiLuc(LocalDateTime guiLuc) {
-        setGuiLuc(guiLuc);
-    }
-
     public LocalDateTime getXuLyLuc() {
-        return this.xuLyLuc;
-    }
-
-    public LocalDateTime layXuLyLuc() {
-        return this.xuLyLuc;
-    }
-
-    public LocalDateTime xuLyLuc() {
         return this.xuLyLuc;
     }
 
@@ -384,19 +244,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.xuLyLuc = xuLyLuc;
     }
 
-    public void datXuLyLuc(LocalDateTime xuLyLuc) {
-        setXuLyLuc(xuLyLuc);
-    }
-
     public String getNoiDungTruoc() {
-        return this.noiDungTruoc;
-    }
-
-    public String layNoiDungTruoc() {
-        return this.noiDungTruoc;
-    }
-
-    public String noiDungTruoc() {
         return this.noiDungTruoc;
     }
 
@@ -404,19 +252,7 @@ public class YeuCauPheDuyet implements Serializable {
         this.noiDungTruoc = noiDungTruoc;
     }
 
-    public void datNoiDungTruoc(String noiDungTruoc) {
-        setNoiDungTruoc(noiDungTruoc);
-    }
-
     public String getNoiDungSau() {
-        return this.noiDungSau;
-    }
-
-    public String layNoiDungSau() {
-        return this.noiDungSau;
-    }
-
-    public String noiDungSau() {
         return this.noiDungSau;
     }
 
@@ -424,28 +260,12 @@ public class YeuCauPheDuyet implements Serializable {
         this.noiDungSau = noiDungSau;
     }
 
-    public void datNoiDungSau(String noiDungSau) {
-        setNoiDungSau(noiDungSau);
-    }
-
     public String getPayload() {
-        return this.payload;
-    }
-
-    public String layPayload() {
-        return this.payload;
-    }
-
-    public String payload() {
         return this.payload;
     }
 
     public void setPayload(String payload) {
         this.payload = payload;
-    }
-
-    public void datPayload(String payload) {
-        setPayload(payload);
     }
 
     @Override

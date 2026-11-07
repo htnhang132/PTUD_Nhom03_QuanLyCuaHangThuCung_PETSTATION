@@ -104,15 +104,15 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     protected void datPhong() {
-        String maPhong = banHang.layQuyTrinh().layMaPhongHotel();
+        String maPhong = banHang.getQuyTrinh().getMaPhongHotel();
         Long id = DatPhongHotelDialog.mo(this, null, maPhong);
-        if (id != null) banHang.layQuyTrinh().chonHotel(id);
+        if (id != null) banHang.getQuyTrinh().chonHotel(id);
     }
 
     protected void suaDatPhong() {
         long id = layDongChon();
         Long result = DatPhongHotelDialog.mo(this, id, null);
-        if (result != null) banHang.layQuyTrinh().chonHotel(result);
+        if (result != null) banHang.getQuyTrinh().chonHotel(result);
     }
 
     protected void huyDatPhong() {
@@ -131,7 +131,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 JOptionPane.PLAIN_MESSAGE);
         if (reason == null) return;
         LuuTruService.huyDatPhong(id, reason);
-        banHang.layQuyTrinh().chonHotel(0);
+        banHang.getQuyTrinh().chonHotel(0);
     }
 
     private void thuCoc() {
@@ -207,11 +207,11 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
 
     private BieuMauSQL.TruongDuLieu layTruongPhongDaChon() {
         var truong = taoLuaChon("room", "Phòng", LuaChonNghiepVuService.layLuaChonPhong());
-        long id = banHang.layQuyTrinh().layPhongHotel();
+        long id = banHang.getQuyTrinh().getPhongHotel();
         return new BieuMauSQL.TruongDuLieu(
                 truong.khoa(),
                 truong.nhan(),
-                id > 0 ? banHang.layQuyTrinh().layMaPhongHotel() : "",
+                id > 0 ? banHang.getQuyTrinh().getMaPhongHotel() : "",
                 truong.cacLuaChon());
     }
 }

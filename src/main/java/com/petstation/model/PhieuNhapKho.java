@@ -108,14 +108,6 @@ public class PhieuNhapKho implements Serializable {
         return tinhTongTien();
     }
 
-    public long layTongTien() {
-        return tinhTongTien();
-    }
-
-    public long tongTien() {
-        return tinhTongTien();
-    }
-
     public void napTongTienSnapshot(long tongTien) {
         this.tongTien = Math.max(0L, tongTien);
     }
@@ -125,10 +117,6 @@ public class PhieuNhapKho implements Serializable {
     }
 
     public long getCongNoConLai() {
-        return tinhCongNoConLai();
-    }
-
-    public long layCongNoConLai() {
         return tinhCongNoConLai();
     }
 
@@ -150,14 +138,6 @@ public class PhieuNhapKho implements Serializable {
         return DuLieu.layIdCauNoiObj(this, getMaPhieuNhap());
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, getMaPhieuNhap());
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maPhieuNhap == null || this.maPhieuNhap.isBlank()) && id > 0) {
@@ -165,19 +145,7 @@ public class PhieuNhapKho implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaPhieuNhap() {
-        return this.maPhieuNhap;
-    }
-
-    public String layMaPhieuNhap() {
-        return this.maPhieuNhap;
-    }
-
-    public String maPhieuNhap() {
         return this.maPhieuNhap;
     }
 
@@ -185,19 +153,7 @@ public class PhieuNhapKho implements Serializable {
         this.maPhieuNhap = maPhieuNhap == null ? null : maPhieuNhap.trim();
     }
 
-    public void datMaPhieuNhap(String maPhieuNhap) {
-        setMaPhieuNhap(maPhieuNhap);
-    }
-
     public String getSoPhieu() {
-        return getMaPhieuNhap();
-    }
-
-    public String laySoPhieu() {
-        return getMaPhieuNhap();
-    }
-
-    public String soPhieu() {
         return getMaPhieuNhap();
     }
 
@@ -205,24 +161,12 @@ public class PhieuNhapKho implements Serializable {
         setMaPhieuNhap(soPhieu);
     }
 
-    public void datSoPhieu(String soPhieu) {
-        setMaPhieuNhap(soPhieu);
-    }
-
     public NhaCungCap getNhaCungCap() {
-        return this.nhaCungCap;
-    }
-
-    public NhaCungCap layNhaCungCap() {
         return this.nhaCungCap;
     }
 
     public void setNhaCungCap(NhaCungCap nhaCungCap) {
         this.nhaCungCap = nhaCungCap;
-    }
-
-    public void datNhaCungCap(NhaCungCap nhaCungCap) {
-        setNhaCungCap(nhaCungCap);
     }
 
     public String getMaNhaCungCap() {
@@ -245,27 +189,11 @@ public class PhieuNhapKho implements Serializable {
         return nhaCungCap == null ? 0L : nhaCungCap.getId();
     }
 
-    public long layNhaCungCapId() {
-        return getNhaCungCapId();
-    }
-
-    public long nhaCungCapId() {
-        return getNhaCungCapId();
-    }
-
     public void setNhaCungCapId(long nhaCungCapId) {
         this.nhaCungCap = new NhaCungCap(nhaCungCapId);
     }
 
-    public void datNhaCungCapId(long nhaCungCapId) {
-        setNhaCungCapId(nhaCungCapId);
-    }
-
     public TaiKhoan getNguoiLap() {
-        return this.nguoiLap;
-    }
-
-    public TaiKhoan layNguoiLap() {
         return this.nguoiLap;
     }
 
@@ -273,28 +201,12 @@ public class PhieuNhapKho implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public void datNguoiLap(TaiKhoan nguoiLap) {
-        setNguoiLap(nguoiLap);
-    }
-
     public long getNguoiLapId() {
         return nguoiLap == null ? 0L : nguoiLap.getId();
     }
 
-    public long layNguoiLapId() {
-        return getNguoiLapId();
-    }
-
-    public long nguoiLapId() {
-        return getNguoiLapId();
-    }
-
     public void setNguoiLapId(long nguoiLapId) {
         this.nguoiLap = new TaiKhoan(nguoiLapId);
-    }
-
-    public void datNguoiLapId(long nguoiLapId) {
-        setNguoiLapId(nguoiLapId);
     }
 
     public List<ChiTietPhieuNhap> getDanhSachChiTiet() {
@@ -309,31 +221,11 @@ public class PhieuNhapKho implements Serializable {
         return this.ngayNhap;
     }
 
-    public LocalDateTime layNgayNhap() {
-        return this.ngayNhap;
-    }
-
-    public LocalDateTime ngayNhap() {
-        return this.ngayNhap;
-    }
-
     public void setNgayNhap(LocalDateTime ngayNhap) {
         this.ngayNhap = ngayNhap;
     }
 
-    public void datNgayNhap(LocalDateTime ngayNhap) {
-        setNgayNhap(ngayNhap);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
@@ -341,19 +233,7 @@ public class PhieuNhapKho implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public String getGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String layGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String ghiChu() {
         return this.ghiChu;
     }
 
@@ -361,19 +241,7 @@ public class PhieuNhapKho implements Serializable {
         this.ghiChu = ghiChu;
     }
 
-    public void datGhiChu(String ghiChu) {
-        setGhiChu(ghiChu);
-    }
-
     public long getDaTra() {
-        return this.daTra;
-    }
-
-    public long layDaTra() {
-        return this.daTra;
-    }
-
-    public long daTra() {
         return this.daTra;
     }
 
@@ -381,10 +249,6 @@ public class PhieuNhapKho implements Serializable {
         if (daTra < 0)
             throw new IllegalArgumentException("Số tiền đã trả không được âm.");
         this.daTra = daTra;
-    }
-
-    public void datDaTra(long daTra) {
-        setDaTra(daTra);
     }
 
     @Override

@@ -130,7 +130,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         dangNap = true;
         cboLoai.removeAllItems();
         cboLoai.addItem("Tất cả");
-        cacPhong.stream().map(PhongHotel::loai).distinct().sorted().forEach(cboLoai::addItem);
+        cacPhong.stream().map(PhongHotel::getLoai).distinct().sorted().forEach(cboLoai::addItem);
         if (daChon != null) cboLoai.setSelectedItem(daChon);
         dangNap = false;
         loc();
@@ -142,11 +142,11 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         String tu = txtLoc.getText().trim().toLowerCase(Locale.ROOT);
         int so = 0;
         for (var p : cacPhong) {
-            if (!p.ma().toLowerCase(Locale.ROOT).contains(tu)) continue;
-            if (cboLoai.getSelectedIndex() > 0 && !p.loai().equals(cboLoai.getSelectedItem()))
+            if (!p.getMa().toLowerCase(Locale.ROOT).contains(tu)) continue;
+            if (cboLoai.getSelectedIndex() > 0 && !p.getLoai().equals(cboLoai.getSelectedItem()))
                 continue;
             if (cboTrangThai.getSelectedIndex() > 0
-                    && !p.layNhanTrangThai().equals(cboTrangThai.getSelectedItem())) continue;
+                    && !p.getNhanTrangThai().equals(cboTrangThai.getSelectedItem())) continue;
             pnlPhong.add(taoThe(p));
             so++;
         }
@@ -157,7 +157,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
 
     private JButton taoThe(PhongHotel phong) {
         JButton the = new JButton();
-        the.setName("phong:" + phong.id());
+        the.setName("phong:" + phong.getId());
         the.setLayout(new BorderLayout(0, 10));
         the.setBackground(Color.WHITE);
         the.setBorder(
@@ -167,12 +167,12 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         the.setPreferredSize(new Dimension(250, 165));
         the.setHorizontalAlignment(SwingConstants.LEFT);
         JPanel dau = taoVungTrongSuot(new BorderLayout(8, 0));
-        JLabel ma = new JLabel(phong.ma());
+        JLabel ma = new JLabel(phong.getMa());
         ma.setFont(MauUngDung.taoPhongChu(Font.BOLD, 20));
         ma.setForeground(MauUngDung.NAU);
         dau.add(ma, BorderLayout.WEST);
-        JLabel trangThai = new JLabel(phong.layNhanTrangThai());
-        Color mau = mauTrangThai(phong.trangThai());
+        JLabel trangThai = new JLabel(phong.getNhanTrangThai());
+        Color mau = mauTrangThai(phong.getTrangThai());
         trangThai.setForeground(mau);
         trangThai.setOpaque(true);
         trangThai.setBackground(
@@ -185,20 +185,20 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         dau.add(trangThai, BorderLayout.EAST);
         the.add(dau, BorderLayout.NORTH);
         String thu =
-                phong.dangO() == null
-                        ? "Sức chứa: " + phong.sucChua() + " thú cưng"
-                        : "Đang ở: " + phong.dangO().thuCung();
+                phong.getDangO() == null
+                        ? "Sức chứa: " + phong.getSucChua() + " thú cưng"
+                        : "Đang ở: " + phong.getDangO().getThuCung();
         JLabel thongTin =
                 new JLabel(
                         "<html>"
-                                + html(phong.loai())
+                                + html(phong.getLoai())
                                 + "<br>"
                                 + html(thu)
                                 + "<br>Đặt trước: "
-                                + phong.datTruoc().size()
+                                + phong.getDatTruoc().size()
                                 + "</html>");
         the.add(thongTin, BorderLayout.CENTER);
-        JLabel gia = new JLabel(TienTe.dinhDang(phong.gia()) + " / ngày");
+        JLabel gia = new JLabel(TienTe.dinhDang(phong.getGia()) + " / ngày");
         gia.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         gia.setForeground(MauUngDung.NAU);
         the.add(gia, BorderLayout.SOUTH);
@@ -252,26 +252,26 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     }
 
     public void moPhong(PhongHotel phong) {
-        if (!List.of("TRONG", "DANG_O").contains(phong.trangThai())) {
+        if (!List.of("TRONG", "DANG_O").contains(phong.getTrangThai())) {
             HopThoai.hienThiThongTin(
                     this,
                     "Phòng "
-                            + phong.ma()
+                            + phong.getMa()
                             + " đang "
-                            + phong.layNhanTrangThai().toLowerCase(Locale.ROOT)
+                            + phong.getNhanTrangThai().toLowerCase(Locale.ROOT)
                             + ". Chưa thể đặt hoặc nhận phòng.");
             return;
         }
-        gio.layQuyTrinh().chonPhongHotel(phong.id(), phong.ma());
-        if (phong.trangThai().equals("DANG_O")) {
-            if (phong.dangO() == null) {
+        gio.getQuyTrinh().chonPhongHotel(phong.getId(), phong.getMa());
+        if (phong.getTrangThai().equals("DANG_O")) {
+            if (phong.getDangO() == null) {
                 HopThoai.hienThiCanhBao(this, "Chưa tìm thấy hợp đồng đang ở. Hãy làm mới sơ đồ.");
                 return;
             }
-            gio.layQuyTrinh().chonHotel(phong.dangO().id());
+            gio.getQuyTrinh().chonHotel(phong.getDangO().getId());
             dieuHuong.accept(MaManHinh.NHAT_KY_CHAM_SOC);
         } else {
-            gio.layQuyTrinh().chonHotel(0);
+            gio.getQuyTrinh().chonHotel(0);
             dieuHuong.accept(MaManHinh.DAT_PHONG_LUU_TRU);
         }
     }
@@ -325,36 +325,36 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         StringBuilder s =
                 new StringBuilder(
                         "<html><body style='width:270px'><b>"
-                                + html(phong.ma())
+                                + html(phong.getMa())
                                 + " — "
-                                + html(phong.loai())
+                                + html(phong.getLoai())
                                 + "</b><br>"
-                                + phong.layNhanTrangThai()
+                                + phong.getNhanTrangThai()
                                 + "<br>Sức chứa: "
-                                + phong.sucChua()
+                                + phong.getSucChua()
                                 + "<br>Giá: "
-                                + TienTe.dinhDang(phong.gia())
+                                + TienTe.dinhDang(phong.getGia())
                                 + " / ngày");
-        if (phong.dangO() != null)
-            s.append("<hr><b>Đang lưu trú</b><br>").append(layLich(phong.dangO()));
-        if (!phong.datTruoc().isEmpty())
+        if (phong.getDangO() != null)
+            s.append("<hr><b>Đang lưu trú</b><br>").append(layLich(phong.getDangO()));
+        if (!phong.getDatTruoc().isEmpty())
             s.append("<hr><b>Lịch đặt gần nhất (tổng ")
-                    .append(phong.datTruoc().size())
+                    .append(phong.getDatTruoc().size())
                     .append(")</b><br>")
-                    .append(layLich(phong.datTruoc().get(0)));
+                    .append(layLich(phong.getDatTruoc().get(0)));
         return s.append("</body></html>").toString();
     }
 
     private static String layLich(PhongHotel.LichPhong lich) {
         var d = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         return "Thú cưng: "
-                + html(lich.thuCung())
+                + html(lich.getThuCung())
                 + "<br>Chủ nuôi: "
-                + html(lich.khachHang())
+                + html(lich.getKhachHang())
                 + "<br>Vào: "
-                + lich.ngayVao().format(d)
+                + lich.getNgayVao().format(d)
                 + "<br>Ra dự kiến: "
-                + lich.ngayRa().format(d);
+                + lich.getNgayRa().format(d);
     }
 
     private static String html(String s) {

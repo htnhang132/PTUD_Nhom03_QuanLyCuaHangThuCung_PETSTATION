@@ -41,40 +41,28 @@ public final class GioHang {
         }
 
         public String getMa() { return ma; }
-        public String layMa() { return ma; }
-        public String ma() { return ma; }
         public void setMa(String ma) {
             if (ma == null || ma.isBlank()) throw new IllegalArgumentException("Mã hàng không được trống.");
             this.ma = ma.trim();
         }
-        public void datMa(String ma) { setMa(ma); }
 
         public String getTen() { return ten; }
-        public String layTen() { return ten; }
-        public String ten() { return ten; }
         public void setTen(String ten) {
             if (ten == null || ten.isBlank()) throw new IllegalArgumentException("Tên hàng không được trống.");
             this.ten = ten.trim();
         }
-        public void datTen(String ten) { setTen(ten); }
 
         public long getDonGia() { return donGia; }
-        public long layDonGia() { return donGia; }
-        public long donGia() { return donGia; }
         public void setDonGia(long donGia) {
             if (donGia < 0) throw new IllegalArgumentException("Đơn giá không được âm.");
             this.donGia = donGia;
         }
-        public void datDonGia(long donGia) { setDonGia(donGia); }
 
         public int getSoLuong() { return soLuong; }
-        public int laySoLuong() { return soLuong; }
-        public int soLuong() { return soLuong; }
         public void setSoLuong(int soLuong) {
             if (soLuong <= 0) throw new IllegalArgumentException("Số lượng phải lớn hơn 0.");
             this.soLuong = soLuong;
         }
-        public void datSoLuong(int soLuong) { setSoLuong(soLuong); }
 
         public long docSoTien() {
             return donGia * soLuong;
@@ -163,82 +151,43 @@ public final class GioHang {
         }
 
         public String getSoHoaDon() { return soHoaDon; }
-        public String laySoHoaDon() { return soHoaDon; }
-        public String soHoaDon() { return soHoaDon; }
         public void setSoHoaDon(String soHoaDon) { this.soHoaDon = soHoaDon; }
-        public void datSoHoaDon(String soHoaDon) { this.soHoaDon = soHoaDon; }
 
         public LocalDateTime getThoiGian() { return thoiGian; }
-        public LocalDateTime layThoiGian() { return thoiGian; }
-        public LocalDateTime thoiGian() { return thoiGian; }
         public void setThoiGian(LocalDateTime thoiGian) { this.thoiGian = thoiGian; }
-        public void datThoiGian(LocalDateTime thoiGian) { this.thoiGian = thoiGian; }
 
         public List<DongHang> getCacDong() { return cacDong; }
-        public List<DongHang> layCacDong() { return cacDong; }
-        public List<DongHang> cacDong() { return cacDong; }
         public void setCacDong(List<DongHang> cacDong) { this.cacDong = cacDong; }
-        public void datCacDong(List<DongHang> cacDong) { this.cacDong = cacDong; }
 
         public long getTamTinh() { return tamTinh; }
-        public long layTamTinh() { return tamTinh; }
-        public long tamTinh() { return tamTinh; }
         public void setTamTinh(long tamTinh) { this.tamTinh = tamTinh; }
-        public void datTamTinh(long tamTinh) { this.tamTinh = tamTinh; }
 
         public long getGiamGia() { return giamGia; }
-        public long layGiamGia() { return giamGia; }
-        public long giamGia() { return giamGia; }
         public void setGiamGia(long giamGia) { this.giamGia = giamGia; }
-        public void datGiamGia(long giamGia) { this.giamGia = giamGia; }
 
         public long getTong() { return tong; }
-        public long layTong() { return tong; }
-        public long tong() { return tong; }
         public void setTong(long tong) { this.tong = tong; }
-        public void datTong(long tong) { this.tong = tong; }
 
         public PhuongThuc getPhuongThuc() { return phuongThuc; }
-        public PhuongThuc layPhuongThuc() { return phuongThuc; }
-        public PhuongThuc phuongThuc() { return phuongThuc; }
         public void setPhuongThuc(PhuongThuc phuongThuc) { this.phuongThuc = phuongThuc; }
-        public void datPhuongThuc(PhuongThuc phuongThuc) { this.phuongThuc = phuongThuc; }
 
         public long getDaNhan() { return daNhan; }
-        public long layDaNhan() { return daNhan; }
-        public long daNhan() { return daNhan; }
         public void setDaNhan(long daNhan) { this.daNhan = daNhan; }
-        public void datDaNhan(long daNhan) { this.daNhan = daNhan; }
 
         public long getThayDoi() { return thayDoi; }
-        public long layThayDoi() { return thayDoi; }
-        public long thayDoi() { return thayDoi; }
         public void setThayDoi(long thayDoi) { this.thayDoi = thayDoi; }
-        public void datThayDoi(long thayDoi) { this.thayDoi = thayDoi; }
 
         public String getKhachHang() { return khachHang; }
-        public String layKhachHang() { return khachHang; }
-        public String khachHang() { return khachHang; }
         public void setKhachHang(String khachHang) { this.khachHang = khachHang; }
-        public void datKhachHang(String khachHang) { this.khachHang = khachHang; }
 
         public String getVoucher() { return voucher; }
-        public String layVoucher() { return voucher; }
-        public String voucher() { return voucher; }
         public void setVoucher(String voucher) { this.voucher = voucher; }
-        public void datVoucher(String voucher) { this.voucher = voucher; }
 
         public String getThuNgan() { return thuNgan; }
-        public String layThuNgan() { return thuNgan; }
-        public String thuNgan() { return thuNgan; }
         public void setThuNgan(String thuNgan) { this.thuNgan = thuNgan; }
-        public void datThuNgan(String thuNgan) { this.thuNgan = thuNgan; }
 
         public List<DongThuTien> getCacKhoanThu() { return cacKhoanThu; }
-        public List<DongThuTien> layCacKhoanThu() { return cacKhoanThu; }
-        public List<DongThuTien> cacKhoanThu() { return cacKhoanThu; }
         public void setCacKhoanThu(List<DongThuTien> cacKhoanThu) { this.cacKhoanThu = cacKhoanThu; }
-        public void datCacKhoanThu(List<DongThuTien> cacKhoanThu) { this.cacKhoanThu = cacKhoanThu; }
 
         @Override
         public boolean equals(Object o) {
@@ -261,7 +210,7 @@ public final class GioHang {
 
     private final NguCanhQuyTrinh quyTrinh = new NguCanhQuyTrinh();
 
-    public NguCanhQuyTrinh layQuyTrinh() {
+    public NguCanhQuyTrinh getQuyTrinh() {
         return quyTrinh;
     }
 
@@ -288,12 +237,12 @@ public final class GioHang {
         }
     }
 
-    public boolean dangGhiThanhToan() {
+    public boolean isDangGhiThanhToan() {
         return dangGhiThanhToan;
     }
 
-    public void datDangGhiThanhToan(boolean value) {
-        dangGhiThanhToan = value;
+    public void setDangGhiThanhToan(boolean value) {
+        this.dangGhiThanhToan = value;
     }
 
     private String khachHangSoDienThoai = "";
@@ -342,34 +291,19 @@ public final class GioHang {
         }
 
         public long getDongGoc() { return dongGoc; }
-        public long layDongGoc() { return dongGoc; }
-        public long dongGoc() { return dongGoc; }
         public void setDongGoc(long dongGoc) { this.dongGoc = dongGoc; }
-        public void datDongGoc(long dongGoc) { this.dongGoc = dongGoc; }
 
         public int getSoLuong() { return soLuong; }
-        public int laySoLuong() { return soLuong; }
-        public int soLuong() { return soLuong; }
         public void setSoLuong(int soLuong) { this.soLuong = soLuong; }
-        public void datSoLuong(int soLuong) { this.soLuong = soLuong; }
 
         public String getLyDo() { return lyDo; }
-        public String layLyDo() { return lyDo; }
-        public String lyDo() { return lyDo; }
         public void setLyDo(String lyDo) { this.lyDo = lyDo; }
-        public void datLyDo(String lyDo) { this.lyDo = lyDo; }
 
         public long getGiaTriDuocDoi() { return giaTriDuocDoi; }
-        public long layGiaTriDuocDoi() { return giaTriDuocDoi; }
-        public long giaTriDuocDoi() { return giaTriDuocDoi; }
         public void setGiaTriDuocDoi(long giaTriDuocDoi) { this.giaTriDuocDoi = giaTriDuocDoi; }
-        public void datGiaTriDuocDoi(long giaTriDuocDoi) { this.giaTriDuocDoi = giaTriDuocDoi; }
 
         public String getMaKhachHang() { return maKhachHang; }
-        public String layMaKhachHang() { return maKhachHang; }
-        public String maKhachHang() { return maKhachHang; }
         public void setMaKhachHang(String maKhachHang) { this.maKhachHang = maKhachHang; }
-        public void datMaKhachHang(String maKhachHang) { this.maKhachHang = maKhachHang; }
     }
 
     private YeuCauDoiHang doiHang;
@@ -387,108 +321,154 @@ public final class GioHang {
         return pt == PhuongThuc.TIEN_MAT || xacNhanNhanTien.equals(taoKhoaNhanTien(pt));
     }
 
-    public YeuCauDoiHang layDoiHang() {
+    public YeuCauDoiHang getDoiHang() {
         return doiHang;
     }
 
-    public void datDoiHang(YeuCauDoiHang giaTri) {
-        doiHang = giaTri;
+    public void setDoiHang(YeuCauDoiHang giaTri) {
+        this.doiHang = giaTri;
         thongBaoThayDoi();
     }
 
-    public List<DongHang> layCacDong() {
+    public List<DongHang> getCacDong() {
         return List.copyOf(cacDong);
+    }
+
+    public void setCacDong(List<DongHang> moiCacDong) {
+        this.cacDong.clear();
+        if (moiCacDong != null) {
+            this.cacDong.addAll(moiCacDong);
+        }
+        thongBaoThayDoi();
+    }
+
+    public String getKhachHangSoDienThoai() {
+        return khachHangSoDienThoai;
+    }
+
+    public void setKhachHangSoDienThoai(String soDienThoai) {
+        this.khachHangSoDienThoai = soDienThoai == null ? "" : soDienThoai.trim();
+        thongBaoThayDoi();
+    }
+
+    public int getGiamGiaPhanTram() {
+        return giamGiaPhanTram;
+    }
+
+    public void setGiamGiaPhanTram(int phanTram) {
+        this.giamGiaPhanTram = Math.max(0, Math.min(phanTram, 100));
+        thongBaoThayDoi();
+    }
+
+    public String getMaVoucher() {
+        return maVoucher;
+    }
+
+    public void setMaVoucher(String maVoucher) {
+        this.maVoucher = maVoucher == null ? "" : maVoucher;
+        thongBaoThayDoi();
+    }
+
+    public BienLai getBienLaiCuoi() {
+        return bienLaiCuoi;
+    }
+
+    public void setBienLaiCuoi(BienLai bienLai) {
+        this.bienLaiCuoi = bienLai;
+    }
+
+    public String getKhoaThanhToan() {
+        return khoaThanhToan;
+    }
+
+    public void setKhoaThanhToan(String khoaThanhToan) {
+        this.khoaThanhToan = khoaThanhToan;
+    }
+
+    public String getMaHoaDonDuKien() {
+        return maHoaDonDuKien;
+    }
+
+    public void setMaHoaDonDuKien(String maHoaDonDuKien) {
+        this.maHoaDonDuKien = maHoaDonDuKien;
+    }
+
+    public String getKieuNguon() {
+        return kieuNguon;
+    }
+
+    public void setKieuNguon(String kieuNguon) {
+        this.kieuNguon = kieuNguon;
+    }
+
+    public long getIdNguon() {
+        return idNguon;
+    }
+
+    public void setIdNguon(long idNguon) {
+        this.idNguon = idNguon;
+    }
+
+    public void setNguon(String kieu, long id) {
+        this.kieuNguon = kieu;
+        this.idNguon = id;
+    }
+
+    public String getMaKhachHang() {
+        return maKhachHang;
+    }
+
+    public void setMaKhachHang(String maKhachHang) {
+        this.maKhachHang = maKhachHang == null ? "" : maKhachHang;
+    }
+
+    public String getTenKhachHang() {
+        return tenKhachHang;
+    }
+
+    public void setTenKhachHang(String tenKhachHang) {
+        this.tenKhachHang = tenKhachHang == null ? "" : tenKhachHang;
+    }
+
+    public long getKhachHangDiem() {
+        return khachHangDiem;
+    }
+
+    public void setKhachHangDiem(long khachHangDiem) {
+        this.khachHangDiem = Math.max(0, khachHangDiem);
+    }
+
+    public long getDiemDaDung() {
+        return diemDaDung;
+    }
+
+    public void setDiemDaDung(long diem) {
+        if (diem != 0) {
+            throw new IllegalArgumentException(
+                    "Điểm chỉ dùng để đổi voucher Spa; không trừ trực tiếp vào hóa đơn.");
+        }
+        this.diemDaDung = 0;
+    }
+
+    public void setKhachHang(String ma, String ten, long diem) {
+        this.maKhachHang = ma == null ? "" : ma;
+        this.tenKhachHang = ten == null ? "" : ten;
+        this.khachHangDiem = Math.max(0, diem);
+        this.maVoucher = "";
+        this.giaTriVoucher = 0;
+        this.diemDaDung = 0;
+        thongBaoThayDoi();
+    }
+
+    public long getGiaTriDiem() {
+        return 0;
     }
 
     public boolean kiemTraTrong() {
         return cacDong.isEmpty();
     }
 
-    public String layKhachHangSoDienThoai() {
-        return khachHangSoDienThoai;
-    }
-
-    public int layGiamGiaPhanTram() {
-        return giamGiaPhanTram;
-    }
-
-    public String layMaVoucher() {
-        return maVoucher;
-    }
-
-    public BienLai layBienLaiCuoi() {
-        return bienLaiCuoi;
-    }
-
-    public void datBienLaiCuoi(BienLai bienLai) {
-        bienLaiCuoi = bienLai;
-    }
-
-    public String layKhoaThanhToan() {
-        return khoaThanhToan;
-    }
-
-    public String layMaHoaDonDuKien() {
-        return maHoaDonDuKien;
-    }
-
-    public String layKieuNguon() {
-        return kieuNguon;
-    }
-
-    public long layIdNguon() {
-        return idNguon;
-    }
-
-    public void datNguon(String kieu, long id) {
-        kieuNguon = kieu;
-        idNguon = id;
-    }
-
-    public void datCacDong(List<DongHang> moiCacDong) {
-        cacDong.clear();
-        cacDong.addAll(moiCacDong);
-        thongBaoThayDoi();
-    }
-
-    public String layMaKhachHang() {
-        return maKhachHang;
-    }
-
-    public String layTenKhachHang() {
-        return tenKhachHang;
-    }
-
-    public long layKhachHangDiem() {
-        return khachHangDiem;
-    }
-
-    public long layDiemDaDung() {
-        return diemDaDung;
-    }
-
-    public void datKhachHang(String ma, String ten, long diem) {
-        maKhachHang = ma == null ? "" : ma;
-        tenKhachHang = ten == null ? "" : ten;
-        khachHangDiem = Math.max(0, diem);
-        maVoucher = "";
-        giaTriVoucher = 0;
-        diemDaDung = 0;
-        thongBaoThayDoi();
-    }
-
-    public void datDiemDaDung(long diem) {
-        if (diem != 0)
-            throw new IllegalArgumentException(
-                    "Điểm chỉ dùng để đổi voucher Spa; không trừ trực tiếp vào hóa đơn.");
-        diemDaDung = 0;
-    }
-
-    public long layGiaTriDiem() {
-        return 0;
-    }
-
-    public KhuyenMai layKhuyenMaiTotNhat() {
+    public KhuyenMai getKhuyenMaiTotNhat() {
         KhuyenMai totNhat = null;
         long tamTinh = tinhTamTinh();
         for (Object[] dongDuLieu : chinhSach.layKhuyenMai()) {
@@ -512,7 +492,7 @@ public final class GioHang {
                         case "Giảm tiền" -> coSo > 0 ? Math.min(giaTri, coSo) : 0;
                         default -> 0;
                     };
-            if (soTien > 0 && (totNhat == null || soTien > totNhat.soTien()))
+            if (soTien > 0 && (totNhat == null || soTien > totNhat.getSoTien()))
                 totNhat =
                         new KhuyenMai(
                                 String.valueOf(dongDuLieu[0]),
@@ -552,37 +532,13 @@ public final class GioHang {
         }
 
         public String getMa() { return ma; }
-        public String layMa() { return ma; }
-        public String ma() { return ma; }
         public void setMa(String ma) { this.ma = ma; }
-        public void datMa(String ma) { this.ma = ma; }
 
         public String getTen() { return ten; }
-        public String layTen() { return ten; }
-        public String ten() { return ten; }
         public void setTen(String ten) { this.ten = ten; }
-        public void datTen(String ten) { this.ten = ten; }
 
         public long getSoTien() { return soTien; }
-        public long laySoTien() { return soTien; }
-        public long soTien() { return soTien; }
         public void setSoTien(long soTien) { this.soTien = soTien; }
-        public void datSoTien(long soTien) { this.soTien = soTien; }
-    }
-
-    public long layKhuyenMaiGiamGia() {
-        KhuyenMai vungDangXet = layKhuyenMaiTotNhat();
-        return vungDangXet == null ? 0 : vungDangXet.soTien();
-    }
-
-    public void datKhachHangSoDienThoai(String soDienThoai) {
-        this.khachHangSoDienThoai = soDienThoai == null ? "" : soDienThoai.trim();
-        thongBaoThayDoi();
-    }
-
-    public void datGiamGiaPhanTram(int phanTram) {
-        this.giamGiaPhanTram = Math.max(0, Math.min(phanTram, 100));
-        thongBaoThayDoi();
     }
 
     public long tinhTamTinh() {
@@ -591,13 +547,24 @@ public final class GioHang {
         return tong;
     }
 
+    public long getKhuyenMaiGiamGia() {
+        KhuyenMai vungDangXet = getKhuyenMaiTotNhat();
+        return vungDangXet == null ? 0 : vungDangXet.getSoTien();
+    }
+
+    public long getSoTienVoucher() {
+        return maVoucher.isEmpty()
+                ? 0
+                : Math.min(giaTriVoucher, Math.max(0, tinhTamTinh() - getKhuyenMaiGiamGia()));
+    }
+
     public long tinhGiamGia() {
-        if ("DOI_HANG".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.giaTriDuocDoi();
+        if ("DOI_HANG".equals(kieuNguon)) return doiHang == null ? 0 : doiHang.getGiaTriDuocDoi();
 
         long theoPhanTram = Math.round(tinhTamTinh() * giamGiaPhanTram / 100.0);
         return Math.min(
                 tinhTamTinh(),
-                theoPhanTram + layKhuyenMaiGiamGia() + laySoTienVoucher() + layGiaTriDiem());
+                theoPhanTram + getKhuyenMaiGiamGia() + getSoTienVoucher() + getGiaTriDiem());
     }
 
     public long tinhTong() {
@@ -623,12 +590,6 @@ public final class GioHang {
         } catch (IllegalArgumentException loi) {
             return loi.getMessage();
         }
-    }
-
-    public long laySoTienVoucher() {
-        return maVoucher.isEmpty()
-                ? 0
-                : Math.min(giaTriVoucher, Math.max(0, tinhTamTinh() - layKhuyenMaiGiamGia()));
     }
 
     public BienLai hoanTat(PhuongThuc phuongThuc, long daNhan, String thuNgan) {

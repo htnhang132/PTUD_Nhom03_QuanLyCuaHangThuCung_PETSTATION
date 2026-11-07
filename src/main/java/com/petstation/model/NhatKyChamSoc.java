@@ -128,14 +128,6 @@ public class NhatKyChamSoc implements Serializable {
         return DuLieu.layIdCauNoiObj(this, this.maNhatKy);
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maNhatKy);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maNhatKy == null || this.maNhatKy.isBlank()) && id > 0) {
@@ -143,19 +135,7 @@ public class NhatKyChamSoc implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaNhatKy() {
-        return this.maNhatKy;
-    }
-
-    public String layMaNhatKy() {
-        return this.maNhatKy;
-    }
-
-    public String maNhatKy() {
         return this.maNhatKy;
     }
 
@@ -163,15 +143,7 @@ public class NhatKyChamSoc implements Serializable {
         this.maNhatKy = maNhatKy == null ? null : maNhatKy.trim();
     }
 
-    public void datMaNhatKy(String maNhatKy) {
-        setMaNhatKy(maNhatKy);
-    }
-
     public HopDongLuuTru getHopDong() {
-        return this.hopDong;
-    }
-
-    public HopDongLuuTru layHopDong() {
         return this.hopDong;
     }
 
@@ -179,35 +151,15 @@ public class NhatKyChamSoc implements Serializable {
         this.hopDong = hopDong;
     }
 
-    public void datHopDong(HopDongLuuTru hopDong) {
-        setHopDong(hopDong);
-    }
-
     public Long getHopDongId() {
         return hopDong == null ? null : hopDong.getId();
-    }
-
-    public Long layHopDongId() {
-        return getHopDongId();
-    }
-
-    public Long hopDongId() {
-        return getHopDongId();
     }
 
     public void setHopDongId(Long hopDongId) {
         this.hopDong = hopDongId == null ? null : new HopDongLuuTru(hopDongId);
     }
 
-    public void datHopDongId(Long hopDongId) {
-        setHopDongId(hopDongId);
-    }
-
     public PhieuTiepNhanSpa getPhieuSpa() {
-        return this.phieuSpa;
-    }
-
-    public PhieuTiepNhanSpa layPhieuSpa() {
         return this.phieuSpa;
     }
 
@@ -215,35 +167,15 @@ public class NhatKyChamSoc implements Serializable {
         this.phieuSpa = phieuSpa;
     }
 
-    public void datPhieuSpa(PhieuTiepNhanSpa phieuSpa) {
-        setPhieuSpa(phieuSpa);
-    }
-
     public Long getSpaId() {
         return phieuSpa == null ? null : phieuSpa.getId();
-    }
-
-    public Long laySpaId() {
-        return getSpaId();
-    }
-
-    public Long spaId() {
-        return getSpaId();
     }
 
     public void setSpaId(Long spaId) {
         this.phieuSpa = spaId == null ? null : new PhieuTiepNhanSpa(spaId);
     }
 
-    public void datSpaId(Long spaId) {
-        setSpaId(spaId);
-    }
-
     public NhanVien getNhanVien() {
-        return this.nhanVien;
-    }
-
-    public NhanVien layNhanVien() {
         return this.nhanVien;
     }
 
@@ -251,39 +183,15 @@ public class NhatKyChamSoc implements Serializable {
         this.nhanVien = nhanVien;
     }
 
-    public void datNhanVien(NhanVien nhanVien) {
-        setNhanVien(nhanVien);
-    }
-
     public long getNhanVienId() {
         return nhanVien == null ? 0L : nhanVien.getId();
-    }
-
-    public long layNhanVienId() {
-        return getNhanVienId();
-    }
-
-    public long nhanVienId() {
-        return getNhanVienId();
     }
 
     public void setNhanVienId(long nhanVienId) {
         this.nhanVien = new NhanVien(nhanVienId);
     }
 
-    public void datNhanVienId(long nhanVienId) {
-        setNhanVienId(nhanVienId);
-    }
-
     public LocalDateTime getThoiGian() {
-        return this.thoiGian;
-    }
-
-    public LocalDateTime layThoiGian() {
-        return this.thoiGian;
-    }
-
-    public LocalDateTime thoiGian() {
         return this.thoiGian;
     }
 
@@ -291,19 +199,7 @@ public class NhatKyChamSoc implements Serializable {
         this.thoiGian = thoiGian;
     }
 
-    public void datThoiGian(LocalDateTime thoiGian) {
-        setThoiGian(thoiGian);
-    }
-
     public String getAnUong() {
-        return this.anUong;
-    }
-
-    public String layAnUong() {
-        return this.anUong;
-    }
-
-    public String anUong() {
         return this.anUong;
     }
 
@@ -311,19 +207,7 @@ public class NhatKyChamSoc implements Serializable {
         this.anUong = anUong;
     }
 
-    public void datAnUong(String anUong) {
-        setAnUong(anUong);
-    }
-
     public String getVeSinh() {
-        return this.veSinh;
-    }
-
-    public String layVeSinh() {
-        return this.veSinh;
-    }
-
-    public String veSinh() {
         return this.veSinh;
     }
 
@@ -331,19 +215,7 @@ public class NhatKyChamSoc implements Serializable {
         this.veSinh = veSinh;
     }
 
-    public void datVeSinh(String veSinh) {
-        setVeSinh(veSinh);
-    }
-
     public String getTinhTrang() {
-        return this.tinhTrang;
-    }
-
-    public String layTinhTrang() {
-        return this.tinhTrang;
-    }
-
-    public String tinhTrang() {
         return this.tinhTrang;
     }
 
@@ -351,19 +223,7 @@ public class NhatKyChamSoc implements Serializable {
         this.tinhTrang = tinhTrang;
     }
 
-    public void datTinhTrang(String tinhTrang) {
-        setTinhTrang(tinhTrang);
-    }
-
     public String getHuongDanThuoc() {
-        return this.huongDanThuoc;
-    }
-
-    public String layHuongDanThuoc() {
-        return this.huongDanThuoc;
-    }
-
-    public String huongDanThuoc() {
         return this.huongDanThuoc;
     }
 
@@ -371,19 +231,7 @@ public class NhatKyChamSoc implements Serializable {
         this.huongDanThuoc = huongDanThuoc;
     }
 
-    public void datHuongDanThuoc(String huongDanThuoc) {
-        setHuongDanThuoc(huongDanThuoc);
-    }
-
     public String getDaThucHien() {
-        return this.daThucHien;
-    }
-
-    public String layDaThucHien() {
-        return this.daThucHien;
-    }
-
-    public String daThucHien() {
         return this.daThucHien;
     }
 
@@ -391,19 +239,7 @@ public class NhatKyChamSoc implements Serializable {
         this.daThucHien = daThucHien;
     }
 
-    public void datDaThucHien(String daThucHien) {
-        setDaThucHien(daThucHien);
-    }
-
     public String getAnhTruoc() {
-        return this.anhTruoc;
-    }
-
-    public String layAnhTruoc() {
-        return this.anhTruoc;
-    }
-
-    public String anhTruoc() {
         return this.anhTruoc;
     }
 
@@ -411,19 +247,7 @@ public class NhatKyChamSoc implements Serializable {
         this.anhTruoc = anhTruoc;
     }
 
-    public void datAnhTruoc(String anhTruoc) {
-        setAnhTruoc(anhTruoc);
-    }
-
     public String getAnhSau() {
-        return this.anhSau;
-    }
-
-    public String layAnhSau() {
-        return this.anhSau;
-    }
-
-    public String anhSau() {
         return this.anhSau;
     }
 
@@ -431,28 +255,12 @@ public class NhatKyChamSoc implements Serializable {
         this.anhSau = anhSau;
     }
 
-    public void datAnhSau(String anhSau) {
-        setAnhSau(anhSau);
-    }
-
     public String getTepDinhKem() {
-        return this.tepDinhKem;
-    }
-
-    public String layTepDinhKem() {
-        return this.tepDinhKem;
-    }
-
-    public String tepDinhKem() {
         return this.tepDinhKem;
     }
 
     public void setTepDinhKem(String tepDinhKem) {
         this.tepDinhKem = tepDinhKem;
-    }
-
-    public void datTepDinhKem(String tepDinhKem) {
-        setTepDinhKem(tepDinhKem);
     }
 
     @Override

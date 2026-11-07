@@ -201,15 +201,7 @@ public class HopDongLuuTru implements Serializable {
         return tinhSoDemLuuTru();
     }
 
-    public long laySoDemLuuTru() {
-        return tinhSoDemLuuTru();
-    }
-
     public long getTienPhongDuKien() {
-        return tinhTienPhongDuKien();
-    }
-
-    public long layTienPhongDuKien() {
         return tinhTienPhongDuKien();
     }
 
@@ -217,28 +209,12 @@ public class HopDongLuuTru implements Serializable {
         return tinhCocToiThieu50PhanTram();
     }
 
-    public long layCocToiThieu50PhanTram() {
-        return tinhCocToiThieu50PhanTram();
-    }
-
     public long getTienConPhaiThu() {
-        return tinhTienConPhaiThu();
-    }
-
-    public long layTienConPhaiThu() {
         return tinhTienConPhaiThu();
     }
 
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, this.maHopDong);
-    }
-
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maHopDong);
-    }
-
-    public long id() {
-        return layId();
     }
 
     public void setId(long id) {
@@ -248,19 +224,7 @@ public class HopDongLuuTru implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaHopDong() {
-        return this.maHopDong;
-    }
-
-    public String layMaHopDong() {
-        return this.maHopDong;
-    }
-
-    public String maHopDong() {
         return this.maHopDong;
     }
 
@@ -268,15 +232,7 @@ public class HopDongLuuTru implements Serializable {
         this.maHopDong = maHopDong == null ? null : maHopDong.trim();
     }
 
-    public void datMaHopDong(String maHopDong) {
-        setMaHopDong(maHopDong);
-    }
-
     public KhachHang getKhachHang() {
-        return this.khachHang;
-    }
-
-    public KhachHang layKhachHang() {
         return this.khachHang;
     }
 
@@ -284,35 +240,15 @@ public class HopDongLuuTru implements Serializable {
         this.khachHang = khachHang;
     }
 
-    public void datKhachHang(KhachHang khachHang) {
-        setKhachHang(khachHang);
-    }
-
     public long getKhachHangId() {
         return (khachHang == null || khachHang.getId() == null) ? 0L : khachHang.getId();
-    }
-
-    public long layKhachHangId() {
-        return getKhachHangId();
-    }
-
-    public long khachHangId() {
-        return getKhachHangId();
     }
 
     public void setKhachHangId(long khachHangId) {
         this.khachHang = new KhachHang(khachHangId);
     }
 
-    public void datKhachHangId(long khachHangId) {
-        setKhachHangId(khachHangId);
-    }
-
     public ThuCung getThuCung() {
-        return this.thuCung;
-    }
-
-    public ThuCung layThuCung() {
         return this.thuCung;
     }
 
@@ -320,35 +256,15 @@ public class HopDongLuuTru implements Serializable {
         this.thuCung = thuCung;
     }
 
-    public void datThuCung(ThuCung thuCung) {
-        setThuCung(thuCung);
-    }
-
     public long getThuCungId() {
         return thuCung == null ? 0L : thuCung.getId();
-    }
-
-    public long layThuCungId() {
-        return getThuCungId();
-    }
-
-    public long thuCungId() {
-        return getThuCungId();
     }
 
     public void setThuCungId(long thuCungId) {
         this.thuCung = new ThuCung(thuCungId);
     }
 
-    public void datThuCungId(long thuCungId) {
-        setThuCungId(thuCungId);
-    }
-
     public PhongHotel getPhong() {
-        return this.phong;
-    }
-
-    public PhongHotel layPhong() {
         return this.phong;
     }
 
@@ -356,39 +272,15 @@ public class HopDongLuuTru implements Serializable {
         this.phong = phong;
     }
 
-    public void datPhong(PhongHotel phong) {
-        setPhong(phong);
-    }
-
     public long getPhongId() {
         return phong == null ? 0L : phong.getId();
-    }
-
-    public long layPhongId() {
-        return getPhongId();
-    }
-
-    public long phongId() {
-        return getPhongId();
     }
 
     public void setPhongId(long phongId) {
         this.phong = new PhongHotel(phongId);
     }
 
-    public void datPhongId(long phongId) {
-        setPhongId(phongId);
-    }
-
     public String getHinhThucGui() {
-        return this.hinhThucGui;
-    }
-
-    public String layHinhThucGui() {
-        return this.hinhThucGui;
-    }
-
-    public String hinhThucGui() {
         return this.hinhThucGui;
     }
 
@@ -396,19 +288,7 @@ public class HopDongLuuTru implements Serializable {
         this.hinhThucGui = hinhThucGui;
     }
 
-    public void datHinhThucGui(String hinhThucGui) {
-        setHinhThucGui(hinhThucGui);
-    }
-
     public LocalDateTime getNgayVao() {
-        return this.ngayVao;
-    }
-
-    public LocalDateTime layNgayVao() {
-        return this.ngayVao;
-    }
-
-    public LocalDateTime ngayVao() {
         return this.ngayVao;
     }
 
@@ -416,19 +296,7 @@ public class HopDongLuuTru implements Serializable {
         this.ngayVao = ngayVao;
     }
 
-    public void datNgayVao(LocalDateTime ngayVao) {
-        setNgayVao(ngayVao);
-    }
-
     public LocalDateTime getNgayRaDuKien() {
-        return this.ngayRaDuKien;
-    }
-
-    public LocalDateTime layNgayRaDuKien() {
-        return this.ngayRaDuKien;
-    }
-
-    public LocalDateTime ngayRaDuKien() {
         return this.ngayRaDuKien;
     }
 
@@ -436,19 +304,7 @@ public class HopDongLuuTru implements Serializable {
         this.ngayRaDuKien = ngayRaDuKien;
     }
 
-    public void datNgayRaDuKien(LocalDateTime ngayRaDuKien) {
-        setNgayRaDuKien(ngayRaDuKien);
-    }
-
     public LocalDateTime getNgayRaThucTe() {
-        return this.ngayRaThucTe;
-    }
-
-    public LocalDateTime layNgayRaThucTe() {
-        return this.ngayRaThucTe;
-    }
-
-    public LocalDateTime ngayRaThucTe() {
         return this.ngayRaThucTe;
     }
 
@@ -456,19 +312,7 @@ public class HopDongLuuTru implements Serializable {
         this.ngayRaThucTe = ngayRaThucTe;
     }
 
-    public void datNgayRaThucTe(LocalDateTime ngayRaThucTe) {
-        setNgayRaThucTe(ngayRaThucTe);
-    }
-
     public long getTienCoc() {
-        return this.tienCoc;
-    }
-
-    public long layTienCoc() {
-        return this.tienCoc;
-    }
-
-    public long tienCoc() {
         return this.tienCoc;
     }
 
@@ -478,19 +322,7 @@ public class HopDongLuuTru implements Serializable {
         this.tienCoc = tienCoc;
     }
 
-    public void datTienCoc(long tienCoc) {
-        setTienCoc(tienCoc);
-    }
-
     public String getPhuongThucCoc() {
-        return this.phuongThucCoc;
-    }
-
-    public String layPhuongThucCoc() {
-        return this.phuongThucCoc;
-    }
-
-    public String phuongThucCoc() {
         return this.phuongThucCoc;
     }
 
@@ -498,19 +330,7 @@ public class HopDongLuuTru implements Serializable {
         this.phuongThucCoc = phuongThucCoc;
     }
 
-    public void datPhuongThucCoc(String phuongThucCoc) {
-        setPhuongThucCoc(phuongThucCoc);
-    }
-
     public String getKhoaThuCoc() {
-        return this.khoaThuCoc;
-    }
-
-    public String layKhoaThuCoc() {
-        return this.khoaThuCoc;
-    }
-
-    public String khoaThuCoc() {
         return this.khoaThuCoc;
     }
 
@@ -518,19 +338,7 @@ public class HopDongLuuTru implements Serializable {
         this.khoaThuCoc = khoaThuCoc;
     }
 
-    public void datKhoaThuCoc(String khoaThuCoc) {
-        setKhoaThuCoc(khoaThuCoc);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
@@ -538,19 +346,7 @@ public class HopDongLuuTru implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public long getGiaDem() {
-        return this.giaDem;
-    }
-
-    public long layGiaDem() {
-        return this.giaDem;
-    }
-
-    public long giaDem() {
         return this.giaDem;
     }
 
@@ -560,19 +356,7 @@ public class HopDongLuuTru implements Serializable {
         this.giaDem = giaDem;
     }
 
-    public void datGiaDem(long giaDem) {
-        setGiaDem(giaDem);
-    }
-
     public String getGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String layGhiChu() {
-        return this.ghiChu;
-    }
-
-    public String ghiChu() {
         return this.ghiChu;
     }
 
@@ -580,15 +364,7 @@ public class HopDongLuuTru implements Serializable {
         this.ghiChu = ghiChu;
     }
 
-    public void datGhiChu(String ghiChu) {
-        setGhiChu(ghiChu);
-    }
-
     public HoaDon getHoaDon() {
-        return this.hoaDon;
-    }
-
-    public HoaDon layHoaDon() {
         return this.hoaDon;
     }
 
@@ -596,28 +372,12 @@ public class HopDongLuuTru implements Serializable {
         this.hoaDon = hoaDon;
     }
 
-    public void datHoaDon(HoaDon hoaDon) {
-        setHoaDon(hoaDon);
-    }
-
     public Long getHoaDonId() {
         return hoaDon == null ? null : hoaDon.getId();
     }
 
-    public Long layHoaDonId() {
-        return getHoaDonId();
-    }
-
-    public Long hoaDonId() {
-        return getHoaDonId();
-    }
-
     public void setHoaDonId(Long hoaDonId) {
         this.hoaDon = hoaDonId == null ? null : new HoaDon(hoaDonId);
-    }
-
-    public void datHoaDonId(Long hoaDonId) {
-        setHoaDonId(hoaDonId);
     }
 
     public String getMaHoaDon() {
@@ -640,31 +400,11 @@ public class HopDongLuuTru implements Serializable {
         return this.daNhanCoc;
     }
 
-    public boolean layDaNhanCoc() {
-        return this.daNhanCoc;
-    }
-
-    public boolean daNhanCoc() {
-        return this.daNhanCoc;
-    }
-
     public void setDaNhanCoc(boolean daNhanCoc) {
         this.daNhanCoc = daNhanCoc;
     }
 
-    public void datDaNhanCoc(boolean daNhanCoc) {
-        setDaNhanCoc(daNhanCoc);
-    }
-
     public LocalDateTime getNhanCocLuc() {
-        return this.nhanCocLuc;
-    }
-
-    public LocalDateTime layNhanCocLuc() {
-        return this.nhanCocLuc;
-    }
-
-    public LocalDateTime nhanCocLuc() {
         return this.nhanCocLuc;
     }
 
@@ -672,15 +412,7 @@ public class HopDongLuuTru implements Serializable {
         this.nhanCocLuc = nhanCocLuc;
     }
 
-    public void datNhanCocLuc(LocalDateTime nhanCocLuc) {
-        setNhanCocLuc(nhanCocLuc);
-    }
-
     public TaiKhoan getNguoiNhanCoc() {
-        return this.nguoiNhanCoc;
-    }
-
-    public TaiKhoan layNguoiNhanCoc() {
         return this.nguoiNhanCoc;
     }
 
@@ -688,35 +420,15 @@ public class HopDongLuuTru implements Serializable {
         this.nguoiNhanCoc = nguoiNhanCoc;
     }
 
-    public void datNguoiNhanCoc(TaiKhoan nguoiNhanCoc) {
-        setNguoiNhanCoc(nguoiNhanCoc);
-    }
-
     public Long getNhanCocBoi() {
         return nguoiNhanCoc == null ? null : nguoiNhanCoc.getId();
-    }
-
-    public Long layNhanCocBoi() {
-        return getNhanCocBoi();
-    }
-
-    public Long nhanCocBoi() {
-        return getNhanCocBoi();
     }
 
     public void setNhanCocBoi(Long nhanCocBoi) {
         this.nguoiNhanCoc = nhanCocBoi == null ? null : new TaiKhoan(nhanCocBoi);
     }
 
-    public void datNhanCocBoi(Long nhanCocBoi) {
-        setNhanCocBoi(nhanCocBoi);
-    }
-
     public PhienLamViec getPhienNhanCoc() {
-        return this.phienNhanCoc;
-    }
-
-    public PhienLamViec layPhienNhanCoc() {
         return this.phienNhanCoc;
     }
 
@@ -724,39 +436,15 @@ public class HopDongLuuTru implements Serializable {
         this.phienNhanCoc = phienNhanCoc;
     }
 
-    public void datPhienNhanCoc(PhienLamViec phienNhanCoc) {
-        setPhienNhanCoc(phienNhanCoc);
-    }
-
     public Long getPhienNhanCocId() {
         return phienNhanCoc == null ? null : phienNhanCoc.getId();
-    }
-
-    public Long layPhienNhanCocId() {
-        return getPhienNhanCocId();
-    }
-
-    public Long phienNhanCocId() {
-        return getPhienNhanCocId();
     }
 
     public void setPhienNhanCocId(Long phienNhanCocId) {
         this.phienNhanCoc = phienNhanCocId == null ? null : new PhienLamViec(phienNhanCocId);
     }
 
-    public void datPhienNhanCocId(Long phienNhanCocId) {
-        setPhienNhanCocId(phienNhanCocId);
-    }
-
     public long getCocYeuCau() {
-        return this.cocYeuCau;
-    }
-
-    public long layCocYeuCau() {
-        return this.cocYeuCau;
-    }
-
-    public long cocYeuCau() {
         return this.cocYeuCau;
     }
 
@@ -766,28 +454,12 @@ public class HopDongLuuTru implements Serializable {
         this.cocYeuCau = cocYeuCau;
     }
 
-    public void datCocYeuCau(long cocYeuCau) {
-        setCocYeuCau(cocYeuCau);
-    }
-
     public String getLyDoDoiCoc() {
-        return this.lyDoDoiCoc;
-    }
-
-    public String layLyDoDoiCoc() {
-        return this.lyDoDoiCoc;
-    }
-
-    public String lyDoDoiCoc() {
         return this.lyDoDoiCoc;
     }
 
     public void setLyDoDoiCoc(String lyDoDoiCoc) {
         this.lyDoDoiCoc = lyDoDoiCoc;
-    }
-
-    public void datLyDoDoiCoc(String lyDoDoiCoc) {
-        setLyDoDoiCoc(lyDoDoiCoc);
     }
 
     @Override

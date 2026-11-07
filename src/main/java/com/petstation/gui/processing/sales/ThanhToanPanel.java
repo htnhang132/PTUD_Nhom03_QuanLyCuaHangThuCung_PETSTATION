@@ -163,7 +163,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private MaManHinh layManHinhQuayLaiTheoNguon() {
-        String nguon = banHang.layKieuNguon();
+        String nguon = banHang.getKieuNguon();
 
         if ("HOTEL".equals(nguon)) {
             return MaManHinh.TRA_PHONG_LUU_TRU;
@@ -177,7 +177,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void quayLaiManHinhNguon() {
-        if ("DOI_HANG".equals(banHang.layKieuNguon())) {
+        if ("DOI_HANG".equals(banHang.getKieuNguon())) {
             treoDonDoi(true);
             return;
         }
@@ -186,7 +186,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void treoDonDoi(boolean suaLai) {
-        if (dangXuLy || banHang.dangGhiThanhToan()) return;
+        if (dangXuLy || banHang.isDangGhiThanhToan()) return;
         dangXuLy = true;
         btnTreoDoi.setEnabled(false);
         btnHuy.setEnabled(false);
@@ -213,7 +213,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void capNhatNhanNutQuayLai() {
-        String nguon = banHang.layKieuNguon();
+        String nguon = banHang.getKieuNguon();
         btnTreoDoi.setVisible("DOI_HANG".equals(nguon));
 
         if ("HOTEL".equals(nguon) || "LUU_TRU".equals(nguon)) {
@@ -510,8 +510,8 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private void capNhatTrangThaiVoucherKhach() {
         boolean coKhachHang =
-                banHang.layMaKhachHang() != null
-                        && !banHang.layMaKhachHang().isBlank();
+                banHang.getMaKhachHang() != null
+                        && !banHang.getMaKhachHang().isBlank();
 
         btnChonVoucher.setEnabled(coKhachHang);
         btnChonVoucher.setToolTipText(
@@ -521,7 +521,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void chonVoucher() {
-        if (banHang.layMaKhachHang().isBlank()) {
+        if (banHang.getMaKhachHang().isBlank()) {
             HopThoai.hienThiCanhBao(
                     this, "Cần chọn khách hàng ở màn hình Lập hóa đơn trước.");
             capNhatTrangThaiVoucherKhach();
@@ -531,7 +531,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         try {
             var cacVoucher =
                     com.petstation.service.TichDiemService.layVoucher(
-                            banHang.layMaKhachHang());
+                            banHang.getMaKhachHang());
 
             if (cacVoucher.isEmpty()) {
                 HopThoai.hienThiThongTin(
@@ -579,15 +579,15 @@ public final class ThanhToanPanel extends CoSoPanel {
         if (loi != null) {
             lblVoucherThongBao.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
             lblVoucherThongBao.setText(loi);
-        } else if (banHang.layMaVoucher().isEmpty()) {
+        } else if (banHang.getMaVoucher().isEmpty()) {
             lblVoucherThongBao.setText("");
         } else {
             lblVoucherThongBao.setForeground(MauUngDung.XANH_LA);
             lblVoucherThongBao.setText(
                     "Đã áp dụng "
-                            + banHang.layMaVoucher()
+                            + banHang.getMaVoucher()
                             + ": −"
-                            + TienTe.dinhDang(banHang.laySoTienVoucher()));
+                            + TienTe.dinhDang(banHang.getSoTienVoucher()));
         }
 
         lamMoiCacTong();
@@ -613,12 +613,12 @@ public final class ThanhToanPanel extends CoSoPanel {
                     }
                 };
 
-        for (GioHang.DongHang dongDangXet : banHang.layCacDong()) {
+        for (GioHang.DongHang dongDangXet : banHang.getCacDong()) {
             moHinh.addRow(
                     new Object[] {
-                        dongDangXet.ten(),
-                        dongDangXet.soLuong(),
-                        TienTe.dinhDang(dongDangXet.donGia()),
+                        dongDangXet.getTen(),
+                        dongDangXet.getSoLuong(),
+                        TienTe.dinhDang(dongDangXet.getDonGia()),
                         TienTe.dinhDang(dongDangXet.docSoTien())
                     });
         }
@@ -630,11 +630,11 @@ public final class ThanhToanPanel extends CoSoPanel {
         pnlDongVungChua.add(scrHang, BorderLayout.CENTER);
         pnlDongVungChua.revalidate();
 
-        txtTruongVoucher.setText(banHang.layMaVoucher());
+        txtTruongVoucher.setText(banHang.getMaVoucher());
         lblVoucherThongBao.setText("");
 
         boolean doiHang =
-            "DOI_HANG".equals(banHang.layKieuNguon());
+            "DOI_HANG".equals(banHang.getKieuNguon());
 
         dieuKhienVoucher.forEach(
             c -> c.setEnabled(!doiHang));
@@ -745,7 +745,7 @@ public final class ThanhToanPanel extends CoSoPanel {
             com.petstation.util.TaoMaVietQR.kiemTraTaiKhoan(
                     bin, taiKhoan, tenChuTaiKhoan);
 
-            String maHoaDon = banHang.layMaHoaDonDuKien();
+            String maHoaDon = banHang.getMaHoaDonDuKien();
             long soTienCanChuyen = banHang.tinhTong();
 
             String duLieuQR =
@@ -876,7 +876,7 @@ public final class ThanhToanPanel extends CoSoPanel {
                 lblTrangThaiQR.setText(
                         chkDaNhanTien.isSelected()
                                 ? "Thu ngân đã xác nhận thủ công đã nhận đúng tiền cho hóa đơn "
-                                        + banHang.layMaHoaDonDuKien()
+                                        + banHang.getMaHoaDonDuKien()
                                 : "Đang chờ thu ngân kiểm tra giao dịch thực tế.");
             }
 
@@ -934,7 +934,7 @@ public final class ThanhToanPanel extends CoSoPanel {
                 "Xác nhận thu "
                         + TienTe.dinhDang(giaTriTam)
                         + " cho hóa đơn "
-                        + banHang.layMaHoaDonDuKien()
+                        + banHang.getMaHoaDonDuKien()
                         + "?";
 
         if (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN) {
@@ -958,7 +958,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         try {
             GioHang.BienLai bienLai =
                     banHang.hoanTat(layPhuongThuc(), daNhan, thuNgan);
-            caLamViec.ghiNhanBanHang(layPhuongThuc(), bienLai.tong());
+            caLamViec.ghiNhanBanHang(layPhuongThuc(), bienLai.getTong());
             banHang.xoa();
             boDieuHuong.accept(MaManHinh.IN_HOA_DON);
         } catch (RuntimeException ngoaiLe) {

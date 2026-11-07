@@ -82,7 +82,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
             this::laySpaChiTiet);
 
         themNut(pnlThaoTacPhieu, "Mở xử lý", () -> {
-            gio.layQuyTrinh().chonSpa(layDongChon());
+            gio.getQuyTrinh().chonSpa(layDongChon());
             dieuHuong.accept(MaManHinh.CAP_NHAT_TIEN_DO_SPA);
         });
 

@@ -29,7 +29,7 @@ public final class TongHopBieuDo {
         Map<String, Double> tong = new LinkedHashMap<>();
         Map<String, List<Integer>> rows = new LinkedHashMap<>();
         if (ngay)
-            for (LocalDate d = ky.tuNgay(); !d.isAfter(ky.denNgay()); d = d.plusDays(1)) {
+            for (LocalDate d = ky.getTuNgay(); !d.isAfter(ky.getDenNgay()); d = d.plusDays(1)) {
                 String key = khoa(d, nhom);
                 tong.putIfAbsent(key, 0d);
                 rows.putIfAbsent(key, new ArrayList<>());

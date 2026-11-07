@@ -167,7 +167,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         List<Object[]> cacDong = chuyenCacDongThanhChuoi(truyVan(sql));
         if (loai == LoaiDanhMuc.TAI_KHOAN)
             for (Object[] dongDuLieu : cacDong)
-                dongDuLieu[2] = VaiTro.docTuCSDL(chuyenThanhChuoi(dongDuLieu[2])).layTenHienThi();
+                dongDuLieu[2] = VaiTro.docTuCSDL(chuyenThanhChuoi(dongDuLieu[2])).getTenHienThi();
         if (loai == LoaiDanhMuc.DICH_VU_SPA) {
             for (Object[] dongDuLieu : cacDong) {
                 dongDuLieu[4] = chuyenBangGiaSpaSangUI(chuyenThanhChuoi(dongDuLieu[4]));
@@ -291,7 +291,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
 
     private static String docVaiTro(Object nhan) {
         return Arrays.stream(VaiTro.values())
-                .filter(dongDuLieu -> dongDuLieu.layTenHienThi().equals(nhan))
+                .filter(dongDuLieu -> dongDuLieu.getTenHienThi().equals(nhan))
                 .findFirst()
                 .orElseThrow()
                 .name();

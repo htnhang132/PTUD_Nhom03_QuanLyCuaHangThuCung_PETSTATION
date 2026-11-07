@@ -56,15 +56,15 @@ public final class PhienDangNhapService {
     }
 
     public static long layIdTaiKhoan() {
-        return layPhien().taiKhoan().id();
+        return layPhien().getTaiKhoan().getId();
     }
 
     public static String layTenDangNhap() {
-        return layPhien().taiKhoan().tenDangNhap();
+        return layPhien().getTaiKhoan().getTenDangNhap();
     }
 
     public static long layIdNhanVien() {
-        return layPhien().nhanVien().id();
+        return layPhien().getNhanVien().getId();
     }
 
     public static void yeuCau(com.petstation.model.Quyen quyen) {

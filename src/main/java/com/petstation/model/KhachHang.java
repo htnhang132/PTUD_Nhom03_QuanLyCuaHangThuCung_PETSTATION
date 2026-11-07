@@ -97,31 +97,11 @@ public class KhachHang implements Serializable {
         return maKhachHang;
     }
 
-    public String layMaKhachHang() {
-        return maKhachHang;
-    }
-
-    public String maKhachHang() {
-        return maKhachHang;
-    }
-
     public void setMaKhachHang(String maKhachHang) {
         this.maKhachHang = maKhachHang == null ? null : maKhachHang.trim();
     }
 
-    public void datMaKhachHang(String maKhachHang) {
-        setMaKhachHang(maKhachHang);
-    }
-
     public String getHoTen() {
-        return hoTen;
-    }
-
-    public String layHoTen() {
-        return hoTen;
-    }
-
-    public String hoTen() {
         return hoTen;
     }
 
@@ -129,19 +109,7 @@ public class KhachHang implements Serializable {
         this.hoTen = hoTen == null ? null : hoTen.trim();
     }
 
-    public void datHoTen(String hoTen) {
-        setHoTen(hoTen);
-    }
-
     public String getSoDienThoai() {
-        return soDienThoai;
-    }
-
-    public String laySoDienThoai() {
-        return soDienThoai;
-    }
-
-    public String soDienThoai() {
         return soDienThoai;
     }
 
@@ -149,19 +117,7 @@ public class KhachHang implements Serializable {
         this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim();
     }
 
-    public void datSoDienThoai(String soDienThoai) {
-        setSoDienThoai(soDienThoai);
-    }
-
     public String getDiaChi() {
-        return diaChi;
-    }
-
-    public String layDiaChi() {
-        return diaChi;
-    }
-
-    public String diaChi() {
         return diaChi;
     }
 
@@ -169,19 +125,7 @@ public class KhachHang implements Serializable {
         this.diaChi = diaChi;
     }
 
-    public void datDiaChi(String diaChi) {
-        setDiaChi(diaChi);
-    }
-
     public LocalDate getNgaySinh() {
-        return ngaySinh;
-    }
-
-    public LocalDate layNgaySinh() {
-        return ngaySinh;
-    }
-
-    public LocalDate ngaySinh() {
         return ngaySinh;
     }
 
@@ -192,19 +136,7 @@ public class KhachHang implements Serializable {
         this.ngaySinh = ngaySinh;
     }
 
-    public void datNgaySinh(LocalDate ngaySinh) {
-        setNgaySinh(ngaySinh);
-    }
-
     public Integer getDiemTichLuy() {
-        return diemTichLuy;
-    }
-
-    public Integer layDiemTichLuy() {
-        return diemTichLuy;
-    }
-
-    public Integer diemTichLuy() {
         return diemTichLuy;
     }
 
@@ -215,19 +147,7 @@ public class KhachHang implements Serializable {
         this.diemTichLuy = diemTichLuy == null ? 0 : diemTichLuy;
     }
 
-    public void datDiemTichLuy(Integer diemTichLuy) {
-        setDiemTichLuy(diemTichLuy);
-    }
-
     public String getHangThanhVien() {
-        return hangThanhVien;
-    }
-
-    public String layHangThanhVien() {
-        return hangThanhVien;
-    }
-
-    public String hangThanhVien() {
         return hangThanhVien;
     }
 
@@ -235,15 +155,7 @@ public class KhachHang implements Serializable {
         this.hangThanhVien = (hangThanhVien == null || hangThanhVien.isBlank()) ? "Đồng" : hangThanhVien.trim();
     }
 
-    public void datHangThanhVien(String hangThanhVien) {
-        setHangThanhVien(hangThanhVien);
-    }
-
     public LocalDateTime getThoiDiemTao() {
-        return thoiDiemTao;
-    }
-
-    public LocalDateTime layThoiDiemTao() {
         return thoiDiemTao;
     }
 
@@ -251,15 +163,7 @@ public class KhachHang implements Serializable {
         this.thoiDiemTao = thoiDiemTao;
     }
 
-    public void datThoiDiemTao(LocalDateTime thoiDiemTao) {
-        setThoiDiemTao(thoiDiemTao);
-    }
-
     public byte[] getPhienBanBanGhi() {
-        return phienBanBanGhi;
-    }
-
-    public byte[] layPhienBanBanGhi() {
         return phienBanBanGhi;
     }
 
@@ -267,20 +171,8 @@ public class KhachHang implements Serializable {
         this.phienBanBanGhi = phienBanBanGhi;
     }
 
-    public void datPhienBanBanGhi(byte[] phienBanBanGhi) {
-        setPhienBanBanGhi(phienBanBanGhi);
-    }
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, maKhachHang);
-    }
-
-    public Long layId() {
-        return getId();
-    }
-
-    public Long id() {
-        return getId();
     }
 
     public void setId(Long id) {
@@ -291,10 +183,6 @@ public class KhachHang implements Serializable {
         if ((this.maKhachHang == null || this.maKhachHang.isBlank()) && id != null && id > 0) {
             this.maKhachHang = DuLieu.taoMaTuId("KH", 6, id);
         }
-    }
-
-    public void datId(Long id) {
-        setId(id);
     }
 
     @Override

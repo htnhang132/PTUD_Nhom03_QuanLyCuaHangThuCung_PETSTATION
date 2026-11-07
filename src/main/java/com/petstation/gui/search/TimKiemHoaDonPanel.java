@@ -307,7 +307,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             try {
                 job.print();
                 HopThoai.hienThiThanhCong(
-                        this, "Đã gửi lệnh in hóa đơn " + bienLaiDangChon.soHoaDon());
+                        this, "Đã gửi lệnh in hóa đơn " + bienLaiDangChon.getSoHoaDon());
             } catch (PrinterException ex) {
                 HopThoai.hienThiLoi(this, "Lỗi khi in hóa đơn: " + ex.getMessage());
             }
@@ -317,7 +317,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     private void xuLyXuatHoaDon() {
         if (bienLaiDangChon == null) return;
         JFileChooser chooser = new JFileChooser();
-        chooser.setSelectedFile(new File("HoaDon_" + bienLaiDangChon.soHoaDon() + ".html"));
+        chooser.setSelectedFile(new File("HoaDon_" + bienLaiDangChon.getSoHoaDon() + ".html"));
         int res = chooser.showSaveDialog(this);
         if (res == JFileChooser.APPROVE_OPTION) {
             File file = chooser.getSelectedFile();

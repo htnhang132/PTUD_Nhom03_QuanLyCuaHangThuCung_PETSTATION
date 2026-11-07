@@ -13,7 +13,7 @@ public final class QuyTrinhService {
     private QuyTrinhService() {}
 
     public static void chuyenBuoc(String tu, String den, GioHang gio) {
-        var q = gio.layQuyTrinh();
+        var q = gio.getQuyTrinh();
         if (List.of(
                         "DAT_LICH_HEN_SPA",
                         "TIEP_NHAN_SPA",
@@ -23,7 +23,7 @@ public final class QuyTrinhService {
                 .contains(den)) {
             PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
             if (den.equals("DAT_LICH_HEN_SPA") || den.equals("TIEP_NHAN_SPA")) return;
-            var dong = quyTrinhDAO.laySpa(q.layPhieuSpa());
+            var dong = quyTrinhDAO.laySpa(q.getPhieuSpa());
             if (dong.isEmpty())
                 throw new IllegalArgumentException(
                         "Hãy chọn hoặc tiếp nhận một phiếu Spa trước khi chuyển bước.");
@@ -38,7 +38,7 @@ public final class QuyTrinhService {
         }
         if (den.equals("NHAT_KY_CHAM_SOC") || den.equals("TRA_PHONG_LUU_TRU")) {
             PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
-            String trangThai = quyTrinhDAO.layTrangThaiHotel(q.layHopDongHotel());
+            String trangThai = quyTrinhDAO.layTrangThaiHotel(q.getHopDongHotel());
             if (!List.of("DA_DAT", "DANG_O").contains(trangThai))
                 throw new IllegalArgumentException(
                         "Hãy chọn hợp đồng Hotel đang đặt hoặc đang lưu trú.");
@@ -48,9 +48,9 @@ public final class QuyTrinhService {
         if (den.equals("THANH_TOAN")
                 && (tu.equals("HOAN_TAT_SPA") || tu.equals("TRA_PHONG_LUU_TRU"))) {
             String loai = tu.equals("HOAN_TAT_SPA") ? "SPA" : "HOTEL";
-            long id = loai.equals("SPA") ? q.layPhieuSpa() : q.layHopDongHotel();
+            long id = loai.equals("SPA") ? q.getPhieuSpa() : q.getHopDongHotel();
             if (id <= 0) throw new IllegalArgumentException("Hãy chọn bản ghi cần thanh toán.");
-            if (!gio.kiemTraTrong() && !(loai.equals(gio.layKieuNguon()) && id == gio.layIdNguon()))
+            if (!gio.kiemTraTrong() && !(loai.equals(gio.getKieuNguon()) && id == gio.getIdNguon()))
                 throw new IllegalArgumentException("Cần thanh toán hoặc treo giỏ hiện tại trước.");
             BanHangService.quyetToan(loai, id, gio);
         }

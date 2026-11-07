@@ -90,31 +90,11 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         return this.maChuongTrinh;
     }
 
-    public String layMaChuongTrinh() {
-        return this.maChuongTrinh;
-    }
-
-    public String maChuongTrinh() {
-        return this.maChuongTrinh;
-    }
-
     public void setMaChuongTrinh(String maChuongTrinh) {
         this.maChuongTrinh = maChuongTrinh == null ? null : maChuongTrinh.trim();
     }
 
-    public void datMaChuongTrinh(String maChuongTrinh) {
-        setMaChuongTrinh(maChuongTrinh);
-    }
-
     public String getTen() {
-        return this.ten;
-    }
-
-    public String layTen() {
-        return this.ten;
-    }
-
-    public String ten() {
         return this.ten;
     }
 
@@ -122,19 +102,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.ten = ten == null ? null : ten.trim();
     }
 
-    public void datTen(String ten) {
-        setTen(ten);
-    }
-
     public String getLoaiGiam() {
-        return this.loaiGiam;
-    }
-
-    public String layLoaiGiam() {
-        return this.loaiGiam;
-    }
-
-    public String loaiGiam() {
         return this.loaiGiam;
     }
 
@@ -142,19 +110,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.loaiGiam = loaiGiam;
     }
 
-    public void datLoaiGiam(String loaiGiam) {
-        setLoaiGiam(loaiGiam);
-    }
-
     public double getGiaTri() {
-        return this.giaTri;
-    }
-
-    public double layGiaTri() {
-        return this.giaTri;
-    }
-
-    public double giaTri() {
         return this.giaTri;
     }
 
@@ -164,19 +120,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.giaTri = giaTri;
     }
 
-    public void datGiaTri(double giaTri) {
-        setGiaTri(giaTri);
-    }
-
     public LocalDateTime getBatDau() {
-        return this.batDau;
-    }
-
-    public LocalDateTime layBatDau() {
-        return this.batDau;
-    }
-
-    public LocalDateTime batDau() {
         return this.batDau;
     }
 
@@ -184,19 +128,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.batDau = batDau;
     }
 
-    public void datBatDau(LocalDateTime batDau) {
-        setBatDau(batDau);
-    }
-
     public LocalDateTime getKetThuc() {
-        return this.ketThuc;
-    }
-
-    public LocalDateTime layKetThuc() {
-        return this.ketThuc;
-    }
-
-    public LocalDateTime ketThuc() {
         return this.ketThuc;
     }
 
@@ -204,19 +136,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.ketThuc = ketThuc;
     }
 
-    public void datKetThuc(LocalDateTime ketThuc) {
-        setKetThuc(ketThuc);
-    }
-
     public String getNguon() {
-        return this.nguon;
-    }
-
-    public String layNguon() {
-        return this.nguon;
-    }
-
-    public String nguon() {
         return this.nguon;
     }
 
@@ -224,19 +144,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.nguon = nguon;
     }
 
-    public void datNguon(String nguon) {
-        setNguon(nguon);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
@@ -244,19 +152,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public long getDonToiThieu() {
-        return this.donToiThieu;
-    }
-
-    public long layDonToiThieu() {
-        return this.donToiThieu;
-    }
-
-    public long donToiThieu() {
         return this.donToiThieu;
     }
 
@@ -266,20 +162,8 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         this.donToiThieu = donToiThieu;
     }
 
-    public void datDonToiThieu(long donToiThieu) {
-        setDonToiThieu(donToiThieu);
-    }
-
     public long getId() {
         return DuLieu.layIdCauNoi(this, maChuongTrinh);
-    }
-
-    public long layId() {
-        return getId();
-    }
-
-    public long id() {
-        return getId();
     }
 
     public void setId(long id) {
@@ -289,10 +173,6 @@ public class ChuongTrinhKhuyenMai implements Serializable {
         if ((this.maChuongTrinh == null || this.maChuongTrinh.isBlank()) && id > 0) {
             this.maChuongTrinh = DuLieu.taoMaTuId("KM", 6, id);
         }
-    }
-
-    public void datId(long id) {
-        setId(id);
     }
 
     @Override

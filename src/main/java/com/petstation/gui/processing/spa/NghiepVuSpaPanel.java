@@ -82,7 +82,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                             giaTri.get("package"),
                             giaTri.get("staff"),
                             docThoiGian(giaTri, "start"));
-            banHang.layQuyTrinh().chonLichHen(id);
+            banHang.getQuyTrinh().chonLichHen(id);
         }
     }
 
@@ -98,10 +98,10 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
             thuCung = chuyenThanhChuoi(SpaService.layMaLichHenThuCung(layDongChon()));
         }
 
-        if (lichHen.isEmpty() && banHang.layQuyTrinh().layLichHen() > 0) {
+        if (lichHen.isEmpty() && banHang.getQuyTrinh().getLichHen() > 0) {
             var hen =
                     com.petstation.service.QuyTrinhService.layLichHen(
-                            banHang.layQuyTrinh().layLichHen());
+                            banHang.getQuyTrinh().getLichHen());
             if (!hen.isEmpty()) {
                 lichHen = hen.get(0)[0].toString();
                 thuCung = hen.get(0)[1].toString();
@@ -128,7 +128,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                             lichHen,
                             Double.parseDouble(giaTri.get("weight").replace(',', '.')),
                             giaTri.get("note"));
-            banHang.layQuyTrinh().chonSpa(id);
+            banHang.getQuyTrinh().chonSpa(id);
             dieuHuong.accept(MaManHinh.CHON_GOI_SPA);
         }
     }

@@ -53,7 +53,7 @@ public abstract class NghiepVuBanHangPanel extends BangNghiepVuPanel {
     }
 
     protected void hienThiHoaDon() {
-        banHang.datBienLaiCuoi(BanHangService.layBienLai(layNoiDungDongChon(1)));
+        banHang.setBienLaiCuoi(BanHangService.layBienLai(layNoiDungDongChon(1)));
         dieuHuong.accept(MaManHinh.IN_HOA_DON);
     }
 

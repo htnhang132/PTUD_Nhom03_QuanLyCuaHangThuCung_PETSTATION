@@ -94,24 +94,8 @@ public class PhieuXuatKho implements Serializable {
         return tinhTongGiaTri();
     }
 
-    public long layTongGiaTri() {
-        return tinhTongGiaTri();
-    }
-
-    public long tongGiaTri() {
-        return tinhTongGiaTri();
-    }
-
     public Long getId() {
         return DuLieu.layIdCauNoiObj(this, getMaPhieuXuat());
-    }
-
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, getMaPhieuXuat());
-    }
-
-    public long id() {
-        return layId();
     }
 
     public void setId(long id) {
@@ -121,19 +105,7 @@ public class PhieuXuatKho implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaPhieuXuat() {
-        return this.maPhieuXuat;
-    }
-
-    public String layMaPhieuXuat() {
-        return this.maPhieuXuat;
-    }
-
-    public String maPhieuXuat() {
         return this.maPhieuXuat;
     }
 
@@ -141,19 +113,7 @@ public class PhieuXuatKho implements Serializable {
         this.maPhieuXuat = maPhieuXuat == null ? null : maPhieuXuat.trim();
     }
 
-    public void datMaPhieuXuat(String maPhieuXuat) {
-        setMaPhieuXuat(maPhieuXuat);
-    }
-
     public String getSoPhieu() {
-        return getMaPhieuXuat();
-    }
-
-    public String laySoPhieu() {
-        return getMaPhieuXuat();
-    }
-
-    public String soPhieu() {
         return getMaPhieuXuat();
     }
 
@@ -161,15 +121,7 @@ public class PhieuXuatKho implements Serializable {
         setMaPhieuXuat(soPhieu);
     }
 
-    public void datSoPhieu(String soPhieu) {
-        setMaPhieuXuat(soPhieu);
-    }
-
     public TaiKhoan getNguoiLap() {
-        return this.nguoiLap;
-    }
-
-    public TaiKhoan layNguoiLap() {
         return this.nguoiLap;
     }
 
@@ -177,35 +129,15 @@ public class PhieuXuatKho implements Serializable {
         this.nguoiLap = nguoiLap;
     }
 
-    public void datNguoiLap(TaiKhoan nguoiLap) {
-        setNguoiLap(nguoiLap);
-    }
-
     public Long getNguoiLapId() {
         return nguoiLap == null ? null : nguoiLap.getId();
-    }
-
-    public Long layNguoiLapId() {
-        return getNguoiLapId();
-    }
-
-    public Long nguoiLapId() {
-        return getNguoiLapId();
     }
 
     public void setNguoiLapId(Long nguoiLapId) {
         this.nguoiLap = nguoiLapId == null ? null : new TaiKhoan(nguoiLapId);
     }
 
-    public void datNguoiLapId(Long nguoiLapId) {
-        setNguoiLapId(nguoiLapId);
-    }
-
     public List<ChiTietPhieuXuat> getDanhSachChiTiet() {
-        return this.danhSachChiTiet;
-    }
-
-    public List<ChiTietPhieuXuat> layDanhSachChiTiet() {
         return this.danhSachChiTiet;
     }
 
@@ -224,31 +156,11 @@ public class PhieuXuatKho implements Serializable {
         return this.loaiXuat;
     }
 
-    public String layLoaiXuat() {
-        return this.loaiXuat;
-    }
-
-    public String loaiXuat() {
-        return this.loaiXuat;
-    }
-
     public void setLoaiXuat(String loaiXuat) {
         this.loaiXuat = loaiXuat;
     }
 
-    public void datLoaiXuat(String loaiXuat) {
-        setLoaiXuat(loaiXuat);
-    }
-
     public String getLyDo() {
-        return this.lyDo;
-    }
-
-    public String layLyDo() {
-        return this.lyDo;
-    }
-
-    public String lyDo() {
         return this.lyDo;
     }
 
@@ -256,19 +168,7 @@ public class PhieuXuatKho implements Serializable {
         this.lyDo = lyDo;
     }
 
-    public void datLyDo(String lyDo) {
-        setLyDo(lyDo);
-    }
-
     public String getTrangThai() {
-        return this.trangThai;
-    }
-
-    public String layTrangThai() {
-        return this.trangThai;
-    }
-
-    public String trangThai() {
         return this.trangThai;
     }
 
@@ -276,28 +176,12 @@ public class PhieuXuatKho implements Serializable {
         this.trangThai = trangThai;
     }
 
-    public void datTrangThai(String trangThai) {
-        setTrangThai(trangThai);
-    }
-
     public LocalDateTime getTaoLuc() {
-        return this.taoLuc;
-    }
-
-    public LocalDateTime layTaoLuc() {
-        return this.taoLuc;
-    }
-
-    public LocalDateTime taoLuc() {
         return this.taoLuc;
     }
 
     public void setTaoLuc(LocalDateTime taoLuc) {
         this.taoLuc = taoLuc;
-    }
-
-    public void datTaoLuc(LocalDateTime taoLuc) {
-        setTaoLuc(taoLuc);
     }
 
     @Override

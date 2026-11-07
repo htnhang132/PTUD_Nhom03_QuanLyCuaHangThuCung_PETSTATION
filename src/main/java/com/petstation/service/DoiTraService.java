@@ -135,14 +135,14 @@ public final class DoiTraService {
                         throw new IllegalArgumentException(
                                 "Giá trị hàng thay thế không được thấp hơn giá trị được đổi.");
                     gio.xoa();
-                    gio.datCacDong(
+                    gio.setCacDong(
                             List.of(
                                     new GioHang.DongHang(
                                             maThayThe, sp.get(0)[1].toString(), gia, soLuongMoi)));
                     Object[] g = dl.goc();
-                    gio.datKhachHang(g[8].toString(), g[9].toString(), so(g[10]));
-                    gio.datNguon("DOI_HANG", dong);
-                    gio.datDoiHang(
+                    gio.setKhachHang(g[8].toString(), g[9].toString(), so(g[10]));
+                    gio.setNguon("DOI_HANG", dong);
+                    gio.setDoiHang(
                             new GioHang.YeuCauDoiHang(
                                     dong, soLuong, lyDo, dl.giaTri(), g[8].toString()));
                     return null;
@@ -150,19 +150,19 @@ public final class DoiTraService {
     }
 
     static long chuanBi(GioHang gio) {
-        var yc = gio.layDoiHang();
-        if (yc == null || yc.lyDo().isBlank())
+        var yc = gio.getDoiHang();
+        if (yc == null || yc.getLyDo().isBlank())
             throw new IllegalArgumentException("Thiếu thông tin đổi hàng.");
-        DuLieu dl = kiemTra(yc.dongGoc(), yc.soLuong());
-        if (dl.giaTri() != yc.giaTriDuocDoi()
-                || !dl.goc()[8].toString().equals(gio.layMaKhachHang())
+        DuLieu dl = kiemTra(yc.getDongGoc(), yc.getSoLuong());
+        if (dl.giaTri() != yc.getGiaTriDuocDoi()
+                || !dl.goc()[8].toString().equals(gio.getMaKhachHang())
                 || gio.tinhTong() < 0
-                || !gio.layMaVoucher().isBlank()
-                || gio.layGiamGiaPhanTram() != 0)
+                || !gio.getMaVoucher().isBlank()
+                || gio.getGiamGiaPhanTram() != 0)
             throw new IllegalArgumentException(
                     "Thông tin đổi hàng đã thay đổi; hãy lập lại phiếu.");
-        for (var dong : gio.layCacDong()) {
-            var sp = doiHangDAO.timThayThe(dong.ma());
+        for (var dong : gio.getCacDong()) {
+            var sp = doiHangDAO.timThayThe(dong.getMa());
             if (sp.isEmpty() || !"Phụ kiện".equals(sp.get(0)[3]))
                 throw new IllegalArgumentException("Chỉ chọn phụ kiện thay thế.");
         }
@@ -171,16 +171,16 @@ public final class DoiTraService {
                         so(dl.goc()[0]),
                         layIdTaiKhoan(),
                         gio.tinhTong(),
-                        yc.lyDo(),
+                        yc.getLyDo(),
                         dl.giaTri(),
-                        gio.layKhoaThanhToan());
-        int con = yc.soLuong();
+                        gio.getKhoaThanhToan());
+        int con = yc.getSoLuong();
         long tienCon = dl.giaTri();
-        for (Object[] lo : doiTraDAO.laySoLuongLoConDuocDoi(yc.dongGoc())) {
+        for (Object[] lo : doiTraDAO.laySoLuongLoConDuocDoi(yc.getDongGoc())) {
             int luong = (int) Math.min(con, so(lo[1]));
             if (luong <= 0) continue;
-            long tien = luong == con ? tienCon : dl.giaTri() * luong / yc.soLuong();
-            doiTraDAO.capNhatDoiTraMuc(phieu, yc.dongGoc(), lo[0], luong, tien);
+            long tien = luong == con ? tienCon : dl.giaTri() * luong / yc.getSoLuong();
+            doiTraDAO.capNhatDoiTraMuc(phieu, yc.getDongGoc(), lo[0], luong, tien);
             doiTraDAO.capNhatApDungDoiTra(luong, lo[0]);
             con -= luong;
             tienCon -= tien;

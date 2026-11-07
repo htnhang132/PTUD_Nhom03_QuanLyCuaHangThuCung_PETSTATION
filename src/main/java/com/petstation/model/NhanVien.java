@@ -77,10 +77,6 @@ public class NhanVien implements Serializable {
         return tinhTuoi();
     }
 
-    public int layTuoi() {
-        return tinhTuoi();
-    }
-
     public int tinhThamNienNam() {
         if (ngayBatDau == null || ngayBatDau.isAfter(LocalDate.now())) {
             return 0;
@@ -92,19 +88,7 @@ public class NhanVien implements Serializable {
         return tinhThamNienNam();
     }
 
-    public int layThamNienNam() {
-        return tinhThamNienNam();
-    }
-
     public String getMaNhanVien() {
-        return this.maNhanVien;
-    }
-
-    public String layMaNhanVien() {
-        return this.maNhanVien;
-    }
-
-    public String maNhanVien() {
         return this.maNhanVien;
     }
 
@@ -112,19 +96,7 @@ public class NhanVien implements Serializable {
         this.maNhanVien = maNhanVien == null ? null : maNhanVien.trim();
     }
 
-    public void datMaNhanVien(String maNhanVien) {
-        setMaNhanVien(maNhanVien);
-    }
-
     public String getHoTen() {
-        return this.hoTen;
-    }
-
-    public String layHoTen() {
-        return this.hoTen;
-    }
-
-    public String hoTen() {
         return this.hoTen;
     }
 
@@ -132,19 +104,7 @@ public class NhanVien implements Serializable {
         this.hoTen = hoTen == null ? null : hoTen.trim();
     }
 
-    public void datHoTen(String hoTen) {
-        setHoTen(hoTen);
-    }
-
     public LocalDate getNgaySinh() {
-        return this.ngaySinh;
-    }
-
-    public LocalDate layNgaySinh() {
-        return this.ngaySinh;
-    }
-
-    public LocalDate ngaySinh() {
         return this.ngaySinh;
     }
 
@@ -152,19 +112,7 @@ public class NhanVien implements Serializable {
         this.ngaySinh = ngaySinh;
     }
 
-    public void datNgaySinh(LocalDate ngaySinh) {
-        setNgaySinh(ngaySinh);
-    }
-
     public String getSoDienThoai() {
-        return this.soDienThoai;
-    }
-
-    public String laySoDienThoai() {
-        return this.soDienThoai;
-    }
-
-    public String soDienThoai() {
         return this.soDienThoai;
     }
 
@@ -172,19 +120,7 @@ public class NhanVien implements Serializable {
         this.soDienThoai = soDienThoai == null ? null : soDienThoai.trim();
     }
 
-    public void datSoDienThoai(String soDienThoai) {
-        setSoDienThoai(soDienThoai);
-    }
-
     public String getDiaChi() {
-        return this.diaChi;
-    }
-
-    public String layDiaChi() {
-        return this.diaChi;
-    }
-
-    public String diaChi() {
         return this.diaChi;
     }
 
@@ -192,19 +128,7 @@ public class NhanVien implements Serializable {
         this.diaChi = diaChi;
     }
 
-    public void datDiaChi(String diaChi) {
-        setDiaChi(diaChi);
-    }
-
     public String getViTri() {
-        return this.viTri;
-    }
-
-    public String layViTri() {
-        return this.viTri;
-    }
-
-    public String viTri() {
         return this.viTri;
     }
 
@@ -212,19 +136,7 @@ public class NhanVien implements Serializable {
         this.viTri = viTri;
     }
 
-    public void datViTri(String viTri) {
-        setViTri(viTri);
-    }
-
     public LocalDate getNgayBatDau() {
-        return this.ngayBatDau;
-    }
-
-    public LocalDate layNgayBatDau() {
-        return this.ngayBatDau;
-    }
-
-    public LocalDate ngayBatDau() {
         return this.ngayBatDau;
     }
 
@@ -232,19 +144,7 @@ public class NhanVien implements Serializable {
         this.ngayBatDau = ngayBatDau;
     }
 
-    public void datNgayBatDau(LocalDate ngayBatDau) {
-        setNgayBatDau(ngayBatDau);
-    }
-
     public boolean isHoatDong() {
-        return this.hoatDong;
-    }
-
-    public boolean layHoatDong() {
-        return this.hoatDong;
-    }
-
-    public boolean hoatDong() {
         return this.hoatDong;
     }
 
@@ -252,20 +152,8 @@ public class NhanVien implements Serializable {
         this.hoatDong = hoatDong;
     }
 
-    public void datHoatDong(boolean hoatDong) {
-        setHoatDong(hoatDong);
-    }
-
     public long getId() {
         return DuLieu.layIdCauNoi(this, maNhanVien);
-    }
-
-    public long layId() {
-        return getId();
-    }
-
-    public long id() {
-        return getId();
     }
 
     public void setId(long id) {
@@ -274,10 +162,6 @@ public class NhanVien implements Serializable {
         if ((this.maNhanVien == null || this.maNhanVien.isBlank()) && id > 0) {
             this.maNhanVien = DuLieu.taoMaTuId("NV", 4, id);
         }
-    }
-
-    public void datId(long id) {
-        setId(id);
     }
 
     @Override

@@ -37,7 +37,7 @@ public final class NhatKyHeThongService {
     }
 
     public static String layNguoiDung() {
-        return layPhienHienTai() == null ? nguoiDung : layPhien().layTenHienThi();
+        return layPhienHienTai() == null ? nguoiDung : layPhien().getTenHienThi();
     }
 
     public static void ghiThayDoi(

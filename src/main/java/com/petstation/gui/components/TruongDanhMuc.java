@@ -26,7 +26,7 @@ public final class TruongDanhMuc {
 
         String[] ra = new String[cacVaiTro.length];
         for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
-            ra[chiSo] = cacVaiTro[chiSo].layTenHienThi();
+            ra[chiSo] = cacVaiTro[chiSo].getTenHienThi();
         return ra;
     }
 }

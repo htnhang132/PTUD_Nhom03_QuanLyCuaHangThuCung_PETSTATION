@@ -23,23 +23,17 @@ public class KhoangNgay implements Serializable {
     }
 
     public LocalDate getTuNgay() { return this.tuNgay; }
-    public LocalDate layTuNgay() { return this.tuNgay; }
-    public LocalDate tuNgay() { return this.tuNgay; }
     public void setTuNgay(LocalDate tuNgay) { this.tuNgay = tuNgay; }
-    public void datTuNgay(LocalDate tuNgay) { this.tuNgay = tuNgay; }
 
     public LocalDate getDenNgay() { return this.denNgay; }
-    public LocalDate layDenNgay() { return this.denNgay; }
-    public LocalDate denNgay() { return this.denNgay; }
     public void setDenNgay(LocalDate denNgay) { this.denNgay = denNgay; }
-    public void datDenNgay(LocalDate denNgay) { this.denNgay = denNgay; }
 
     public static KhoangNgay ganDay(int soNgay) {
         LocalDate homNay = LocalDate.now();
         return new KhoangNgay(homNay.minusDays(Math.max(1, soNgay) - 1L), homNay);
     }
 
-    public LocalDate layCanTren() {
+    public LocalDate getCanTren() {
         return denNgay.plusDays(1);
     }
 

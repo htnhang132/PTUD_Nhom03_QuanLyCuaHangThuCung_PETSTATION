@@ -7,33 +7,28 @@ public final class NguCanhQuyTrinh {
     private long phongHotel;
     private String maPhongHotel = "";
 
-    public String layMaPhongHotel() {
-        return maPhongHotel;
-    }
+    public long getLichHen() { return lichHen; }
+    public void setLichHen(long lichHen) { this.lichHen = lichHen; }
+
+    public long getPhieuSpa() { return phieuSpa; }
+    public void setPhieuSpa(long phieuSpa) { this.phieuSpa = phieuSpa; }
+
+    public long getHopDongHotel() { return hopDongHotel; }
+    public void setHopDongHotel(long hopDongHotel) { this.hopDongHotel = hopDongHotel; }
+
+    public long getPhongHotel() { return phongHotel; }
+    public void setPhongHotel(long phongHotel) { this.phongHotel = phongHotel; }
+
+    public String getMaPhongHotel() { return maPhongHotel; }
+    public void setMaPhongHotel(String maPhongHotel) { this.maPhongHotel = maPhongHotel == null ? "" : maPhongHotel; }
 
     public void chonPhongHotel(long id, String ma) {
         phongHotel = id;
         maPhongHotel = ma;
     }
 
-    public long layPhongHotel() {
-        return phongHotel;
-    }
-
     public void chonPhongHotel(long id) {
         phongHotel = id;
-    }
-
-    public long layLichHen() {
-        return lichHen;
-    }
-
-    public long layPhieuSpa() {
-        return phieuSpa;
-    }
-
-    public long layHopDongHotel() {
-        return hopDongHotel;
     }
 
     public void chonLichHen(long id) {

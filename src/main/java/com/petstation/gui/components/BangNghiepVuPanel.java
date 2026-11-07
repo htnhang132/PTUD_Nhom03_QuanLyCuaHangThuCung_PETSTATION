@@ -94,11 +94,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                             if (e.getValueIsAdjusting() || tblBang.getSelectedRow() < 0) return;
                             long id = layDongChon();
                             switch (kieuNghiepVu) {
-                                case LICH_HEN -> banHang.layQuyTrinh().chonLichHen(id);
+                                case LICH_HEN -> banHang.getQuyTrinh().chonLichHen(id);
                                 case PHIEU_SPA, TIEP_NHAN_SPA, GOI_DICH_VU_SPA, TIEN_DO_SPA, HOAN_TAT_SPA ->
-                                        banHang.layQuyTrinh().chonSpa(id);
+                                        banHang.getQuyTrinh().chonSpa(id);
                                 case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
-                                        banHang.layQuyTrinh().chonHotel(id);
+                                        banHang.getQuyTrinh().chonHotel(id);
                                 default -> {}
                             }
                             capNhatThaoTac();
@@ -158,11 +158,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         lblSoLuong.setText(ThanhDanhSach.soKetQua(tblBang.getRowCount(), moHinh.getRowCount()));
         long giu =
                 switch (kieuNghiepVu) {
-                    case LICH_HEN -> banHang.layQuyTrinh().layLichHen();
+                    case LICH_HEN -> banHang.getQuyTrinh().getLichHen();
                     case PHIEU_SPA, TIEP_NHAN_SPA, GOI_DICH_VU_SPA, TIEN_DO_SPA, HOAN_TAT_SPA ->
-                            banHang.layQuyTrinh().layPhieuSpa();
+                            banHang.getQuyTrinh().getPhieuSpa();
                     case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
-                            banHang.layQuyTrinh().layHopDongHotel();
+                            banHang.getQuyTrinh().getHopDongHotel();
                     default -> 0;
                 };
         if (daChon != null) giu = daChon;

@@ -64,41 +64,41 @@ public final class XacThucService {
 
                                                 LocalDateTime hienTai = LocalDateTime.now();
 
-                                                if (taiKhoan.trangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
+                                                if (taiKhoan.getTrangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
                                                         ghiNhatKyHeThong(
                                                                         ketNoi,
-                                                                        taiKhoan.tenDangNhap(),
+                                                                        taiKhoan.getTenDangNhap(),
                                                                         "TU_CHOI_DANG_NHAP",
                                                                         "Tài khoản không hoạt động");
                                                         return KetQuaDangNhap.taoLoi(
                                                                         "Tài khoản đã bị khóa. Vui lòng liên hệ Cửa hàng"
                                                                                         + " trưởng.");
                                                 }
-                                                if (taiKhoan.layTamThoiDaKhoa(hienTai)) {
+                                                if (taiKhoan.isTamThoiDaKhoa(hienTai)) {
                                                         ghiNhatKyHeThong(
                                                                         ketNoi,
-                                                                        taiKhoan.tenDangNhap(),
+                                                                        taiKhoan.getTenDangNhap(),
                                                                         "TU_CHOI_DANG_NHAP",
                                                                         "Tài khoản đang tạm khóa");
                                                         return KetQuaDangNhap.taoLoi(
                                                                         "Tài khoản bị tạm khóa đến "
-                                                                                        + taiKhoan.khoaDenLuc()
+                                                                                        + taiKhoan.getKhoaDenLuc()
                                                                                         + ".");
                                                 }
 
                                                 String duocCungCapMatKhau = new String(matKhau);
-                                                if (!BCrypt.checkpw(duocCungCapMatKhau, taiKhoan.maBamMatKhau())) {
-                                                        int soLuongThatBai = taiKhoan.soLanDangNhapSai() + 1;
+                                                if (!BCrypt.checkpw(duocCungCapMatKhau, taiKhoan.getMaBamMatKhau())) {
+                                                        int soLuongThatBai = taiKhoan.getSoLanDangNhapSai() + 1;
 
                                                         LocalDateTime khoaDenLuc = soLuongThatBai >= LON_NHAT_THAT_BAI_SO_LAN_THU
                                                                         ? hienTai.plusMinutes(KHOA_SO_PHUT)
                                                                         : null;
                                                         danhSachTaiKhoan.ghiNhanDangNhapThatBai(
-                                                                        ketNoi, taiKhoan.tenDangNhap(), soLuongThatBai,
+                                                                        ketNoi, taiKhoan.getTenDangNhap(), soLuongThatBai,
                                                                         khoaDenLuc);
                                                         ghiNhatKyHeThong(
                                                                         ketNoi,
-                                                                        taiKhoan.tenDangNhap(),
+                                                                        taiKhoan.getTenDangNhap(),
                                                                         "DANG_NHAP_THAT_BAI",
                                                                         "Sai mật khẩu lần " + soLuongThatBai);
                                                         if (khoaDenLuc != null) {
@@ -115,24 +115,24 @@ public final class XacThucService {
 
                                                 NhanVien nhanVien = cacNhanVien
                                                                 .timTheoId(ketNoi, taiKhoan.getMaNhanVien())
-                                                                .filter(NhanVien::hoatDong)
+                                                                .filter(NhanVien::isHoatDong)
                                                                 .orElse(null);
                                                 if (nhanVien == null) {
                                                         ghiNhatKyHeThong(
                                                                         ketNoi,
-                                                                        taiKhoan.tenDangNhap(),
+                                                                        taiKhoan.getTenDangNhap(),
                                                                         "TU_CHOI_DANG_NHAP",
                                                                         "Nhân viên đã ngừng làm việc");
                                                         return KetQuaDangNhap.taoLoi("Nhân viên đã ngừng làm việc.");
                                                 }
                                                 danhSachTaiKhoan.ghiNhanDangNhapThanhCong(ketNoi,
-                                                                taiKhoan.tenDangNhap());
+                                                                taiKhoan.getTenDangNhap());
 
                                                 Set<Quyen> cacQuyen = danhSachTaiKhoan.timCacQuyen(ketNoi,
-                                                                taiKhoan.tenDangNhap());
+                                                                taiKhoan.getTenDangNhap());
                                                 ghiNhatKyHeThong(
                                                                 ketNoi,
-                                                                taiKhoan.tenDangNhap(),
+                                                                taiKhoan.getTenDangNhap(),
                                                                 "DANG_NHAP_THANH_CONG",
                                                                 "Đăng nhập thành công");
                                                 return KetQuaDangNhap.hienThiThanhCong(

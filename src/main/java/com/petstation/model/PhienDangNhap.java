@@ -20,29 +20,20 @@ public class PhienDangNhap implements Serializable {
     }
 
     public TaiKhoan getTaiKhoan() { return this.taiKhoan; }
-    public TaiKhoan layTaiKhoan() { return this.taiKhoan; }
-    public TaiKhoan taiKhoan() { return this.taiKhoan; }
     public void setTaiKhoan(TaiKhoan taiKhoan) { this.taiKhoan = taiKhoan; }
-    public void datTaiKhoan(TaiKhoan taiKhoan) { this.taiKhoan = taiKhoan; }
 
     public NhanVien getNhanVien() { return this.nhanVien; }
-    public NhanVien layNhanVien() { return this.nhanVien; }
-    public NhanVien nhanVien() { return this.nhanVien; }
     public void setNhanVien(NhanVien nhanVien) { this.nhanVien = nhanVien; }
-    public void datNhanVien(NhanVien nhanVien) { this.nhanVien = nhanVien; }
 
     public java.util.Set<Quyen> getCacQuyen() { return this.cacQuyen; }
-    public java.util.Set<Quyen> layCacQuyen() { return this.cacQuyen; }
-    public java.util.Set<Quyen> cacQuyen() { return this.cacQuyen; }
     public void setCacQuyen(java.util.Set<Quyen> cacQuyen) { this.cacQuyen = cacQuyen; }
-    public void datCacQuyen(java.util.Set<Quyen> cacQuyen) { this.cacQuyen = cacQuyen; }
 
-    public VaiTro docVaiTro() {
-        return taiKhoan != null ? taiKhoan.vaiTro() : null;
+    public String getTenHienThi() {
+        return nhanVien != null ? nhanVien.getHoTen() : "";
     }
 
-    public String layTenHienThi() {
-        return nhanVien != null ? nhanVien.hoTen() : "";
+    public VaiTro docVaiTro() {
+        return taiKhoan != null ? taiKhoan.getVaiTro() : null;
     }
 
     public boolean kiemTraCo(Quyen quyen) {

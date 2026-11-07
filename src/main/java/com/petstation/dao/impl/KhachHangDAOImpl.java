@@ -26,23 +26,23 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            String ma = khachHang.layMaKhachHang();
+            String ma = khachHang.getMaKhachHang();
             if (ma == null || ma.isBlank()) {
                 ma = DuLieu.taoMa("KH");
-                khachHang.datMaKhachHang(ma);
+                khachHang.setMaKhachHang(ma);
             }
             cauLenh.setString(1, ma);
-            cauLenh.setString(2, khachHang.layHoTen());
-            cauLenh.setString(3, khachHang.laySoDienThoai());
-            cauLenh.setString(4, khachHang.layDiaChi());
+            cauLenh.setString(2, khachHang.getHoTen());
+            cauLenh.setString(3, khachHang.getSoDienThoai());
+            cauLenh.setString(4, khachHang.getDiaChi());
             cauLenh.setDate(
                     5,
-                    khachHang.layNgaySinh() != null ? Date.valueOf(khachHang.layNgaySinh()) : null);
-            cauLenh.setInt(6, khachHang.layDiemTichLuy() != null ? khachHang.layDiemTichLuy() : 0);
+                    khachHang.getNgaySinh() != null ? Date.valueOf(khachHang.getNgaySinh()) : null);
+            cauLenh.setInt(6, khachHang.getDiemTichLuy() != null ? khachHang.getDiemTichLuy() : 0);
             cauLenh.setString(
                     7,
-                    khachHang.layHangThanhVien() != null
-                            ? khachHang.layHangThanhVien()
+                    khachHang.getHangThanhVien() != null
+                            ? khachHang.getHangThanhVien()
                             : "REGULAR");
             cauLenh.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
 
@@ -51,7 +51,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                 throw new TruyCapDuLieuException("Creating customer failed, no rows affected.");
             }
 
-            khachHang.datId(DuLieu.layIdCauNoi(khachHang, ma));
+            khachHang.setId(DuLieu.layIdCauNoi(khachHang, ma));
             return khachHang;
         } catch (SQLException loi) {
             throw new TruyCapDuLieuException("Error creating customer: " + loi.getMessage(), loi);
@@ -246,16 +246,16 @@ public class KhachHangDAOImpl implements KhachHangDAO {
                         + "WHERE (ma_khach_hang = ? OR TRY_CAST(SUBSTRING(ma_khach_hang, 3, 20) AS BIGINT) = ?)";
 
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
-            cauLenh.setString(1, khachHang.layHoTen());
-            cauLenh.setString(2, khachHang.laySoDienThoai());
-            cauLenh.setString(3, khachHang.layDiaChi());
+            cauLenh.setString(1, khachHang.getHoTen());
+            cauLenh.setString(2, khachHang.getSoDienThoai());
+            cauLenh.setString(3, khachHang.getDiaChi());
             cauLenh.setDate(
                     4,
-                    khachHang.layNgaySinh() != null ? Date.valueOf(khachHang.layNgaySinh()) : null);
-            cauLenh.setInt(5, khachHang.layDiemTichLuy());
-            cauLenh.setString(6, khachHang.layHangThanhVien());
-            cauLenh.setString(7, khachHang.layMaKhachHang());
-            cauLenh.setLong(8, khachHang.layId());
+                    khachHang.getNgaySinh() != null ? Date.valueOf(khachHang.getNgaySinh()) : null);
+            cauLenh.setInt(5, khachHang.getDiemTichLuy());
+            cauLenh.setString(6, khachHang.getHangThanhVien());
+            cauLenh.setString(7, khachHang.getMaKhachHang());
+            cauLenh.setLong(8, khachHang.getId());
 
             return cauLenh.executeUpdate() > 0;
         } catch (SQLException loi) {
@@ -376,26 +376,26 @@ public class KhachHangDAOImpl implements KhachHangDAO {
     private KhachHang anhXaKetQuaDatDenKhachHang(ResultSet tapKetQua) throws SQLException {
         KhachHang khachHang = new KhachHang();
         String maKhachHang = tapKetQua.getString("ma_khach_hang");
-        khachHang.datMaKhachHang(maKhachHang);
-        khachHang.datId(DuLieu.layIdCauNoi(khachHang, maKhachHang));
-        khachHang.datHoTen(tapKetQua.getString("ho_ten"));
-        khachHang.datSoDienThoai(tapKetQua.getString("so_dien_thoai"));
-        khachHang.datDiaChi(tapKetQua.getString("dia_chi"));
+        khachHang.setMaKhachHang(maKhachHang);
+        khachHang.setId(DuLieu.layIdCauNoi(khachHang, maKhachHang));
+        khachHang.setHoTen(tapKetQua.getString("ho_ten"));
+        khachHang.setSoDienThoai(tapKetQua.getString("so_dien_thoai"));
+        khachHang.setDiaChi(tapKetQua.getString("dia_chi"));
 
         Date ngaySinh = tapKetQua.getDate("ngay_sinh");
         if (ngaySinh != null) {
-            khachHang.datNgaySinh(ngaySinh.toLocalDate());
+            khachHang.setNgaySinh(ngaySinh.toLocalDate());
         }
 
-        khachHang.datDiemTichLuy(tapKetQua.getInt("diem_tich_luy"));
-        khachHang.datHangThanhVien(tapKetQua.getString("hang_thanh_vien"));
+        khachHang.setDiemTichLuy(tapKetQua.getInt("diem_tich_luy"));
+        khachHang.setHangThanhVien(tapKetQua.getString("hang_thanh_vien"));
 
         Timestamp thoiDiemTao = tapKetQua.getTimestamp("ngay_tao");
         if (thoiDiemTao != null) {
-            khachHang.datThoiDiemTao(thoiDiemTao.toLocalDateTime());
+            khachHang.setThoiDiemTao(thoiDiemTao.toLocalDateTime());
         }
 
-        khachHang.datPhienBanBanGhi(tapKetQua.getBytes("row_version"));
+        khachHang.setPhienBanBanGhi(tapKetQua.getBytes("row_version"));
 
         return khachHang;
     }

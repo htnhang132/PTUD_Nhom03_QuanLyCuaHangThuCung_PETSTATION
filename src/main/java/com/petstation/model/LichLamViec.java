@@ -81,63 +81,38 @@ public class LichLamViec implements Serializable {
         String nl = ngayLam != null ? ngayLam.toString() : "";
         return (nv.isEmpty() && ca.isEmpty() && nl.isEmpty()) ? null : (nv + "_" + nl + "_" + ca);
     }
-    public String layMaLichLamViec() { return this.maLichLamViec; }
-    public String maLichLamViec() { return this.maLichLamViec; }
     public void setMaLichLamViec(String maLichLamViec) {
         this.maLichLamViec = maLichLamViec == null ? null : maLichLamViec.trim();
     }
-    public void datMaLichLamViec(String maLichLamViec) { setMaLichLamViec(maLichLamViec); }
 
     public NhanVien getNhanVien() { return this.nhanVien; }
-    public NhanVien layNhanVien() { return this.nhanVien; }
     public void setNhanVien(NhanVien nhanVien) { this.nhanVien = nhanVien; }
-    public void datNhanVien(NhanVien nhanVien) { setNhanVien(nhanVien); }
 
     public CaLamViec getCaLamViec() { return this.caLamViec; }
-    public CaLamViec layCaLamViec() { return this.caLamViec; }
     public void setCaLamViec(CaLamViec caLamViec) { this.caLamViec = caLamViec; }
-    public void datCaLamViec(CaLamViec caLamViec) { setCaLamViec(caLamViec); }
 
     public LocalDate getNgayLam() { return this.ngayLam; }
-    public LocalDate layNgayLam() { return this.ngayLam; }
-    public LocalDate ngayLam() { return this.ngayLam; }
     public void setNgayLam(LocalDate ngayLam) { this.ngayLam = ngayLam; }
-    public void datNgayLam(LocalDate ngayLam) { setNgayLam(ngayLam); }
 
     public String getTrangThai() { return this.trangThai; }
-    public String layTrangThai() { return this.trangThai; }
-    public String trangThai() { return this.trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public void datTrangThai(String trangThai) { setTrangThai(trangThai); }
 
     public String getLoai() { return this.loai; }
-    public String layLoai() { return this.loai; }
-    public String loai() { return this.loai; }
     public void setLoai(String loai) { this.loai = loai; }
-    public void datLoai(String loai) { setLoai(loai); }
 
     public long getId() { return DuLieu.layIdCauNoi(this, maLichLamViec); }
-    public long layId() { return getId(); }
-    public long id() { return getId(); }
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maLichLamViec == null || this.maLichLamViec.isBlank()) && id > 0) {
             this.maLichLamViec = DuLieu.taoMaTuId("LLV", 6, id);
         }
     }
-    public void datId(long id) { setId(id); }
 
     public long getNhanVienId() { return nhanVien == null ? 0L : nhanVien.getId(); }
-    public long layNhanVienId() { return getNhanVienId(); }
-    public long nhanVienId() { return getNhanVienId(); }
     public void setNhanVienId(long nhanVienId) { this.nhanVien = new NhanVien(nhanVienId); }
-    public void datNhanVienId(long nhanVienId) { setNhanVienId(nhanVienId); }
 
     public long getCaLamViecId() { return caLamViec == null ? 0L : caLamViec.getId(); }
-    public long layCaLamViecId() { return getCaLamViecId(); }
-    public long caLamViecId() { return getCaLamViecId(); }
     public void setCaLamViecId(long caLamViecId) { this.caLamViec = new CaLamViec(caLamViecId); }
-    public void datCaLamViecId(long caLamViecId) { setCaLamViecId(caLamViecId); }
 
     @Override
     public boolean equals(Object o) {

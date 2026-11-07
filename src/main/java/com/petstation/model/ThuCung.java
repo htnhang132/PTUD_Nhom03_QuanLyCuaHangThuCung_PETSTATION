@@ -165,14 +165,6 @@ public class ThuCung implements Serializable {
         return DuLieu.layIdCauNoiObj(this, this.maThuCung);
     }
 
-    public long layId() {
-        return DuLieu.layIdCauNoi(this, this.maThuCung);
-    }
-
-    public long id() {
-        return layId();
-    }
-
     public void setId(long id) {
         DuLieu.luuIdCauNoi(this, id);
         if ((this.maThuCung == null || this.maThuCung.isBlank()) && id > 0) {
@@ -180,19 +172,7 @@ public class ThuCung implements Serializable {
         }
     }
 
-    public void datId(long id) {
-        setId(id);
-    }
-
     public String getMaThuCung() {
-        return this.maThuCung;
-    }
-
-    public String layMaThuCung() {
-        return this.maThuCung;
-    }
-
-    public String maThuCung() {
         return this.maThuCung;
     }
 
@@ -200,15 +180,7 @@ public class ThuCung implements Serializable {
         this.maThuCung = maThuCung == null ? null : maThuCung.trim();
     }
 
-    public void datMaThuCung(String maThuCung) {
-        setMaThuCung(maThuCung);
-    }
-
     public KhachHang getKhachHang() {
-        return this.khachHang;
-    }
-
-    public KhachHang layKhachHang() {
         return this.khachHang;
     }
 
@@ -216,39 +188,15 @@ public class ThuCung implements Serializable {
         this.khachHang = khachHang;
     }
 
-    public void datKhachHang(KhachHang khachHang) {
-        setKhachHang(khachHang);
-    }
-
     public long getKhachHangId() {
         return (khachHang == null || khachHang.getId() == null) ? 0L : khachHang.getId();
-    }
-
-    public long layKhachHangId() {
-        return getKhachHangId();
-    }
-
-    public long khachHangId() {
-        return getKhachHangId();
     }
 
     public void setKhachHangId(long khachHangId) {
         this.khachHang = new KhachHang(khachHangId);
     }
 
-    public void datKhachHangId(long khachHangId) {
-        setKhachHangId(khachHangId);
-    }
-
     public String getTen() {
-        return this.ten;
-    }
-
-    public String layTen() {
-        return this.ten;
-    }
-
-    public String ten() {
         return this.ten;
     }
 
@@ -256,19 +204,7 @@ public class ThuCung implements Serializable {
         this.ten = ten == null ? null : ten.trim();
     }
 
-    public void datTen(String ten) {
-        setTen(ten);
-    }
-
     public String getLoai() {
-        return this.loai;
-    }
-
-    public String layLoai() {
-        return this.loai;
-    }
-
-    public String loai() {
         return this.loai;
     }
 
@@ -276,19 +212,7 @@ public class ThuCung implements Serializable {
         this.loai = loai;
     }
 
-    public void datLoai(String loai) {
-        setLoai(loai);
-    }
-
     public String getGiong() {
-        return this.giong;
-    }
-
-    public String layGiong() {
-        return this.giong;
-    }
-
-    public String giong() {
         return this.giong;
     }
 
@@ -296,19 +220,7 @@ public class ThuCung implements Serializable {
         this.giong = giong;
     }
 
-    public void datGiong(String giong) {
-        setGiong(giong);
-    }
-
     public String getGioiTinh() {
-        return this.gioiTinh;
-    }
-
-    public String layGioiTinh() {
-        return this.gioiTinh;
-    }
-
-    public String gioiTinh() {
         return this.gioiTinh;
     }
 
@@ -316,19 +228,7 @@ public class ThuCung implements Serializable {
         this.gioiTinh = gioiTinh;
     }
 
-    public void datGioiTinh(String gioiTinh) {
-        setGioiTinh(gioiTinh);
-    }
-
     public String getMauLong() {
-        return this.mauLong;
-    }
-
-    public String layMauLong() {
-        return this.mauLong;
-    }
-
-    public String mauLong() {
         return this.mauLong;
     }
 
@@ -336,19 +236,7 @@ public class ThuCung implements Serializable {
         this.mauLong = mauLong;
     }
 
-    public void datMauLong(String mauLong) {
-        setMauLong(mauLong);
-    }
-
     public double getCanNang() {
-        return this.canNang;
-    }
-
-    public double layCanNang() {
-        return this.canNang;
-    }
-
-    public double canNang() {
         return this.canNang;
     }
 
@@ -358,19 +246,7 @@ public class ThuCung implements Serializable {
         this.canNang = canNang;
     }
 
-    public void datCanNang(double canNang) {
-        setCanNang(canNang);
-    }
-
     public String getTinhTrangSucKhoe() {
-        return this.tinhTrangSucKhoe;
-    }
-
-    public String layTinhTrangSucKhoe() {
-        return this.tinhTrangSucKhoe;
-    }
-
-    public String tinhTrangSucKhoe() {
         return this.tinhTrangSucKhoe;
     }
 
@@ -378,19 +254,7 @@ public class ThuCung implements Serializable {
         this.tinhTrangSucKhoe = tinhTrangSucKhoe;
     }
 
-    public void datTinhTrangSucKhoe(String tinhTrangSucKhoe) {
-        setTinhTrangSucKhoe(tinhTrangSucKhoe);
-    }
-
     public String getDiUngBenhLy() {
-        return this.diUngBenhLy;
-    }
-
-    public String layDiUngBenhLy() {
-        return this.diUngBenhLy;
-    }
-
-    public String diUngBenhLy() {
         return this.diUngBenhLy;
     }
 
@@ -398,19 +262,7 @@ public class ThuCung implements Serializable {
         this.diUngBenhLy = diUngBenhLy;
     }
 
-    public void datDiUngBenhLy(String diUngBenhLy) {
-        setDiUngBenhLy(diUngBenhLy);
-    }
-
     public String getAnh() {
-        return this.anh;
-    }
-
-    public String layAnh() {
-        return this.anh;
-    }
-
-    public String anh() {
         return this.anh;
     }
 
@@ -418,19 +270,7 @@ public class ThuCung implements Serializable {
         this.anh = anh;
     }
 
-    public void datAnh(String anh) {
-        setAnh(anh);
-    }
-
     public boolean isDangTheoDoi() {
-        return this.dangTheoDoi;
-    }
-
-    public boolean layDangTheoDoi() {
-        return this.dangTheoDoi;
-    }
-
-    public boolean dangTheoDoi() {
         return this.dangTheoDoi;
     }
 
@@ -438,19 +278,7 @@ public class ThuCung implements Serializable {
         this.dangTheoDoi = dangTheoDoi;
     }
 
-    public void datDangTheoDoi(boolean dangTheoDoi) {
-        setDangTheoDoi(dangTheoDoi);
-    }
-
     public LocalDate getNgaySinh() {
-        return this.ngaySinh;
-    }
-
-    public LocalDate layNgaySinh() {
-        return this.ngaySinh;
-    }
-
-    public LocalDate ngaySinh() {
         return this.ngaySinh;
     }
 
@@ -458,19 +286,7 @@ public class ThuCung implements Serializable {
         this.ngaySinh = ngaySinh;
     }
 
-    public void datNgaySinh(LocalDate ngaySinh) {
-        setNgaySinh(ngaySinh);
-    }
-
     public String getTinhCach() {
-        return this.tinhCach;
-    }
-
-    public String layTinhCach() {
-        return this.tinhCach;
-    }
-
-    public String tinhCach() {
         return this.tinhCach;
     }
 
@@ -478,19 +294,7 @@ public class ThuCung implements Serializable {
         this.tinhCach = tinhCach;
     }
 
-    public void datTinhCach(String tinhCach) {
-        setTinhCach(tinhCach);
-    }
-
     public String getTiemChung() {
-        return this.tiemChung;
-    }
-
-    public String layTiemChung() {
-        return this.tiemChung;
-    }
-
-    public String tiemChung() {
         return this.tiemChung;
     }
 
@@ -498,19 +302,7 @@ public class ThuCung implements Serializable {
         this.tiemChung = tiemChung;
     }
 
-    public void datTiemChung(String tiemChung) {
-        setTiemChung(tiemChung);
-    }
-
     public int getSoMuiTiem() {
-        return this.soMuiTiem;
-    }
-
-    public int laySoMuiTiem() {
-        return this.soMuiTiem;
-    }
-
-    public int soMuiTiem() {
         return this.soMuiTiem;
     }
 
@@ -520,28 +312,12 @@ public class ThuCung implements Serializable {
         this.soMuiTiem = soMuiTiem;
     }
 
-    public void datSoMuiTiem(int soMuiTiem) {
-        setSoMuiTiem(soMuiTiem);
-    }
-
     public LocalDate getNgayTiemGanNhat() {
-        return this.ngayTiemGanNhat;
-    }
-
-    public LocalDate layNgayTiemGanNhat() {
-        return this.ngayTiemGanNhat;
-    }
-
-    public LocalDate ngayTiemGanNhat() {
         return this.ngayTiemGanNhat;
     }
 
     public void setNgayTiemGanNhat(LocalDate ngayTiemGanNhat) {
         this.ngayTiemGanNhat = ngayTiemGanNhat;
-    }
-
-    public void datNgayTiemGanNhat(LocalDate ngayTiemGanNhat) {
-        setNgayTiemGanNhat(ngayTiemGanNhat);
     }
 
     @Override
