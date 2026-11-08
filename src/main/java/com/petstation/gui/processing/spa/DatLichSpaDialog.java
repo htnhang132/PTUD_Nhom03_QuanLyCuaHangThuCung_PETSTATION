@@ -53,7 +53,7 @@ public final class DatLichSpaDialog {
                 Dialog.ModalityType.APPLICATION_MODAL);
 
         txtTimKhach = new JTextField(12);
-        txtTimKhach.putClientProperty("JTextField.placeholderText", "🔍 Tìm tên, SĐT...");
+        txtTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
         txtTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         txtTimKhach.setPreferredSize(new Dimension(140, 32));
 

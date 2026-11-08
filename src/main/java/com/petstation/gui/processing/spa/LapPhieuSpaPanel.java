@@ -78,7 +78,13 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         this.khiLuu = khiLuu;
         this.khiTreo = khiTreo;
 
-        JPanel noiDung = new JPanel();
+        JPanel noiDung = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                return new Dimension(880, d.height);
+            }
+        };
         noiDung.setLayout(new BoxLayout(noiDung, BoxLayout.Y_AXIS));
         noiDung.setOpaque(false);
 
@@ -177,8 +183,8 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         pnlTheHoSo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)));
-        pnlTheHoSo.setPreferredSize(new Dimension(840, 68));
-        pnlTheHoSo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 68));
+        pnlTheHoSo.setPreferredSize(new Dimension(840, 74));
+        pnlTheHoSo.setMinimumSize(new Dimension(840, 68));
 
         JPanel pnlDauHoSo = new JPanel(new BorderLayout(8, 0));
         pnlDauHoSo.setOpaque(false);
@@ -194,11 +200,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         pnlTheHoSo.add(lblChiTietHoSo, BorderLayout.CENTER);
 
         // Bảng kiểm tra thực tế tại quầy (Pre-Grooming Assessment)
-        cboKiemTraDa.setPreferredSize(new Dimension(220, 30));
-        cboKiemTraVe.setPreferredSize(new Dimension(190, 30));
-        cboKiemTraMatTai.setPreferredSize(new Dimension(220, 30));
-        cboKiemTraLong.setPreferredSize(new Dimension(190, 30));
-        cboKetLuanTiepNhan.setPreferredSize(new Dimension(260, 30));
+        cboKiemTraDa.setPreferredSize(new Dimension(220, 32));
+        cboKiemTraVe.setPreferredSize(new Dimension(190, 32));
+        cboKiemTraMatTai.setPreferredSize(new Dimension(220, 32));
+        cboKiemTraLong.setPreferredSize(new Dimension(190, 32));
+        cboKetLuanTiepNhan.setPreferredSize(new Dimension(280, 32));
 
         JPanel hangKt1 = hang(
                 nhan("Da & Lông:"), cboKiemTraDa, Box.createHorizontalStrut(8),
@@ -274,7 +280,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         gbc.weighty = 0.0;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(16, 20, 24, 20);
-        noiDung.setPreferredSize(new Dimension(880, 890));
         pnlCanGiua.add(noiDung, gbc);
 
         JScrollPane cuon = new JScrollPane(pnlCanGiua);
@@ -305,7 +310,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private static JPanel nhom(String ten, Component... cac) {
         JPanel p = new BoGocPanel(14, MauUngDung.THE_NEN);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
+        p.setBorder(BorderFactory.createEmptyBorder(14, 16, 16, 16));
         JLabel nhan = new JLabel(ten);
         nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         nhan.setForeground(MauUngDung.NAU);
@@ -315,11 +320,9 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             p.add(Box.createVerticalStrut(8));
             if (c instanceof JComponent j) {
                 j.setAlignmentX(Component.LEFT_ALIGNMENT);
-                j.setMaximumSize(new Dimension(Integer.MAX_VALUE, j.getPreferredSize().height));
             }
             p.add(c);
         }
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, p.getPreferredSize().height));
         p.setAlignmentX(Component.LEFT_ALIGNMENT);
         return p;
     }
@@ -328,6 +331,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         JLabel nhan = new JLabel(noiDung);
         nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhan.setForeground(MauUngDung.VAN_BAN_XAM);
+        nhan.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         return nhan;
     }
 

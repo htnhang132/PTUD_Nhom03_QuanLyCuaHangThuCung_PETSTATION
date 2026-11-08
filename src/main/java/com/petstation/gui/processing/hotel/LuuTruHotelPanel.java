@@ -31,7 +31,7 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         themNut(pnlCacThaoTac, "Quyết toán", NutDinhDang.KieuNut.THANH_CONG, () -> quyetToan("HOTEL"));
         themNut(pnlCacThaoTac, "Dọn phòng xong", NutDinhDang.KieuNut.TRONG_SUOT, () -> moDonPhong(0));
 
-        NutDinhDang btnThaoTacKhac = new NutDinhDang("Thao tác khác ▾", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnThaoTacKhac = new NutDinhDang("Thao tác khác...", NutDinhDang.KieuNut.PHU);
         btnThaoTacKhac.addActionListener(e -> hienThiMenuThaoTacKhac(btnThaoTacKhac));
         pnlCacThaoTac.add(btnThaoTacKhac);
 
