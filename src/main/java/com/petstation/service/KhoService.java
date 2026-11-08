@@ -12,6 +12,7 @@ import com.petstation.model.Quyen;
 import java.time.*;
 import java.util.*;
 
+// Tầng xử lý nghiệp vụ Kho (Service)
 public final class KhoService {
     private static KhoDAO khoDAO = new KhoDAOImpl();
 
@@ -19,6 +20,9 @@ public final class KhoService {
         if (dao != null) khoDAO = dao;
     }
 
+    // 1. NGHIỆP VỤ NHẬP KHO & CÔNG NỢ NHÀ CUNG CẤP
+
+    // Lập phiếu nhập kho mới, tự động tạo lô mới hoặc cộng dồn vào lô cũ nếu trùng số lô & HSD
     public static long nhapKho(
             String nhaCungCap,
             String sanPham,
@@ -73,6 +77,37 @@ public final class KhoService {
                 });
     }
 
+    // Xem danh sách các dòng mặt hàng chi tiết trong một phiếu nhập kho
+    public static List<Object[]> layNhapKhoChiTiet(long nhapKho) {
+        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.NHAP_KHO);
+        return khoDAO.layNhapKhoChiTiet(nhapKho);
+    }
+
+    // Lấy số tiền công nợ còn lại chưa thanh toán của phiếu nhập kho
+    public static long layCongNoConLai(long id) {
+        yeuCau(Quyen.NHAP_KHO);
+        return khoDAO.layCongNoConLai(id);
+    }
+
+    // Thanh toán thêm tiền công nợ nhà cung cấp cho phiếu nhập kho
+    public static void thanhToanNhaCungCap(long id, long daTra) {
+        yeuCau(Quyen.NHAP_KHO);
+        if (khoDAO.layCongNoConLai(id) <= 0)
+            throw new IllegalArgumentException("Không tồn tại công nợ");
+        if (daTra <= 0)
+            throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
+        thucHienGiaoDich(
+                ketNoi -> {
+                    if (khoDAO.themThanhToanNhaCungCap(daTra, id, daTra) != 1)
+                        throw new IllegalArgumentException("Số tiền vượt công nợ còn lại.");
+                    NhatKyHeThongService.ghiNhatKy("Trả công nợ", id + " / " + daTra);
+                    return null;
+                });
+    }
+
+    // 2. NGHIỆP VỤ XUẤT HỦY HÀNG HÓA
+
+    // Lập phiếu xuất hủy hàng hóa theo lô.
     public static long ghiHuy(long loHang, int soLuong, String lyDo) {
         yeuCau(Quyen.XUAT_HUY_KHO);
         kiemTraDuong(soLuong);
@@ -103,6 +138,7 @@ public final class KhoService {
                 });
     }
 
+    // Thực thi trừ tồn kho trên từng lô hàng khi phiếu xuất hủy được duyệt hoặc dưới ngưỡng
     static void apDungXuatHuy(long xuatKho) {
         if (khoDAO.demApDungXuatHuy(xuatKho) == 0)
             throw new IllegalStateException("Phiếu xuất đã xử lý.");
@@ -113,6 +149,9 @@ public final class KhoService {
         NhatKyHeThongService.ghiNhatKy("Xuất kho", chuyenThanhChuoi(xuatKho));
     }
 
+    // 3. NGHIỆP VỤ KIỂM KÊ TỒN KHO
+
+    // Dữ liệu một dòng lô hàng trong biên bản kiểm kê theo đợt
     public record DongKiemKe(
             long loHangId,
             String maSP,
@@ -125,6 +164,7 @@ public final class KhoService {
             String lyDo) {
     }
 
+    // Lấy danh sách các lô hàng đang bán (có hỗ trợ lọc theo nhóm hàng và lô sắp hết hạn)
     public static List<Object[]> layDanhSachLoHangKiemKe(String loaiSanPham, boolean chiSapHetHan) {
         yeuCau(Quyen.KIEM_KE_KHO);
         List<Object[]> tatCa = khoDAO.layDanhSachLoHangKiemKe();
@@ -153,11 +193,13 @@ public final class KhoService {
                 .toList();
     }
 
+    // Lấy danh sách các dòng chi tiết trong một biên bản kiểm kê
     public static List<Object[]> layChiTietKiemKe(long bienBanId) {
         yeuCau(Quyen.KIEM_KE_KHO);
         return khoDAO.layChiTietKiemKe(bienBanId);
     }
 
+    // Lập biên bản kiểm kê theo đợt cho nhiều lô hàng cùng lúc
     public static long lapBienBanKiemKe(String kyKiemKe, List<DongKiemKe> danhSachDong) {
         yeuCau(Quyen.KIEM_KE_KHO);
         if (danhSachDong == null || danhSachDong.isEmpty()) {
@@ -230,17 +272,7 @@ public final class KhoService {
                 });
     }
 
-    public static void duyetVaCanBangKho(long bienBanId) {
-        yeuCau(Quyen.XU_LY_PHE_DUYET);
-        thucHienGiaoDich(
-                ketNoi -> {
-                    apDungKiemKe(bienBanId);
-                    NhatKyHeThongService.ghiNhatKy(
-                            "Cân bằng kho kiểm kê", "Biên bản ID " + bienBanId);
-                    return null;
-                });
-    }
-
+    // Kiểm kê nhanh một lô hàng đơn lẻ
     public static long kiemKe(long loHang, int thucTe, String lyDo) {
         yeuCau(Quyen.KIEM_KE_KHO);
         if (thucTe < 0)
@@ -274,6 +306,19 @@ public final class KhoService {
                 });
     }
 
+    // Duyệt biên bản kiểm kê và thực hiện cân bằng tồn kho theo số thực tế
+    public static void duyetVaCanBangKho(long bienBanId) {
+        yeuCau(Quyen.XU_LY_PHE_DUYET);
+        thucHienGiaoDich(
+                ketNoi -> {
+                    apDungKiemKe(bienBanId);
+                    NhatKyHeThongService.ghiNhatKy(
+                            "Cân bằng kho kiểm kê", "Biên bản ID " + bienBanId);
+                    return null;
+                });
+    }
+
+    // Cập nhật số lượng tồn của các lô hàng trong biên bản kiểm kê khi được phê duyệt
     static void apDungKiemKe(long soLuong) {
         if (khoDAO.demApDungKiemKe(soLuong) == 0)
             throw new IllegalStateException("Biên bản đã xử lý.");
@@ -282,30 +327,5 @@ public final class KhoService {
                 throw new IllegalArgumentException(
                         "Tồn đã thay đổi sau kiểm kê. Cần lập lại biên bản.");
         khoDAO.danhDauKiemKeDaDuyet(soLuong);
-    }
-
-    public static long layCongNoConLai(long id) {
-        yeuCau(Quyen.NHAP_KHO);
-        return khoDAO.layCongNoConLai(id);
-    }
-
-    public static void thanhToanNhaCungCap(long id, long daTra) {
-        yeuCau(Quyen.NHAP_KHO);
-        if (khoDAO.layCongNoConLai(id) <= 0)
-            throw new IllegalArgumentException("Không tồn tại công nợ");
-        if (daTra <= 0)
-            throw new IllegalArgumentException("Số tiền phải lớn hơn 0.");
-        thucHienGiaoDich(
-                ketNoi -> {
-                    if (khoDAO.themThanhToanNhaCungCap(daTra, id, daTra) != 1)
-                        throw new IllegalArgumentException("Số tiền vượt công nợ còn lại.");
-                    NhatKyHeThongService.ghiNhatKy("Trả công nợ", id + " / " + daTra);
-                    return null;
-                });
-    }
-
-    public static List<Object[]> layNhapKhoChiTiet(long nhapKho) {
-        PhienDangNhapService.yeuCau(com.petstation.model.Quyen.NHAP_KHO);
-        return khoDAO.layNhapKhoChiTiet(nhapKho);
     }
 }

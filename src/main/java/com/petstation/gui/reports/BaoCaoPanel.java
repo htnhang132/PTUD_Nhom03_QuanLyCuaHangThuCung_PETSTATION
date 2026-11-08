@@ -13,7 +13,11 @@ import java.util.function.Function;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+// Khung giao diện báo cáo thống kê dùng chung cho tất cả màn hình Thống kê
 public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
+
+	// 1. CẤU TRÚC DỮ LIỆU & THÀNH PHẦN GIAO DIỆN
+
 	public record DuLieu(
 			String[] bieuDoCacNhan,
 			double[] bieuDoCacGiaTri,
@@ -42,6 +46,8 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		}
 	}
 
+	private record KetQuaTai(DuLieu duLieu, com.petstation.model.ChiTietBaoCao chungTu) {}
+
 	private final List<KieuHienThi> cacKieuHienThi;
 	private final BoChonKhoangNgay cboKy = new BoChonKhoangNgay();
 	private final JComboBox<String> cboHienThiHop = new JComboBox<>();
@@ -66,10 +72,9 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 	private com.petstation.model.ChiTietBaoCao chungTu;
 	private KhoangNgay kyDuLieu = khoangDaApDung;
 	private java.util.List<int[]> pieDocs;
-
-	private record KetQuaTai(DuLieu duLieu, com.petstation.model.ChiTietBaoCao chungTu) {}
-
 	private final JButton xuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
+
+	// 2. KHỞI TẠO BỐ CỤC MÀN HÌNH & GẮN SỰ KIỆN BỘ LỌC
 
 	public BaoCaoPanel(String tieuDe, String phu, String tenXuat, List<KieuHienThi> cacKieu) {
 		this(tieuDe, phu, tenXuat, cacKieu, true, false);
@@ -311,90 +316,7 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		dungLai();
 	}
 
-	private static void themVungTheoTyLe(
-			JPanel parent,
-			Component component,
-			int row,
-			double weightY) {
-		GridBagConstraints gbc = new GridBagConstraints();
-
-		gbc.gridx = 0;
-		gbc.gridy = row;
-
-		gbc.weightx = 1.0;
-		gbc.weighty = weightY;
-
-		gbc.fill = GridBagConstraints.BOTH;
-
-		gbc.insets = new Insets(3, 0, 3, 0);
-
-		parent.add(component, gbc);
-	}
-
-	private static void chuyenTiepCuonChuot(JScrollPane scrCon, JScrollPane scrCha) {
-		java.awt.event.MouseWheelListener[] danhSachCu = scrCon.getMouseWheelListeners();
-		for (java.awt.event.MouseWheelListener l : danhSachCu) {
-			scrCon.removeMouseWheelListener(l);
-		}
-		scrCon.addMouseWheelListener(
-				e -> {
-					JScrollBar thanhDoc = scrCon.getVerticalScrollBar();
-					int giaTriTruoc = thanhDoc != null ? thanhDoc.getValue() : 0;
-					boolean coTheCuonDoc =
-							thanhDoc != null
-									&& thanhDoc.isVisible()
-									&& ((e.getWheelRotation() < 0
-													&& giaTriTruoc > thanhDoc.getMinimum())
-											|| (e.getWheelRotation() > 0
-													&& giaTriTruoc + thanhDoc.getVisibleAmount()
-															< thanhDoc.getMaximum()));
-					if (coTheCuonDoc) {
-						for (java.awt.event.MouseWheelListener l : danhSachCu) {
-							l.mouseWheelMoved(e);
-						}
-					} else {
-						scrCha.dispatchEvent(
-								SwingUtilities.convertMouseEvent(scrCon, e, scrCha));
-					}
-				});
-	}
-
-	private static final class TrangCuonPanel extends JPanel implements Scrollable {
-		private TrangCuonPanel(LayoutManager layout) {
-			super(layout);
-		}
-
-		@Override
-		public Dimension getPreferredScrollableViewportSize() {
-			return getPreferredSize();
-		}
-
-		@Override
-		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-			return 24;
-		}
-
-		@Override
-		public int getScrollableBlockIncrement(
-				Rectangle visibleRect, int orientation, int direction) {
-			return Math.max(24, visibleRect.height - 48);
-		}
-
-		@Override
-		public boolean getScrollableTracksViewportWidth() {
-			return true;
-		}
-
-		@Override
-		public boolean getScrollableTracksViewportHeight() {
-			return getParent() instanceof JViewport vp
-					&& vp.getHeight() > getPreferredSize().height;
-		}
-	}
-
-	protected String layTieuDeBieuDo() {
-		return "BIỂU ĐỒ DIỄN BIẾN (Nhấp vào cột để xem chứng từ chi tiết)";
-	}
+	// 3. TẢI DỮ LIỆU BẤT ĐỒNG BỘ (SWINGWORKER) & CẬP NHẬT BẢNG / BIỂU ĐỒ
 
 	private void dungLai() {
 		if (cacKieuHienThi.isEmpty()) return;
@@ -514,6 +436,8 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 				} else tron.datDuLieu(tongHop.nhan(), tongHop.giaTri(), duLieu.tienTe());
 	}
 
+	// 4. HIỂN THỊ HỘP THOẠI CHỨNG TỪ CHI TIẾT (DRILL-DOWN) & XUẤT EXCEL CHI TIẾT
+
 	private static String khoa(Object value) {
 		return value instanceof java.sql.Timestamp t
 				? t.toLocalDateTime().toLocalDate().toString()
@@ -565,6 +489,93 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 		p.setPreferredSize(new Dimension(950, 400));
 		HopThoai.hienThiThongBaoHopThoai(
 				this, p, "Chứng từ chi tiết · " + lblKhoang.getText(), JOptionPane.PLAIN_MESSAGE);
+	}
+
+	// 5. CÁC HÀM HỖ TRỢ CUỘN TRANG, BỐ CỤC TỶ LỆ & TRỢ GIÚP MÀN HÌNH
+
+	private static void themVungTheoTyLe(
+			JPanel parent,
+			Component component,
+			int row,
+			double weightY) {
+		GridBagConstraints gbc = new GridBagConstraints();
+
+		gbc.gridx = 0;
+		gbc.gridy = row;
+
+		gbc.weightx = 1.0;
+		gbc.weighty = weightY;
+
+		gbc.fill = GridBagConstraints.BOTH;
+
+		gbc.insets = new Insets(3, 0, 3, 0);
+
+		parent.add(component, gbc);
+	}
+
+	private static void chuyenTiepCuonChuot(JScrollPane scrCon, JScrollPane scrCha) {
+		java.awt.event.MouseWheelListener[] danhSachCu = scrCon.getMouseWheelListeners();
+		for (java.awt.event.MouseWheelListener l : danhSachCu) {
+			scrCon.removeMouseWheelListener(l);
+		}
+		scrCon.addMouseWheelListener(
+				e -> {
+					JScrollBar thanhDoc = scrCon.getVerticalScrollBar();
+					int giaTriTruoc = thanhDoc != null ? thanhDoc.getValue() : 0;
+					boolean coTheCuonDoc =
+							thanhDoc != null
+									&& thanhDoc.isVisible()
+									&& ((e.getWheelRotation() < 0
+													&& giaTriTruoc > thanhDoc.getMinimum())
+											|| (e.getWheelRotation() > 0
+													&& giaTriTruoc + thanhDoc.getVisibleAmount()
+															< thanhDoc.getMaximum()));
+					if (coTheCuonDoc) {
+						for (java.awt.event.MouseWheelListener l : danhSachCu) {
+							l.mouseWheelMoved(e);
+						}
+					} else {
+						scrCha.dispatchEvent(
+								SwingUtilities.convertMouseEvent(scrCon, e, scrCha));
+					}
+				});
+	}
+
+	private static final class TrangCuonPanel extends JPanel implements Scrollable {
+		private TrangCuonPanel(LayoutManager layout) {
+			super(layout);
+		}
+
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 24;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(
+				Rectangle visibleRect, int orientation, int direction) {
+			return Math.max(24, visibleRect.height - 48);
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return getParent() instanceof JViewport vp
+					&& vp.getHeight() > getPreferredSize().height;
+		}
+	}
+
+	protected String layTieuDeBieuDo() {
+		return "BIỂU ĐỒ DIỄN BIẾN (Nhấp vào cột để xem chứng từ chi tiết)";
 	}
 
 	private static void choPhep(Component c, boolean enabled) {

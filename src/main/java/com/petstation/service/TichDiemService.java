@@ -9,6 +9,7 @@ import com.petstation.model.Quyen;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Tầng xử lý nghiệp vụ Tích điểm & Voucher khách hàng (Service)
 public final class TichDiemService {
     private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
 
@@ -17,6 +18,9 @@ public final class TichDiemService {
 
     private TichDiemService() {}
 
+    // 1. KIỂM TRA QUYỀN & RÀNG BUỘC CHỈNH SỬA VOUCHER TRÊN DANH MỤC
+
+    // Kiểm tra một mã voucher có được phép chỉnh sửa trên DanhMucVoucherPanel hay không
     public static boolean coTheSuaDanhMuc(String ma) {
         if (!PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_KHUYEN_MAI)) return false;
         var dong = tichDiemDAO.layRangBuocVoucher(ma);
@@ -25,6 +29,9 @@ public final class TichDiemService {
                 && ((Number) dong.get(0)[0]).longValue() == 0;
     }
 
+    // 2. NGHIỆP VỤ ĐỔI ĐIỂM TÍCH LŨY LẤY VOUCHER SPA (200 ĐIỂM = 150.000Đ)
+
+    // Đổi 200 điểm tích lũy của khách hàng lấy 1 mã Voucher Spa trị giá 150.000đ (hạn 60 ngày).
     public static String doiVoucher(String maKhachHang, String khoa) {
         PhienDangNhapService.yeuCau(Quyen.BAN_HANG);
         if (khoa == null || khoa.isBlank() || khoa.length() > 80)
@@ -55,6 +62,9 @@ public final class TichDiemService {
                 });
     }
 
+    // 3. TRA CỨU & KIỂM TRA ĐIỀU KIỆN ÁP DỤNG VOUCHER KHI THANH TOÁN
+
+    // Kiểm tra tính hợp lệ của mã voucher khi áp dụng vào hóa đơn
     public static long kiemTraVoucher(String ma, String khachHang, String nguon, long tamTinh) {
         PhienDangNhapService.layPhien();
         var cacDong = tichDiemDAO.timVoucher(ma);
@@ -75,6 +85,7 @@ public final class TichDiemService {
         return ((Number) v[0]).longValue();
     }
 
+    // Lấy danh sách các mã voucher của một khách hàng cụ thể
     public static List<Object[]> layVoucher(String maKhachHang) {
         PhienDangNhapService.yeuCau(Quyen.BAN_HANG);
         return tichDiemDAO.layCuaKhach(maKhachHang);

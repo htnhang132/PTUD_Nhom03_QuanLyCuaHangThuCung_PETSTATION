@@ -10,10 +10,13 @@ import com.petstation.model.Quyen;
 
 import java.util.Set;
 
+// Dịch vụ truy xuất chứng từ chi tiết (Drill-down) khi người dùng nhấp vào biểu đồ hoặc thẻ KPI
 public final class ChiTietThongKeService {
     private static final ChiTietThongKeDAO chiTietThongKeDAO = new ChiTietThongKeDAOImpl();
 
     private ChiTietThongKeService() {}
+
+    // KIỂM TRA PHÂN QUYỀN & TRUY XUẤT CHỨNG TỪ CHI TIẾT THEO GÓC NHÌN BÁO CÁO
 
     public static ChiTietBaoCao lay(String baoCao, String goc, KhoangNgay ky) {
         return lay(chiTietThongKeDAO, baoCao, goc, ky);

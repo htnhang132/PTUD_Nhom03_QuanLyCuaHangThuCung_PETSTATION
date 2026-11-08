@@ -12,7 +12,11 @@ import com.petstation.util.TienTe;
 import java.time.LocalDate;
 import java.util.List;
 
+// Màn hình con (Tab 2) trong Danh mục > Điểm thưởng và voucher
 public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
+
+    // 1. KIỂM TRA PHÂN QUYỀN & RÀNG BUỘC CHỈNH SỬA BẢN GHI VOUCHER
+
     @Override
     protected boolean coTheChinhSua() {
         return com.petstation.service.PhienDangNhapService.layPhien()
@@ -24,6 +28,8 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
         return dong != null
                 && com.petstation.service.TichDiemService.coTheSuaDanhMuc(String.valueOf(dong[0]));
     }
+
+    // 2. KHỞI TẠO MÀN HÌNH & CẤU HÌNH BỘ LỌC / CHUẨN HÓA TRẠNG THÁI VOUCHER
 
     public DanhMucVoucherPanel() {
         super(
@@ -69,6 +75,8 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                                                 : null);
         return cauHinh;
     }
+
+    // 3. ĐỊNH NGHĨA CÁC CỘT BẢNG & TRƯỜNG NHẬP LIỆU VOUCHER
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(

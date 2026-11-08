@@ -7,45 +7,11 @@ import com.petstation.util.TienTe;
 import java.util.*;
 import java.util.function.Function;
 
+// Tiện ích chuyển đổi dữ liệu truy vấn SQL (List<Object[]>) thành cấu trúc hiển thị của BaoCaoPanel
 public final class DuLieuBaoCao {
     private DuLieuBaoCao() {}
 
-    public static KieuHienThi taoKieuHienTai(
-            String ten,
-            String[] cot,
-            int nhan,
-            int chiSo,
-            boolean tienTe,
-            Function<KhoangNgay, List<Object[]>> truyVan) {
-        KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, truyVan);
-        boolean baoCaoCongNo = laBaoCaoCongNo(ten);
-
-        return new KieuHienThi(
-                ten,
-                khoang -> {
-                    DuLieu d = goc.tao().apply(KhoangNgay.ganDay(1));
-                    return new DuLieu(
-                            d.bieuDoCacNhan(),
-                            d.bieuDoCacGiaTri(),
-                            d.tienTe(),
-                            d.donVi(),
-                            d.cacCot(),
-                            d.cacDong(),
-                            new String[] {
-                                baoCaoCongNo ? "Số nhà cung cấp" : "Số bản ghi",
-                                baoCaoCongNo ? "Tổng dư nợ" : "Tổng",
-                                "Phạm vi",
-                                "Thời điểm"
-                            },
-                            new String[] {
-                                d.theCacGiaTri()[0],
-                                d.theCacGiaTri()[1],
-                                "Hiện tại",
-                                java.time.LocalDate.now().toString()
-                            });
-                },
-                true);
-    }
+    // 1. KHỞI TẠO CHẾ ĐỘ XEM THEO KỲ (CÓ LỌC KHOẢNG NGÀY)
 
     public static KieuHienThi taoKieuHienThi(
             String tieuDe,
@@ -150,6 +116,47 @@ public final class DuLieuBaoCao {
                             });
                 });
     }
+
+    // 2. KHỞI TẠO CHẾ ĐỘ XEM HIỆN TẠI (KHÔNG PHỤ THUỘC KỲ BÁO CÁO)
+
+    public static KieuHienThi taoKieuHienTai(
+            String ten,
+            String[] cot,
+            int nhan,
+            int chiSo,
+            boolean tienTe,
+            Function<KhoangNgay, List<Object[]>> truyVan) {
+        KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, truyVan);
+        boolean baoCaoCongNo = laBaoCaoCongNo(ten);
+
+        return new KieuHienThi(
+                ten,
+                khoang -> {
+                    DuLieu d = goc.tao().apply(KhoangNgay.ganDay(1));
+                    return new DuLieu(
+                            d.bieuDoCacNhan(),
+                            d.bieuDoCacGiaTri(),
+                            d.tienTe(),
+                            d.donVi(),
+                            d.cacCot(),
+                            d.cacDong(),
+                            new String[] {
+                                baoCaoCongNo ? "Số nhà cung cấp" : "Số bản ghi",
+                                baoCaoCongNo ? "Tổng dư nợ" : "Tổng",
+                                "Phạm vi",
+                                "Thời điểm"
+                            },
+                            new String[] {
+                                d.theCacGiaTri()[0],
+                                d.theCacGiaTri()[1],
+                                "Hiện tại",
+                                java.time.LocalDate.now().toString()
+                            });
+                },
+                true);
+    }
+
+    // 3. HÀM HỖ TRỢ NHẬN DIỆN LOẠI BÁO CÁO
 
     private static boolean laBaoCaoCongNo(String ten) {
         String chuDe = ten == null ? "" : ten.toLowerCase(Locale.ROOT);

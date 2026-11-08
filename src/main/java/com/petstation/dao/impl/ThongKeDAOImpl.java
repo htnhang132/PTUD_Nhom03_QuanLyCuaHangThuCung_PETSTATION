@@ -5,80 +5,11 @@ import com.petstation.database.ThaoTacSQL;
 
 import java.util.List;
 
+// Triển khai các câu truy vấn SQL tổng hợp số liệu cho 7 phân hệ Thống kê & Báo cáo.
 public final class ThongKeDAOImpl implements ThongKeDAO {
     public ThongKeDAOImpl() {}
 
-    public List<Object[]> timKho(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " p.ma_san_pham,p.ten,COALESCE(SUM(l.so_luong_ton),0),p.ton_toi_thieu,p.gia_nhap_gan_nhat"
-                    + " FROM san_pham p LEFT JOIN lo_hang l ON l.ma_san_pham=p.ma_san_pham GROUP BY"
-                    + " p.ma_san_pham,p.ten,p.ton_toi_thieu,p.gia_nhap_gan_nhat ORDER BY"
-                    + " p.ma_san_pham",
-                cacThamSo);
-    }
-
-    public List<Object[]> timHanSuDung(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT p.ma_san_pham,p.ten,l.so_lo,l.han_su_dung,l.so_luong_ton FROM lo_hang l"
-                        + " JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE l.so_luong_ton>0 AND"
-                        + " l.han_su_dung<=DATEADD(day,?,CAST(GETDATE() AS date)) ORDER BY"
-                        + " l.han_su_dung",
-                cacThamSo);
-    }
-
-    public List<Object[]> timTrangThaiPhong(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT trang_thai,COUNT(*) FROM phong_hotel GROUP BY trang_thai ORDER BY"
-                        + " trang_thai",
-                cacThamSo);
-    }
-
-    public List<Object[]> timCacKhachHang(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy,COALESCE(SUM(h.tong_tien),0)"
-                    + " FROM khach_hang k LEFT JOIN hoa_don h ON h.ma_khach_hang=k.ma_khach_hang AND"
-                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? GROUP BY"
-                    + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy ORDER BY"
-                    + " COALESCE(SUM(h.tong_tien),0) DESC,k.ma_khach_hang",
-                cacThamSo);
-    }
-
-    public List<Object[]> timCacVoucher(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT ma_voucher,menh_gia,da_dung,so_luong,hieu_luc_den FROM voucher ORDER BY"
-                        + " ma_voucher",
-                cacThamSo);
-    }
-
-    public List<Object[]> timNhaCungCapCongNo(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " n.ma_nha_cung_cap,n.ten,"
-                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
-                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
-                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
-                    + " FROM nha_cung_cap n"
-                    + " LEFT JOIN phieu_nhap_kho p ON p.ma_nha_cung_cap=n.ma_nha_cung_cap"
-                    + " AND p.trang_thai='DA_NHAP'"
-                    + " AND p.ngay_nhap>=? AND p.ngay_nhap<?"
-                    + " GROUP BY n.ma_nha_cung_cap,n.ten"
-                    + " ORDER BY du_no DESC,n.ma_nha_cung_cap",
-                cacThamSo);
-    }
-
-    public List<Object[]> timNhanVien(Object... cacThamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu,COALESCE(COUNT(l.ma_ca),0),COALESCE(SUM(DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc)),0)/60.0"
-                    + " FROM nhan_vien n LEFT JOIN lich_lam_viec l ON l.ma_nhan_vien=n.ma_nhan_vien AND"
-                    + " l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY' AND l.ngay_lam>=? AND"
-                    + " l.ngay_lam<? LEFT JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca GROUP BY"
-                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu ORDER BY n.ma_nhan_vien",
-                cacThamSo);
-    }
-
+    // Tạo điều kiện lọc SQL theo tài khoản/nhân viên khi xem báo cáo ở chế độ cá nhân
     private static String dieuKienTaiKhoan(Long taiKhoan) {
         return taiKhoan == null
                 ? ""
@@ -88,6 +19,8 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                         + taiKhoan
                         + ")";
     }
+
+    // 1. THỐNG KÊ DOANH THU
 
     public List<Object[]> layDoanhThuTheoNgay(
             java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
@@ -179,70 +112,6 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                 denNgay);
     }
 
-    public List<Object[]> laySanPhamBanChay(
-            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
-        return ThaoTacSQL.truyVan(
-                "SELECT TOP(10) p.ma_san_pham,p.ten,SUM(i.so_luong)-SUM(COALESCE(r.qty,0))"
-                    + " qty,SUM(CASE WHEN h.tam_tinh>0 THEN"
-                    + " i.so_luong*i.don_gia*(h.tong_tien+COALESCE(ex.credit,0))/h.tam_tinh ELSE 0"
-                    + " END)-SUM(COALESCE(r.refund,0)) amount FROM chi_tiet_hoa_don i JOIN"
-                    + " san_pham p ON p.ma_san_pham=i.ma_san_pham JOIN hoa_don h ON"
-                    + " h.ma_hoa_don=i.ma_hoa_don JOIN"
-                    + " phien_lam_viec s ON s.ma_phien=h.ma_phien OUTER APPLY(SELECT"
-                    + " SUM(c.so_luong) qty,SUM(c.tien_hoan) refund FROM chi_tiet_doi_tra c JOIN"
-                    + " phieu_doi_tra x ON x.ma_phieu=c.ma_phieu WHERE"
-                    + " c.ma_hoa_don=i.ma_hoa_don AND c.ma_san_pham=i.ma_san_pham AND x.trang_thai='HOAN_TAT') r OUTER"
-                    + " APPLY(SELECT SUM(dx.gia_tri_duoc_doi) credit FROM phieu_doi_tra dx WHERE"
-                    + " dx.ma_hoa_don_thay_the=h.ma_hoa_don AND dx.loai_phieu='DOI_HANG' AND"
-                    + " dx.trang_thai='HOAN_TAT') ex WHERE h.trang_thai='DA_THANH_TOAN' AND"
-                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                        + dieuKienTaiKhoan(taiKhoan)
-                        + " GROUP BY p.ma_san_pham,p.ten ORDER BY qty DESC,p.ma_san_pham",
-                tu,
-                denNgay);
-    }
-
-    public List<Object[]> layDuLieuSpa(
-            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
-        return ThaoTacSQL.truyVan(
-                "SELECT g.ma_goi,g.ten_goi,SUM(t.so_luong),SUM(CASE WHEN h.tam_tinh>0 THEN"
-                    + " t.tong_tien*h.tong_tien/h.tam_tinh ELSE t.tong_tien END) FROM"
-                    + " phieu_tiep_nhan_spa t JOIN goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don"
-                    + " h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien"
-                    + " WHERE h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND t.trang_thai='DA_THANH_TOAN'"
-                        + dieuKienTaiKhoan(taiKhoan)
-                        + " GROUP BY g.ma_goi,g.ten_goi ORDER BY SUM(t.so_luong) DESC",
-                tu,
-                denNgay);
-    }
-
-    public List<Object[]> layLichHen(
-            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
-        return ThaoTacSQL.truyVan(
-                "SELECT trang_thai,COUNT(*) FROM lich_hen WHERE bat_dau>=? AND bat_dau<?"
-                        + (nhanVien == null ? "" : " AND (ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")")
-                        + " GROUP BY"
-                        + " trang_thai ORDER BY trang_thai",
-                tu,
-                denNgay);
-    }
-
-    public List<Object[]> layDuLieuHotel(
-            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
-        return ThaoTacSQL.truyVan(
-                "SELECT p.loai_phong,COUNT(*),SUM(CASE WHEN"
-                    + " DATEDIFF(day,h.ngay_vao,h.ngay_ra_thuc_te)<1 THEN 1 ELSE"
-                    + " DATEDIFF(day,h.ngay_vao,h.ngay_ra_thuc_te) END),SUM(d.tong_tien+CASE WHEN"
-                    + " h.da_nhan_coc=1 THEN h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h JOIN"
-                    + " phong_hotel p ON p.ma_phong=h.ma_phong JOIN hoa_don d ON d.ma_hoa_don=h.ma_hoa_don JOIN"
-                    + " phien_lam_viec s ON s.ma_phien=d.ma_phien WHERE d.trang_thai='DA_THANH_TOAN' AND"
-                    + " d.thanh_toan_luc>=? AND d.thanh_toan_luc<?"
-                        + dieuKienTaiKhoan(taiKhoan)
-                        + " GROUP BY p.loai_phong ORDER BY p.loai_phong",
-                tu,
-                denNgay);
-    }
-
     public List<Object[]> layDoanhThuHoanTat(Object... thamSo) {
         return ThaoTacSQL.truyVan(
                 "SELECT CAST(h.thanh_toan_luc AS date),"
@@ -261,110 +130,6 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " AND (? IS NULL OR s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
                     + " GROUP BY CAST(h.thanh_toan_luc AS date) ORDER BY 1",
                 thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
-    }
-
-    public List<Object[]> layBienDongKho(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "WITH dong AS (SELECT p.ma_san_pham,p.ten,N'Nhập kho' loai,c.so_luong FROM"
-                    + " chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n ON n.ma_phieu_nhap=c.ma_phieu_nhap JOIN"
-                    + " san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE n.trang_thai='DA_NHAP' AND"
-                    + " n.ngay_nhap>=? AND n.ngay_nhap<? UNION ALL SELECT p.ma_san_pham,p.ten,N'Bán"
-                    + " hàng',-c.so_luong FROM chi_tiet_hoa_don c JOIN san_pham p ON"
-                    + " p.ma_san_pham=c.ma_san_pham JOIN hoa_don h ON h.ma_hoa_don=c.ma_hoa_don WHERE"
-                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? UNION"
-                    + " ALL SELECT p.ma_san_pham,p.ten,N'Nhận hàng đổi',c.so_luong FROM"
-                    + " chi_tiet_doi_tra c JOIN phieu_doi_tra n ON n.ma_phieu=c.ma_phieu JOIN"
-                    + " lo_hang l ON l.ma_lo=c.ma_lo JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE"
-                    + " n.trang_thai='HOAN_TAT' AND n.tao_luc>=? AND n.tao_luc<? UNION ALL SELECT"
-                    + " p.ma_san_pham,p.ten,N'Xuất hủy',-c.so_luong FROM chi_tiet_phieu_xuat c JOIN"
-                    + " phieu_xuat_kho n ON n.ma_phieu_xuat=c.ma_phieu_xuat JOIN lo_hang l ON"
-                    + " l.ma_lo=c.ma_lo JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE"
-                    + " n.trang_thai='DA_XUAT' AND n.tao_luc>=? AND n.tao_luc<?) SELECT"
-                    + " ma_san_pham,ten,loai,SUM(so_luong) FROM dong GROUP BY ma_san_pham,ten,loai"
-                    + " ORDER BY ma_san_pham,loai",
-                thamSo);
-    }
-
-    public List<Object[]> layPhieuSpaTheoTrangThai(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT trang_thai,COUNT(*) FROM phieu_tiep_nhan_spa WHERE tao_luc>=? AND tao_luc<?"
-                    + " AND (? IS NULL OR (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) GROUP BY trang_thai ORDER BY trang_thai",
-                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
-    }
-
-    public List<Object[]> layHopDongTrongKy(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT h.trang_thai,COUNT(*),SUM(h.gia_dem),SUM(CASE WHEN h.da_nhan_coc=1 THEN"
-                    + " h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h WHERE h.ngay_vao>=? AND"
-                    + " h.ngay_vao<? AND (? IS NULL OR EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
-                    + " s.ma_phien=h.ma_phien_nhan_coc AND s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))) GROUP BY h.trang_thai",
-                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
-    }
-
-    public List<Object[]> layCocTrongKy(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "WITH lan_thu AS ("
-                        + " SELECT l.ma_hop_dong,l.khoa_thu_coc,"
-                        + " MIN(l.tao_luc) ngay_nhan,SUM(l.so_tien) so_tien"
-                        + " FROM lich_su_thu_coc_hotel l"
-                        + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
-                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
-                        + " AND (? IS NULL OR s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
-                        + " GROUP BY l.ma_hop_dong,l.khoa_thu_coc)"
-                        + " SELECT CAST(ngay_nhan AS date),SUM(so_tien),COUNT(*)"
-                        + " FROM lan_thu GROUP BY CAST(ngay_nhan AS date) ORDER BY 1",
-                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
-    }
-
-    public List<Object[]> layLuotKhach(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "WITH khach AS (SELECT k.ma_khach_hang,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu"
-                    + " WHERE cu.ma_khach_hang=k.ma_khach_hang AND"
-                    + " cu.trang_thai='DA_THANH_TOAN' AND cu.thanh_toan_luc<?) THEN N'Khách quay lại' ELSE"
-                    + " N'Khách mua lần đầu' END nhom FROM khach_hang k) SELECT"
-                    + " k.nhom,COUNT(DISTINCT k.ma_khach_hang),COUNT(h.ma_hoa_don),SUM(h.tong_tien) FROM khach k JOIN"
-                    + " hoa_don h ON h.ma_khach_hang=k.ma_khach_hang"
-                    + " WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                    + " GROUP BY k.nhom",
-                thamSo);
-    }
-
-    public List<Object[]> laySuDungVoucher(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT v.ma_voucher,k.ho_ten,COUNT(h.ma_hoa_don),SUM(h.giam_gia) FROM voucher v JOIN"
-                    + " khach_hang k ON k.ma_khach_hang=v.ma_khach_hang JOIN hoa_don h ON"
-                    + " h.ma_voucher=v.ma_voucher WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=?"
-                    + " AND h.thanh_toan_luc<? GROUP BY v.ma_voucher,k.ho_ten ORDER BY"
-                    + " v.ma_voucher",
-                thamSo);
-    }
-
-    public List<Object[]> layTongHopCa(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " n.ho_ten,s.ten_ca,s.mo_luc,s.dong_luc,s.tien_dau_ca,COALESCE(h.tien,0),COALESCE(c.coc,0),s.tien_thuc_te,s.chenh_lech"
-                    + " FROM phien_lam_viec s JOIN tai_khoan t ON t.ten_dang_nhap=s.ten_dang_nhap JOIN"
-                    + " nhan_vien n ON n.ma_nhan_vien=t.ma_nhan_vien OUTER APPLY(SELECT SUM(tong_tien) tien"
-                    + " FROM hoa_don h WHERE h.ma_phien=s.ma_phien AND h.trang_thai='DA_THANH_TOAN')h"
-                    + " OUTER APPLY(SELECT SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE"
-                    + " ma_phien_nhan_coc=s.ma_phien AND da_nhan_coc=1)c WHERE s.mo_luc>=? AND s.mo_luc<?"
-                    + " ORDER BY s.mo_luc DESC",
-                thamSo);
-    }
-
-    public List<Object[]> layDuNoHienTai(Object... thamSo) {
-        return ThaoTacSQL.truyVan(
-                "SELECT"
-                    + " n.ma_nha_cung_cap,n.ten,"
-                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
-                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
-                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
-                    + " FROM nha_cung_cap n"
-                    + " LEFT JOIN phieu_nhap_kho p ON p.ma_nha_cung_cap=n.ma_nha_cung_cap"
-                    + " AND p.trang_thai='DA_NHAP'"
-                    + " GROUP BY n.ma_nha_cung_cap,n.ten"
-                    + " ORDER BY du_no DESC,n.ma_nha_cung_cap",
-                thamSo);
     }
 
     public List<Object[]> layDoanhThuTheoGio(java.time.LocalDate tu, java.time.LocalDate denNgay) {
@@ -388,6 +153,72 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                         + " thanh_toan_luc) ORDER BY DATEPART(weekday, thanh_toan_luc)",
                 tu,
                 denNgay);
+    }
+
+    // 2. THỐNG KÊ HÀNG HÓA & TỒN KHO
+
+    public List<Object[]> laySanPhamBanChay(
+            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
+        return ThaoTacSQL.truyVan(
+                "SELECT TOP(10) p.ma_san_pham,p.ten,SUM(i.so_luong)-SUM(COALESCE(r.qty,0))"
+                    + " qty,SUM(CASE WHEN h.tam_tinh>0 THEN"
+                    + " i.so_luong*i.don_gia*(h.tong_tien+COALESCE(ex.credit,0))/h.tam_tinh ELSE 0"
+                    + " END)-SUM(COALESCE(r.refund,0)) amount FROM chi_tiet_hoa_don i JOIN"
+                    + " san_pham p ON p.ma_san_pham=i.ma_san_pham JOIN hoa_don h ON"
+                    + " h.ma_hoa_don=i.ma_hoa_don JOIN"
+                    + " phien_lam_viec s ON s.ma_phien=h.ma_phien OUTER APPLY(SELECT"
+                    + " SUM(c.so_luong) qty,SUM(c.tien_hoan) refund FROM chi_tiet_doi_tra c JOIN"
+                    + " phieu_doi_tra x ON x.ma_phieu=c.ma_phieu WHERE"
+                    + " c.ma_hoa_don=i.ma_hoa_don AND c.ma_san_pham=i.ma_san_pham AND x.trang_thai='HOAN_TAT') r OUTER"
+                    + " APPLY(SELECT SUM(dx.gia_tri_duoc_doi) credit FROM phieu_doi_tra dx WHERE"
+                    + " dx.ma_hoa_don_thay_the=h.ma_hoa_don AND dx.loai_phieu='DOI_HANG' AND"
+                    + " dx.trang_thai='HOAN_TAT') ex WHERE h.trang_thai='DA_THANH_TOAN' AND"
+                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                        + dieuKienTaiKhoan(taiKhoan)
+                        + " GROUP BY p.ma_san_pham,p.ten ORDER BY qty DESC,p.ma_san_pham",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> timKho(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " p.ma_san_pham,p.ten,COALESCE(SUM(l.so_luong_ton),0),p.ton_toi_thieu,p.gia_nhap_gan_nhat"
+                    + " FROM san_pham p LEFT JOIN lo_hang l ON l.ma_san_pham=p.ma_san_pham GROUP BY"
+                    + " p.ma_san_pham,p.ten,p.ton_toi_thieu,p.gia_nhap_gan_nhat ORDER BY"
+                    + " p.ma_san_pham",
+                cacThamSo);
+    }
+
+    public List<Object[]> timHanSuDung(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT p.ma_san_pham,p.ten,l.so_lo,l.han_su_dung,l.so_luong_ton FROM lo_hang l"
+                        + " JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE l.so_luong_ton>0 AND"
+                        + " l.han_su_dung<=DATEADD(day,?,CAST(GETDATE() AS date)) ORDER BY"
+                        + " l.han_su_dung",
+                cacThamSo);
+    }
+
+    public List<Object[]> layBienDongKho(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "WITH dong AS (SELECT p.ma_san_pham,p.ten,N'Nhập kho' loai,c.so_luong FROM"
+                    + " chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n ON n.ma_phieu_nhap=c.ma_phieu_nhap JOIN"
+                    + " san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE n.trang_thai='DA_NHAP' AND"
+                    + " n.ngay_nhap>=? AND n.ngay_nhap<? UNION ALL SELECT p.ma_san_pham,p.ten,N'Bán"
+                    + " hàng',-c.so_luong FROM chi_tiet_hoa_don c JOIN san_pham p ON"
+                    + " p.ma_san_pham=c.ma_san_pham JOIN hoa_don h ON h.ma_hoa_don=c.ma_hoa_don WHERE"
+                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? UNION"
+                    + " ALL SELECT p.ma_san_pham,p.ten,N'Nhận hàng đổi',c.so_luong FROM"
+                    + " chi_tiet_doi_tra c JOIN phieu_doi_tra n ON n.ma_phieu=c.ma_phieu JOIN"
+                    + " lo_hang l ON l.ma_lo=c.ma_lo JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE"
+                    + " n.trang_thai='HOAN_TAT' AND n.tao_luc>=? AND n.tao_luc<? UNION ALL SELECT"
+                    + " p.ma_san_pham,p.ten,N'Xuất hủy',-c.so_luong FROM chi_tiet_phieu_xuat c JOIN"
+                    + " phieu_xuat_kho n ON n.ma_phieu_xuat=c.ma_phieu_xuat JOIN lo_hang l ON"
+                    + " l.ma_lo=c.ma_lo JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE"
+                    + " n.trang_thai='DA_XUAT' AND n.tao_luc>=? AND n.tao_luc<?) SELECT"
+                    + " ma_san_pham,ten,loai,SUM(so_luong) FROM dong GROUP BY ma_san_pham,ten,loai"
+                    + " ORDER BY ma_san_pham,loai",
+                thamSo);
     }
 
     public List<Object[]> layHangTonDong() {
@@ -425,5 +256,192 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                     + " ORDER BY bb.tao_luc DESC",
                 tu,
                 denNgay);
+    }
+
+    // 3. THỐNG KÊ DỊCH VỤ SPA
+
+    public List<Object[]> layDuLieuSpa(
+            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
+        return ThaoTacSQL.truyVan(
+                "SELECT g.ma_goi,g.ten_goi,SUM(t.so_luong),SUM(CASE WHEN h.tam_tinh>0 THEN"
+                    + " t.tong_tien*h.tong_tien/h.tam_tinh ELSE t.tong_tien END) FROM"
+                    + " phieu_tiep_nhan_spa t JOIN goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don"
+                    + " h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien"
+                    + " WHERE h.thanh_toan_luc>=? AND h.thanh_toan_luc<? AND t.trang_thai='DA_THANH_TOAN'"
+                        + dieuKienTaiKhoan(taiKhoan)
+                        + " GROUP BY g.ma_goi,g.ten_goi ORDER BY SUM(t.so_luong) DESC",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> layLichHen(
+            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
+        return ThaoTacSQL.truyVan(
+                "SELECT trang_thai,COUNT(*) FROM lich_hen WHERE bat_dau>=? AND bat_dau<?"
+                        + (nhanVien == null ? "" : " AND (ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")")
+                        + " GROUP BY"
+                        + " trang_thai ORDER BY trang_thai",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> layPhieuSpaTheoTrangThai(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT trang_thai,COUNT(*) FROM phieu_tiep_nhan_spa WHERE tao_luc>=? AND tao_luc<?"
+                    + " AND (? IS NULL OR (ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))) GROUP BY trang_thai ORDER BY trang_thai",
+                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
+    }
+
+    // 4. THỐNG KÊ LƯU TRÚ HOTEL
+
+    public List<Object[]> timTrangThaiPhong(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT trang_thai,COUNT(*) FROM phong_hotel GROUP BY trang_thai ORDER BY"
+                        + " trang_thai",
+                cacThamSo);
+    }
+
+    public List<Object[]> layDuLieuHotel(
+            java.time.LocalDate tu, java.time.LocalDate denNgay, Long taiKhoan, Long nhanVien) {
+        return ThaoTacSQL.truyVan(
+                "SELECT p.loai_phong,COUNT(*),SUM(CASE WHEN"
+                    + " DATEDIFF(day,h.ngay_vao,h.ngay_ra_thuc_te)<1 THEN 1 ELSE"
+                    + " DATEDIFF(day,h.ngay_vao,h.ngay_ra_thuc_te) END),SUM(d.tong_tien+CASE WHEN"
+                    + " h.da_nhan_coc=1 THEN h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h JOIN"
+                    + " phong_hotel p ON p.ma_phong=h.ma_phong JOIN hoa_don d ON d.ma_hoa_don=h.ma_hoa_don JOIN"
+                    + " phien_lam_viec s ON s.ma_phien=d.ma_phien WHERE d.trang_thai='DA_THANH_TOAN' AND"
+                    + " d.thanh_toan_luc>=? AND d.thanh_toan_luc<?"
+                        + dieuKienTaiKhoan(taiKhoan)
+                        + " GROUP BY p.loai_phong ORDER BY p.loai_phong",
+                tu,
+                denNgay);
+    }
+
+    public List<Object[]> layHopDongTrongKy(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT h.trang_thai,COUNT(*),SUM(h.gia_dem),SUM(CASE WHEN h.da_nhan_coc=1 THEN"
+                    + " h.tien_coc ELSE 0 END) FROM hop_dong_luu_tru h WHERE h.ngay_vao>=? AND"
+                    + " h.ngay_vao<? AND (? IS NULL OR EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
+                    + " s.ma_phien=h.ma_phien_nhan_coc AND s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))) GROUP BY h.trang_thai",
+                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
+    }
+
+    public List<Object[]> layCocTrongKy(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "WITH lan_thu AS ("
+                        + " SELECT l.ma_hop_dong,l.khoa_thu_coc,"
+                        + " MIN(l.tao_luc) ngay_nhan,SUM(l.so_tien) so_tien"
+                        + " FROM lich_su_thu_coc_hotel l"
+                        + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
+                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
+                        + " AND (? IS NULL OR s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)))"
+                        + " GROUP BY l.ma_hop_dong,l.khoa_thu_coc)"
+                        + " SELECT CAST(ngay_nhan AS date),SUM(so_tien),COUNT(*)"
+                        + " FROM lan_thu GROUP BY CAST(ngay_nhan AS date) ORDER BY 1",
+                thamSo[0], thamSo[1], thamSo[2], thamSo[2], thamSo[2]);
+    }
+
+    // 5. THỐNG KÊ KHÁCH HÀNG & VOUCHER
+
+    public List<Object[]> timCacKhachHang(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy,COALESCE(SUM(h.tong_tien),0)"
+                    + " FROM khach_hang k LEFT JOIN hoa_don h ON h.ma_khach_hang=k.ma_khach_hang AND"
+                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<? GROUP BY"
+                    + " k.ma_khach_hang,k.ho_ten,k.hang_thanh_vien,k.diem_tich_luy ORDER BY"
+                    + " COALESCE(SUM(h.tong_tien),0) DESC,k.ma_khach_hang",
+                cacThamSo);
+    }
+
+    public List<Object[]> layLuotKhach(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "WITH khach AS (SELECT k.ma_khach_hang,CASE WHEN EXISTS(SELECT 1 FROM hoa_don cu"
+                    + " WHERE cu.ma_khach_hang=k.ma_khach_hang AND"
+                    + " cu.trang_thai='DA_THANH_TOAN' AND cu.thanh_toan_luc<?) THEN N'Khách quay lại' ELSE"
+                    + " N'Khách mua lần đầu' END nhom FROM khach_hang k) SELECT"
+                    + " k.nhom,COUNT(DISTINCT k.ma_khach_hang),COUNT(h.ma_hoa_don),SUM(h.tong_tien) FROM khach k JOIN"
+                    + " hoa_don h ON h.ma_khach_hang=k.ma_khach_hang"
+                    + " WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                    + " GROUP BY k.nhom",
+                thamSo);
+    }
+
+    public List<Object[]> timCacVoucher(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT ma_voucher,menh_gia,da_dung,so_luong,hieu_luc_den FROM voucher ORDER BY"
+                        + " ma_voucher",
+                cacThamSo);
+    }
+
+    public List<Object[]> laySuDungVoucher(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT v.ma_voucher,k.ho_ten,COUNT(h.ma_hoa_don),SUM(h.giam_gia) FROM voucher v JOIN"
+                    + " khach_hang k ON k.ma_khach_hang=v.ma_khach_hang JOIN hoa_don h ON"
+                    + " h.ma_voucher=v.ma_voucher WHERE h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=?"
+                    + " AND h.thanh_toan_luc<? GROUP BY v.ma_voucher,k.ho_ten ORDER BY"
+                    + " v.ma_voucher",
+                thamSo);
+    }
+
+    // 6. THỐNG KÊ CÔNG NỢ NHÀ CUNG CẤP
+
+    public List<Object[]> timNhaCungCapCongNo(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " n.ma_nha_cung_cap,n.ten,"
+                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
+                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
+                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
+                    + " FROM nha_cung_cap n"
+                    + " LEFT JOIN phieu_nhap_kho p ON p.ma_nha_cung_cap=n.ma_nha_cung_cap"
+                    + " AND p.trang_thai='DA_NHAP'"
+                    + " AND p.ngay_nhap>=? AND p.ngay_nhap<?"
+                    + " GROUP BY n.ma_nha_cung_cap,n.ten"
+                    + " ORDER BY du_no DESC,n.ma_nha_cung_cap",
+                cacThamSo);
+    }
+
+    public List<Object[]> layDuNoHienTai(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " n.ma_nha_cung_cap,n.ten,"
+                    + " COALESCE(SUM(p.tong_tien),0) AS tong_nhap,"
+                    + " COALESCE(SUM(p.da_tra),0) AS da_tra,"
+                    + " COALESCE(SUM(p.tong_tien-p.da_tra),0) AS du_no"
+                    + " FROM nha_cung_cap n"
+                    + " LEFT JOIN phieu_nhap_kho p ON p.ma_nha_cung_cap=n.ma_nha_cung_cap"
+                    + " AND p.trang_thai='DA_NHAP'"
+                    + " GROUP BY n.ma_nha_cung_cap,n.ten"
+                    + " ORDER BY du_no DESC,n.ma_nha_cung_cap",
+                thamSo);
+    }
+
+    // 7. THỐNG KÊ NHÂN VIÊN & CA THU NGÂN
+
+    // Truy vấn danh sách các phiên làm việc (ca thu ngân) và số tiền thu/chênh lệch trong kỳ
+    public List<Object[]> layTongHopCa(Object... thamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " n.ho_ten,s.ten_ca,s.mo_luc,s.dong_luc,s.tien_dau_ca,COALESCE(h.tien,0),COALESCE(c.coc,0),s.tien_thuc_te,s.chenh_lech"
+                    + " FROM phien_lam_viec s JOIN tai_khoan t ON t.ten_dang_nhap=s.ten_dang_nhap JOIN"
+                    + " nhan_vien n ON n.ma_nhan_vien=t.ma_nhan_vien OUTER APPLY(SELECT SUM(tong_tien) tien"
+                    + " FROM hoa_don h WHERE h.ma_phien=s.ma_phien AND h.trang_thai='DA_THANH_TOAN')h"
+                    + " OUTER APPLY(SELECT SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE"
+                    + " ma_phien_nhan_coc=s.ma_phien AND da_nhan_coc=1)c WHERE s.mo_luc>=? AND s.mo_luc<?"
+                    + " ORDER BY s.mo_luc DESC",
+                thamSo);
+    }
+
+    // Truy vấn tổng số ca đi làm và tổng số giờ làm việc của từng nhân viên trong kỳ
+    public List<Object[]> timNhanVien(Object... cacThamSo) {
+        return ThaoTacSQL.truyVan(
+                "SELECT"
+                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu,COALESCE(COUNT(l.ma_ca),0),COALESCE(SUM(DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc)),0)/60.0"
+                    + " FROM nhan_vien n LEFT JOIN lich_lam_viec l ON l.ma_nhan_vien=n.ma_nhan_vien AND"
+                    + " l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY' AND l.ngay_lam>=? AND"
+                    + " l.ngay_lam<? LEFT JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca GROUP BY"
+                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu ORDER BY n.ma_nhan_vien",
+                cacThamSo);
     }
 }

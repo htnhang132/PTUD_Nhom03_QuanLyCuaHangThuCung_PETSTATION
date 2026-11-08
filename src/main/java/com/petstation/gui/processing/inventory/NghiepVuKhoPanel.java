@@ -20,11 +20,15 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
+// Lớp nền (Base Panel) dùng chung cho các màn hình nghiệp vụ Kho
 public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     protected NghiepVuKhoPanel(LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
     }
 
+    // 1. CỤM CHỨC NĂNG NHẬP KHO & CÔNG NỢ NHÀ CUNG CẤP
+
+    // Mở hộp thoại nhập liệu để lập phiếu nhập kho mới
     protected void nhapKho() {
         String soLoGoiY = "LOTE" + LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyMMdd"));
         String hanDungGoiY = LocalDate.now().plusYears(1).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -78,23 +82,15 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         }
     }
 
-    private static LocalDate phanTichNgay(String s) {
-        if (s == null || s.isBlank()) return null;
-        String trimmed = s.trim();
-        java.time.format.DateTimeFormatter[] cacDinhDang = new java.time.format.DateTimeFormatter[] {
-                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,
-                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-                java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy")
-        };
-        for (var d : cacDinhDang) {
-            try {
-                return LocalDate.parse(trimmed, d);
-            } catch (Exception ignored) {}
-        }
-        throw new IllegalArgumentException("Hạn sử dụng không hợp lệ (hỗ trợ dạng dd/MM/yyyy hoặc yyyy-MM-dd).");
+    // Hiển thị bảng chi tiết các mặt hàng và lô hàng của phiếu nhập đang chọn
+    protected void layNhapKhoChiTiet() {
+        hienThiChiTiet(
+                "Chi tiết nhập kho",
+                new String[] {"Sản phẩm", "Số lô", "Hạn dùng", "Số lượng", "Giá nhập"},
+                KhoService.layNhapKhoChiTiet(layDongChon()));
     }
 
+    // Mở hộp thoại trả thêm tiền công nợ nhà cung cấp cho phiếu nhập đang chọn
     protected void thanhToanNhaCungCap() {
         yeuCau(com.petstation.model.Quyen.NHAP_KHO);
 
@@ -121,6 +117,27 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         KhoService.thanhToanNhaCungCap(id, docSoTien(giaTri, "da_tra"));
     }
 
+    // Phân tích chuỗi hạn sử dụng người dùng nhập sang LocalDate
+    private static LocalDate phanTichNgay(String s) {
+        if (s == null || s.isBlank()) return null;
+        String trimmed = s.trim();
+        java.time.format.DateTimeFormatter[] cacDinhDang = new java.time.format.DateTimeFormatter[] {
+                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy")
+        };
+        for (var d : cacDinhDang) {
+            try {
+                return LocalDate.parse(trimmed, d);
+            } catch (Exception ignored) {}
+        }
+        throw new IllegalArgumentException("Hạn sử dụng không hợp lệ (hỗ trợ dạng dd/MM/yyyy hoặc yyyy-MM-dd).");
+    }
+
+    // 2. CỤM CHỨC NĂNG XUẤT HỦY HÀNG HÓA
+
+    // Mở hộp thoại chọn lô hàng, số lượng và lý do để lập phiếu xuất hủy
     protected void ghiHuy() {
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
@@ -157,6 +174,9 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
         }
     }
 
+    // 3. CỤM CHỨC NĂNG KIỂM KÊ NHANH LÔ HÀNG
+
+    // Mở hộp thoại nhập tồn thực tế và lý do chênh lệch cho một lô hàng
     protected void kiemKe() {
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
@@ -187,12 +207,5 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                 HopThoai.hienThiCanhBao(this, ex.getMessage());
             }
         }
-    }
-
-    protected void layNhapKhoChiTiet() {
-        hienThiChiTiet(
-                "Chi tiết nhập kho",
-                new String[] {"Sản phẩm", "Số lô", "Hạn dùng", "Số lượng", "Giá nhập"},
-                KhoService.layNhapKhoChiTiet(layDongChon()));
     }
 }

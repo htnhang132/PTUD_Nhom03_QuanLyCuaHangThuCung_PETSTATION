@@ -7,10 +7,13 @@ import com.petstation.model.Quyen;
 
 import java.util.List;
 
+// Tầng dịch vụ điều phối quy trình nghiệp vụ Spa & Lưu trú Hotel (Service)
 public final class QuyTrinhService {
     private static final QuyTrinhDAO quyTrinhDAO = new QuyTrinhDAOImpl();
 
     private QuyTrinhService() {}
+
+    // 1. ĐIỀU PHỐI CHUYỂN BƯỚC QUY TRÌNH SPA, LƯU TRÚ HOTEL & QUYẾT TOÁN
 
     public static void chuyenBuoc(String tu, String den, GioHang gio) {
         var q = gio.getQuyTrinh();
@@ -56,16 +59,21 @@ public final class QuyTrinhService {
         }
     }
 
+    // Lấy thông tin lịch hẹn Spa đã xác nhận để tiếp nhận thú cưng
     public static List<Object[]> layLichHen(long id) {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
         return quyTrinhDAO.layLichHen(id);
     }
 
+    // 2. TRUY VẤN & TỔNG HỢP DỮ LIỆU SƠ ĐỒ PHÒNG LƯU TRÚ (TraCuuPhongHotelPanel)
+
+    // Lấy danh sách tóm tắt các phòng lưu trú kèm hợp đồng hiện tại
     public static List<Object[]> layPhong() {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
         return quyTrinhDAO.layPhong();
     }
 
+    // Tổng hợp danh sách đối tượng PhongHotel cho màn hình Sơ đồ phòng lưu trú
     public static List<com.petstation.model.PhongHotel> layPhongHotel() {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_LUU_TRU);
         var lich = quyTrinhDAO.layLichPhong();

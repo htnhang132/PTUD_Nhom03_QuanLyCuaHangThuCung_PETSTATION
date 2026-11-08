@@ -16,7 +16,11 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
+// Màn hình Tìm kiếm > Sơ đồ phòng lưu trú
 public final class TraCuuPhongHotelPanel extends CoSoPanel {
+
+    // 1. KHAI BÁO CÁC THÀNH PHẦN GIAO DIỆN & TRẠNG THÁI SƠ ĐỒ PHÒNG
+
     private final GioHang gio;
     private final Consumer<MaManHinh> dieuHuong;
     private final Consumer<PhongHotel> khiChonPhong;
@@ -33,6 +37,8 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     private boolean dangNap;
     private JWindow chiTiet;
     private javax.swing.Timer choHienThi;
+
+    // 2. KHỞI TẠO GIAO DIỆN, THANH BỘ LỌC & LƯỚI SƠ ĐỒ PHÒNG TỰ CO GIÃN
 
     public TraCuuPhongHotelPanel(GioHang gio, Consumer<MaManHinh> dieuHuong) {
         this(gio, dieuHuong, null);
@@ -131,6 +137,8 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         nap();
     }
 
+    // 3. NẠP DỮ LIỆU PHÒNG TỪ SERVICE & LỌC THEO MÃ / LOẠI / TRẠNG THÁI
+
     private void nap() {
         anChiTiet();
         cacPhong = QuyTrinhService.layPhongHotel();
@@ -162,6 +170,17 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         pnlPhong.revalidate();
         pnlPhong.repaint();
     }
+
+    public void lamMoiSoDo() {
+        nap();
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        nap();
+    }
+
+    // 4. DỰNG THẺ PHÒNG (ROOM CARD) & MÀU SẮC THEO TRẠNG THÁI
 
     private JButton taoThe(PhongHotel phong) {
         JButton the = new JButton();
@@ -259,9 +278,16 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         }
     }
 
-    public void lamMoiSoDo() {
-        nap();
+    private static Color mauTrangThai(String s) {
+        return switch (s) {
+            case "TRONG" -> MauUngDung.THANH_CONG;
+            case "DANG_O" -> MauUngDung.DO_THUONG_HIEU;
+            case "DANG_DON" -> MauUngDung.CANH_BAO;
+            default -> MauUngDung.VAN_BAN_XAM;
+        };
     }
+
+    // 5. XỬ LÝ SỰ KIỆN KHI BẤM VÀO PHÒNG THEO TRẠNG THÁI NGHIỆP VỤ
 
     public void moPhong(PhongHotel phong) {
         if ("DANG_DON".equals(phong.getTrangThai())) {
@@ -310,6 +336,8 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             dieuHuong.accept(MaManHinh.DAT_PHONG_LUU_TRU);
         }
     }
+
+    // 6. HIỂN THỊ POPUP XEM NHANH CHI TIẾT PHÒNG KHI RÊ CHUỘT / FOCUS (HOVER)
 
     private void henChiTiet(JComponent the, PhongHotel phong) {
         anChiTiet();
@@ -396,14 +424,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    private static Color mauTrangThai(String s) {
-        return switch (s) {
-            case "TRONG" -> MauUngDung.THANH_CONG;
-            case "DANG_O" -> MauUngDung.DO_THUONG_HIEU;
-            case "DANG_DON" -> MauUngDung.CANH_BAO;
-            default -> MauUngDung.VAN_BAN_XAM;
-        };
-    }
+    // 7. CHỨC NĂNG IN SƠ ĐỒ PHÒNG LƯU TRÚ RA MÁY IN / PDF
 
     private void inSoDo() {
         var congViec = java.awt.print.PrinterJob.getPrinterJob();
@@ -431,10 +452,5 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             } catch (java.awt.print.PrinterException loi) {
                 com.petstation.gui.components.HopThoai.hienThiLoi(this, loi.getMessage());
             }
-    }
-
-    @Override
-    public void xuLyHienThi() {
-        nap();
     }
 }

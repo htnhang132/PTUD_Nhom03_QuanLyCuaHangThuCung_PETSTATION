@@ -13,9 +13,12 @@ import java.util.function.Consumer;
 
 import javax.swing.*;
 
+// Màn hình Xử lý > Xuất hủy hàng hóa
 public final class XuatHuyKhoPanel extends NghiepVuKhoPanel {
     public XuatHuyKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.PHIEU_XUAT_KHO, banHang, dieuHuong);
+
+        // KHỞI TẠO NÚT THAO TÁC LẬP PHIẾU XUẤT HỦY
         themNut(pnlCacThaoTac, "+ Lập phiếu xuất hủy", this::ghiHuy);
     }
 }

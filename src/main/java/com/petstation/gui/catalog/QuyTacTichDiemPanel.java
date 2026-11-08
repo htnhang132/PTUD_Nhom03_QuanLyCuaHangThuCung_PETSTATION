@@ -20,16 +20,18 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+// Màn hình con (Tab 1) trong Danh mục > Điểm thưởng và voucher
 public final class QuyTacTichDiemPanel extends CoSoPanel {
+
+    // 1. KHAI BÁO CÁC TRƯỜNG NHẬP LIỆU & DANH SÁCH HẠNG THÀNH VIÊN
+
     private final JTextField txtTichDiem = taoTruong();
-
     private final JTextField txtDoiDiem = taoTruong();
-
     private final JTextField[] cacHang = {taoTruong(), taoTruong(), taoTruong(), taoTruong()};
-
     private static final String[] HANG_CAC_TEN = {"Bạc", "Vàng", "Bạch Kim", "Kim Cương"};
-
     private final JLabel lblThongBao = new JLabel(" ");
+
+    // 2. KHỞI TẠO BỐ CỤC BIỂU MẪU CẤU HÌNH QUY TẮC TÍCH ĐIỂM & HẠNG
 
     public QuyTacTichDiemPanel() {
         setLayout(new BorderLayout(0, 10));
@@ -130,6 +132,8 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         pnlThe.add(new JLabel(donVi), giaTriDangXet);
     }
 
+    // 3. NẠP CẤU HÌNH HIỆN TẠI & LƯU NGƯỠNG HẠNG THÀNH VIÊN VÀO CSDL
+
     private void nap() {
         txtTichDiem.setText(TienTe.dinhDang(CaiDatService.laySoTienChoMoiDiemTichLuy()));
         txtDoiDiem.setText("150.000");
@@ -174,6 +178,8 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         lblThongBao.setForeground(MauUngDung.XANH_LA);
         lblThongBao.setText("Đã lưu quy tắc.");
     }
+
+    // 4. THÔNG TIN TRỢ GIÚP MÀN HÌNH
 
     @Override
     protected String layTieuDeTroGiup() {

@@ -9,7 +9,11 @@ import com.petstation.util.TienTe;
 import java.time.LocalDate;
 import java.util.List;
 
+// Màn hình Danh mục > Khuyến mãi
 public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
+
+    // 1. KHỞI TẠO MÀN HÌNH & GẮN HẬU TỐ ĐƠN VỊ THEO LOẠI GIẢM (% HOẶC ĐỒNG)
+
     public DanhMucKhuyenMaiPanel() {
         super(
                 taoCauHinh(),
@@ -20,6 +24,8 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                                 || !com.petstation.service.DieuKienTaiDuLieu.coTheTachLuong()));
         ganHauToTheoTruong(2, 4, loai -> "Giảm %".equals(loai) ? "%" : "đ");
     }
+
+    // 2. CẤU HÌNH BỘ LỌC, TÌM KIẾM & KIỂM TRA DỮ LIỆU HỢP LỆ (VALIDATION)
 
     private static CauHinh taoCauHinh() {
         CauHinh cauHinh = CauHinh.tao("Danh mục khuyến mãi", "khuyến mãi")
@@ -56,6 +62,8 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                         });
         return cauHinh;
     }
+
+    // 3. ĐỊNH NGHĨA CÁC CỘT BẢNG & TRƯỜNG NHẬP LIỆU TRÊN BIỂU MẪU KHUYẾN MÃI
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(

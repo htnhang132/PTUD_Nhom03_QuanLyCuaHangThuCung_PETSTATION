@@ -7,6 +7,7 @@ import com.petstation.service.ThongKeService;
 
 import java.util.*;
 
+// Màn hình Thống kê > Nhân viên
 public final class ThongKeNhanVienPanel extends BaoCaoPanel {
     public ThongKeNhanVienPanel() {
         super(
@@ -14,6 +15,7 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                 "Chọn kỳ để xem giao dịch đã lưu",
                 "Thống kê nhân viên".replace(' ', '_'),
                 List.of(
+                        // 1. CHẾ ĐỘ XEM: THU TIỀN VÀ CHÊNH LỆCH CA THU NGÂN
                         taoKieuHienThi(
                                 "Thu tiền và chênh lệch ca",
                                 new String[] {
@@ -31,6 +33,8 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                 5,
                                 true,
                                 ThongKeService::layTongHopCa),
+
+                        // 2. CHẾ ĐỘ XEM: LỊCH LÀM VIỆC & SỐ GIỜ CÔNG NHÂN VIÊN
                         taoKieuHienThi(
                                 "Lịch làm việc",
                                 new String[] {"Mã NV", "Nhân viên", "Chức vụ", "Số ca", "Số giờ"},

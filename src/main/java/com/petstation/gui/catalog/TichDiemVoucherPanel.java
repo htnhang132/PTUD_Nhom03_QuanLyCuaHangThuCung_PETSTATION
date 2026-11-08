@@ -4,6 +4,7 @@ import com.petstation.gui.components.DanhMucNhieuTabPanel;
 
 import javax.swing.JPanel;
 
+// Màn hình Danh mục > Điểm thưởng và voucher
 public final class TichDiemVoucherPanel extends DanhMucNhieuTabPanel {
     public TichDiemVoucherPanel() {
         super(

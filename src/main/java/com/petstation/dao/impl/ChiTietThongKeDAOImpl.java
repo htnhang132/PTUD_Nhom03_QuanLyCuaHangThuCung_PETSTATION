@@ -7,6 +7,7 @@ import com.petstation.model.*;
 
 import java.util.*;
 
+// Triển khai truy vấn chứng từ gốc (Drill-down) khi nhấp vào biểu đồ/thẻ KPI trên 7 màn hình thống kê.
 public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
     public ChiTietThongKeDAOImpl() {}
 
@@ -16,6 +17,8 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
         String own = all ? "" : " AND s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = " + taiKhoan + ")";
         String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, PATINDEX('%[0-9]%', t.ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")";
         Object tu = ky.getTuNgay(), den = ky.getCanTren();
+
+        // 1. CHỨNG TỪ CHI TIẾT: BÁO CÁO DOANH THU
         if (baoCao.contains("doanh thu")) {
             if (goc.equals("Theo khung giờ") || goc.equals("Theo thứ trong tuần")) {
                 return null;
@@ -96,148 +99,8 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                     rows,
                     group);
         }
-        if (baoCao.contains("Spa")) {
-            if (goc.equals("Dịch vụ đã thanh toán"))
-                return new ChiTietBaoCao(
-                        new String[] {
-                            "Phiếu Spa",
-                            "Hóa đơn",
-                            "Mã dịch vụ",
-                            "Dịch vụ",
-                            "Lượt",
-                            "Giá trị dịch vụ"
-                        },
-                        truyVan(
-                                "SELECT t.ma_phieu,h.ma_hoa_don,g.ma_goi,g.ten_goi,t.so_luong,CASE"
-                                    + " WHEN h.tam_tinh>0 THEN t.tong_tien*h.tong_tien/h.tam_tinh"
-                                    + " ELSE t.tong_tien END FROM phieu_tiep_nhan_spa t JOIN"
-                                    + " goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don h ON"
-                                    + " h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON"
-                                    + " s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_THANH_TOAN' AND"
-                                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                                        + own,
-                                tu,
-                                den),
-                        2);
-            boolean hen = goc.equals("Trạng thái lịch hẹn");
-            return new ChiTietBaoCao(
-                    new String[] {"Chứng từ", "Thú cưng", "Thời gian", "Trạng thái"},
-                    truyVan(
-                            "SELECT t."
-                                    + (hen ? "ma_lich_hen" : "ma_phieu")
-                                    + ",p.ten,t."
-                                    + (hen ? "bat_dau" : "tao_luc")
-                                    + ",t.trang_thai FROM "
-                                    + (hen ? "lich_hen" : "phieu_tiep_nhan_spa")
-                                    + " t JOIN thu_cung p ON p.ma_thu_cung=t.ma_thu_cung WHERE t."
-                                    + (hen ? "bat_dau" : "tao_luc")
-                                    + ">=? AND t."
-                                    + (hen ? "bat_dau" : "tao_luc")
-                                    + "<?"
-                                    + nv,
-                            tu,
-                            den),
-                    3);
-        }
-        if (baoCao.contains("lưu trú")) {
-            if (goc.equals("Trạng thái phòng hiện tại"))
-                return new ChiTietBaoCao(
-                        new String[] {"Mã phòng", "Loại phòng", "Trạng thái"},
-                        truyVan("SELECT ma_phong,loai_phong,trang_thai FROM phong_hotel"),
-                        2);
-            if (goc.equals("Cọc nhận trong kỳ"))
-                return new ChiTietBaoCao(
-                        new String[] {
-                            "Hợp đồng", "Ngày nhận", "Phương thức", "Tiền cọc", "Người nhận", "Ca"
-                        },
-                        truyVan(
-                        		"SELECT h.ma_hop_dong,l.tao_luc,l.phuong_thuc,"
-                                        + " l.so_tien,n.ho_ten,s.ten_ca"
-                                        + " FROM lich_su_thu_coc_hotel l"
-                                        + " JOIN hop_dong_luu_tru h ON h.ma_hop_dong=l.ma_hop_dong"
-                                        + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
-                                        + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap=l.ten_dang_nhap_thu"
-                                        + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien"
-                                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
-                                        + own,
-                                tu,
-                                den),
-                        1);
-            if (goc.equals("Lưu trú đã quyết toán"))
-                return new ChiTietBaoCao(
-                        new String[] {
-                            "Hợp đồng",
-                            "Loại phòng",
-                            "Hóa đơn",
-                            "Ngày quyết toán",
-                            "Doanh thu hoàn tất"
-                        },
-                        truyVan(
-                                "SELECT"
-                                    + " t.ma_hop_dong,p.loai_phong,h.ma_hoa_don,h.thanh_toan_luc,h.tong_tien+CASE"
-                                    + " WHEN t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
-                                    + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong"
-                                    + " JOIN hoa_don h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s"
-                                    + " ON s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_TRA_PHONG'"
-                                    + " AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
-                                        + own,
-                                tu,
-                                den),
-                        1);
-            return new ChiTietBaoCao(
-                    new String[] {"Hợp đồng", "Phòng", "Ngày vào", "Trạng thái", "Cọc đã nhận"},
-                    truyVan(
-                            "SELECT t.ma_hop_dong,p.ma_phong,t.ngay_vao,t.trang_thai,CASE WHEN"
-                                + " t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
-                                + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong WHERE"
-                                + " t.ngay_vao>=? AND t.ngay_vao<?"
-                                    + (all
-                                            ? ""
-                                            : " AND EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
-                                                  + " s.ma_phien=t.ma_phien_nhan_coc"
-                                                  + own
-                                                  + ")"),
-                            tu,
-                            den),
-                    3);
-        }
-        if (baoCao.contains("Công nợ")) {
-            return new ChiTietBaoCao(
-                    new String[] {
-                        "Phiếu nhập",
-                        "Mã NCC",
-                        "Nhà cung cấp",
-                        "Ngày nhập",
-                        "Tổng nhập",
-                        "Đã trả hiện tại",
-                        "Dư nợ hiện tại"
-                    },
-                    truyVan(
-                            "SELECT"
-                                + " p.ma_phieu_nhap,n.ma_nha_cung_cap,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,p.tong_tien-p.da_tra"
-                                + " FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
-                                + " n.ma_nha_cung_cap=p.ma_nha_cung_cap WHERE p.trang_thai='DA_NHAP'"
-                                    + (goc.equals("Dư nợ hiện tại")
-                                            ? ""
-                                            : " AND p.ngay_nhap>=? AND p.ngay_nhap<?"),
-                            goc.equals("Dư nợ hiện tại")
-                                     ? new Object[] {}
-                                    : new Object[] {tu, den}),
-                    1);
-        }
-        if (baoCao.contains("khách hàng") && goc.equals("Chi tiêu theo kỳ")) {
-            return new ChiTietBaoCao(
-                    new String[] {"Hóa đơn", "Mã KH", "Khách hàng", "Thanh toán lúc", "Chi tiêu"},
-                    truyVan(
-                            "SELECT"
-                                + " h.ma_hoa_don,k.ma_khach_hang,k.ho_ten,h.thanh_toan_luc,h.tong_tien"
-                                + " FROM hoa_don h JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
-                                + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
-                                + " h.thanh_toan_luc<?",
-                            tu,
-                            den),
-                    1);
-        }
+
+        // 2. CHỨNG TỪ CHI TIẾT: BÁO CÁO HÀNG HÓA & TỒN KHO
         if (baoCao.contains("hàng hóa")) {
             if (goc.equals("Sản phẩm bán chạy"))
                 return new ChiTietBaoCao(
@@ -318,6 +181,130 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                             den),
                     1);
         }
+
+        // 3. CHỨNG TỪ CHI TIẾT: BÁO CÁO DỊCH VỤ SPA
+        if (baoCao.contains("Spa")) {
+            if (goc.equals("Dịch vụ đã thanh toán"))
+                return new ChiTietBaoCao(
+                        new String[] {
+                            "Phiếu Spa",
+                            "Hóa đơn",
+                            "Mã dịch vụ",
+                            "Dịch vụ",
+                            "Lượt",
+                            "Giá trị dịch vụ"
+                        },
+                        truyVan(
+                                "SELECT t.ma_phieu,h.ma_hoa_don,g.ma_goi,g.ten_goi,t.so_luong,CASE"
+                                    + " WHEN h.tam_tinh>0 THEN t.tong_tien*h.tong_tien/h.tam_tinh"
+                                    + " ELSE t.tong_tien END FROM phieu_tiep_nhan_spa t JOIN"
+                                    + " goi_dich_vu_spa g ON g.ma_goi=t.ma_goi JOIN hoa_don h ON"
+                                    + " h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s ON"
+                                    + " s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_THANH_TOAN' AND"
+                                    + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                                        + own,
+                                tu,
+                                den),
+                        2);
+            boolean hen = goc.equals("Trạng thái lịch hẹn");
+            return new ChiTietBaoCao(
+                    new String[] {"Chứng từ", "Thú cưng", "Thời gian", "Trạng thái"},
+                    truyVan(
+                            "SELECT t."
+                                    + (hen ? "ma_lich_hen" : "ma_phieu")
+                                    + ",p.ten,t."
+                                    + (hen ? "bat_dau" : "tao_luc")
+                                    + ",t.trang_thai FROM "
+                                    + (hen ? "lich_hen" : "phieu_tiep_nhan_spa")
+                                    + " t JOIN thu_cung p ON p.ma_thu_cung=t.ma_thu_cung WHERE t."
+                                    + (hen ? "bat_dau" : "tao_luc")
+                                    + ">=? AND t."
+                                    + (hen ? "bat_dau" : "tao_luc")
+                                    + "<?"
+                                    + nv,
+                            tu,
+                            den),
+                    3);
+        }
+
+        // 4. CHỨNG TỪ CHI TIẾT: BÁO CÁO LƯU TRÚ HOTEL
+        if (baoCao.contains("lưu trú")) {
+            if (goc.equals("Trạng thái phòng hiện tại"))
+                return new ChiTietBaoCao(
+                        new String[] {"Mã phòng", "Loại phòng", "Trạng thái"},
+                        truyVan("SELECT ma_phong,loai_phong,trang_thai FROM phong_hotel"),
+                        2);
+            if (goc.equals("Cọc nhận trong kỳ"))
+                return new ChiTietBaoCao(
+                        new String[] {
+                            "Hợp đồng", "Ngày nhận", "Phương thức", "Tiền cọc", "Người nhận", "Ca"
+                        },
+                        truyVan(
+                        		"SELECT h.ma_hop_dong,l.tao_luc,l.phuong_thuc,"
+                                        + " l.so_tien,n.ho_ten,s.ten_ca"
+                                        + " FROM lich_su_thu_coc_hotel l"
+                                        + " JOIN hop_dong_luu_tru h ON h.ma_hop_dong=l.ma_hop_dong"
+                                        + " LEFT JOIN phien_lam_viec s ON s.ma_phien=l.ma_phien"
+                                        + " LEFT JOIN tai_khoan a ON a.ten_dang_nhap=l.ten_dang_nhap_thu"
+                                        + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien=a.ma_nhan_vien"
+                                        + " WHERE l.tao_luc>=? AND l.tao_luc<?"
+                                        + own,
+                                tu,
+                                den),
+                        1);
+            if (goc.equals("Lưu trú đã quyết toán"))
+                return new ChiTietBaoCao(
+                        new String[] {
+                            "Hợp đồng",
+                            "Loại phòng",
+                            "Hóa đơn",
+                            "Ngày quyết toán",
+                            "Doanh thu hoàn tất"
+                        },
+                        truyVan(
+                                "SELECT"
+                                    + " t.ma_hop_dong,p.loai_phong,h.ma_hoa_don,h.thanh_toan_luc,h.tong_tien+CASE"
+                                    + " WHEN t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
+                                    + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong"
+                                    + " JOIN hoa_don h ON h.ma_hoa_don=t.ma_hoa_don JOIN phien_lam_viec s"
+                                    + " ON s.ma_phien=h.ma_phien WHERE t.trang_thai='DA_TRA_PHONG'"
+                                    + " AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                                        + own,
+                                tu,
+                                den),
+                        1);
+            return new ChiTietBaoCao(
+                    new String[] {"Hợp đồng", "Phòng", "Ngày vào", "Trạng thái", "Cọc đã nhận"},
+                    truyVan(
+                            "SELECT t.ma_hop_dong,p.ma_phong,t.ngay_vao,t.trang_thai,CASE WHEN"
+                                + " t.da_nhan_coc=1 THEN t.tien_coc ELSE 0 END FROM"
+                                + " hop_dong_luu_tru t JOIN phong_hotel p ON p.ma_phong=t.ma_phong WHERE"
+                                + " t.ngay_vao>=? AND t.ngay_vao<?"
+                                    + (all
+                                            ? ""
+                                            : " AND EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
+                                                  + " s.ma_phien=t.ma_phien_nhan_coc"
+                                                  + own
+                                                  + ")"),
+                            tu,
+                            den),
+                    3);
+        }
+
+        // 5. CHỨNG TỪ CHI TIẾT: BÁO CÁO KHÁCH HÀNG & VOUCHER
+        if (baoCao.contains("khách hàng") && goc.equals("Chi tiêu theo kỳ")) {
+            return new ChiTietBaoCao(
+                    new String[] {"Hóa đơn", "Mã KH", "Khách hàng", "Thanh toán lúc", "Chi tiêu"},
+                    truyVan(
+                            "SELECT"
+                                + " h.ma_hoa_don,k.ma_khach_hang,k.ho_ten,h.thanh_toan_luc,h.tong_tien"
+                                + " FROM hoa_don h JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                                + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
+                                + " h.thanh_toan_luc<?",
+                            tu,
+                            den),
+                    1);
+        }
         if (baoCao.contains("khách hàng")) {
             if (goc.equals("Khách mới / quay lại"))
                 return new ChiTietBaoCao(
@@ -364,6 +351,34 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                 + " k.ma_khach_hang=v.ma_khach_hang WHERE h.trang_thai='DA_THANH_TOAN'"),
                     1);
         }
+
+        // 6. CHỨNG TỪ CHI TIẾT: BÁO CÁO CÔNG NỢ NHÀ CUNG CẤP
+        if (baoCao.contains("Công nợ")) {
+            return new ChiTietBaoCao(
+                    new String[] {
+                        "Phiếu nhập",
+                        "Mã NCC",
+                        "Nhà cung cấp",
+                        "Ngày nhập",
+                        "Tổng nhập",
+                        "Đã trả hiện tại",
+                        "Dư nợ hiện tại"
+                    },
+                    truyVan(
+                            "SELECT"
+                                + " p.ma_phieu_nhap,n.ma_nha_cung_cap,n.ten,p.ngay_nhap,p.tong_tien,p.da_tra,p.tong_tien-p.da_tra"
+                                + " FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
+                                + " n.ma_nha_cung_cap=p.ma_nha_cung_cap WHERE p.trang_thai='DA_NHAP'"
+                                    + (goc.equals("Dư nợ hiện tại")
+                                            ? ""
+                                            : " AND p.ngay_nhap>=? AND p.ngay_nhap<?"),
+                            goc.equals("Dư nợ hiện tại")
+                                     ? new Object[] {}
+                                    : new Object[] {tu, den}),
+                    1);
+        }
+
+        // 7. CHỨNG TỪ CHI TIẾT: BÁO CÁO NHÂN VIÊN & CA THU NGÂN
         if (baoCao.contains("nhân viên")) {
             if (goc.equals("Lịch làm việc"))
                 return new ChiTietBaoCao(

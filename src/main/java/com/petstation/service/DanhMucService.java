@@ -15,10 +15,13 @@ import com.petstation.model.Quyen;
 
 import java.util.*;
 
+// Tầng dịch vụ Quản lý Danh mục dùng chung (Service)
 public final class DanhMucService {
     private static final DanhMucDAO danhMucDAO = new DanhMucDAOImpl();
     private static final DeXuatGiaDAO deXuatGiaDAO = new DeXuatGiaDAOImpl();
     private static final TichDiemDAO tichDiemDAO = new TichDiemDAOImpl();
+
+    // 1. MÔ HÌNH DANH SÁCH DÒNG DỮ LIỆU ĐỒNG BỘ VỚI CSDL (CacDong)
 
     public static final class CacDong extends ArrayList<Object[]> {
         public final LoaiDanhMuc loai;
@@ -42,9 +45,18 @@ public final class DanhMucService {
         }
     }
 
+    public static final class TrungSoDienThoaiException
+    extends IllegalArgumentException {
+	public TrungSoDienThoaiException(String thongBao) {
+	    super(thongBao);
+		}
+    }
+
     private static final List<Runnable> GIA_CAC_BO_LANG_NGHE = new ArrayList<>();
 
     private DanhMucService() {}
+
+    // 2. NẠP DỮ LIỆU CÁC LOẠI DANH MỤC & DANH SÁCH LỰA CHỌN COMBOBOX
 
     public static CacDong chuanBi(LoaiDanhMuc loai, boolean docNgay) {
         return new CacDong(loai, docNgay);
@@ -108,6 +120,12 @@ public final class DanhMucService {
         return chuyenThanhChuoi(luaChon).split(" - ", 2)[0];
     }
 
+    public static long layId(String bang, String khoa, String ma) {
+        return danhMucDAO.layId(bang, khoa, ma);
+    }
+
+    // 3. TIỆN ÍCH HỖ TRỢ PHÁT HÀNH VOUCHER CHO NHIỀU KHÁCH HÀNG
+
     public static List<String> tachDanhSachKhach(Object giaTri) {
         String chuoi = chuyenThanhChuoi(giaTri);
         if (chuoi.isBlank()) return List.of();
@@ -136,6 +154,8 @@ public final class DanhMucService {
         return goc + hauTo;
     }
 
+    // 4. LƯU BẢN GHI DANH MỤC (THÊM MỚI / CẬP NHẬT) & KIỂM TRA RÀNG BUỘC
+
     public static void luuNhieu(
             List<Object[]> cacDong,
             Object[] truoc,
@@ -155,19 +175,10 @@ public final class DanhMucService {
                 });
     }
 
-    public static void themBoLangNgheGia(Runnable boLangNghe) {
-        GIA_CAC_BO_LANG_NGHE.add(boLangNghe);
-    }
-
     public static void luu(List<Object[]> cacDong, Object[] truoc, Object[] giaTri){
         luu(cacDong, truoc, giaTri, false);
     }
-    public static final class TrungSoDienThoaiException
-    extends IllegalArgumentException {
-	public TrungSoDienThoaiException(String thongBao) {
-	    super(thongBao);
-		}
-    }
+
     public static void luu(
             List<Object[]> cacDong,
             Object[] truoc,
@@ -315,22 +326,18 @@ public final class DanhMucService {
             for (Runnable boLangNghe : List.copyOf(GIA_CAC_BO_LANG_NGHE)) boLangNghe.run();
     }
 
+    // 5. NGHIỆP VỤ BỔ TRỢ SẢN PHẨM & LỊCH SỬ GIÁ
+
     public static List<Object[]> layLichSuGia() {
         return danhMucDAO.layLichSuGia();
     }
 
-    public static long layId(String bang, String khoa, String ma) {
-        return danhMucDAO.layId(bang, khoa, ma);
+    public static void themBoLangNgheGia(Runnable boLangNghe) {
+        GIA_CAC_BO_LANG_NGHE.add(boLangNghe);
     }
 
-    public static int khoaCacTaiKhoanCua(String maNhanVien) {
-        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
-        return danhMucDAO.khoaCacTaiKhoanCua(maNhanVien);
-    }
-
-    public static void datLaiMatKhau(String tenDangNhap, String matKhau) {
-        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
-        danhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
+    public static void xoaBoLangNghe() {
+        GIA_CAC_BO_LANG_NGHE.clear();
     }
 
     public static void capNhatBarcode(long sanPhamId, String barcode) {
@@ -347,6 +354,18 @@ public final class DanhMucService {
         danhMucDAO.ngungKinhDoanhSanPham(sanPhamId);
     }
 
+    // 6. NGHIỆP VỤ BỔ TRỢ TÀI KHOẢN & NHÂN VIÊN
+
+    public static int khoaCacTaiKhoanCua(String maNhanVien) {
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+        return danhMucDAO.khoaCacTaiKhoanCua(maNhanVien);
+    }
+
+    public static void datLaiMatKhau(String tenDangNhap, String matKhau) {
+        yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+        danhMucDAO.datLaiMatKhau(tenDangNhap, matKhau);
+    }
+
     public static String layTenDangNhapTheoNhanVien(long nhanVienId) {
         yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         return danhMucDAO.layTenDangNhapTheoNhanVien(nhanVienId);
@@ -361,9 +380,5 @@ public final class DanhMucService {
         } else {
             danhMucDAO.datLaiMatKhau(daCo, matKhauHash);
         }
-    }
-
-    public static void xoaBoLangNghe() {
-        GIA_CAC_BO_LANG_NGHE.clear();
     }
 }

@@ -17,79 +17,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+// Triển khai truy vấn SQL cho toàn bộ các màn hình Quản lý Danh mục
 public final class DanhMucDAOImpl implements DanhMucDAO {
     private static final DateTimeFormatter DINH_DANG_ISO =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
     private static final DateTimeFormatter DINH_DANG_HIEN_THI =
             DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm");
 
-    public List<Object[]> layLichSuGia() {
-        Map<String, String> mapNguoi = new HashMap<>();
-        for (Object[] tk :
-                truyVan(
-                        "SELECT t.ten_dang_nhap, n.ho_ten, t.ma_nhan_vien FROM tai_khoan t JOIN"
-                                + " nhan_vien n ON n.ma_nhan_vien=t.ma_nhan_vien")) {
-            String hoTen = chuyenThanhChuoi(tk[1]);
-            String tenDn = chuyenThanhChuoi(tk[0]);
-            String maNv = chuyenThanhChuoi(tk[2]);
-            mapNguoi.put(tenDn, hoTen);
-            mapNguoi.put(maNv, hoTen);
-            long idNv = DuLieu.layIdCauNoi(null, maNv);
-            if (idNv > 0) mapNguoi.put(String.valueOf(idNv), hoTen);
-        }
-
-        List<Object[]> tam = new ArrayList<>();
-        for (Object[] sp :
-                truyVan(
-                        "SELECT ma_san_pham, ten, COALESCE(lich_su_gia, N'') FROM san_pham WHERE"
-                                + " lich_su_gia IS NOT NULL AND lich_su_gia<>N''")) {
-            String ma = chuyenThanhChuoi(sp[0]);
-            String ten = chuyenThanhChuoi(sp[1]);
-            String lsg = chuyenThanhChuoi(sp[2]);
-            for (String muc : lsg.split(";")) {
-                if (muc.isBlank()) continue;
-                String[] c = muc.split("\\|");
-                if (c.length >= 3) {
-                    boolean dinhDangMoi = !c[0].trim().contains("-") && c.length >= 4 && c[3].trim().contains("-");
-                    String thoiDiemGoc = dinhDangMoi ? c[3].trim() : c[0].trim();
-                    String giaCuStr = dinhDangMoi ? c[0].trim() : c[1].trim();
-                    String giaMoiStr = dinhDangMoi ? c[1].trim() : c[2].trim();
-                    String maNguoi = dinhDangMoi ? c[2].trim() : (c.length >= 4 ? c[3].trim() : "");
-                    String thoiDiemHienThi = thoiDiemGoc;
-                    try {
-                        LocalDateTime ldt =
-                                LocalDateTime.parse(
-                                        thoiDiemGoc.length() > 19
-                                                ? thoiDiemGoc.substring(0, 19)
-                                                : thoiDiemGoc,
-                                        DINH_DANG_ISO);
-                        thoiDiemHienThi = ldt.format(DINH_DANG_HIEN_THI);
-                    } catch (Exception ignored) {
-                    }
-                    String nguoi =
-                            !maNguoi.isBlank()
-                                    ? mapNguoi.getOrDefault(maNguoi, "Hệ thống")
-                                    : "Hệ thống";
-                    tam.add(
-                            new Object[] {
-                                thoiDiemGoc,
-                                thoiDiemHienThi,
-                                ma,
-                                ten,
-                                giaCuStr,
-                                giaMoiStr,
-                                nguoi
-                            });
-                }
-            }
-        }
-        tam.sort(Comparator.comparing((Object[] r) -> String.valueOf(r[0])).reversed());
-        List<Object[]> kq = new ArrayList<>(tam.size());
-        for (Object[] r : tam) {
-            kq.add(new Object[] {r[1], r[2], r[3], r[4], r[5], r[6]});
-        }
-        return kq;
-    }
+    // 1. NẠP DỮ LIỆU DANH MỤC THEO LOẠI (nap)
 
     public List<Object[]> nap(LoaiDanhMuc loai) {
         String sql =
@@ -186,207 +121,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         return cacDong;
     }
 
-    static String chuyenBangGiaSpaSangUI(String bangGiaCSDL) {
-        if (bangGiaCSDL == null || bangGiaCSDL.isBlank()) return "";
-        List<String> cacGia = new ArrayList<>();
-        for (String muc : bangGiaCSDL.split(";")) {
-            if (muc.isBlank()) continue;
-            if (muc.contains("|")) {
-                String[] p = muc.split("\\|", -1);
-                if (p.length == 5) {
-                    String maLoai = p[0].trim();
-                    String loai = ("DOG".equalsIgnoreCase(maLoai) || "Chó".equalsIgnoreCase(maLoai)) ? "Chó" : "Mèo";
-                    String gia = new BigDecimal(p[4].trim()).stripTrailingZeros().toPlainString();
-                    cacGia.add(loai + "|" + p[1].trim() + "|" + gia);
-                } else if (p.length == 3) {
-                    cacGia.add(muc);
-                } else if (p.length == 2) {
-                    String canNang = new BigDecimal(p[0].trim()).stripTrailingZeros().toPlainString();
-                    String gia = new BigDecimal(p[1].trim()).stripTrailingZeros().toPlainString();
-                    cacGia.add("Chó|<= " + canNang + "kg|" + gia);
-                }
-                continue;
-            }
-            String[] p = muc.split(":");
-            if (p.length < 3) continue;
-            String loai = "DOG".equalsIgnoreCase(p[0].trim()) ? "Chó" : "Mèo";
-            String[] khoang = p[1].trim().split("-");
-            String nhanKhoang = p[1].trim();
-            if (khoang.length == 2) {
-                double tu = Double.parseDouble(khoang[0].trim());
-                double den = Double.parseDouble(khoang[1].trim());
-                if (tu == 0) {
-                    nhanKhoang = "< " + khoang[1].trim() + "kg";
-                } else if (den >= 999) {
-                    nhanKhoang = "> " + khoang[0].trim() + "kg";
-                } else {
-                    nhanKhoang = khoang[0].trim() + " - " + khoang[1].trim() + "kg";
-                }
-            }
-            cacGia.add(loai + "|" + nhanKhoang + "|" + p[2].trim());
-        }
-        return String.join(";", cacGia);
-    }
-
-    static String chuyenBangGiaSpaSangCSDL(String bangGiaUI) {
-        if (bangGiaUI == null || bangGiaUI.isBlank()) return "";
-        List<String> ketQua = new ArrayList<>();
-        for (String dong : bangGiaUI.split(";")) {
-            if (dong.isBlank()) continue;
-            String[] vungDangXet = dong.split("\\|", -1);
-            if (vungDangXet.length == 5) {
-                ketQua.add(chuyenBangGiaSpaSangCSDL(chuyenBangGiaSpaSangUI(dong)));
-                continue;
-            }
-            if (vungDangXet.length != 3)
-                throw new IllegalArgumentException("Bảng giá không hợp lệ.");
-            List<BigDecimal> cacCanNang = new ArrayList<>();
-            java.util.regex.Matcher boSoKhop =
-                    java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)?").matcher(vungDangXet[1]);
-            while (boSoKhop.find())
-                cacCanNang.add(new BigDecimal(boSoKhop.group().replace(',', '.')));
-            BigDecimal thap =
-                    cacCanNang.size() > 1
-                            ? cacCanNang.get(0)
-                            : vungDangXet[1].contains(">") && !cacCanNang.isEmpty()
-                                    ? cacCanNang.get(0)
-                                    : BigDecimal.ZERO;
-            BigDecimal cao =
-                    cacCanNang.size() > 1
-                            ? cacCanNang.get(1)
-                            : vungDangXet[1].contains("<") && !cacCanNang.isEmpty()
-                                    ? cacCanNang.get(0)
-                                    : null;
-            String tenLoai = vungDangXet[0].trim();
-            String loai;
-            if ("Chó".equalsIgnoreCase(tenLoai) || "DOG".equalsIgnoreCase(tenLoai)) loai = "DOG";
-            else if ("Mèo".equalsIgnoreCase(tenLoai) || "CAT".equalsIgnoreCase(tenLoai)) loai = "CAT";
-            else throw new IllegalArgumentException("Loài trong bảng giá phải là Chó hoặc Mèo.");
-            BigDecimal donGia = new BigDecimal(vungDangXet[2].trim());
-            if (thap.signum() < 0 || (cao != null && cao.compareTo(thap) <= 0)
-                    || donGia.signum() <= 0)
-                throw new IllegalArgumentException("Khoảng cân nặng hoặc giá không hợp lệ.");
-            ketQua.add(
-                    loai
-                            + "|" + vungDangXet[1].trim()
-                            + "|" + thap.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()
-                            + "|" + (cao == null ? "NULL" : cao.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString())
-                            + "|" + donGia.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString());
-        }
-        return String.join(";", ketQua);
-    }
-
-    private static List<Object[]> chuyenCacDongThanhChuoi(List<Object[]> cacDong) {
-        for (Object[] dongDuLieu : cacDong)
-            for (int chiSo = 0; chiSo < dongDuLieu.length; chiSo++)
-                dongDuLieu[chiSo] =
-                        dongDuLieu[chiSo] instanceof BigDecimal giaTriSau
-                                ? giaTriSau.stripTrailingZeros().toPlainString()
-                                : chuyenThanhChuoi(dongDuLieu[chiSo]);
-        return cacDong;
-    }
-
-    private static LocalDate docNgay(Object giaTri) {
-        return chuyenThanhChuoi(giaTri).isBlank()
-                ? null
-                : LocalDate.parse(
-                        chuyenThanhChuoi(giaTri), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
-    }
-
-    private static BigDecimal docSoThapPhan(Object giaTri) {
-        return chuyenThanhChuoi(giaTri).isBlank()
-                ? null
-                : new BigDecimal(chuyenThanhChuoi(giaTri).replace(',', '.'));
-    }
-
-    private static String docVaiTro(Object nhan) {
-        return Arrays.stream(VaiTro.values())
-                .filter(dongDuLieu -> dongDuLieu.getTenHienThi().equals(nhan))
-                .findFirst()
-                .orElseThrow()
-                .name();
-    }
-
-    public String layMaTuLuaChon(Object luaChon) {
-        return chuyenThanhChuoi(luaChon).split(" - ", 2)[0];
-    }
-
-    private static void layThemHoacCapNhat(
-            String bang, String khoa, String banDau, String[] cacCot, Object... cacGiaTri) {
-        if (layGiaTriDon(
-                        "SELECT 1 FROM " + bang + " WITH(UPDLOCK,HOLDLOCK) WHERE " + khoa + "=?",
-                        banDau)
-                == null) {
-            capNhat(
-                    "INSERT INTO "
-                            + bang
-                            + "("
-                            + String.join(",", cacCot)
-                            + ") VALUES("
-                            + String.join(",", Collections.nCopies(cacGiaTri.length, "?"))
-                            + ")",
-                    cacGiaTri);
-        } else {
-            List<Object> cacDoiSo = new ArrayList<>(Arrays.asList(cacGiaTri));
-            cacDoiSo.add(banDau);
-            capNhat(
-                    "UPDATE "
-                            + bang
-                            + " SET "
-                            + String.join(
-                                    ",",
-                                    Arrays.stream(cacCot)
-                                            .map(giaTriDangXet -> giaTriDangXet + "=?")
-                                            .toList())
-                            + " WHERE "
-                            + khoa
-                            + "=?",
-                    cacDoiSo.toArray());
-        }
-    }
-
-    public long layId(String bang, String khoa, String ma) {
-        if (!Set.of(
-                        "khach_hang",
-                        "thu_cung",
-                        "nhan_vien",
-                        "tai_khoan",
-                        "san_pham",
-                        "nha_cung_cap",
-                        "goi_dich_vu_spa",
-                        "phong_hotel",
-                        "lo_hang",
-                        "hoa_don",
-                        "phieu_tiep_nhan_spa",
-                        "hop_dong_luu_tru")
-                .contains(bang)) throw new IllegalArgumentException("Unknown table");
-        Object giaTri = layGiaTriDon("SELECT 1 FROM " + bang + " WHERE " + khoa + "=?", ma);
-        if (giaTri == null) throw new IllegalArgumentException("Không tìm thấy mã " + ma + ".");
-        return DuLieu.layIdCauNoi(null, ma);
-    }
-
-    public int khoaCacTaiKhoanCua(String maNhanVien) {
-        return capNhat(
-                "UPDATE tai_khoan SET trang_thai='NGUNG_HOAT_DONG' WHERE ma_nhan_vien=? AND trang_thai = 'HOAT_DONG'",
-                maNhanVien);
-    }
-
-    public void datLaiMatKhau(String tenDangNhap, String matKhau) {
-        String maBam;
-        if (matKhau != null && matKhau.startsWith("$2") && matKhau.length() >= 59) {
-            maBam = matKhau;
-        } else {
-            if (matKhau == null || matKhau.length() < 8)
-                throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự.");
-            maBam = BCrypt.hashpw(matKhau, BCrypt.gensalt());
-        }
-        capNhat(
-                "UPDATE tai_khoan SET"
-                    + " mat_khau_hash=?,bat_buoc_doi_mat_khau=1,so_lan_dang_nhap_sai=0,khoa_den=NULL"
-                    + " WHERE ten_dang_nhap=?",
-                maBam,
-                tenDangNhap);
-    }
+    // 2. LƯU BẢN GHI DANH MỤC (THÊM MỚI HOẶC CẬP NHẬT THEO TỪNG LOẠI DANH MỤC)
 
     public void luu(
             LoaiDanhMuc loai,
@@ -603,22 +338,22 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 }
             }
             case NHA_CUNG_CAP ->
-            layThemHoacCapNhat(
-                    "nha_cung_cap",
-                    "ma_nha_cung_cap",
-                    khoa,
-                    new String[] {
-                        "ma_nha_cung_cap", "ten", "nguoi_dai_dien",
-                        "so_dien_thoai", "dia_chi", "ma_so_thue",
-                        "dieu_khoan", "trang_thai",
-                        "nhom_mat_hang", "ghi_chu"
-                    },
-                    giaTri2[0], giaTri2[1], giaTri2[2],
-                    giaTri2[3], giaTri2[4], giaTri2[5],
-                    giaTri2[6],
-                    "Đang hợp tác".equals(giaTri2[7])
-                            ? "DANG_HOP_TAC" : "NGUNG_HOP_TAC",
-                    giaTri2[8], giaTri2[9]);
+                    layThemHoacCapNhat(
+                            "nha_cung_cap",
+                            "ma_nha_cung_cap",
+                            khoa,
+                            new String[] {
+                                "ma_nha_cung_cap", "ten", "nguoi_dai_dien",
+                                "so_dien_thoai", "dia_chi", "ma_so_thue",
+                                "dieu_khoan", "trang_thai",
+                                "nhom_mat_hang", "ghi_chu"
+                            },
+                            giaTri2[0], giaTri2[1], giaTri2[2],
+                            giaTri2[3], giaTri2[4], giaTri2[5],
+                            giaTri2[6],
+                            "Đang hợp tác".equals(giaTri2[7])
+                                    ? "DANG_HOP_TAC" : "NGUNG_HOP_TAC",
+                            giaTri2[8], giaTri2[9]);
             case KHUYEN_MAI -> {
                 LocalDate ngayBatDau = docNgay(giaTri2[6]);
                 LocalDate ngayKetThuc = docNgay(giaTri2[7]);
@@ -752,6 +487,257 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         }
     }
 
+    // 3. CÁC HÀM TIỆN ÍCH CHUYỂN ĐỔI DỮ LIỆU, BẢNG GIÁ SPA & UPSERT (INSERT/UPDATE)
+
+    static String chuyenBangGiaSpaSangUI(String bangGiaCSDL) {
+        if (bangGiaCSDL == null || bangGiaCSDL.isBlank()) return "";
+        List<String> cacGia = new ArrayList<>();
+        for (String muc : bangGiaCSDL.split(";")) {
+            if (muc.isBlank()) continue;
+            if (muc.contains("|")) {
+                String[] p = muc.split("\\|", -1);
+                if (p.length == 5) {
+                    String maLoai = p[0].trim();
+                    String loai = ("DOG".equalsIgnoreCase(maLoai) || "Chó".equalsIgnoreCase(maLoai)) ? "Chó" : "Mèo";
+                    String gia = new BigDecimal(p[4].trim()).stripTrailingZeros().toPlainString();
+                    cacGia.add(loai + "|" + p[1].trim() + "|" + gia);
+                } else if (p.length == 3) {
+                    cacGia.add(muc);
+                } else if (p.length == 2) {
+                    String canNang = new BigDecimal(p[0].trim()).stripTrailingZeros().toPlainString();
+                    String gia = new BigDecimal(p[1].trim()).stripTrailingZeros().toPlainString();
+                    cacGia.add("Chó|<= " + canNang + "kg|" + gia);
+                }
+                continue;
+            }
+            String[] p = muc.split(":");
+            if (p.length < 3) continue;
+            String loai = "DOG".equalsIgnoreCase(p[0].trim()) ? "Chó" : "Mèo";
+            String[] khoang = p[1].trim().split("-");
+            String nhanKhoang = p[1].trim();
+            if (khoang.length == 2) {
+                double tu = Double.parseDouble(khoang[0].trim());
+                double den = Double.parseDouble(khoang[1].trim());
+                if (tu == 0) {
+                    nhanKhoang = "< " + khoang[1].trim() + "kg";
+                } else if (den >= 999) {
+                    nhanKhoang = "> " + khoang[0].trim() + "kg";
+                } else {
+                    nhanKhoang = khoang[0].trim() + " - " + khoang[1].trim() + "kg";
+                }
+            }
+            cacGia.add(loai + "|" + nhanKhoang + "|" + p[2].trim());
+        }
+        return String.join(";", cacGia);
+    }
+
+    static String chuyenBangGiaSpaSangCSDL(String bangGiaUI) {
+        if (bangGiaUI == null || bangGiaUI.isBlank()) return "";
+        List<String> ketQua = new ArrayList<>();
+        for (String dong : bangGiaUI.split(";")) {
+            if (dong.isBlank()) continue;
+            String[] vungDangXet = dong.split("\\|", -1);
+            if (vungDangXet.length == 5) {
+                ketQua.add(chuyenBangGiaSpaSangCSDL(chuyenBangGiaSpaSangUI(dong)));
+                continue;
+            }
+            if (vungDangXet.length != 3)
+                throw new IllegalArgumentException("Bảng giá không hợp lệ.");
+            List<BigDecimal> cacCanNang = new ArrayList<>();
+            java.util.regex.Matcher boSoKhop =
+                    java.util.regex.Pattern.compile("\\d+(?:[.,]\\d+)?").matcher(vungDangXet[1]);
+            while (boSoKhop.find())
+                cacCanNang.add(new BigDecimal(boSoKhop.group().replace(',', '.')));
+            BigDecimal thap =
+                    cacCanNang.size() > 1
+                            ? cacCanNang.get(0)
+                            : vungDangXet[1].contains(">") && !cacCanNang.isEmpty()
+                                    ? cacCanNang.get(0)
+                                    : BigDecimal.ZERO;
+            BigDecimal cao =
+                    cacCanNang.size() > 1
+                            ? cacCanNang.get(1)
+                            : vungDangXet[1].contains("<") && !cacCanNang.isEmpty()
+                                    ? cacCanNang.get(0)
+                                    : null;
+            String tenLoai = vungDangXet[0].trim();
+            String loai;
+            if ("Chó".equalsIgnoreCase(tenLoai) || "DOG".equalsIgnoreCase(tenLoai)) loai = "DOG";
+            else if ("Mèo".equalsIgnoreCase(tenLoai) || "CAT".equalsIgnoreCase(tenLoai)) loai = "CAT";
+            else throw new IllegalArgumentException("Loài trong bảng giá phải là Chó hoặc Mèo.");
+            BigDecimal donGia = new BigDecimal(vungDangXet[2].trim());
+            if (thap.signum() < 0 || (cao != null && cao.compareTo(thap) <= 0)
+                    || donGia.signum() <= 0)
+                throw new IllegalArgumentException("Khoảng cân nặng hoặc giá không hợp lệ.");
+            ketQua.add(
+                    loai
+                            + "|" + vungDangXet[1].trim()
+                            + "|" + thap.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()
+                            + "|" + (cao == null ? "NULL" : cao.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString())
+                            + "|" + donGia.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString());
+        }
+        return String.join(";", ketQua);
+    }
+
+    private static List<Object[]> chuyenCacDongThanhChuoi(List<Object[]> cacDong) {
+        for (Object[] dongDuLieu : cacDong)
+            for (int chiSo = 0; chiSo < dongDuLieu.length; chiSo++)
+                dongDuLieu[chiSo] =
+                        dongDuLieu[chiSo] instanceof BigDecimal giaTriSau
+                                ? giaTriSau.stripTrailingZeros().toPlainString()
+                                : chuyenThanhChuoi(dongDuLieu[chiSo]);
+        return cacDong;
+    }
+
+    private static LocalDate docNgay(Object giaTri) {
+        return chuyenThanhChuoi(giaTri).isBlank()
+                ? null
+                : LocalDate.parse(
+                        chuyenThanhChuoi(giaTri), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
+    }
+
+    private static BigDecimal docSoThapPhan(Object giaTri) {
+        return chuyenThanhChuoi(giaTri).isBlank()
+                ? null
+                : new BigDecimal(chuyenThanhChuoi(giaTri).replace(',', '.'));
+    }
+
+    private static String docVaiTro(Object nhan) {
+        return Arrays.stream(VaiTro.values())
+                .filter(dongDuLieu -> dongDuLieu.getTenHienThi().equals(nhan))
+                .findFirst()
+                .orElseThrow()
+                .name();
+    }
+
+    public String layMaTuLuaChon(Object luaChon) {
+        return chuyenThanhChuoi(luaChon).split(" - ", 2)[0];
+    }
+
+    private static void layThemHoacCapNhat(
+            String bang, String khoa, String banDau, String[] cacCot, Object... cacGiaTri) {
+        if (layGiaTriDon(
+                        "SELECT 1 FROM " + bang + " WITH(UPDLOCK,HOLDLOCK) WHERE " + khoa + "=?",
+                        banDau)
+                == null) {
+            capNhat(
+                    "INSERT INTO "
+                            + bang
+                            + "("
+                            + String.join(",", cacCot)
+                            + ") VALUES("
+                            + String.join(",", Collections.nCopies(cacGiaTri.length, "?"))
+                            + ")",
+                    cacGiaTri);
+        } else {
+            List<Object> cacDoiSo = new ArrayList<>(Arrays.asList(cacGiaTri));
+            cacDoiSo.add(banDau);
+            capNhat(
+                    "UPDATE "
+                            + bang
+                            + " SET "
+                            + String.join(
+                                    ",",
+                                    Arrays.stream(cacCot)
+                                            .map(giaTriDangXet -> giaTriDangXet + "=?")
+                                            .toList())
+                            + " WHERE "
+                            + khoa
+                            + "=?",
+                    cacDoiSo.toArray());
+        }
+    }
+
+    public long layId(String bang, String khoa, String ma) {
+        if (!Set.of(
+                        "khach_hang",
+                        "thu_cung",
+                        "nhan_vien",
+                        "tai_khoan",
+                        "san_pham",
+                        "nha_cung_cap",
+                        "goi_dich_vu_spa",
+                        "phong_hotel",
+                        "lo_hang",
+                        "hoa_don",
+                        "phieu_tiep_nhan_spa",
+                        "hop_dong_luu_tru")
+                .contains(bang)) throw new IllegalArgumentException("Unknown table");
+        Object giaTri = layGiaTriDon("SELECT 1 FROM " + bang + " WHERE " + khoa + "=?", ma);
+        if (giaTri == null) throw new IllegalArgumentException("Không tìm thấy mã " + ma + ".");
+        return DuLieu.layIdCauNoi(null, ma);
+    }
+
+    // 4. NGHIỆP VỤ BỔ TRỢ SẢN PHẨM & LỊCH SỬ GIÁ BÁN
+
+    public List<Object[]> layLichSuGia() {
+        Map<String, String> mapNguoi = new HashMap<>();
+        for (Object[] tk :
+                truyVan(
+                        "SELECT t.ten_dang_nhap, n.ho_ten, t.ma_nhan_vien FROM tai_khoan t JOIN"
+                                + " nhan_vien n ON n.ma_nhan_vien=t.ma_nhan_vien")) {
+            String hoTen = chuyenThanhChuoi(tk[1]);
+            String tenDn = chuyenThanhChuoi(tk[0]);
+            String maNv = chuyenThanhChuoi(tk[2]);
+            mapNguoi.put(tenDn, hoTen);
+            mapNguoi.put(maNv, hoTen);
+            long idNv = DuLieu.layIdCauNoi(null, maNv);
+            if (idNv > 0) mapNguoi.put(String.valueOf(idNv), hoTen);
+        }
+
+        List<Object[]> tam = new ArrayList<>();
+        for (Object[] sp :
+                truyVan(
+                        "SELECT ma_san_pham, ten, COALESCE(lich_su_gia, N'') FROM san_pham WHERE"
+                                + " lich_su_gia IS NOT NULL AND lich_su_gia<>N''")) {
+            String ma = chuyenThanhChuoi(sp[0]);
+            String ten = chuyenThanhChuoi(sp[1]);
+            String lsg = chuyenThanhChuoi(sp[2]);
+            for (String muc : lsg.split(";")) {
+                if (muc.isBlank()) continue;
+                String[] c = muc.split("\\|");
+                if (c.length >= 3) {
+                    boolean dinhDangMoi = !c[0].trim().contains("-") && c.length >= 4 && c[3].trim().contains("-");
+                    String thoiDiemGoc = dinhDangMoi ? c[3].trim() : c[0].trim();
+                    String giaCuStr = dinhDangMoi ? c[0].trim() : c[1].trim();
+                    String giaMoiStr = dinhDangMoi ? c[1].trim() : c[2].trim();
+                    String maNguoi = dinhDangMoi ? c[2].trim() : (c.length >= 4 ? c[3].trim() : "");
+                    String thoiDiemHienThi = thoiDiemGoc;
+                    try {
+                        LocalDateTime ldt =
+                                LocalDateTime.parse(
+                                        thoiDiemGoc.length() > 19
+                                                ? thoiDiemGoc.substring(0, 19)
+                                                : thoiDiemGoc,
+                                        DINH_DANG_ISO);
+                        thoiDiemHienThi = ldt.format(DINH_DANG_HIEN_THI);
+                    } catch (Exception ignored) {
+                    }
+                    String nguoi =
+                            !maNguoi.isBlank()
+                                    ? mapNguoi.getOrDefault(maNguoi, "Hệ thống")
+                                    : "Hệ thống";
+                    tam.add(
+                            new Object[] {
+                                thoiDiemGoc,
+                                thoiDiemHienThi,
+                                ma,
+                                ten,
+                                giaCuStr,
+                                giaMoiStr,
+                                nguoi
+                            });
+                }
+            }
+        }
+        tam.sort(Comparator.comparing((Object[] r) -> String.valueOf(r[0])).reversed());
+        List<Object[]> kq = new ArrayList<>(tam.size());
+        for (Object[] r : tam) {
+            kq.add(new Object[] {r[1], r[2], r[3], r[4], r[5], r[6]});
+        }
+        return kq;
+    }
+
     public int capNhatBarcode(long sanPhamId, String barcode) {
         return capNhat("UPDATE san_pham SET barcode=? WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", barcode, sanPhamId, sanPhamId);
     }
@@ -762,6 +748,31 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
 
     public int ngungKinhDoanhSanPham(long sanPhamId) {
         return capNhat("UPDATE san_pham SET trang_thai='NGUNG_BAN' WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))", sanPhamId, sanPhamId);
+    }
+
+    // 5. NGHIỆP VỤ BỔ TRỢ TÀI KHOẢN & NHÂN VIÊN
+
+    public int khoaCacTaiKhoanCua(String maNhanVien) {
+        return capNhat(
+                "UPDATE tai_khoan SET trang_thai='NGUNG_HOAT_DONG' WHERE ma_nhan_vien=? AND trang_thai = 'HOAT_DONG'",
+                maNhanVien);
+    }
+
+    public void datLaiMatKhau(String tenDangNhap, String matKhau) {
+        String maBam;
+        if (matKhau != null && matKhau.startsWith("$2") && matKhau.length() >= 59) {
+            maBam = matKhau;
+        } else {
+            if (matKhau == null || matKhau.length() < 8)
+                throw new IllegalArgumentException("Mật khẩu phải có ít nhất 8 ký tự.");
+            maBam = BCrypt.hashpw(matKhau, BCrypt.gensalt());
+        }
+        capNhat(
+                "UPDATE tai_khoan SET"
+                    + " mat_khau_hash=?,bat_buoc_doi_mat_khau=1,so_lan_dang_nhap_sai=0,khoa_den=NULL"
+                    + " WHERE ten_dang_nhap=?",
+                maBam,
+                tenDangNhap);
     }
 
     public String layTenDangNhapTheoNhanVien(long nhanVienId) {
@@ -790,6 +801,9 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 vt.name(),
                 dsQuyen);
     }
+
+    // 6. NGHIỆP VỤ BỔ TRỢ NHÀ CUNG CẤP (KIỂM TRA TRÙNG TÊN / SĐT & ẢNH CHỤP JSON)
+
     @Override
     public boolean tonTaiTenNcc(String ten, String maLoaiTru) {
         return laySo(
@@ -815,6 +829,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 soDienThoai.replaceAll("[\\s.]", ""),
                 maLoaiTru) > 0;
     }
+
     @Override
     public String layAnhChupNcc(String maNcc) {
         Object json = layGiaTriDon(
