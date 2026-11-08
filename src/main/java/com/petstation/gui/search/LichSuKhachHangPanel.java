@@ -97,6 +97,24 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                         tblBang.getRowSorter();
 
         boSapXep.setComparator(
+                4,
+                java.util.Comparator.comparingInt(
+                        giaTri -> {
+                            String hang = String.valueOf(giaTri)
+                                    .trim()
+                                    .toLowerCase(java.util.Locale.ROOT);
+
+                            return switch (hang) {
+                                case "đồng" -> 0;
+                                case "bạc" -> 1;
+                                case "vàng" -> 2;
+                                case "bạch kim" -> 3;
+                                case "kim cương" -> 4;
+                                default -> 5;
+                            };
+                        }));
+
+        boSapXep.setComparator(
                 5,
                 java.util.Comparator.comparingLong(
                         giaTri -> Long.parseLong(String.valueOf(giaTri).trim())));
