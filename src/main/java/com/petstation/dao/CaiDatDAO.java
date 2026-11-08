@@ -1,9 +1,9 @@
 package com.petstation.dao;
 
 public interface CaiDatDAO {
-    Object timGiaTri(Object... cacThamSo);
+    Object timGiaTri(String maCaiDat);
 
-    int themGiaTri(Object... cacThamSo);
+    int themGiaTri(String maCaiDat, String giaTri, String tenDangNhap);
 
-    int capNhatGiaTri(Object... cacThamSo);
+    int capNhatGiaTri(String giaTri, String tenDangNhap, String maCaiDat);
 }

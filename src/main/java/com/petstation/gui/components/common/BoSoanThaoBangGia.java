@@ -45,10 +45,19 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         dau.setOpaque(false);
         dau.add(nhap, BorderLayout.CENTER); dau.add(nut, BorderLayout.SOUTH);
         panel.add(dau, BorderLayout.NORTH);
+        bang.setPreferredScrollableViewportSize(new Dimension(320, 130));
+        if (bang.getColumnModel().getColumnCount() >= 3) {
+            bang.getColumnModel().getColumn(0).setPreferredWidth(65);
+            bang.getColumnModel().getColumn(1).setPreferredWidth(125);
+            bang.getColumnModel().getColumn(2).setPreferredWidth(110);
+        }
         JScrollPane cuon = new JScrollPane(bang);
-        cuon.setPreferredSize(new Dimension(240, 140));
+        cuon.setPreferredSize(new Dimension(340, 140));
+        cuon.setMinimumSize(new Dimension(280, 120));
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         panel.add(cuon, BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(340, 280));
+        panel.setMinimumSize(new Dimension(280, 240));
         them.addActionListener(e -> capNhat(false));
         sua.addActionListener(e -> capNhat(true));
         xoa.addActionListener(e -> {
@@ -106,9 +115,16 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                     throw new IllegalArgumentException("Khoảng cân trùng với mức giá khác của cùng loài.");
             }
             Object[] duLieu = {loai.getSelectedItem(), khoang, TienTe.dinhDang(soTien)};
-            if (laSua) for (int c = 0; c < 3; c++) model.setValueAt(duLieu[c], dong, c);
-            else model.addRow(duLieu);
-            bang.clearSelection(); gia.setText("");
+            if (laSua) {
+                for (int c = 0; c < 3; c++) model.setValueAt(duLieu[c], dong, c);
+                bang.setRowSelectionInterval(dong, dong);
+            } else {
+                model.addRow(duLieu);
+                int moi = model.getRowCount() - 1;
+                bang.setRowSelectionInterval(moi, moi);
+                bang.scrollRectToVisible(bang.getCellRect(moi, 0, true));
+            }
+            gia.setText("");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(panel, ex.getMessage(), "Bảng giá không hợp lệ",
                 JOptionPane.WARNING_MESSAGE);

@@ -45,25 +45,28 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
             long hdId = n.longValue() / 100_000L;
             long spId = n.longValue() % 100_000L;
             return ThaoTacSQL.truyVan(
-                    "SELECT b.ma_lo, b.so_luong-COALESCE((SELECT"
+                    "SELECT COALESCE(b.ma_lo, (SELECT TOP 1 ma_lo FROM lo_hang WHERE (ma_san_pham=b.ma_san_pham OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', b.ma_san_pham), 20) AS BIGINT)) ORDER BY ngay_nhap ASC), (SELECT TOP 1 ma_lo FROM lo_hang ORDER BY ngay_nhap ASC), 'LO-DEFAULT'), "
+                            + " b.so_luong-COALESCE((SELECT"
                             + " SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN"
                             + " phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
                             + " c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
-                            + " c.ma_lo=b.ma_lo AND p.trang_thai IN"
+                            + " (c.ma_lo=b.ma_lo OR b.ma_lo IS NULL) AND p.trang_thai IN"
                             + " ('CHO_XU_LY','HOAN_TAT')),0) FROM chi_tiet_hoa_don b"
                             + " WHERE (b.ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_hoa_don, PATINDEX('%[0-9]%', b.ma_hoa_don), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
                             + " AND (b.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', b.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
-                            + " AND b.ma_lo IS NOT NULL ORDER BY b.ma_san_pham",
+                            + " ORDER BY b.ma_san_pham",
                     hdId, hdId, spId, spId);
         }
         return ThaoTacSQL.truyVan(
-                "SELECT b.ma_lo, b.so_luong-COALESCE((SELECT"
+                "SELECT COALESCE(b.ma_lo, (SELECT TOP 1 ma_lo FROM lo_hang WHERE (ma_san_pham=b.ma_san_pham OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', b.ma_san_pham), 20) AS BIGINT)) ORDER BY ngay_nhap ASC), (SELECT TOP 1 ma_lo FROM lo_hang ORDER BY ngay_nhap ASC), 'LO-DEFAULT'), "
+                        + " b.so_luong-COALESCE((SELECT"
                         + " SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN"
                         + " phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
                         + " c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
-                        + " c.ma_lo=b.ma_lo AND p.trang_thai IN"
+                        + " (c.ma_lo=b.ma_lo OR b.ma_lo IS NULL) AND p.trang_thai IN"
                         + " ('CHO_XU_LY','HOAN_TAT')),0) FROM chi_tiet_hoa_don b"
-                        + " WHERE (b.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', b.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) AND b.ma_lo IS NOT NULL ORDER BY b.ma_san_pham",
+                        + " WHERE (b.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                        + " ORDER BY b.ma_san_pham",
                 cacThamSo[0],
                 cacThamSo[0]);
     }

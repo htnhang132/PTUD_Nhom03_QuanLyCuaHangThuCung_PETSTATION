@@ -61,25 +61,86 @@ public final class TiemPhongService {
                 });
     }
 
+    public record KetQuaTiemPhong(
+            boolean duDieuKien,
+            boolean duTuoi,
+            int thangTuoi,
+            int soMui,
+            LocalDate ngayMuiCuoi,
+            long soNgayCachMuiCuoi,
+            String thongDiep,
+            LocalDate ngaySomNhatCoTheNhan) {
+    }
+
+    public static KetQuaTiemPhong danhGiaNhanSpa(String ma) {
+        if (ma == null || ma.isBlank()) {
+            return new KetQuaTiemPhong(false, false, 0, 0, null, 0, "Chưa chọn thú cưng để kiểm tra hồ sơ.", null);
+        }
+        Object[] thu;
+        try {
+            thu = timThuCung(ma);
+        } catch (Exception e) {
+            return new KetQuaTiemPhong(false, false, 0, 0, null, 0, "Không tìm thấy hồ sơ thú cưng đang hoạt động.", null);
+        }
+        LocalDate homNay = LocalDate.now();
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        if (thu[1] == null) {
+            return new KetQuaTiemPhong(false, false, 0, 0, null, 0, "Chưa có thông tin ngày sinh; thú cưng cần đủ 2 tháng tuổi để nhận Spa.", null);
+        }
+        LocalDate ngaySinh = ((java.sql.Date) thu[1]).toLocalDate();
+        int thangTuoi = (int) java.time.temporal.ChronoUnit.MONTHS.between(ngaySinh, homNay);
+        boolean duTuoi = !ngaySinh.plusMonths(2).isAfter(homNay);
+        if (!duTuoi) {
+            LocalDate ngayDuTuoi = ngaySinh.plusMonths(2);
+            long soNgayConLai = java.time.temporal.ChronoUnit.DAYS.between(homNay, ngayDuTuoi);
+            return new KetQuaTiemPhong(false, false, Math.max(0, thangTuoi), 0, null, 0,
+                    "Chưa đủ tuổi: thú cưng hiện " + (thangTuoi <= 0 ? (java.time.temporal.ChronoUnit.DAYS.between(ngaySinh, homNay) + " ngày tuổi") : (thangTuoi + " tháng tuổi"))
+                            + ". Quy định cần đủ từ 2 tháng tuổi (sớm nhất từ " + ngayDuTuoi.format(dtf) + ", còn " + soNgayConLai + " ngày).",
+                    ngayDuTuoi);
+        }
+
+        var lichSu = tiemPhongDAO.layLichSu(((Number) thu[0]).longValue());
+        int soMui = lichSu.size();
+        if (soMui == 0) {
+            return new KetQuaTiemPhong(false, true, thangTuoi, 0, null, 0,
+                    "Chưa ghi nhận hồ sơ tiêm phòng. Quy định cửa hàng yêu cầu tối thiểu 2 mũi vắc-xin trước khi nhận Spa.", null);
+        }
+        if (soMui < 2) {
+            return new KetQuaTiemPhong(false, true, thangTuoi, soMui, null, 0,
+                    "Mới ghi nhận 1 mũi tiêm phòng. Quy định cửa hàng yêu cầu tối thiểu 2 mũi vắc-xin để đảm bảo kháng thể.", null);
+        }
+
+        LocalDate ngayMuiCuoi = lichSu.stream()
+                .filter(r -> r[2] instanceof java.sql.Date)
+                .map(r -> ((java.sql.Date) r[2]).toLocalDate())
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
+        if (ngayMuiCuoi == null) {
+            return new KetQuaTiemPhong(false, true, thangTuoi, soMui, null, 0,
+                    "Hồ sơ tiêm phòng thiếu ngày tiêm hợp lệ. Vui lòng kiểm tra lại sổ tiêm.", null);
+        }
+
+        long soNgayCachMuiCuoi = java.time.temporal.ChronoUnit.DAYS.between(ngayMuiCuoi, homNay);
+        if (soNgayCachMuiCuoi < 14) {
+            LocalDate ngaySomNhat = ngayMuiCuoi.plusDays(14);
+            long soNgayCho = java.time.temporal.ChronoUnit.DAYS.between(homNay, ngaySomNhat);
+            return new KetQuaTiemPhong(false, true, thangTuoi, soMui, ngayMuiCuoi, soNgayCachMuiCuoi,
+                    "Mũi tiêm gần nhất (" + ngayMuiCuoi.format(dtf) + ") mới qua " + soNgayCachMuiCuoi
+                            + " ngày. Quy định cần cách ít nhất 14 ngày để an toàn (sớm nhất từ " + ngaySomNhat.format(dtf) + ", còn " + soNgayCho + " ngày).",
+                    ngaySomNhat);
+        }
+
+        return new KetQuaTiemPhong(true, true, thangTuoi, soMui, ngayMuiCuoi, soNgayCachMuiCuoi,
+                "Đạt điều kiện hồ sơ: đủ tuổi (" + thangTuoi + " tháng), đã ghi nhận " + soMui + " mũi tiêm, mũi gần nhất cách " + soNgayCachMuiCuoi + " ngày.",
+                null);
+    }
+
     public static void kiemTraNhanSpa(String ma) {
         PhienDangNhapService.yeuCau(Quyen.QUAN_LY_SPA);
-        Object[] thu = timThuCung(ma);
-        LocalDate homNay = LocalDate.now();
-        if (thu[1] == null || ((java.sql.Date) thu[1]).toLocalDate().plusMonths(2).isAfter(homNay))
-            throw new IllegalArgumentException(
-                    "Cần bổ sung ngày sinh; thú cưng phải đủ 2 tháng tuổi để nhận Spa.");
-        var lichSu = tiemPhongDAO.layLichSu(((Number) thu[0]).longValue());
-        if (lichSu.size() < 2)
-            throw new IllegalArgumentException(
-                    "Cần bổ sung hồ sơ đủ 2 mũi tiêm phòng trước khi nhận Spa.");
-        long soMuiDu14Ngay =
-                lichSu.stream()
-                        .filter(r -> r[2] instanceof java.sql.Date)
-                        .map(r -> ((java.sql.Date) r[2]).toLocalDate())
-                        .filter(ngayTiem -> !ngayTiem.plusDays(14).isAfter(homNay))
-                        .count();
-        if (soMuiDu14Ngay < 2)
-            throw new IllegalArgumentException(
-                    "Mũi tiêm gần nhất phải cách ngày nhận Spa ít nhất 14 ngày.");
+        KetQuaTiemPhong kq = danhGiaNhanSpa(ma);
+        if (!kq.duDieuKien()) {
+            throw new IllegalArgumentException(kq.thongDiep());
+        }
     }
 }

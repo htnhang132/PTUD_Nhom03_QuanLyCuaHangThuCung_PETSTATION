@@ -7,6 +7,7 @@ import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
 import com.petstation.gui.components.common.BieuMauSQL;
+import com.petstation.gui.components.common.BoChonNgayGio;
 import com.petstation.service.DanhMucService;
 import com.petstation.service.LuaChonNghiepVuService;
 import com.petstation.service.SpaService;
@@ -28,7 +29,7 @@ public final class DatLichSpaDialog {
     private final JComboBox<BieuMauSQL.LuaChon> cboThuCung;
     private final JComboBox<BieuMauSQL.LuaChon> cboGoiDichVu;
     private final JComboBox<BieuMauSQL.LuaChon> cboNhanVien;
-    private final JSpinner spThoiGian;
+    private final BoChonNgayGio spThoiGian;
     private final JTextField txtGhiChu;
     private final JButton btnThemKhach;
     private final JButton btnThemThuCung;
@@ -63,12 +64,8 @@ public final class DatLichSpaDialog {
         btnThemThuCung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnThemThuCung.setPreferredSize(new Dimension(125, 32));
 
-        Date macDinh = Date.from(
-                LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0)
-                        .atZone(ZoneId.systemDefault()).toInstant());
-        spThoiGian = new JSpinner(new SpinnerDateModel(macDinh, null, null, java.util.Calendar.MINUTE));
-        spThoiGian.setEditor(new JSpinner.DateEditor(spThoiGian, "dd/MM/yyyy HH:mm"));
-        spThoiGian.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        spThoiGian = new BoChonNgayGio(
+                LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0));
 
         btnLuu = new NutDinhDang("Đặt lịch hẹn", NutDinhDang.KieuNut.CHINH);
         btnHuy = new NutDinhDang("Hủy bỏ (ESC)", NutDinhDang.KieuNut.PHU);
@@ -283,9 +280,7 @@ public final class DatLichSpaDialog {
                 throw new IllegalArgumentException("Vui lòng chọn thợ phụ trách.");
             }
 
-            Date dateVal = (Date) spThoiGian.getValue();
-            LocalDateTime batDau = LocalDateTime.ofInstant(dateVal.toInstant(), ZoneId.systemDefault())
-                    .withSecond(0).withNano(0);
+            LocalDateTime batDau = spThoiGian.layGiaTri();
 
             if (batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0))) {
                 throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");

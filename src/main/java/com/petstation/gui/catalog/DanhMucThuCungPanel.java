@@ -1,6 +1,7 @@
 package com.petstation.gui.catalog;
 
 import com.petstation.gui.components.QuanLyDanhMucPanel;
+import com.petstation.gui.components.common.BoSoanThaoTiemPhong;
 import com.petstation.service.DanhMucService;
 
 import java.util.List;
@@ -89,9 +90,11 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
                                 TruongDuLieu.tao("Màu lông", Kieu.VAN_BAN).an(),
                                 TruongDuLieu.tao("Chủ nuôi", Kieu.HOP_CHON).layDong(DanhMucService::layLuaChonKhachHang)
                                                 .batBuoc(),
-                                TruongDuLieu.tao("Tính trạng sức khỏe", Kieu.VUNG).an(),
-                                TruongDuLieu.tao("Dị ứng / Bệnh lý", Kieu.VUNG).an(),
-                                TruongDuLieu.tao("Tính cách", Kieu.VUNG).an(),
+                                TruongDuLieu.tao("Lịch sử tiêm phòng", Kieu.TUY_CHINH)
+                                                .datBoSoanThao(BoSoanThaoTiemPhong::new)
+                                                .an(),
+                                TruongDuLieu.tao("Dị ứng / Tiền sử bệnh lý", Kieu.VUNG).an(),
+                                TruongDuLieu.tao("Tính cách / Lưu ý chăm sóc", Kieu.VUNG).an(),
                                 TruongDuLieu.tao("Ảnh đại diện", Kieu.TEP).an(),
                                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON).datLuaChon("Đang hoạt động",
                                                 "Ngừng hoạt động"));

@@ -97,9 +97,9 @@ public final class BanHangService {
                         boolean dangHoatDong =
                                 Boolean.TRUE.equals(ttKhach)
                                         || (ttKhach instanceof Number n && n.intValue() != 0);
-                        if (!dangHoatDong)
+                        if (!dangHoatDong && !"DOI_HANG".equals(banHang.getKieuNguon()))
                             throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
-                        if (((Number) cacKhachHang.get(0)[0]).longValue() < banHang.getDiemDaDung())
+                        if (!cacKhachHang.isEmpty() && ((Number) cacKhachHang.get(0)[0]).longValue() < banHang.getDiemDaDung())
                             throw new IllegalArgumentException(
                                     "Điểm khách hàng đã thay đổi, hãy chọn lại số điểm.");
                     } else if (banHang.getDiemDaDung() > 0)
@@ -189,7 +189,8 @@ public final class BanHangService {
                                 if (soLuong <= 0) continue;
                                 if (banHangDAO.truTonLo(soLuong, loHang[0], soLuong) != 1)
                                     throw new IllegalStateException("Tồn kho vừa thay đổi.");
-                                banHangDAO.ghiPhanBoLo(muc, loHang[0], soLuong);
+                                if (banHangDAO.ghiPhanBoLo(hoaDon, sanPham, loHang[0], soLuong) <= 0)
+                                    throw new IllegalStateException("Không thể ghi nhận phân bổ lô hàng cho " + dong.getTen() + ".");
                                 conLai -= soLuong;
                                 if (conLai == 0) break;
                             }

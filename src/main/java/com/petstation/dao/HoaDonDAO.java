@@ -51,6 +51,8 @@ public interface HoaDonDAO {
 
     int truTonLo(Object... cacThamSo);
 
+    int ghiPhanBoLo(Object maHoaDon, Object maSanPham, Object maLo, int soLuong);
+
     int ghiPhanBoLo(Object... cacThamSo);
 
     long themHoaDon(Object... cacThamSo);

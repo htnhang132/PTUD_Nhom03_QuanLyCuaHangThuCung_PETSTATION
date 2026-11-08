@@ -6,20 +6,24 @@ import com.petstation.database.ThaoTacSQL;
 public final class CaiDatDAOImpl implements CaiDatDAO {
     public CaiDatDAOImpl() {}
 
-    public Object timGiaTri(Object... cacThamSo) {
-        return ThaoTacSQL.layGiaTriDon("SELECT gia_tri FROM cai_dat WHERE ma_cai_dat=?", cacThamSo);
+    @Override
+    public Object timGiaTri(String maCaiDat) {
+        return ThaoTacSQL.layGiaTriDon("SELECT gia_tri FROM cai_dat WHERE ma_cai_dat=?", maCaiDat);
     }
 
-    public int themGiaTri(Object... cacThamSo) {
+    @Override
+    public int themGiaTri(String maCaiDat, String giaTri, String tenDangNhap) {
         return ThaoTacSQL.capNhat(
-                "INSERT INTO cai_dat(ma_cai_dat,gia_tri,ten_dang_nhap) VALUES(?,?,?)", cacThamSo);
+                "INSERT INTO cai_dat(ma_cai_dat,gia_tri,ten_dang_nhap) VALUES(?,?,?)",
+                maCaiDat, giaTri, tenDangNhap);
     }
 
-    public int capNhatGiaTri(Object... cacThamSo) {
+    @Override
+    public int capNhatGiaTri(String giaTri, String tenDangNhap, String maCaiDat) {
         return ThaoTacSQL.capNhat(
                 "UPDATE cai_dat WITH(UPDLOCK,HOLDLOCK) SET"
                         + " gia_tri=?,ten_dang_nhap=?,ngay_cap_nhat=SYSDATETIME()"
                         + " WHERE ma_cai_dat=?",
-                cacThamSo);
+                giaTri, tenDangNhap, maCaiDat);
     }
 }

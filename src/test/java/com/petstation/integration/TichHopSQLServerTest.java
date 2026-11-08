@@ -178,10 +178,8 @@ class TichHopSQLServerTest {
                         maGoiDichVu,
                         "Service " + hauTo);
         capNhat(
-                "INSERT INTO"
-                    + " bang_gia_spa(goi_id,loai_thu_cung,khoang_can,can_nang_tu,can_nang_den,don_gia)"
-                    + " VALUES(?,N'Chó',N'< 5kg',0,5,150000)",
-                goiDichVu);
+                "UPDATE goi_dich_vu_spa SET bang_gia = N'Chó|< 5kg|0|5|150000' WHERE ma_goi = ?",
+                maGoiDichVu);
     }
 
     private GioHang layGioHang(int soLuong) {

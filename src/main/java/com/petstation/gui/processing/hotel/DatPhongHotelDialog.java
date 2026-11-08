@@ -2,6 +2,7 @@ package com.petstation.gui.processing.hotel;
 
 import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.common.BieuMauSQL;
+import com.petstation.gui.components.common.BoChonNgayGio;
 import com.petstation.service.LuaChonNghiepVuService;
 import com.petstation.service.LuuTruService;
 import com.petstation.util.TienTe;
@@ -21,8 +22,8 @@ public final class DatPhongHotelDialog {
     private final JDialog dialog;
     private final JComboBox<BieuMauSQL.LuaChon> cboThuCung;
     private final JComboBox<BieuMauSQL.LuaChon> cboPhong;
-    private final JSpinner spNgayVao;
-    private final JSpinner spNgayRa;
+    private final BoChonNgayGio spNgayVao;
+    private final BoChonNgayGio spNgayRa;
     private final JTextArea txtGhiChu = new JTextArea(3, 24);
     private final JLabel lblSoNgay = new JLabel("—");
     private final JLabel lblTongTien = new JLabel("—");
@@ -59,8 +60,8 @@ public final class DatPhongHotelDialog {
         cboPhong = new JComboBox<>(rooms.toArray(BieuMauSQL.LuaChon[]::new));
 
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
-        spNgayVao = taoChonNgay(now);
-        spNgayRa = taoChonNgay(now.plusDays(1));
+        spNgayVao = new BoChonNgayGio(now);
+        spNgayRa = new BoChonNgayGio(now.plusDays(1));
 
         if (hopDongId != null) napDuLieuSua();
         else chonGiaTri(cboPhong, maPhongMacDinh);
@@ -68,8 +69,8 @@ public final class DatPhongHotelDialog {
         taoGiaoDien();
         cboThuCung.addActionListener(e -> capNhatDuKien());
         cboPhong.addActionListener(e -> capNhatDuKien());
-        spNgayVao.addChangeListener(e -> capNhatDuKien());
-        spNgayRa.addChangeListener(e -> capNhatDuKien());
+        spNgayVao.addChangeListener(this::capNhatDuKien);
+        spNgayRa.addChangeListener(this::capNhatDuKien);
         capNhatDuKien();
 
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -153,20 +154,6 @@ public final class DatPhongHotelDialog {
         panel.add(component, gc);
     }
 
-    private static JSpinner taoChonNgay(LocalDateTime value) {
-        Date date = Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
-        JSpinner spinner = new JSpinner(
-                new SpinnerDateModel(date, null, null, Calendar.MINUTE));
-        spinner.setEditor(new JSpinner.DateEditor(spinner, "dd/MM/yyyy HH:mm"));
-        return spinner;
-    }
-
-    private static LocalDateTime layNgay(JSpinner spinner) {
-        Date date = (Date) spinner.getValue();
-        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())
-                .withSecond(0).withNano(0);
-    }
-
     private static boolean chonGiaTri(
             JComboBox<BieuMauSQL.LuaChon> combo, String giaTri) {
         if (giaTri == null || giaTri.isBlank()) return false;
@@ -202,12 +189,8 @@ public final class DatPhongHotelDialog {
         chonHoacThemGiaTriCu(
                 cboPhong, roomCu,
                 roomCu + " - Phòng hiện tại (cần kiểm tra trạng thái)");
-        spNgayVao.setValue(Date.from(
-                ((java.sql.Timestamp) data[3]).toLocalDateTime()
-                        .atZone(ZoneId.systemDefault()).toInstant()));
-        spNgayRa.setValue(Date.from(
-                ((java.sql.Timestamp) data[4]).toLocalDateTime()
-                        .atZone(ZoneId.systemDefault()).toInstant()));
+        spNgayVao.datGiaTri(((java.sql.Timestamp) data[3]).toLocalDateTime());
+        spNgayRa.datGiaTri(((java.sql.Timestamp) data[4]).toLocalDateTime());
         txtGhiChu.setText(data[5] == null ? "" : data[5].toString());
 
         boolean daNhanCoc =
@@ -226,8 +209,8 @@ public final class DatPhongHotelDialog {
     private void capNhatDuKien() {
         try {
             String maPhong = giaTriDangChon(cboPhong);
-            LocalDateTime vao = layNgay(spNgayVao);
-            LocalDateTime ra = layNgay(spNgayRa);
+            LocalDateTime vao = spNgayVao.layGiaTri();
+            LocalDateTime ra = spNgayRa.layGiaTri();
             if (!ra.isAfter(vao))
                 throw new IllegalArgumentException("Ngày trả phòng phải sau ngày nhận phòng.");
 
@@ -252,8 +235,8 @@ public final class DatPhongHotelDialog {
         try {
             String pet = giaTriDangChon(cboThuCung);
             String room = giaTriDangChon(cboPhong);
-            LocalDateTime start = layNgay(spNgayVao);
-            LocalDateTime end = layNgay(spNgayRa);
+            LocalDateTime start = spNgayVao.layGiaTri();
+            LocalDateTime end = spNgayRa.layGiaTri();
             String note = txtGhiChu.getText().trim();
 
             if (pet.isBlank() || room.isBlank())

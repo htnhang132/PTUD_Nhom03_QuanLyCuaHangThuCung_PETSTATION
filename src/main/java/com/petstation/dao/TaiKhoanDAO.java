@@ -19,7 +19,7 @@ public interface TaiKhoanDAO {
 
     void ghiNhanDangNhapThanhCong(Connection ketNoi, String tenDangNhap) throws Exception;
 
-    Object layMaBamMatKhau(Object... cacThamSo);
+    Object layMaBamMatKhau(String tenDangNhap);
 
-    int capNhatMatKhau(Object... cacThamSo);
+    int capNhatMatKhau(String matKhauMoi, String tenDangNhap);
 }

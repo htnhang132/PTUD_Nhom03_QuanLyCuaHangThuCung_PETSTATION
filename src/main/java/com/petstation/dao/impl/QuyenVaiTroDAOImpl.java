@@ -10,8 +10,8 @@ import java.util.List;
 public final class QuyenVaiTroDAOImpl implements QuyenVaiTroDAO {
     public QuyenVaiTroDAOImpl() {}
 
-    public List<Object[]> timCua(Object... cacThamSo) {
-        String maVaiTro = cacThamSo.length > 0 ? String.valueOf(cacThamSo[0]) : "";
+    @Override
+    public List<Object[]> timCua(String maVaiTro) {
         VaiTro vt = VaiTro.docTuCSDL(maVaiTro);
         Object chuoi =
                 ThaoTacSQL.layGiaTriDon(

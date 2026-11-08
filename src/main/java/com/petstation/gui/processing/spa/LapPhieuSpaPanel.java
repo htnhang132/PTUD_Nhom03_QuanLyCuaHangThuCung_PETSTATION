@@ -2,21 +2,22 @@ package com.petstation.gui.processing.spa;
 
 import com.petstation.gui.catalog.DanhMucKhachHangPanel;
 import com.petstation.gui.catalog.DanhMucThuCungPanel;
+import com.petstation.gui.components.BoGocPanel;
+import com.petstation.gui.components.CoSoPanel;
 import com.petstation.gui.components.HopThoai;
+import com.petstation.gui.components.MauUngDung;
+import com.petstation.gui.components.NutDinhDang;
 import com.petstation.gui.components.common.BieuMauSQL.LuaChon;
-import com.petstation.model.Quyen;
 import com.petstation.model.PhieuSpaTreo;
-import com.petstation.service.PhieuSpaTreoService;
+import com.petstation.model.Quyen;
 import com.petstation.service.DanhMucService;
-import com.petstation.service.PhienDangNhapService;
 import com.petstation.service.LapPhieuSpaService;
 import com.petstation.service.LuaChonNghiepVuService;
+import com.petstation.service.PhienDangNhapService;
+import com.petstation.service.PhieuSpaTreoService;
 import com.petstation.service.QuyTrinhService;
 import com.petstation.service.SpaService;
 import com.petstation.service.TiemPhongService;
-import com.petstation.gui.components.CoSoPanel;
-import com.petstation.gui.components.MauUngDung;
-import com.petstation.gui.components.NutDinhDang;
 import com.petstation.util.TienTe;
 import java.util.function.LongConsumer;
 
@@ -32,10 +33,42 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private final JTextArea txtGhiChu = new JTextArea(3, 28);
     private Object[] khachHang;
     private final JComboBox<LuaChon> cboDichVu = new JComboBox<>();
-    private final JCheckBox chkSucKhoe = new JCheckBox("Đã kiểm tra thực tế, đủ điều kiện tiếp nhận");
     private final JLabel lblGia = new JLabel("Chọn dịch vụ và cân nặng để xem giá");
     private final JLabel lblNguon = new JLabel("Khách đến trực tiếp");
     private final JTextArea txtYeuCau = new JTextArea(2, 28);
+
+    private final JLabel lblHuyHieuHoSo = new JLabel("CHƯA CHỌN THÚ CƯNG");
+    private final JLabel lblChiTietHoSo = new JLabel("Chọn thú cưng bên trên để hệ thống tự động kiểm tra điều kiện tuổi và tiêm phòng.");
+    private final JPanel pnlTheHoSo = new BoGocPanel(10, new Color(248, 249, 250), true);
+    private final JButton btnCapNhatSoTiem;
+
+    private final JComboBox<String> cboKiemTraDa = new JComboBox<>(new String[]{
+            "Không thấy bất thường",
+            "Có vết trầy xước / Vết thương cũ",
+            "Dấu hiệu nghi nấm / Gàu ngứa",
+            "Khác (mô tả bên dưới)"
+    });
+    private final JComboBox<String> cboKiemTraVe = new JComboBox<>(new String[]{
+            "Không phát hiện",
+            "Có ve / Rận / Bọ chét"
+    });
+    private final JComboBox<String> cboKiemTraMatTai = new JComboBox<>(new String[]{
+            "Sạch sẽ, bình thường",
+            "Mắt đỏ / Tai hôi / Chảy dịch",
+            "Khác (mô tả bên dưới)"
+    });
+    private final JComboBox<String> cboKiemTraLong = new JComboBox<>(new String[]{
+            "Lông mượt, không rối",
+            "Rối nhẹ",
+            "Rối vừa",
+            "Bết dính nặng (Cần gỡ rối/cạo)"
+    });
+    private final JComboBox<String> cboKetLuanTiepNhan = new JComboBox<>(new String[]{
+            "Đủ điều kiện tiếp nhận",
+            "Cần điều chỉnh dịch vụ / Chăm sóc đặc biệt",
+            "Từ chối tiếp nhận (có vết thương hở / sức khỏe yếu)"
+    });
+
     private final LongConsumer khiLuu;
     private final Runnable khiTreo;
     private long idPhieuTreo;
@@ -44,55 +77,76 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     public LapPhieuSpaPanel(LongConsumer khiLuu, Runnable chonLich, Runnable khiTreo) {
         this.khiLuu = khiLuu;
         this.khiTreo = khiTreo;
-        JPanel bieuMau = new JPanel(new GridBagLayout());
-        bieuMau.setOpaque(false);
+
+        JPanel noiDung = new JPanel();
+        noiDung.setLayout(new BoxLayout(noiDung, BoxLayout.Y_AXIS));
+        noiDung.setOpaque(false);
+
         lblNguon.setForeground(MauUngDung.NAU);
-        chkSucKhoe.setOpaque(false);
-        JPanel timKhach = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        timKhach.add(txtSoDienThoai);
-        timKhach.add(nut("Tìm khách", this::timKhach));
-        JButton themKhach = nut("Thêm khách hàng", this::themKhach);
+        lblNguon.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+
+        JButton btnChonLich = nut("Khách có hẹn — Chọn lịch hẹn", chonLich);
+        btnChonLich.setPreferredSize(new Dimension(240, 32));
+
+        txtSoDienThoai.setPreferredSize(new Dimension(160, 32));
+        JButton btnTim = nut("Tìm khách", this::timKhach);
+        btnTim.setPreferredSize(new Dimension(95, 32));
+        JButton themKhach = nut("+ Thêm khách", this::themKhach);
+        themKhach.setPreferredSize(new Dimension(125, 32));
         themKhach.setEnabled(PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_KHACH_HANG));
-        timKhach.add(themKhach);
         txtSoDienThoai.addActionListener(e -> anToan(this::timKhach));
-        themDong(bieuMau, "Nguồn tiếp nhận", lblNguon);
-        themDong(bieuMau, "", nut("Khách có hẹn — Chọn lịch hẹn", chonLich));
-        themDong(bieuMau, "Số điện thoại", timKhach);
 
-        themDong(bieuMau, "Khách hàng", lblKhachHang);
+        lblKhachHang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        lblKhachHang.setForeground(MauUngDung.DO_THUONG_HIEU);
 
-        themDong(bieuMau, "Thú cưng", cboThuCung);
-        JButton hoSo = nut("Hồ sơ / Thêm thú cưng", this::moHoSoThuCung);
+        cboThuCung.setPreferredSize(new Dimension(280, 32));
+        JButton hoSo = nut("+ Hồ sơ thú cưng", this::moHoSoThuCung);
+        hoSo.setPreferredSize(new Dimension(145, 32));
         hoSo.setEnabled(PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_THU_CUNG));
-        themDong(bieuMau, "Hồ sơ thú cưng", hoSo);
-        themDong(bieuMau, "Tuổi / Tiêm phòng", nut("Kiểm tra hồ sơ", () -> {
-            TiemPhongService.kiemTraNhanSpa(thuDaChon().giaTri());
-            HopThoai.hienThiThongTin(this, "Đạt điều kiện hồ sơ. Tiếp tục kiểm tra sức khỏe thực tế.");
-        }));
-        themDong(bieuMau, "Sức khỏe thực tế", chkSucKhoe);
 
-        themDong(bieuMau, "Cân nặng thực tế (kg)", txtCanNang);
+        btnCapNhatSoTiem = nut("Xem / Sửa sổ tiêm", this::moSoTiemThuCung);
+        btnCapNhatSoTiem.setPreferredSize(new Dimension(150, 26));
+        btnCapNhatSoTiem.setEnabled(false);
 
-        txtGhiChu.setLineWrap(true);
-        txtGhiChu.setWrapStyleWord(true);
-        themDong(bieuMau, "Tình trạng khi nhận", new JScrollPane(txtGhiChu));
-        txtYeuCau.setLineWrap(true);
-        txtYeuCau.setWrapStyleWord(true);
-        themDong(bieuMau, "Yêu cầu / Vật dụng", new JScrollPane(txtYeuCau));
         for (Object[] goi : LuaChonNghiepVuService.layLuaChonGoiDichVu())
             cboDichVu.addItem(new LuaChon(String.valueOf(goi[0]), String.valueOf(goi[1])));
         cboDichVu.setSelectedIndex(-1);
-        themDong(bieuMau, "Dịch vụ", cboDichVu);
-        themDong(bieuMau, "Giá dự kiến", lblGia);
-        themDong(bieuMau, "", nut("Xem giá", this::xemGia));
+
+        txtCanNang.setPreferredSize(new Dimension(85, 32));
+        cboDichVu.setPreferredSize(new Dimension(280, 32));
+
+        lblGia.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
+        lblGia.setForeground(MauUngDung.DO_THUONG_HIEU);
+
+        txtGhiChu.setLineWrap(true);
+        txtGhiChu.setWrapStyleWord(true);
+        txtGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        JScrollPane spGhiChu = new JScrollPane(txtGhiChu);
+        spGhiChu.setPreferredSize(new Dimension(780, 52));
+        spGhiChu.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true));
+
+        txtYeuCau.setLineWrap(true);
+        txtYeuCau.setWrapStyleWord(true);
+        txtYeuCau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        JScrollPane spYeuCau = new JScrollPane(txtYeuCau);
+        spYeuCau.setPreferredSize(new Dimension(780, 48));
+        spYeuCau.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true));
+
         cboDichVu.addActionListener(e -> capNhatGiaTuDong());
         txtCanNang.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                capNhatGiaTuDong();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                capNhatGiaTuDong();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                capNhatGiaTuDong();
+            }
         });
         cboThuCung.addActionListener(e -> {
-            chkSucKhoe.setSelected(false);
             LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
             if (thu != null && txtCanNang.getText().trim().isEmpty()) {
                 DanhMucService.layThuCung().stream()
@@ -100,43 +154,185 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                         .findFirst()
                         .ifPresent(t -> {
                             String cn = t[6] == null ? "" : String.valueOf(t[6]).trim();
-                            if (!cn.isEmpty()) txtCanNang.setText(cn);
+                            if (!cn.isEmpty())
+                                txtCanNang.setText(cn);
                         });
             }
             capNhatGiaTuDong();
+            capNhatDanhGiaHoSo();
         });
-        JPanel thaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        thaoTac.setOpaque(false);
+
+        // Nhóm 1: Nguồn tiếp nhận & Khách hàng
+        noiDung.add(nhom(
+                "1. Nguồn tiếp nhận & Khách hàng",
+                hang(nhan("Nguồn tiếp nhận:"), lblNguon, Box.createHorizontalStrut(12), btnChonLich),
+                hang(nhan("Số điện thoại:"), txtSoDienThoai, btnTim, themKhach),
+                hang(nhan("Khách hàng:"), lblKhachHang)));
+        noiDung.add(Box.createVerticalStrut(12));
+
+        // Khung trạng thái hồ sơ tiêm phòng tự động
+        pnlTheHoSo.setLayout(new BorderLayout(8, 6));
+        pnlTheHoSo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        pnlTheHoSo.setPreferredSize(new Dimension(840, 68));
+        pnlTheHoSo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 68));
+
+        JPanel pnlDauHoSo = new JPanel(new BorderLayout(8, 0));
+        pnlDauHoSo.setOpaque(false);
+        lblHuyHieuHoSo.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        lblHuyHieuHoSo.setForeground(MauUngDung.VAN_BAN_XAM);
+        pnlDauHoSo.add(lblHuyHieuHoSo, BorderLayout.WEST);
+        pnlDauHoSo.add(btnCapNhatSoTiem, BorderLayout.EAST);
+
+        lblChiTietHoSo.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        lblChiTietHoSo.setForeground(MauUngDung.VAN_BAN_TOI);
+
+        pnlTheHoSo.add(pnlDauHoSo, BorderLayout.NORTH);
+        pnlTheHoSo.add(lblChiTietHoSo, BorderLayout.CENTER);
+
+        // Bảng kiểm tra thực tế tại quầy (Pre-Grooming Assessment)
+        cboKiemTraDa.setPreferredSize(new Dimension(220, 30));
+        cboKiemTraVe.setPreferredSize(new Dimension(190, 30));
+        cboKiemTraMatTai.setPreferredSize(new Dimension(220, 30));
+        cboKiemTraLong.setPreferredSize(new Dimension(190, 30));
+        cboKetLuanTiepNhan.setPreferredSize(new Dimension(260, 30));
+
+        JPanel hangKt1 = hang(
+                nhan("Da & Lông:"), cboKiemTraDa, Box.createHorizontalStrut(8),
+                nhan("Ký sinh trùng:"), cboKiemTraVe);
+        JPanel hangKt2 = hang(
+                nhan("Mắt & Tai:"), cboKiemTraMatTai, Box.createHorizontalStrut(8),
+                nhan("Độ rối lông:"), cboKiemTraLong);
+        JPanel hangKl = hang(
+                nhan("Đánh giá tại quầy:"), cboKetLuanTiepNhan);
+
+        // Nhóm 2: Hồ sơ thú cưng & Đánh giá thực tế tại quầy
+        noiDung.add(nhom(
+                "2. Hồ sơ thú cưng & Đánh giá thực tế tại quầy",
+                hang(nhan("Thú cưng:"), cboThuCung, hoSo),
+                pnlTheHoSo,
+                Box.createVerticalStrut(4),
+                hangKt1,
+                hangKt2,
+                hangKl,
+                goiY("Hệ thống tự động kiểm tra tuổi và sổ tiêm. Đánh giá nhanh tình trạng thực tế trước khi nhận bé vào dịch vụ.")));
+        noiDung.add(Box.createVerticalStrut(12));
+
+        // Nhóm 3: Dịch vụ Spa & Cân nặng
+        JPanel pnlDichVuGia = hang(
+                nhan("Dịch vụ & Cân nặng:"),
+                new JLabel("Cân nặng:"), txtCanNang, new JLabel("kg"), Box.createHorizontalStrut(12),
+                new JLabel("Gói dịch vụ:"), cboDichVu);
+        noiDung.add(nhom(
+                "3. Dịch vụ Spa & Cân nặng",
+                pnlDichVuGia,
+                hang(nhan("Giá dự kiến:"), lblGia),
+                goiY("Giá được tính tự động theo loài thú cưng (Chó/Mèo), cân nặng và bảng giá của gói dịch vụ.")));
+        noiDung.add(Box.createVerticalStrut(12));
+
+        // Nhóm 4: Tình trạng tiếp nhận & Yêu cầu
+        JLabel lblTieuDeGhiChu = new JLabel("Tình trạng khi nhận (vết thương, ve rận, tâm lý):");
+        lblTieuDeGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        lblTieuDeGhiChu.setForeground(MauUngDung.VAN_BAN_XAM);
+
+        JLabel lblTieuDeYeuCau = new JLabel("Yêu cầu của khách / Vật dụng gửi kèm:");
+        lblTieuDeYeuCau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        lblTieuDeYeuCau.setForeground(MauUngDung.VAN_BAN_XAM);
+
+        spGhiChu.setPreferredSize(new Dimension(840, 56));
+        spYeuCau.setPreferredSize(new Dimension(840, 52));
+
+        noiDung.add(nhom(
+                "4. Tình trạng tiếp nhận & Yêu cầu",
+                lblTieuDeGhiChu,
+                spGhiChu,
+                lblTieuDeYeuCau,
+                spYeuCau));
+
+        JPanel thaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 10));
+        thaoTac.setBackground(Color.WHITE);
+        thaoTac.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, MauUngDung.VIEN),
+                BorderFactory.createEmptyBorder(6, 20, 6, 20)));
+
         thaoTac.add(nut("Phiếu đang treo", this::moDanhSachPhieuTreo));
-        thaoTac.add(nut("Treo phiếu", this::treoPhieu));
         thaoTac.add(nut("Lập phiếu mới", this::xoaForm));
-        thaoTac.add(nut("Tạo phiếu tiếp nhận", this::luu));
-        JScrollPane cuon = new JScrollPane(bieuMau);
+        thaoTac.add(nut("Treo phiếu", this::treoPhieu));
+        JButton btnTaoPhieu = nut("Tạo phiếu tiếp nhận", this::luu);
+        btnTaoPhieu.setPreferredSize(new Dimension(180, 36));
+        thaoTac.add(btnTaoPhieu);
+
+        JPanel pnlCanGiua = new JPanel(new GridBagLayout());
+        pnlCanGiua.setBackground(MauUngDung.NEN_KEM);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.0;
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.insets = new Insets(16, 20, 24, 20);
+        noiDung.setPreferredSize(new Dimension(880, 840));
+        pnlCanGiua.add(noiDung, gbc);
+
+        JScrollPane cuon = new JScrollPane(pnlCanGiua);
         cuon.setBorder(BorderFactory.createEmptyBorder());
         cuon.getViewport().setBackground(MauUngDung.NEN_KEM);
         cuon.getVerticalScrollBar().setUnitIncrement(18);
+
         add(cuon, BorderLayout.CENTER);
         add(thaoTac, BorderLayout.SOUTH);
     }
 
-    private void themDong(JPanel panel, String nhan, Component dauVao) {
-        int dong = panel.getComponentCount() / 2;
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridy = dong;
-        c.insets = new Insets(7, 6, 7, 6);
-        c.anchor = GridBagConstraints.NORTHWEST;
-        JLabel label = new JLabel(nhan);
-        label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        label.setForeground(MauUngDung.VAN_BAN_TOI);
-        panel.add(label, c);
-        c.gridx = 1;
-        c.weightx = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(dauVao, c);
+    private static JLabel nhan(String vanBan) {
+        JLabel l = new JLabel(vanBan);
+        l.setPreferredSize(new Dimension(140, 32));
+        l.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        l.setForeground(MauUngDung.VAN_BAN_TOI);
+        return l;
+    }
+
+    private static JPanel hang(Component... cac) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        p.setOpaque(false);
+        for (Component c : cac)
+            p.add(c);
+        return p;
+    }
+
+    private static JPanel nhom(String ten, Component... cac) {
+        JPanel p = new BoGocPanel(14, MauUngDung.THE_NEN);
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
+        JLabel nhan = new JLabel(ten);
+        nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
+        nhan.setForeground(MauUngDung.NAU);
+        nhan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        p.add(nhan);
+        for (Component c : cac) {
+            p.add(Box.createVerticalStrut(8));
+            if (c instanceof JComponent j) {
+                j.setAlignmentX(Component.LEFT_ALIGNMENT);
+                j.setMaximumSize(new Dimension(Integer.MAX_VALUE, j.getPreferredSize().height));
+            }
+            p.add(c);
+        }
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, p.getPreferredSize().height));
+        p.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return p;
+    }
+
+    private static JLabel goiY(String noiDung) {
+        JLabel nhan = new JLabel(noiDung);
+        nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        nhan.setForeground(MauUngDung.VAN_BAN_XAM);
+        return nhan;
     }
 
     public void xoaForm() {
-        if (chupNhap().coNoiDung() && !HopThoai.xacNhan(this, "Bỏ nội dung đang nhập để lập phiếu mới? Phiếu đã treo vẫn được giữ.")) return;
+        if (chupNhap().coNoiDung()
+                && !HopThoai.xacNhan(this, "Bỏ nội dung đang nhập để lập phiếu mới? Phiếu đã treo vẫn được giữ."))
+            return;
         datLaiForm();
     }
 
@@ -152,15 +348,20 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         txtGhiChu.setText("");
         txtYeuCau.setText("");
         cboDichVu.setSelectedIndex(-1);
-        chkSucKhoe.setSelected(false);
+        cboKiemTraDa.setSelectedIndex(0);
+        cboKiemTraVe.setSelectedIndex(0);
+        cboKiemTraMatTai.setSelectedIndex(0);
+        cboKiemTraLong.setSelectedIndex(0);
+        cboKetLuanTiepNhan.setSelectedIndex(0);
+        capNhatDanhGiaHoSo();
     }
 
     private PhieuSpaTreo chupNhap() {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
         LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
         return new PhieuSpaTreo(khachHang == null ? "" : String.valueOf(khachHang[0]),
-            txtSoDienThoai.getText(), thu == null ? "" : thu.giaTri(), goi == null ? "" : goi.giaTri(),
-            maHen, txtCanNang.getText(), txtGhiChu.getText(), txtYeuCau.getText());
+                txtSoDienThoai.getText(), thu == null ? "" : thu.giaTri(), goi == null ? "" : goi.giaTri(),
+                maHen, txtCanNang.getText(), txtGhiChu.getText(), txtYeuCau.getText());
     }
 
     private void treoPhieu() {
@@ -180,58 +381,73 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     public void khoiPhucPhieu(long id) {
         PhieuSpaTreo p = PhieuSpaTreoService.lay(id);
 
-        Object[] khach = p.maKhach().isBlank() ? null : DanhMucService.layKhachHang().stream()
-            .filter(k -> p.maKhach().equals(String.valueOf(k[0])) && "Đang hoạt động".equals(k[8]))
-            .findFirst().orElseThrow(() -> new IllegalArgumentException("Khách của phiếu treo không còn hoạt động."));
-        if (!p.maThu().isBlank() && DanhMucService.layThuCung().stream().noneMatch(t ->
-            p.maThu().equals(String.valueOf(t[0])) && "Đang hoạt động".equals(t[13])
-                && p.maKhach().equals(DanhMucService.layMaTuLuaChon(t[8]))))
+        Object[] khach = p.maKhach().isBlank() ? null
+                : DanhMucService.layKhachHang().stream()
+                        .filter(k -> p.maKhach().equals(String.valueOf(k[0])) && "Đang hoạt động".equals(k[8]))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("Khách của phiếu treo không còn hoạt động."));
+        if (!p.maThu().isBlank() && DanhMucService.layThuCung().stream()
+                .noneMatch(t -> p.maThu().equals(String.valueOf(t[0])) && "Đang hoạt động".equals(t[13])
+                        && p.maKhach().equals(DanhMucService.layMaTuLuaChon(t[8]))))
             throw new IllegalArgumentException("Thú cưng của phiếu treo không còn thuộc hồ sơ khách đang hoạt động.");
         if (!p.maGoi().isBlank()) {
             boolean coGoi = false;
             for (int i = 0; i < cboDichVu.getItemCount(); i++)
-                if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri())) coGoi = true;
-            if (!coGoi) throw new IllegalArgumentException("Dịch vụ của phiếu treo không còn hoạt động.");
+                if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri()))
+                    coGoi = true;
+            if (!coGoi)
+                throw new IllegalArgumentException("Dịch vụ của phiếu treo không còn hoạt động.");
         }
         datLaiForm();
         chonKhach(khach);
         cboThuCung.setSelectedIndex(-1);
         for (int i = 0; i < cboThuCung.getItemCount(); i++)
-            if (p.maThu().equals(cboThuCung.getItemAt(i).giaTri())) cboThuCung.setSelectedIndex(i);
+            if (p.maThu().equals(cboThuCung.getItemAt(i).giaTri()))
+                cboThuCung.setSelectedIndex(i);
         for (int i = 0; i < cboDichVu.getItemCount(); i++)
-            if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri())) cboDichVu.setSelectedIndex(i);
+            if (p.maGoi().equals(cboDichVu.getItemAt(i).giaTri()))
+                cboDichVu.setSelectedIndex(i);
         maHen = p.maHen();
         cboThuCung.setEnabled(maHen.isBlank());
         cboDichVu.setEnabled(maHen.isBlank());
         lblNguon.setText(maHen.isBlank() ? "Khách đến trực tiếp — đang sửa phiếu treo"
-            : "Từ lịch hẹn: " + maHen + " — đang sửa phiếu treo");
+                : "Từ lịch hẹn: " + maHen + " — đang sửa phiếu treo");
         txtSoDienThoai.setText(p.soDienThoai());
         txtCanNang.setText(p.canNang());
         txtGhiChu.setText(p.tinhTrang());
         txtYeuCau.setText(p.yeuCau());
-        chkSucKhoe.setSelected(false);
+        cboKiemTraDa.setSelectedIndex(0);
+        cboKiemTraVe.setSelectedIndex(0);
+        cboKiemTraMatTai.setSelectedIndex(0);
+        cboKiemTraLong.setSelectedIndex(0);
+        cboKetLuanTiepNhan.setSelectedIndex(0);
+        capNhatDanhGiaHoSo();
         lblGia.setText("Kiểm tra lại sức khỏe thực tế và nhấn Xem giá trước khi tạo phiếu");
         idPhieuTreo = id;
     }
 
     public void nhanLichHen(long id) {
-        if (khachHang != null && !HopThoai.xacNhan(this, "Thay nội dung đang nhập bằng lịch hẹn đã chọn?")) return;
+        if (khachHang != null && !HopThoai.xacNhan(this, "Thay nội dung đang nhập bằng lịch hẹn đã chọn?"))
+            return;
         var hen = QuyTrinhService.layLichHen(id);
-        if (hen.isEmpty()) throw new IllegalArgumentException("Lịch hẹn không còn chờ tiếp nhận.");
+        if (hen.isEmpty())
+            throw new IllegalArgumentException("Lịch hẹn không còn chờ tiếp nhận.");
         var chiTiet = SpaService.layChiTietLichHen(id);
         Object[] thu = DanhMucService.layThuCung().stream()
-            .filter(t -> String.valueOf(t[0]).equals(String.valueOf(chiTiet[0])))
-            .findFirst().orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ thú cưng."));
+                .filter(t -> String.valueOf(t[0]).equals(String.valueOf(chiTiet[0])))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Không tìm thấy hồ sơ thú cưng."));
         String maChu = DanhMucService.layMaTuLuaChon(thu[8]);
         Object[] chu = DanhMucService.layKhachHang().stream()
-            .filter(k -> String.valueOf(k[0]).equals(maChu)).findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng."));
+                .filter(k -> String.valueOf(k[0]).equals(maChu)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng."));
         chonKhach(chu);
         for (int i = 0; i < cboThuCung.getItemCount(); i++)
-            if (cboThuCung.getItemAt(i).giaTri().equals(String.valueOf(chiTiet[0]))) cboThuCung.setSelectedIndex(i);
+            if (cboThuCung.getItemAt(i).giaTri().equals(String.valueOf(chiTiet[0])))
+                cboThuCung.setSelectedIndex(i);
         cboDichVu.setSelectedIndex(-1);
         for (int i = 0; i < cboDichVu.getItemCount(); i++)
-            if (cboDichVu.getItemAt(i).giaTri().equals(String.valueOf(chiTiet[1]))) cboDichVu.setSelectedIndex(i);
+            if (cboDichVu.getItemAt(i).giaTri().equals(String.valueOf(chiTiet[1])))
+                cboDichVu.setSelectedIndex(i);
         if (cboDichVu.getSelectedItem() == null)
             throw new IllegalArgumentException("Dịch vụ của lịch hẹn không còn hoạt động.");
         maHen = String.valueOf(hen.get(0)[0]);
@@ -241,12 +457,18 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         txtCanNang.setText("");
         txtGhiChu.setText("");
         txtYeuCau.setText("");
-        chkSucKhoe.setSelected(false);
+        cboKiemTraDa.setSelectedIndex(0);
+        cboKiemTraVe.setSelectedIndex(0);
+        cboKiemTraMatTai.setSelectedIndex(0);
+        cboKiemTraLong.setSelectedIndex(0);
+        cboKetLuanTiepNhan.setSelectedIndex(0);
+        capNhatDanhGiaHoSo();
     }
 
     private LuaChon thuDaChon() {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
-        if (thu == null) throw new IllegalArgumentException("Cần chọn thú cưng.");
+        if (thu == null)
+            throw new IllegalArgumentException("Cần chọn thú cưng.");
         return thu;
     }
 
@@ -284,14 +506,16 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
 
     private void xemGia() {
         LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
-        if (goi == null) throw new IllegalArgumentException("Cần chọn dịch vụ.");
+        if (goi == null)
+            throw new IllegalArgumentException("Cần chọn dịch vụ.");
         long gia = LapPhieuSpaService.baoGia(thuDaChon().giaTri(), goi.giaTri(), canNang());
         lblGia.setText(TienTe.dinhDang(gia));
     }
 
     private JButton nut(String nhan, Runnable xuLy) {
         JButton nut = new NutDinhDang(nhan, nhan.equals("Tạo phiếu tiếp nhận")
-            ? NutDinhDang.KieuNut.CHINH : NutDinhDang.KieuNut.PHU);
+                ? NutDinhDang.KieuNut.CHINH
+                : NutDinhDang.KieuNut.PHU);
         nut.addActionListener(e -> anToan(xuLy));
         return nut;
     }
@@ -316,7 +540,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         if (!sdt.matches("0\\d{9}"))
             throw new IllegalArgumentException("Nhập số điện thoại gồm 10 chữ số, bắt đầu bằng 0.");
         List<Object[]> ketQua = DanhMucService.layKhachHang().stream()
-            .filter(k -> sdt.equals(String.valueOf(k[2]))).toList();
+                .filter(k -> sdt.equals(String.valueOf(k[2]))).toList();
         if (!ketQua.isEmpty()) {
             Object[] khach = ketQua.get(0);
             if (!"Đang hoạt động".equals(khach[8]))
@@ -342,24 +566,27 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private void chonKhach(Object[] khach) {
         khachHang = khach;
         lblKhachHang.setText(khach == null ? "Chưa chọn khách hàng"
-            : khach[0] + " - " + khach[1] + " | " + khach[2]);
-        if (khach != null) txtSoDienThoai.setText(String.valueOf(khach[2]));
+                : khach[0] + " - " + khach[1] + " | " + khach[2]);
+        if (khach != null)
+            txtSoDienThoai.setText(String.valueOf(khach[2]));
         taiThuCung();
     }
 
     private void taiThuCung() {
         LuaChon cu = (LuaChon) cboThuCung.getSelectedItem();
         cboThuCung.removeAllItems();
-        if (khachHang == null) return;
+        if (khachHang == null)
+            return;
         String maKhach = String.valueOf(khachHang[0]);
         for (Object[] thu : DanhMucService.layThuCung()) {
             if ("Đang hoạt động".equals(thu[13])
-                && maKhach.equals(DanhMucService.layMaTuLuaChon(thu[8])))
+                    && maKhach.equals(DanhMucService.layMaTuLuaChon(thu[8])))
                 cboThuCung.addItem(new LuaChon(String.valueOf(thu[0]), thu[0] + " - " + thu[1]));
         }
         if (cu != null)
             for (int i = 0; i < cboThuCung.getItemCount(); i++)
-                if (cboThuCung.getItemAt(i).giaTri().equals(cu.giaTri())) cboThuCung.setSelectedIndex(i);
+                if (cboThuCung.getItemAt(i).giaTri().equals(cu.giaTri()))
+                    cboThuCung.setSelectedIndex(i);
     }
 
     private void moHoSoThuCung() {
@@ -379,6 +606,42 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         }
     }
 
+    private void moSoTiemThuCung() {
+        LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
+        if (thu == null)
+            return;
+        moHoSoThuCung();
+        capNhatDanhGiaHoSo();
+    }
+
+    private void capNhatDanhGiaHoSo() {
+        LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
+        if (thu == null) {
+            lblHuyHieuHoSo.setText("CHƯA CHỌN THÚ CƯNG");
+            lblHuyHieuHoSo.setForeground(MauUngDung.VAN_BAN_XAM);
+            lblChiTietHoSo.setText("Chọn thú cưng bên trên để hệ thống tự động kiểm tra điều kiện tuổi và tiêm phòng.");
+            pnlTheHoSo.setBackground(new Color(248, 249, 250));
+            btnCapNhatSoTiem.setEnabled(false);
+            return;
+        }
+        btnCapNhatSoTiem.setEnabled(true);
+        TiemPhongService.KetQuaTiemPhong kq = TiemPhongService.danhGiaNhanSpa(thu.giaTri());
+        if (kq.duDieuKien()) {
+            lblHuyHieuHoSo.setText("✓ ĐẠT ĐIỀU KIỆN HỒ SƠ TIÊM PHÒNG");
+            lblHuyHieuHoSo.setForeground(new Color(0x06, 0x5f, 0x46));
+            pnlTheHoSo.setBackground(new Color(0xec, 0xfd, 0xf5));
+            lblChiTietHoSo.setText(kq.thongDiep());
+        } else {
+            boolean thieuHoSo = kq.soMui() == 0;
+            lblHuyHieuHoSo.setText(thieuHoSo ? "⚠ CHƯA CÓ HỒ SƠ TIÊM PHÒNG" : "✕ CHƯA THỂ TIẾP NHẬN");
+            lblHuyHieuHoSo.setForeground(thieuHoSo ? new Color(0xb4, 0x53, 0x09) : MauUngDung.DO_THUONG_HIEU);
+            pnlTheHoSo.setBackground(thieuHoSo ? new Color(0xff, 0xfb, 0xeb) : new Color(0xfe, 0xf2, 0xf2));
+            lblChiTietHoSo.setText(kq.thongDiep());
+        }
+        pnlTheHoSo.revalidate();
+        pnlTheHoSo.repaint();
+    }
+
     private void luu() {
         if (khachHang == null)
             throw new IllegalArgumentException("Tìm hoặc thêm khách hàng trước khi lưu phiếu.");
@@ -387,12 +650,30 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         LuaChon thuCung = (LuaChon) cboThuCung.getSelectedItem();
         if (thuCung == null)
             throw new IllegalArgumentException("Khách chưa có thú cưng phù hợp. Bổ sung hồ sơ thú cưng trước.");
-        if (!chkSucKhoe.isSelected())
-            throw new IllegalArgumentException("Cần kiểm tra sức khỏe thực tế trước khi nhận.");
+        TiemPhongService.KetQuaTiemPhong kq = TiemPhongService.danhGiaNhanSpa(thuCung.giaTri());
+        if (!kq.duDieuKien())
+            throw new IllegalArgumentException(kq.thongDiep());
+        if (cboKetLuanTiepNhan.getSelectedIndex() == 2)
+            throw new IllegalArgumentException("Thú cưng không đủ điều kiện tiếp nhận thực tế tại quầy (bị từ chối do vết thương hở hoặc sức khỏe yếu).");
         LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
-        if (goi == null) throw new IllegalArgumentException("Cần chọn dịch vụ.");
+        if (goi == null)
+            throw new IllegalArgumentException("Cần chọn dịch vụ.");
+
+        StringBuilder dg = new StringBuilder();
+        if (cboKiemTraDa.getSelectedIndex() > 0)
+            dg.append("Da/lông: ").append(cboKiemTraDa.getSelectedItem()).append("; ");
+        if (cboKiemTraVe.getSelectedIndex() > 0)
+            dg.append("Ký sinh: ").append(cboKiemTraVe.getSelectedItem()).append("; ");
+        if (cboKiemTraMatTai.getSelectedIndex() > 0)
+            dg.append("Mắt/tai: ").append(cboKiemTraMatTai.getSelectedItem()).append("; ");
+        if (cboKiemTraLong.getSelectedIndex() > 0)
+            dg.append("Độ rối lông: ").append(cboKiemTraLong.getSelectedItem()).append("; ");
+        dg.append("Kết luận quầy: ").append(cboKetLuanTiepNhan.getSelectedItem());
+        String ghiChuNhap = txtGhiChu.getText().trim();
+        String tinhTrangLuu = ghiChuNhap.isEmpty() ? dg.toString() : dg + " | " + ghiChuNhap;
+
         long id = PhieuSpaTreoService.taoPhieu(idPhieuTreo, thuCung.giaTri(), goi.giaTri(), maHen,
-            canNang(), txtGhiChu.getText(), txtYeuCau.getText());
+                canNang(), tinhTrangLuu, txtYeuCau.getText());
 
         khachHang = null;
         datLaiForm();

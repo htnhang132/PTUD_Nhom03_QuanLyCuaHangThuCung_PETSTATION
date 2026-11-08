@@ -140,15 +140,17 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
         }
     }
 
-    public Object layMaBamMatKhau(Object... cacThamSo) {
+    @Override
+    public Object layMaBamMatKhau(String tenDangNhap) {
         return com.petstation.database.ThaoTacSQL.layGiaTriDon(
                 "SELECT mat_khau_hash FROM tai_khoan WITH(UPDLOCK,HOLDLOCK) WHERE ten_dang_nhap=?",
-                cacThamSo);
+                tenDangNhap);
     }
 
-    public int capNhatMatKhau(Object... cacThamSo) {
+    @Override
+    public int capNhatMatKhau(String matKhauMoi, String tenDangNhap) {
         return com.petstation.database.ThaoTacSQL.capNhat(
                 "UPDATE tai_khoan SET mat_khau_hash=?,bat_buoc_doi_mat_khau=0 WHERE ten_dang_nhap=?",
-                cacThamSo);
+                matKhauMoi, tenDangNhap);
     }
 }

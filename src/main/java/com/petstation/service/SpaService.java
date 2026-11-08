@@ -135,14 +135,14 @@ public final class SpaService {
 
                     List<Object[]> cacGia =
                             xuLySpaDAO.layGiaDichVuTheoCanNang(
-                                    maGoiDichVu, giaTriTam[1], giaTriTam[0], giaTriTam[0]);
+                                    maGoiDichVu, giaTriTam[1], ((Number) giaTriTam[0]).doubleValue());
                     if (cacGia.isEmpty())
                         throw new IllegalArgumentException(
                                 "Chưa có bảng giá phù hợp với loài và cân nặng.");
 
                     Object[] gia = cacGia.get(0);
-                    xuLySpaDAO.capNhatThemDichVuSpa(phieuSpa, gia[0], gia[2], gia[1]);
-                    xuLySpaDAO.tinhLaiTongPhieuSpa(phieuSpa, phieuSpa);
+                    xuLySpaDAO.capNhatThemDichVuSpa(phieuSpa, gia[0], String.valueOf(gia[2]), ((Number) gia[1]).doubleValue());
+                    xuLySpaDAO.tinhLaiTongPhieuSpa(phieuSpa);
                     NhatKyHeThongService.ghiNhatKy(
                             "Thêm dịch vụ Spa", maGoiDichVu + " / " + phieuSpa);
                     return null;

@@ -5,45 +5,58 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PhieuTiepNhanSpaDAO {
-    int capNhatTiepNhan(Object... cacThamSo);
+    int capNhatTiepNhan(Object maLichHen);
 
-    int capNhatSucKhoeThuCung(Object... cacThamSo);
+    int capNhatSucKhoeThuCung(double canNang, String tinhTrang, Object maThuCung);
 
-    long demTrangThaiSpa(Object... cacThamSo);
+    long demTrangThaiSpa(Object maPhieu);
 
-    long demLichHen(Object... cacThamSo);
+    long demLichHen(Object maGoi);
 
-    long khoaNhanVienDangLam(Object... cacThamSo);
+    long khoaNhanVienDangLam(Object maNhanVien);
 
-    long layThoiLuongDichVu(Object... cacThamSo);
+    long layThoiLuongDichVu(Object maGoi);
 
-    long demLichTrung(Object... cacThamSo);
+    long demLichTrung(Object maNhanVien, Object maThuCung, LocalDateTime ketThuc, LocalDateTime batDau);
 
-    long themLichHen(Object... cacThamSo);
+    long themLichHen(
+            String maLichHen,
+            Object maKhachHang,
+            Object maThuCung,
+            LocalDateTime batDau,
+            LocalDateTime ketThuc,
+            Object maNhanVien,
+            Object maGoi);
 
-    List<Object[]> timTiepNhan(Object... cacThamSo);
+    List<Object[]> timTiepNhan(String maLichHen, Object maThuCung);
 
-    long themTiepNhan(Object... cacThamSo);
+    long themTiepNhan(
+            String maPhieu,
+            Object maLichHen,
+            Object maThuCung,
+            double canNang,
+            Object maNhanVien,
+            String ghiChu);
 
-    Object layTiepNhan(Object... cacThamSo);
+    Object layTiepNhan(Object maLichHen);
 
-    List<Object[]> timThemDichVuSpa(Object... cacThamSo);
+    List<Object[]> timThemDichVuSpa(Object maPhieu);
 
-    List<Object[]> layGiaDichVuTheoCanNang(Object... cacThamSo);
+    List<Object[]> layGiaDichVuTheoCanNang(String maGoi, Object loaiThuCung, double canNang);
 
-    int capNhatThemDichVuSpa(Object... cacThamSo);
+    int capNhatThemDichVuSpa(Object maPhieu, Object maGoi, String moTa, double donGia);
 
-    int tinhLaiTongPhieuSpa(Object... cacThamSo);
+    int tinhLaiTongPhieuSpa(Object maPhieu);
 
-    int capNhatTrangThaiSpa(Object... cacThamSo);
+    int capNhatTrangThaiSpa(String trangThaiMoi, Object maPhieu, String trangThaiHienTai);
 
-    int hoanTatLichHen(Object... cacThamSo);
+    int hoanTatLichHen(Object maPhieu);
 
-    int huyLichHenBanGhi(Object... cacThamSo);
+    int huyLichHenBanGhi(Object maLichHen);
 
-    Object layMaLichHenThuCung(Object... cacThamSo);
+    Object layMaLichHenThuCung(Object maLichHen);
 
-    List<Object[]> layPhieuSpaChiTiet(Object... cacThamSo);
+    List<Object[]> layPhieuSpaChiTiet(Object maPhieu);
 
     List<Object[]> layChiTietLichHen(long id);
 

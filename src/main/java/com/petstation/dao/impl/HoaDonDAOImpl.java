@@ -212,15 +212,39 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 cacThamSo[0], cacThamSo[1], cacThamSo[1], cacThamSo[2]);
     }
 
-    public int ghiPhanBoLo(Object... cacThamSo) {
-        Object muc = cacThamSo[0];
-        Object loHangId = cacThamSo[1];
-        return ThaoTacSQL.capNhat(
+    @Override
+    public int ghiPhanBoLo(Object maHoaDon, Object maSanPham, Object maLo, int soLuong) {
+        int ketQua = ThaoTacSQL.capNhat(
                 "UPDATE TOP (1) chi_tiet_hoa_don SET ma_lo=COALESCE((SELECT TOP 1 ma_lo FROM lo_hang WHERE ma_lo=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lo, PATINDEX('%[0-9]%', ma_lo), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), CAST(? AS VARCHAR))"
-                        + " WHERE ma_lo IS NULL AND ma_dich_vu IS NULL"
+                        + " WHERE (ma_hoa_don=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, PATINDEX('%[0-9]%', ma_hoa_don), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
                         + " AND (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
-                        + " AND ma_hoa_don=(SELECT TOP 1 ma_hoa_don FROM hoa_don WHERE trang_thai='DA_THANH_TOAN' ORDER BY thanh_toan_luc DESC, tao_luc DESC)",
-                loHangId, loHangId, loHangId, muc, muc);
+                        + " AND (ma_lo IS NULL OR ma_lo = '')",
+                maLo, maLo, maLo, maHoaDon, maHoaDon, maSanPham, maSanPham);
+        if (ketQua > 0) return ketQua;
+        List<Object[]> daCo = ThaoTacSQL.truyVan(
+                "SELECT ma_lo FROM chi_tiet_hoa_don WHERE (ma_hoa_don=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, PATINDEX('%[0-9]%', ma_hoa_don), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
+                        + " AND (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
+                maHoaDon, maHoaDon, maSanPham, maSanPham);
+        return (!daCo.isEmpty() && daCo.get(0)[0] != null) ? 1 : 0;
+    }
+
+    @Override
+    public int ghiPhanBoLo(Object... cacThamSo) {
+        if (cacThamSo.length >= 4) {
+            return ghiPhanBoLo(cacThamSo[0], cacThamSo[1], cacThamSo[2], ((Number) cacThamSo[3]).intValue());
+        } else if (cacThamSo.length == 3) {
+            return ghiPhanBoLo(cacThamSo[0], cacThamSo[1], cacThamSo[2], 1);
+        } else if (cacThamSo.length == 2) {
+            Object muc = cacThamSo[0];
+            Object loHangId = cacThamSo[1];
+            return ThaoTacSQL.capNhat(
+                    "UPDATE TOP (1) chi_tiet_hoa_don SET ma_lo=COALESCE((SELECT TOP 1 ma_lo FROM lo_hang WHERE ma_lo=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lo, PATINDEX('%[0-9]%', ma_lo), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), CAST(? AS VARCHAR))"
+                            + " WHERE ma_lo IS NULL AND ma_dich_vu IS NULL"
+                            + " AND (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
+                            + " AND ma_hoa_don=(SELECT TOP 1 ma_hoa_don FROM hoa_don WHERE trang_thai='DA_THANH_TOAN' ORDER BY thanh_toan_luc DESC, tao_luc DESC)",
+                    loHangId, loHangId, loHangId, muc, muc);
+        }
+        return 0;
     }
 
     public long themHoaDon(Object... cacThamSo) {
