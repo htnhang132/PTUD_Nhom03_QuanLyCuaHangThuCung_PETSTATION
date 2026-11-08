@@ -1795,7 +1795,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     private String layNhanTrangThaiMacDinh() {
-        return cauHinh.nhanHoatDong.equals("Trống") ? "Đang khai thác" : cauHinh.nhanHoatDong;
+        return cauHinh.nhanHoatDong.equals("Trống") ? "Trống" : cauHinh.nhanHoatDong;
     }
 
     private String layNhanBoLocTrangThai() {
