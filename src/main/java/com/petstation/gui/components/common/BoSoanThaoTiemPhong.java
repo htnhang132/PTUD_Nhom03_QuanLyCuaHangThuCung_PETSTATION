@@ -99,13 +99,11 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         }
 
         JScrollPane cuon = new JScrollPane(bang);
-        cuon.setPreferredSize(new Dimension(340, 120));
-        cuon.setMinimumSize(new Dimension(280, 100));
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
+        cuon.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        cuon.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         panel.add(cuon, BorderLayout.CENTER);
-
-        panel.setPreferredSize(new Dimension(340, 260));
-        panel.setMinimumSize(new Dimension(280, 220));
+        this.cuon = cuon;
 
         btnThem.addActionListener(e -> capNhat(false));
         btnSua.addActionListener(e -> capNhat(true));
@@ -113,6 +111,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             int r = bang.getSelectedRow();
             if (r >= 0) {
                 model.removeRow(bang.convertRowIndexToModel(r));
+                capNhatKichThuocBang();
             }
         });
 
@@ -124,6 +123,23 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             txtNgayHan.setText(model.getValueAt(r, 2) == null ? "" : String.valueOf(model.getValueAt(r, 2)));
             txtGhiChu.setText(model.getValueAt(r, 3) == null ? "" : String.valueOf(model.getValueAt(r, 3)));
         });
+
+        capNhatKichThuocBang();
+    }
+
+    private final JScrollPane cuon;
+
+    private void capNhatKichThuocBang() {
+        int soDong = model.getRowCount();
+        int caoDong = Math.max(26, bang.getRowHeight());
+        int caoTieuDe = bang.getTableHeader() != null ? bang.getTableHeader().getPreferredSize().height : 26;
+        if (caoTieuDe <= 0) caoTieuDe = 26;
+        int caoMoi = caoTieuDe + Math.max(1, soDong) * caoDong + 4;
+        cuon.setPreferredSize(new Dimension(340, caoMoi));
+        cuon.setMinimumSize(new Dimension(280, caoMoi));
+        panel.setPreferredSize(null);
+        panel.revalidate();
+        panel.repaint();
     }
 
     private static JPanel hangNhap(String nhan, JComponent oNhap) {
@@ -179,6 +195,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                 bang.setRowSelectionInterval(moi, moi);
                 bang.scrollRectToVisible(bang.getCellRect(moi, 0, true));
             }
+            capNhatKichThuocBang();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(panel, ex.getMessage(), "Thông tin tiêm phòng", JOptionPane.WARNING_MESSAGE);
         }
@@ -216,25 +233,27 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
     @Override
     public void dat(String giaTri) {
         model.setRowCount(0);
-        if (giaTri == null || giaTri.isBlank()) return;
-        for (String dong : giaTri.split(";")) {
-            if (dong.isBlank()) continue;
-            String[] p = dong.split("\\|", -1);
-            if (p.length >= 2) {
-                String loai = p[0].trim();
-                LocalDate nt = BoChonNgay.docNgayLinhHoat(p[1].trim(), DINH_DANG_NGAY);
-                String ntHienThi = nt != null ? nt.format(DINH_DANG_NGAY) : p[1].trim();
+        if (giaTri != null && !giaTri.isBlank()) {
+            for (String dong : giaTri.split(";")) {
+                if (dong.isBlank()) continue;
+                String[] p = dong.split("\\|", -1);
+                if (p.length >= 2) {
+                    String loai = p[0].trim();
+                    LocalDate nt = BoChonNgay.docNgayLinhHoat(p[1].trim(), DINH_DANG_NGAY);
+                    String ntHienThi = nt != null ? nt.format(DINH_DANG_NGAY) : p[1].trim();
 
-                String nhHienThi = "";
-                if (p.length >= 3 && !p[2].isBlank()) {
-                    LocalDate nh = BoChonNgay.docNgayLinhHoat(p[2].trim(), DINH_DANG_NGAY);
-                    nhHienThi = nh != null ? nh.format(DINH_DANG_NGAY) : p[2].trim();
+                    String nhHienThi = "";
+                    if (p.length >= 3 && !p[2].isBlank()) {
+                        LocalDate nh = BoChonNgay.docNgayLinhHoat(p[2].trim(), DINH_DANG_NGAY);
+                        nhHienThi = nh != null ? nh.format(DINH_DANG_NGAY) : p[2].trim();
+                    }
+
+                    String ghiChu = p.length >= 4 ? p[3].trim() : "";
+                    model.addRow(new Object[]{loai, ntHienThi, nhHienThi, ghiChu});
                 }
-
-                String ghiChu = p.length >= 4 ? p[3].trim() : "";
-                model.addRow(new Object[]{loai, ntHienThi, nhHienThi, ghiChu});
             }
         }
+        capNhatKichThuocBang();
     }
 
     @Override

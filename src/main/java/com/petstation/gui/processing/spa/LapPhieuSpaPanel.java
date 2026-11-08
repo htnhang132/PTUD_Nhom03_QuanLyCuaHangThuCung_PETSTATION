@@ -96,11 +96,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         themKhach.setEnabled(PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_KHACH_HANG));
         txtSoDienThoai.addActionListener(e -> anToan(this::timKhach));
 
-        lblKhachHang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        lblKhachHang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         lblKhachHang.setForeground(MauUngDung.DO_THUONG_HIEU);
 
         cboThuCung.setPreferredSize(new Dimension(280, 32));
-        JButton hoSo = nut("+ Hồ sơ thú cưng", this::moHoSoThuCung);
+        JButton hoSo = nut("+ Thêm thú cưng", this::moHoSoThuCung);
         hoSo.setPreferredSize(new Dimension(145, 32));
         hoSo.setEnabled(PhienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_THU_CUNG));
 
@@ -115,21 +115,23 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         txtCanNang.setPreferredSize(new Dimension(85, 32));
         cboDichVu.setPreferredSize(new Dimension(280, 32));
 
-        lblGia.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
+        lblGia.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         lblGia.setForeground(MauUngDung.DO_THUONG_HIEU);
 
+        txtGhiChu.setRows(4);
         txtGhiChu.setLineWrap(true);
         txtGhiChu.setWrapStyleWord(true);
-        txtGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        txtGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         JScrollPane spGhiChu = new JScrollPane(txtGhiChu);
-        spGhiChu.setPreferredSize(new Dimension(780, 52));
+        spGhiChu.setPreferredSize(new Dimension(840, 85));
         spGhiChu.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true));
 
+        txtYeuCau.setRows(3);
         txtYeuCau.setLineWrap(true);
         txtYeuCau.setWrapStyleWord(true);
-        txtYeuCau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        txtYeuCau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         JScrollPane spYeuCau = new JScrollPane(txtYeuCau);
-        spYeuCau.setPreferredSize(new Dimension(780, 48));
+        spYeuCau.setPreferredSize(new Dimension(840, 75));
         spYeuCau.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true));
 
         cboDichVu.addActionListener(e -> capNhatGiaTuDong());
@@ -180,7 +182,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
 
         JPanel pnlDauHoSo = new JPanel(new BorderLayout(8, 0));
         pnlDauHoSo.setOpaque(false);
-        lblHuyHieuHoSo.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        lblHuyHieuHoSo.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         lblHuyHieuHoSo.setForeground(MauUngDung.VAN_BAN_XAM);
         pnlDauHoSo.add(lblHuyHieuHoSo, BorderLayout.WEST);
         pnlDauHoSo.add(btnCapNhatSoTiem, BorderLayout.EAST);
@@ -232,7 +234,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         noiDung.add(Box.createVerticalStrut(12));
 
         // Nhóm 4: Tình trạng tiếp nhận & Yêu cầu
-        JLabel lblTieuDeGhiChu = new JLabel("Tình trạng khi nhận (vết thương, ve rận, tâm lý):");
+        JLabel lblTieuDeGhiChu = new JLabel("Ghi chú thêm về sức khỏe / lưu ý đặc biệt (nếu có):");
         lblTieuDeGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblTieuDeGhiChu.setForeground(MauUngDung.VAN_BAN_XAM);
 
@@ -240,11 +242,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         lblTieuDeYeuCau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         lblTieuDeYeuCau.setForeground(MauUngDung.VAN_BAN_XAM);
 
-        spGhiChu.setPreferredSize(new Dimension(840, 56));
-        spYeuCau.setPreferredSize(new Dimension(840, 52));
+        spGhiChu.setPreferredSize(new Dimension(840, 85));
+        spYeuCau.setPreferredSize(new Dimension(840, 75));
 
         noiDung.add(nhom(
-                "4. Tình trạng tiếp nhận & Yêu cầu",
+                "4. Ghi chú sức khỏe & Yêu cầu gửi kèm",
                 lblTieuDeGhiChu,
                 spGhiChu,
                 lblTieuDeYeuCau,
@@ -272,7 +274,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         gbc.weighty = 0.0;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.insets = new Insets(16, 20, 24, 20);
-        noiDung.setPreferredSize(new Dimension(880, 840));
+        noiDung.setPreferredSize(new Dimension(880, 890));
         pnlCanGiua.add(noiDung, gbc);
 
         JScrollPane cuon = new JScrollPane(pnlCanGiua);
@@ -610,7 +612,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
         if (thu == null)
             return;
-        moHoSoThuCung();
+        DanhMucThuCungPanel.moSua(this, thu.giaTri());
         capNhatDanhGiaHoSo();
     }
 
@@ -677,7 +679,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
 
         khachHang = null;
         datLaiForm();
-        HopThoai.hienThiThanhCong(this, "Đã lập phiếu Spa. Có thể xem trong danh sách phiếu Spa.");
         khiLuu.accept(id);
     }
 }

@@ -52,17 +52,18 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             bang.getColumnModel().getColumn(2).setPreferredWidth(110);
         }
         JScrollPane cuon = new JScrollPane(bang);
-        cuon.setPreferredSize(new Dimension(340, 140));
-        cuon.setMinimumSize(new Dimension(280, 120));
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
+        cuon.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        cuon.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         panel.add(cuon, BorderLayout.CENTER);
-        panel.setPreferredSize(new Dimension(340, 280));
-        panel.setMinimumSize(new Dimension(280, 240));
         them.addActionListener(e -> capNhat(false));
         sua.addActionListener(e -> capNhat(true));
         xoa.addActionListener(e -> {
             int r = bang.getSelectedRow();
-            if (r >= 0) model.removeRow(bang.convertRowIndexToModel(r));
+            if (r >= 0) {
+                model.removeRow(bang.convertRowIndexToModel(r));
+                capNhatKichThuocBang();
+            }
         });
         bang.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting() || bang.getSelectedRow() < 0) return;
@@ -73,6 +74,23 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             denKg.setText(Double.isInfinite(khoang[1]) ? "" : soCan(khoang[1]));
             gia.setText(String.valueOf(TienTe.doc(String.valueOf(model.getValueAt(r, 2)))));
         });
+        this.cuon = cuon;
+        capNhatKichThuocBang();
+    }
+
+    private final JScrollPane cuon;
+
+    private void capNhatKichThuocBang() {
+        int soDong = model.getRowCount();
+        int caoDong = Math.max(26, bang.getRowHeight());
+        int caoTieuDe = bang.getTableHeader() != null ? bang.getTableHeader().getPreferredSize().height : 26;
+        if (caoTieuDe <= 0) caoTieuDe = 26;
+        int caoMoi = caoTieuDe + Math.max(1, soDong) * caoDong + 4;
+        cuon.setPreferredSize(new Dimension(340, caoMoi));
+        cuon.setMinimumSize(new Dimension(280, caoMoi));
+        panel.setPreferredSize(null);
+        panel.revalidate();
+        panel.repaint();
     }
 
     private static JPanel hangNhap(String nhan, JComponent oNhap) {
@@ -124,6 +142,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                 bang.setRowSelectionInterval(moi, moi);
                 bang.scrollRectToVisible(bang.getCellRect(moi, 0, true));
             }
+            capNhatKichThuocBang();
             gia.setText("");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(panel, ex.getMessage(), "Bảng giá không hợp lệ",
@@ -162,11 +181,13 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
 
     @Override public void dat(String s) {
         model.setRowCount(0);
-        if (s == null || s.isBlank()) return;
-        for (String dong : s.split(";")) {
-            String[] p = dong.split("\\|", -1);
-            if (p.length == 3) model.addRow(new Object[]{p[0], p[1], TienTe.dinhDang(TienTe.doc(p[2]))});
+        if (s != null && !s.isBlank()) {
+            for (String dong : s.split(";")) {
+                String[] p = dong.split("\\|", -1);
+                if (p.length == 3) model.addRow(new Object[]{p[0], p[1], TienTe.dinhDang(TienTe.doc(p[2]))});
+            }
         }
+        capNhatKichThuocBang();
     }
 
     @Override public void datDuocBat(boolean bat) {

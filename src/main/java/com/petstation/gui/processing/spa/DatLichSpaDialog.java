@@ -25,6 +25,7 @@ import javax.swing.border.EmptyBorder;
 public final class DatLichSpaDialog {
     private final Component parent;
     private final JDialog dialog;
+    private final JTextField txtTimKhach;
     private final JComboBox<BieuMauSQL.LuaChon> cboKhachHang;
     private final JComboBox<BieuMauSQL.LuaChon> cboThuCung;
     private final JComboBox<BieuMauSQL.LuaChon> cboGoiDichVu;
@@ -36,6 +37,7 @@ public final class DatLichSpaDialog {
     private final NutDinhDang btnLuu;
     private final NutDinhDang btnHuy;
     private final Runnable onThanhCong;
+    private List<BieuMauSQL.LuaChon> tatCaKhachHang = List.of();
 
     public static void mo(Component parent, Runnable onThanhCong) {
         new DatLichSpaDialog(parent, onThanhCong).dialog.setVisible(true);
@@ -49,6 +51,11 @@ public final class DatLichSpaDialog {
                 SwingUtilities.getWindowAncestor(parent),
                 "Đặt lịch hẹn dịch vụ Spa",
                 Dialog.ModalityType.APPLICATION_MODAL);
+
+        txtTimKhach = new JTextField(12);
+        txtTimKhach.putClientProperty("JTextField.placeholderText", "🔍 Tìm tên, SĐT...");
+        txtTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        txtTimKhach.setPreferredSize(new Dimension(140, 32));
 
         cboKhachHang = new JComboBox<>();
         cboThuCung = new JComboBox<>();
@@ -76,14 +83,12 @@ public final class DatLichSpaDialog {
     }
 
     private void napDuLieu() {
-        cboKhachHang.removeAllItems();
-        var dsKhach = DanhMucService.layKhachHang().stream()
+        tatCaKhachHang = DanhMucService.layKhachHang().stream()
                 .filter(k -> "Đang hoạt động".equals(k[8]))
                 .map(k -> new BieuMauSQL.LuaChon(String.valueOf(k[0]), k[0] + " — " + k[1] + " (" + k[2] + ")"))
                 .toList();
-        for (var khach : dsKhach) {
-            cboKhachHang.addItem(khach);
-        }
+
+        locKhachHang(txtTimKhach.getText());
 
         cboGoiDichVu.removeAllItems();
         for (Object[] g : LuaChonNghiepVuService.layLuaChonGoiDichVu()) {
@@ -95,6 +100,30 @@ public final class DatLichSpaDialog {
             cboNhanVien.addItem(new BieuMauSQL.LuaChon(String.valueOf(nv[0]), String.valueOf(nv[1])));
         }
 
+        capNhatDanhSachThuCung();
+    }
+
+    private void locKhachHang(String tuKhoa) {
+        String k = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+        BieuMauSQL.LuaChon dangChon = (BieuMauSQL.LuaChon) cboKhachHang.getSelectedItem();
+        cboKhachHang.removeAllItems();
+        List<BieuMauSQL.LuaChon> hopLe = tatCaKhachHang.stream()
+                .filter(item -> k.isEmpty() || item.nhan().toLowerCase().contains(k))
+                .toList();
+        for (var khach : hopLe) {
+            cboKhachHang.addItem(khach);
+        }
+        if (dangChon != null) {
+            for (int i = 0; i < cboKhachHang.getItemCount(); i++) {
+                if (cboKhachHang.getItemAt(i).giaTri().equals(dangChon.giaTri())) {
+                    cboKhachHang.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+        if (cboKhachHang.getSelectedIndex() < 0 && !hopLe.isEmpty()) {
+            cboKhachHang.setSelectedIndex(0);
+        }
         capNhatDanhSachThuCung();
     }
 
@@ -154,7 +183,11 @@ public final class DatLichSpaDialog {
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
         pnlForm.add(taoNhan("Khách hàng:"), gbc);
         gbc.gridx = 1; gbc.weightx = 1.0;
-        pnlForm.add(cboKhachHang, gbc);
+        JPanel pnlChonKhach = new JPanel(new BorderLayout(8, 0));
+        pnlChonKhach.setOpaque(false);
+        pnlChonKhach.add(txtTimKhach, BorderLayout.WEST);
+        pnlChonKhach.add(cboKhachHang, BorderLayout.CENTER);
+        pnlForm.add(pnlChonKhach, gbc);
         gbc.gridx = 2; gbc.weightx = 0;
         pnlForm.add(btnThemKhach, gbc);
 
@@ -209,7 +242,7 @@ public final class DatLichSpaDialog {
 
         dialog.setContentPane(root);
         dialog.pack();
-        dialog.setSize(Math.max(dialog.getWidth(), 640), 440);
+        dialog.setSize(Math.max(dialog.getWidth(), 680), 460);
         HopThoai.chuanHoaCuaSo(dialog, parent);
     }
 
@@ -221,12 +254,23 @@ public final class DatLichSpaDialog {
     }
 
     private void caiDatSuKien() {
+        txtTimKhach.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { locKhachHang(txtTimKhach.getText()); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { locKhachHang(txtTimKhach.getText()); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { locKhachHang(txtTimKhach.getText()); }
+        });
+
         cboKhachHang.addActionListener(e -> capNhatDanhSachThuCung());
 
         btnThemKhach.addActionListener(e -> {
             Object[] khachMoi = DanhMucKhachHangPanel.moThem(dialog, "");
             if (khachMoi != null) {
-                napDuLieu();
+                tatCaKhachHang = DanhMucService.layKhachHang().stream()
+                        .filter(k -> "Đang hoạt động".equals(k[8]))
+                        .map(k -> new BieuMauSQL.LuaChon(String.valueOf(k[0]), k[0] + " — " + k[1] + " (" + k[2] + ")"))
+                        .toList();
+                txtTimKhach.setText("");
+                locKhachHang("");
                 String maMoi = String.valueOf(khachMoi[0]);
                 for (int i = 0; i < cboKhachHang.getItemCount(); i++) {
                     if (cboKhachHang.getItemAt(i).giaTri().equals(maMoi)) {

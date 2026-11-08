@@ -21,7 +21,7 @@ public class BoChonNgayGio extends JPanel {
     }
 
     public BoChonNgayGio(LocalDateTime banDau) {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 8, 2));
         setOpaque(false);
 
         LocalDateTime thoiGian = banDau != null
@@ -29,7 +29,7 @@ public class BoChonNgayGio extends JPanel {
                 : LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0);
 
         boChonNgay = new BoChonNgay(thoiGian.toLocalDate());
-        boChonNgay.setPreferredSize(new Dimension(160, 32));
+        boChonNgay.setPreferredSize(new Dimension(175, 34));
 
         Date timeDate = Date.from(thoiGian.atZone(ZoneId.systemDefault()).toInstant());
         SpinnerDateModel model = new SpinnerDateModel(timeDate, null, null, Calendar.MINUTE);
@@ -37,7 +37,7 @@ public class BoChonNgayGio extends JPanel {
         JSpinner.DateEditor editor = new JSpinner.DateEditor(spGio, "HH:mm");
         spGio.setEditor(editor);
         spGio.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        spGio.setPreferredSize(new Dimension(85, 32));
+        spGio.setPreferredSize(new Dimension(95, 34));
 
         JLabel lblGio = new JLabel("Giờ:");
         lblGio.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -46,6 +46,7 @@ public class BoChonNgayGio extends JPanel {
         add(boChonNgay);
         add(lblGio);
         add(spGio);
+        setPreferredSize(new Dimension(340, 38));
     }
 
     public LocalDateTime layGiaTri() {

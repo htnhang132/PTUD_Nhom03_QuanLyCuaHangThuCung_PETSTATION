@@ -60,6 +60,44 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
                 return ketQua[0];
         }
 
+        public static Object[] moSua(
+                        java.awt.Component cha,
+                        String maThuCung) {
+                com.petstation.service.PhienDangNhapService.yeuCau(
+                                com.petstation.model.Quyen.QUAN_LY_THU_CUNG);
+
+                javax.swing.JDialog hopThoai = new javax.swing.JDialog(
+                                javax.swing.SwingUtilities.getWindowAncestor(cha),
+                                "Cập nhật hồ sơ & Sổ tiêm thú cưng — " + maThuCung,
+                                java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+
+                Object[][] ketQua = new Object[1][];
+                var cacTruong = taoCacTruong();
+                var cauHinh = taoCauHinh().xuLySauLuu(
+                                (truoc, daLuu) -> {
+                                        ketQua[0] = daLuu.clone();
+                                        hopThoai.dispose();
+                                });
+
+                var bieuMau = new QuanLyDanhMucPanel(
+                                cauHinh,
+                                cacTruong,
+                                DanhMucService.layThuCung());
+
+                hopThoai.setDefaultCloseOperation(
+                                javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+                bieuMau.batCheDoThuGon(hopThoai::dispose);
+                hopThoai.setContentPane(bieuMau);
+                hopThoai.setSize(560, 680);
+                com.petstation.gui.components.HopThoai.chuanHoaCuaSo(hopThoai, cha);
+
+                bieuMau.moSuaTheoKhoa(maThuCung);
+                hopThoai.setVisible(true);
+
+                return ketQua[0];
+        }
+
         private static CauHinh taoCauHinh() {
                 CauHinh cauHinh = CauHinh.tao("Hồ sơ thú cưng", "thú cưng")
                                 .themBoLoc("Loài", d -> String.valueOf(d[2]))

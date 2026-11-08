@@ -631,8 +631,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
                 scrChuoi.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
-                scrChuoi.setPreferredSize(new Dimension(100, 76));
-                scrChuoi.setMinimumSize(new Dimension(100, 56));
+                scrChuoi.setPreferredSize(new Dimension(100, 96));
+                scrChuoi.setMinimumSize(new Dimension(100, 72));
                 return scrChuoi;
             }
             case TUY_CHINH -> {
@@ -975,6 +975,20 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     public final void moTaoMoi() {
         batDauTaoMoi();
+    }
+
+    public final void moSuaTheoKhoa(Object khoa) {
+        if (khoa == null) return;
+        String khoaStr = String.valueOf(khoa);
+        for (Object[] d : cacDong) {
+            if (d.length > 0 && khoaStr.equals(String.valueOf(d[0]))) {
+                hienTai = d;
+                hienThiBanGhi(d);
+                chonDong(d);
+                batDauSua();
+                return;
+            }
+        }
     }
 
     public final void batCheDoThuGon(Runnable khiHuy) {
