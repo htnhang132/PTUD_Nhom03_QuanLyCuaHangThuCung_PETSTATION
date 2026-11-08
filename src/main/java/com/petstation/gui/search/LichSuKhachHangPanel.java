@@ -90,6 +90,17 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         tblBang = layBang(scrCuon);
         DinhDangBang.apDung(tblBang);
+
+        @SuppressWarnings("unchecked")
+        javax.swing.table.TableRowSorter<javax.swing.table.TableModel> boSapXep =
+                (javax.swing.table.TableRowSorter<javax.swing.table.TableModel>)
+                        tblBang.getRowSorter();
+
+        boSapXep.setComparator(
+                5,
+                java.util.Comparator.comparingLong(
+                        giaTri -> Long.parseLong(String.valueOf(giaTri).trim())));
+
         lienKetBoLoc(txtTimKiem, tblBang);
         pnlChon.add(scrCuon, BorderLayout.CENTER);
 
