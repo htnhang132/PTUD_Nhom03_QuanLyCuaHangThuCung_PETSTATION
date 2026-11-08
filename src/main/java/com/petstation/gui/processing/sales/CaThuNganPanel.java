@@ -404,16 +404,23 @@ public final class CaThuNganPanel extends CoSoPanel {
     private JPanel taoKiemDemTuyChon(BoDemMenhGia boDem) {
         JPanel khung = new JPanel(new BorderLayout(0, 8));
         khung.setOpaque(false);
-        JCheckBox hienThi = new JCheckBox("Kiểm đếm theo mệnh giá (tùy chọn)");
+
+        JCheckBox hienThi =
+                new JCheckBox("Kiểm đếm theo mệnh giá (tùy chọn)", true);
         hienThi.setOpaque(false);
+
         khung.add(hienThi, BorderLayout.NORTH);
         khung.add(boDem, BorderLayout.CENTER);
-        boDem.setVisible(false);
+
+        boDem.setVisible(hienThi.isSelected());
+
         hienThi.addActionListener(
                 e -> {
                     boDem.setVisible(hienThi.isSelected());
                     khung.revalidate();
+                    khung.repaint();
                 });
+
         return khung;
     }
 }
