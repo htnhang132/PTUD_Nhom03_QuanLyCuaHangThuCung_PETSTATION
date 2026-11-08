@@ -48,8 +48,9 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                 hopThoai.setDefaultCloseOperation(
                                 javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+                bieuMau.batCheDoThuGon(hopThoai::dispose);
                 hopThoai.setContentPane(bieuMau);
-                hopThoai.setSize(1000, 680);
+                hopThoai.setSize(520, 480);
                 com.petstation.gui.components.HopThoai.chuanHoaCuaSo(hopThoai, cha);
 
                 bieuMau.moTaoMoi();

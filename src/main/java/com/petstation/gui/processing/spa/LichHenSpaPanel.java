@@ -34,7 +34,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();
     private final JPanel content = new JPanel(new CardLayout());
-    private boolean dangNap, choNap;
+    private boolean dangNap;
 
     private java.util.function.LongConsumer khiKhachDen;
 
@@ -47,13 +47,6 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     @Override
     protected void datLichHen() {
         DatLichSpaDialog.mo(this, this::lamMoi);
-    }
-
-    private java.util.List<Object[]> thuCuaKhach(String maKhach) {
-        return DanhMucService.layThuCung().stream()
-            .filter(t -> "Đang hoạt động".equals(t[13])
-                && maKhach.equals(DanhMucService.layMaTuLuaChon(t[8])))
-            .map(t -> new Object[] {t[0], t[0] + " - " + t[1]}).toList();
     }
 
     @Override
@@ -77,10 +70,28 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         bar.themBoLoc("Ngày:", ngay);
         bar.themBoLoc("Nhân viên:", nhanVien);
         bar.themBoLoc("Trạng thái:", trangThai);
-        themNut(bar, "+ Đặt lịch hẹn", this::datLichHen);
-        themNut(bar, "Sửa lịch", this::suaLich);
-        themNut(bar, "Khách đã đến", this::tiepNhan);
-        themNut(bar, "Hủy lịch", this::huyLichHen);
+        themNut(bar, "+ Đặt lịch hẹn", NutDinhDang.KieuNut.CHINH, this::datLichHen);
+        var btnKhachDen = themNut(bar, "Khách đã đến", NutDinhDang.KieuNut.THANH_CONG, this::tiepNhan);
+        var btnSuaLich = themNut(bar, "Sửa lịch", NutDinhDang.KieuNut.PHU, this::suaLich);
+        var btnHuyLich = themNut(bar, "Hủy lịch", NutDinhDang.KieuNut.NGUY_HIEM, this::huyLichHen);
+        Runnable capNhatNutLich = () -> {
+            int row = tblBang.getSelectedRow();
+            String tt = row < 0 ? "" : String.valueOf(moHinh.getValueAt(tblBang.convertRowIndexToModel(row), 8));
+            boolean choXacNhan = "DA_XAC_NHAN".equals(tt);
+            btnKhachDen.setEnabled(choXacNhan);
+            btnSuaLich.setEnabled(choXacNhan);
+            btnHuyLich.setEnabled(choXacNhan);
+        };
+        tblBang.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) capNhatNutLich.run();
+        });
+        capNhatNutLich.run();
+        ganSuKienDupChuot(() -> {
+            int row = tblBang.getSelectedRow();
+            if (row < 0) return;
+            String tt = String.valueOf(moHinh.getValueAt(tblBang.convertRowIndexToModel(row), 8));
+            if ("DA_XAC_NHAN".equals(tt)) tiepNhan();
+        });
         for (var l :
             ((javax.swing.text.AbstractDocument) txtTimKiem.getDocument())
                 .getDocumentListeners()) txtTimKiem.getDocument().removeDocumentListener(l);
@@ -150,7 +161,15 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     }
 
     private static LocalDateTime time(Object o) {
-        return ((java.sql.Timestamp) o).toLocalDateTime();
+        if (o instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        if (o instanceof LocalDateTime ldt) return ldt;
+        if (o != null) {
+            try {
+                return LocalDateTime.parse(String.valueOf(o).trim().replace(' ', 'T'));
+            } catch (Exception ignored) {
+            }
+        }
+        return LocalDateTime.now();
     }
 
     @SuppressWarnings("unchecked")

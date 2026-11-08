@@ -19,6 +19,17 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
 
     @Override
     public long demDoiTraMuc(Object... cacThamSo) {
+        if (cacThamSo[0] instanceof Number n && n.longValue() > 100_000L) {
+            long hdId = n.longValue() / 100_000L;
+            long spId = n.longValue() % 100_000L;
+            return ThaoTacSQL.laySo(
+                    "SELECT COALESCE(SUM(c.so_luong),0) FROM chi_tiet_doi_tra c"
+                            + " JOIN phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
+                            + " (c.ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(c.ma_hoa_don, PATINDEX('%[0-9]%', c.ma_hoa_don), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                            + " AND (c.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(c.ma_san_pham, PATINDEX('%[0-9]%', c.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                            + " AND p.trang_thai IN ('CHO_XU_LY','HOAN_TAT')",
+                    hdId, hdId, spId, spId);
+        }
         return ThaoTacSQL.laySo(
                 "SELECT COALESCE(SUM(c.so_luong),0) FROM chi_tiet_doi_tra c"
                         + " JOIN phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
@@ -30,6 +41,21 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
 
     @Override
     public List<Object[]> laySoLuongLoConDuocDoi(Object... cacThamSo) {
+        if (cacThamSo[0] instanceof Number n && n.longValue() > 100_000L) {
+            long hdId = n.longValue() / 100_000L;
+            long spId = n.longValue() % 100_000L;
+            return ThaoTacSQL.truyVan(
+                    "SELECT b.ma_lo, b.so_luong-COALESCE((SELECT"
+                            + " SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN"
+                            + " phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
+                            + " c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
+                            + " c.ma_lo=b.ma_lo AND p.trang_thai IN"
+                            + " ('CHO_XU_LY','HOAN_TAT')),0) FROM chi_tiet_hoa_don b"
+                            + " WHERE (b.ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_hoa_don, PATINDEX('%[0-9]%', b.ma_hoa_don), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                            + " AND (b.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(b.ma_san_pham, PATINDEX('%[0-9]%', b.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                            + " AND b.ma_lo IS NOT NULL ORDER BY b.ma_san_pham",
+                    hdId, hdId, spId, spId);
+        }
         return ThaoTacSQL.truyVan(
                 "SELECT b.ma_lo, b.so_luong-COALESCE((SELECT"
                         + " SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN"
@@ -44,12 +70,16 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
 
     @Override
     public int capNhatDoiTraMuc(Object... cacThamSo) {
-        String maSP = String.valueOf(cacThamSo[1]);
-        if (cacThamSo[1] instanceof Number) {
+        Object rawSp = cacThamSo[1];
+        if (rawSp instanceof Number n && n.longValue() > 100_000L) {
+            rawSp = n.longValue() % 100_000L;
+        }
+        String maSP = String.valueOf(rawSp);
+        if (rawSp instanceof Number) {
             List<Object[]> r = ThaoTacSQL.truyVan(
                     "SELECT ma_san_pham FROM san_pham WHERE (ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
-                    cacThamSo[1],
-                    cacThamSo[1]);
+                    rawSp,
+                    rawSp);
             if (!r.isEmpty()) {
                 maSP = String.valueOf(r.get(0)[0]);
             }

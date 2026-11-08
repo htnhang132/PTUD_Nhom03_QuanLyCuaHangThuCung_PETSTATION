@@ -50,8 +50,11 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                                         : (maTheKy == 2 || maTheKy == 3)
                                                                                         ? (2000 + haiSoNam)
                                                                                         : -1;
+                                                        if (namSinh < 0) {
+                                                                return "Mã thế kỷ / giới tính trên CCCD (chữ số thứ 4) phải từ 0 đến 3.";
+                                                        }
                                                         int namHienTai = LocalDate.now().getYear();
-                                                        if (namSinh > 0 && (namHienTai - namSinh < 18)) {
+                                                        if (namHienTai - namSinh < 18) {
                                                                 return "Nhân viên phải đủ từ 18 tuổi trở lên (theo năm sinh trên CCCD: "
                                                                                 + namSinh
                                                                                 + ").";

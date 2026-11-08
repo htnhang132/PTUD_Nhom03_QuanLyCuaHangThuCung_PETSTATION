@@ -90,12 +90,15 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
     @Override
     public int capNhatDatPhong(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE hop_dong_luu_tru SET ma_khach_hang=?,ma_thu_cung=?,ma_phong=?,"
+                "UPDATE hop_dong_luu_tru SET"
+                        + " ma_khach_hang=(SELECT TOP 1 ma_khach_hang FROM khach_hang WHERE ma_khach_hang=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)),"
+                        + " ma_thu_cung=(SELECT TOP 1 ma_thu_cung FROM thu_cung WHERE ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)),"
+                        + " ma_phong=(SELECT TOP 1 ma_phong FROM phong_hotel WHERE ma_phong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phong, PATINDEX('%[0-9]%', ma_phong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)),"
                         + " ngay_vao=?,ngay_ra_du_kien=?,gia_dem=?,coc_yeu_cau=?,ghi_chu=?"
                         + " WHERE (ma_hop_dong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)) AND trang_thai='DA_DAT' AND ma_hoa_don IS NULL",
-                cacThamSo[0],
-                cacThamSo[1],
-                cacThamSo[2],
+                cacThamSo[0], cacThamSo[0],
+                cacThamSo[1], cacThamSo[1],
+                cacThamSo[2], cacThamSo[2],
                 cacThamSo[3],
                 cacThamSo[4],
                 cacThamSo[5],
@@ -150,7 +153,7 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
         return ThaoTacSQL.capNhat(
                 "UPDATE phong_hotel WITH(UPDLOCK,HOLDLOCK) SET"
                         + " trang_thai='DANG_O' WHERE (ma_phong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phong, PATINDEX('%[0-9]%', ma_phong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)) AND"
-                        + " trang_thai='TRONG'",
+                        + " trang_thai IN ('TRONG', 'DANG_O')",
                 cacThamSo[0], cacThamSo[0]);
     }
 
@@ -254,7 +257,7 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
                 "UPDATE hop_dong_luu_tru SET"
                     + " tien_coc=?,da_nhan_coc=1,nhan_coc_luc=SYSDATETIME(),"
                     + " nhan_coc_boi=COALESCE((SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE ten_dang_nhap=CAST(? AS VARCHAR) OR ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), (SELECT TOP 1 ten_dang_nhap FROM phien_lam_viec WHERE trang_thai='DANG_MO'), 'admin'),"
-                    + " ma_phien_nhan_coc=COALESCE((SELECT TOP 1 ma_phien FROM phien_lam_viec WHERE ma_phien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phien, PATINDEX('%[0-9]%', ma_phien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT) OR trang_thai='DANG_MO'), (SELECT TOP 1 ma_phien FROM phien_lam_viec WHERE trang_thai='DANG_MO'))"
+                    + " ma_phien_nhan_coc=COALESCE(ma_phien_nhan_coc, (SELECT TOP 1 ma_phien FROM phien_lam_viec WHERE ma_phien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_phien, PATINDEX('%[0-9]%', ma_phien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT) OR trang_thai='DANG_MO'), (SELECT TOP 1 ma_phien FROM phien_lam_viec WHERE trang_thai='DANG_MO'))"
                     + " WHERE (ma_hop_dong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 tongCoc,
                 taiKhoan, taiKhoan, taiKhoan,

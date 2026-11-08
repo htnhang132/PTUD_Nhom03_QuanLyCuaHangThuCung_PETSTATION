@@ -47,11 +47,11 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                             LocalDate den = docNgay(dongDuLieu[7]);
                             if (tu != null && den != null && den.isBefore(tu))
                                 return "Đến ngày phải sau hoặc bằng Từ ngày.";
-                            if ("Giảm %".equals(dongDuLieu[2])) {
-                                long giaTri = TienTe.doc(String.valueOf(dongDuLieu[4]));
-                                if (giaTri < 1 || giaTri > 100)
-                                    return "Giá trị giảm % phải từ 1 đến 100.";
-                            }
+                            long giaTri = TienTe.doc(String.valueOf(dongDuLieu[4]));
+                            if (giaTri <= 0)
+                                return "Giá trị khuyến mãi phải lớn hơn 0.";
+                            if ("Giảm %".equals(dongDuLieu[2]) && giaTri > 100)
+                                return "Giá trị giảm % phải từ 1 đến 100.";
                             return null;
                         });
         return cauHinh;

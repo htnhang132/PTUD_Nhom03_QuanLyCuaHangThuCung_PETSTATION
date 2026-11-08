@@ -95,29 +95,76 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
             JPopupMenu popup = new JPopupMenu();
             if ("TIEP_NHAN".equals(trangThai)) {
                 JMenuItem itemBatDau = new JMenuItem("Bắt đầu làm");
-                itemBatDau.addActionListener(e -> SpaService.layTrangThaiSpa(layDongChon(), "DANG_THUC_HIEN"));
+                itemBatDau.addActionListener(e -> {
+                    try {
+                        SpaService.layTrangThaiSpa(layDongChon(), "DANG_THUC_HIEN");
+                        lamMoi();
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, ex.getMessage());
+                    }
+                });
                 popup.add(itemBatDau);
                 JMenuItem itemThemDv = new JMenuItem("Thêm dịch vụ");
-                itemThemDv.addActionListener(e -> themDichVu());
+                itemThemDv.addActionListener(e -> {
+                    try {
+                        themDichVu();
+                        lamMoi();
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, ex.getMessage());
+                    }
+                });
                 popup.add(itemThemDv);
             } else if ("DANG_THUC_HIEN".equals(trangThai)) {
                 JMenuItem itemHoanThanh = new JMenuItem("Đánh dấu hoàn thành");
-                itemHoanThanh.addActionListener(e -> SpaService.layTrangThaiSpa(layDongChon(), "HOAN_TAT"));
+                itemHoanThanh.addActionListener(e -> {
+                    try {
+                        SpaService.layTrangThaiSpa(layDongChon(), "HOAN_TAT");
+                        lamMoi();
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, ex.getMessage());
+                    }
+                });
                 popup.add(itemHoanThanh);
                 JMenuItem itemThemDv = new JMenuItem("Thêm dịch vụ");
-                itemThemDv.addActionListener(e -> themDichVu());
+                itemThemDv.addActionListener(e -> {
+                    try {
+                        themDichVu();
+                        lamMoi();
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, ex.getMessage());
+                    }
+                });
                 popup.add(itemThemDv);
             } else if ("HOAN_TAT".equals(trangThai)) {
                 JMenuItem itemThanhToan = new JMenuItem("Thanh toán (POS)");
-                itemThanhToan.addActionListener(e -> quyetToan("SPA"));
+                itemThanhToan.addActionListener(e -> {
+                    try {
+                        quyetToan("SPA");
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, ex.getMessage());
+                    }
+                });
                 popup.add(itemThanhToan);
             }
             if (popup.getComponentCount() > 0) popup.addSeparator();
             JMenuItem itemChiTiet = new JMenuItem("Chi tiết dịch vụ");
-            itemChiTiet.addActionListener(e -> laySpaChiTiet());
+            itemChiTiet.addActionListener(e -> {
+                try {
+                    laySpaChiTiet();
+                } catch (RuntimeException ex) {
+                    HopThoai.hienThiCanhBao(this, ex.getMessage());
+                }
+            });
             popup.add(itemChiTiet);
             JMenuItem itemPhieuCS = new JMenuItem("Phiếu chăm sóc");
-            itemPhieuCS.addActionListener(e -> com.petstation.gui.components.common.NhatKyChamSocDialog.mo(this, "SPA", layDongChon()));
+            itemPhieuCS.addActionListener(e -> {
+                try {
+                    com.petstation.gui.components.common.NhatKyChamSocDialog.mo(this, "SPA", layDongChon());
+                    lamMoi();
+                } catch (RuntimeException ex) {
+                    HopThoai.hienThiCanhBao(this, ex.getMessage());
+                }
+            });
             popup.add(itemPhieuCS);
             return popup;
         });
@@ -168,6 +215,10 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
             int idx = tabWorkspace.getSelectedIndex();
             if (idx == 0) {
                 lamMoi();
+            } else if (idx == 1) {
+                pnlLapPhieu.xuLyHienThi();
+            } else if (idx == 2) {
+                pnlLichHen.xuLyHienThi();
             } else if (idx == 3) {
                 taiDanhSachPhieuTreo();
             }
@@ -242,6 +293,12 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
             }
         } catch (RuntimeException ex) {
             HopThoai.hienThiCanhBao(this, ex.getMessage());
+        }
+    }
+
+    public void chonTab(int index) {
+        if (index >= 0 && index < tabWorkspace.getTabCount()) {
+            tabWorkspace.setSelectedIndex(index);
         }
     }
 

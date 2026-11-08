@@ -116,7 +116,28 @@ public class BaoCaoPanel extends CoSoPanel implements HoTroThanhCongCu {
 				});
 		xuat.addActionListener(
 				e -> XuatExcel.xuatBang(this, tblBang, tenXuat + "_" + lblKhoang.getText()));
-		cboHienThiHop.addActionListener(e -> dungLai());
+		cboKy.addPropertyChangeListener(
+				"dateRange",
+				e -> {
+					try {
+						if (cboKy.layNgayBatDau() != null && cboKy.layNgayKetThuc() != null
+								&& !cboKy.layNgayBatDau().isAfter(cboKy.layNgayKetThuc())) {
+							khoangDaApDung =
+									new KhoangNgay(cboKy.layNgayBatDau(), cboKy.layNgayKetThuc());
+							dungLai();
+						}
+					} catch (RuntimeException ignored) {
+					}
+				});
+		cboHienThiHop.addActionListener(
+				e -> {
+					if (cboKy.layNgayBatDau() != null && cboKy.layNgayKetThuc() != null
+							&& !cboKy.layNgayBatDau().isAfter(cboKy.layNgayKetThuc())) {
+						khoangDaApDung =
+								new KhoangNgay(cboKy.layNgayBatDau(), cboKy.layNgayKetThuc());
+					}
+					dungLai();
+				});
 		cboTongHop.addActionListener(e -> veBieuDo());
 		JPanel header = taoVungTrongSuot(new BorderLayout(0, 8));
 		JPanel title = taoVungTrongSuot(new BorderLayout(0, 4));

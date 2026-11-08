@@ -27,7 +27,12 @@ public final class ChiTietThongKeService {
                         || baoCao.contains("khách hàng")
                         || baoCao.contains("nhân viên")
                         || baoCao.contains("hàng hóa")
-                                && !Set.of("Sản phẩm bán chạy", "Tồn kho hiện tại", "Sắp hết hạn")
+                                && !Set.of(
+                                                "Sản phẩm bán chạy",
+                                                "Tồn kho hiện tại",
+                                                "Sắp hết hạn",
+                                                "Hàng tồn đọng / chôn vốn",
+                                                "Hao hụt từ kiểm kê")
                                         .contains(goc);
         if (baoCaoToanCuaHang) yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
         return dao.lay(

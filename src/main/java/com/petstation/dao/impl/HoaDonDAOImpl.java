@@ -134,10 +134,6 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 }
             } catch (Exception ignored) {}
         }
-        if (val == null) {
-            val = ThaoTacSQL.layGiaTriDon(
-                    "SELECT TOP 1 ma_phien FROM phien_lam_viec WITH(UPDLOCK,HOLDLOCK) WHERE trang_thai='DANG_MO' ORDER BY mo_luc DESC");
-        }
         if (val == null) return 0L;
         long id = DuLieu.layIdCauNoi(null, String.valueOf(val));
         return id > 0 ? id : 1L;
@@ -149,7 +145,7 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     public List<Object[]> timThanhToan(Object... cacThamSo) {
         return ThaoTacSQL.truyVan(
-                "SELECT diem_tich_luy,1 FROM khach_hang"
+                "SELECT diem_tich_luy, CAST(COALESCE(dang_hoat_dong, 1) AS BIT) FROM khach_hang"
                         + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_khach_hang=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_khach_hang, PATINDEX('%[0-9]%', ma_khach_hang), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 cacThamSo[0], cacThamSo[0]);
     }
@@ -217,10 +213,14 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     }
 
     public int ghiPhanBoLo(Object... cacThamSo) {
+        Object muc = cacThamSo[0];
         Object loHangId = cacThamSo[1];
         return ThaoTacSQL.capNhat(
-                "UPDATE TOP (1) chi_tiet_hoa_don SET ma_lo=CAST(? AS VARCHAR) WHERE ma_lo IS NULL AND ma_dich_vu IS NULL AND ma_hoa_don=(SELECT TOP 1 ma_hoa_don FROM hoa_don WHERE trang_thai='DA_THANH_TOAN' ORDER BY thanh_toan_luc DESC, tao_luc DESC)",
-                loHangId);
+                "UPDATE TOP (1) chi_tiet_hoa_don SET ma_lo=COALESCE((SELECT TOP 1 ma_lo FROM lo_hang WHERE ma_lo=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_lo, PATINDEX('%[0-9]%', ma_lo), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), CAST(? AS VARCHAR))"
+                        + " WHERE ma_lo IS NULL AND ma_dich_vu IS NULL"
+                        + " AND (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
+                        + " AND ma_hoa_don=(SELECT TOP 1 ma_hoa_don FROM hoa_don WHERE trang_thai='DA_THANH_TOAN' ORDER BY thanh_toan_luc DESC, tao_luc DESC)",
+                loHangId, loHangId, loHangId, muc, muc);
     }
 
     public long themHoaDon(Object... cacThamSo) {
@@ -303,7 +303,8 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     public int chuyenPhongChoDon(Object... cacThamSo) {
         return ThaoTacSQL.capNhat(
                 "UPDATE phong_hotel SET trang_thai='DANG_DON' WHERE ma_phong=(SELECT"
-                        + " ma_phong FROM hop_dong_luu_tru WHERE ma_hop_dong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
+                        + " ma_phong FROM hop_dong_luu_tru WHERE ma_hop_dong=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hop_dong, PATINDEX('%[0-9]%', ma_hop_dong), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))"
+                        + " AND NOT EXISTS (SELECT 1 FROM hop_dong_luu_tru h2 WHERE h2.ma_phong=phong_hotel.ma_phong AND h2.trang_thai='DANG_O')",
                 cacThamSo[0], cacThamSo[0]);
     }
 
@@ -354,7 +355,9 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 ThaoTacSQL.capNhat(
                         "INSERT INTO"
                             + " chi_tiet_hoa_don(ma_hoa_don,ma_san_pham,ma_dich_vu,ten_hang,don_gia,so_luong)"
-                            + " VALUES(?,?,?,?,?,?)",
+                            + " VALUES(COALESCE((SELECT TOP 1 ma_hoa_don FROM hoa_don WHERE ma_hoa_don=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, PATINDEX('%[0-9]%', ma_hoa_don), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)), CAST(? AS VARCHAR)),?,?,?,?,?)",
+                        cacThamSo[0],
+                        cacThamSo[0],
                         cacThamSo[0],
                         cacThamSo[1],
                         cacThamSo[1],
@@ -363,9 +366,9 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                         cacThamSo[4]);
         ThaoTacSQL.capNhat(
                 "UPDATE hoa_don SET tam_tinh=COALESCE((SELECT SUM(so_luong*don_gia) FROM"
-                    + " chi_tiet_hoa_don WHERE ma_hoa_don=?),0), tong_tien=COALESCE((SELECT"
-                    + " SUM(so_luong*don_gia) FROM chi_tiet_hoa_don WHERE ma_hoa_don=?),0) WHERE ma_hoa_don=?",
-                cacThamSo[0],
+                    + " chi_tiet_hoa_don WHERE ma_hoa_don=hoa_don.ma_hoa_don),0), tong_tien=COALESCE((SELECT"
+                    + " SUM(so_luong*don_gia) FROM chi_tiet_hoa_don WHERE ma_hoa_don=hoa_don.ma_hoa_don),0)"
+                    + " WHERE (ma_hoa_don=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_hoa_don, PATINDEX('%[0-9]%', ma_hoa_don), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 cacThamSo[0],
                 cacThamSo[0]);
         return r;

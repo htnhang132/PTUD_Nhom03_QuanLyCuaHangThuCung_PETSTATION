@@ -971,8 +971,31 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         capNhatHauTo.run();
     }
 
+    private Runnable khiHuyThuGon;
+
     public final void moTaoMoi() {
         batDauTaoMoi();
+    }
+
+    public final void batCheDoThuGon(Runnable khiHuy) {
+        this.khiHuyThuGon = khiHuy;
+        btnNutSua.setVisible(false);
+        btnNutXoa.setVisible(false);
+        java.awt.Component center = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        java.awt.Component north = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.NORTH);
+        if (north != null) {
+            remove(north);
+        }
+        if (center instanceof JSplitPane split) {
+            java.awt.Component right = split.getRightComponent();
+            remove(split);
+            if (right != null) {
+                right.setPreferredSize(null);
+                add(right, BorderLayout.CENTER);
+            }
+        }
+        revalidate();
+        repaint();
     }
 
     private void batDauTaoMoi() {
@@ -1014,6 +1037,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     private void huySua() {
+        if (khiHuyThuGon != null) {
+            khiHuyThuGon.run();
+            return;
+        }
         hienThiBanGhi(hienTai);
         chonDong(hienTai);
     }
@@ -1052,7 +1079,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
             try {
                 giaTri = layDauVao(chiSo);
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
                 HopThoai.hienThiCanhBao(
                         this,
                         "Dữ liệu không hợp lệ:\n" + e.getMessage());
@@ -1408,9 +1435,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             if (!cacChuSo.isEmpty()) {
                 try {
                     long val = Long.parseLong(cacChuSo);
-                    if (val < 1000) {
-                        lonNhat = Math.max(lonNhat, val);
-                    }
+                    lonNhat = Math.max(lonNhat, val);
                 } catch (NumberFormatException ignored) {
                 }
             }
@@ -1478,12 +1503,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         dangChon = false;
         capNhatSoKetQua();
         chonDong(giu);
-        if (giu != null
-                && (!daHienThi.contains(giu)
-                        || tblBang.convertRowIndexToView(daHienThi.indexOf(giu)) < 0))
+        if (giu == null
+                || !daHienThi.contains(giu)
+                || tblBang.convertRowIndexToView(daHienThi.indexOf(giu)) < 0)
             hienThiBanGhi(null);
         else
-        if (giu != null)
             hienThiBanGhi(giu);
     }
 

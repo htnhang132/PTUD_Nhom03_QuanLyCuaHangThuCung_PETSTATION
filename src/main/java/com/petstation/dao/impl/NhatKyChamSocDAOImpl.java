@@ -17,7 +17,7 @@ public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
                     + " p.ma_nhat_ky, p.thoi_gian, n.ho_ten, p.tinh_trang, COALESCE(p.an_uong,N''), COALESCE(p.huong_dan_thuoc,N''), COALESCE(p.da_thuc_hien,p.ve_sinh,N''), p.anh_truoc, p.anh_sau"
                     + " FROM nhat_ky_cham_soc p JOIN nhan_vien n ON n.ma_nhan_vien=p.ma_nhan_vien WHERE (p."
                         + fk
-                        + " = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p." + fk + ", 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY p.thoi_gian DESC, p.ma_nhat_ky DESC",
+                        + " = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(p." + fk + ", PATINDEX('%[0-9]%', p." + fk + "), 20) AS BIGINT) = TRY_CAST(? AS BIGINT)) ORDER BY p.thoi_gian DESC, p.ma_nhat_ky DESC",
                 id, id);
         for (Object[] r : rows) {
             if (r[0] != null) {
@@ -31,7 +31,7 @@ public final class NhatKyChamSocDAOImpl implements NhatKyChamSocDAO {
         String table = spa ? "phieu_tiep_nhan_spa" : "hop_dong_luu_tru";
         String col = spa ? "ma_phieu" : "ma_hop_dong";
         return truyVan(
-                "SELECT trang_thai FROM " + table + " WITH(UPDLOCK,HOLDLOCK) WHERE (" + col + " = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(" + col + ", 3, 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id);
+                "SELECT trang_thai FROM " + table + " WITH(UPDLOCK,HOLDLOCK) WHERE (" + col + " = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(" + col + ", PATINDEX('%[0-9]%', " + col + "), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", id, id);
     }
 
     public int themPhieu(

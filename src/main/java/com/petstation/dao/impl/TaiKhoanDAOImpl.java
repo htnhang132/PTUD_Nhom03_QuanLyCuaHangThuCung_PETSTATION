@@ -94,7 +94,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
             String sqlFallback = """
                     SELECT vtq.ma_quyen
                     FROM tai_khoan tk
-                    JOIN vai_tro_quyen vtq ON vtq.vai_tro = tk.vai_tro
+                    JOIN quyen_vai_tro vtq ON vtq.vai_tro = tk.vai_tro
                     WHERE tk.ten_dang_nhap = ?
                     """;
             try (PreparedStatement cauLenhFallback = ketNoi.prepareStatement(sqlFallback)) {

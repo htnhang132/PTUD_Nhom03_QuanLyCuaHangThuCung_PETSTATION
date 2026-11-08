@@ -78,9 +78,22 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
                         if (!"Tất cả".equals(ttChon)) {
                             String maTt = e.getStringValue(6);
                             String tenTt = DinhDangBang.tenTrangThai(maTt);
-                            if (!ttChon.equalsIgnoreCase(maTt) && !ttChon.equalsIgnoreCase(tenTt)) {
-                                return false;
-                            }
+                            boolean khop =
+                                    switch (ttChon) {
+                                        case "Còn hạn" ->
+                                                "Còn hạn".equalsIgnoreCase(tenTt)
+                                                        || "OK".equalsIgnoreCase(maTt);
+                                        case "Sắp hết hạn" ->
+                                                tenTt.toLowerCase(Locale.ROOT).contains("sắp hết")
+                                                        || maTt.toUpperCase(Locale.ROOT).startsWith("SAP_HET_HAN");
+                                        case "Hết hạn" ->
+                                                "Hết hạn".equalsIgnoreCase(tenTt)
+                                                        || "HET_HAN".equalsIgnoreCase(maTt);
+                                        default ->
+                                                ttChon.equalsIgnoreCase(maTt)
+                                                        || ttChon.equalsIgnoreCase(tenTt);
+                                    };
+                            if (!khop) return false;
                         }
                         if (tuKhoa.isEmpty()) return true;
                         for (int i = 0; i < e.getValueCount(); i++) {

@@ -19,7 +19,13 @@ public final class DoiTraPanel extends NghiepVuBanHangPanel {
     public DoiTraPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.DOI_TRA, banHang, dieuHuong);
         themNut(pnlCacThaoTac, "+ Đổi phụ kiện (F7)", NutDinhDang.KieuNut.CHINH, this::traHang);
-        themNut(pnlCacThaoTac, "Xem hóa đơn gốc", NutDinhDang.KieuNut.PHU, this::hienThiHoaDonGoc);
+        var btnXemGoc = themNut(pnlCacThaoTac, "Xem hóa đơn gốc", NutDinhDang.KieuNut.PHU, this::hienThiHoaDonGoc);
+        btnXemGoc.setEnabled(tblBang.getSelectedRow() >= 0);
+        tblBang.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                btnXemGoc.setEnabled(tblBang.getSelectedRow() >= 0);
+            }
+        });
 
         ganPhimTat(KeyEvent.VK_F7, this::traHang);
         ganSuKienDupChuot(this::hienThiHoaDonGoc);
@@ -47,8 +53,7 @@ public final class DoiTraPanel extends NghiepVuBanHangPanel {
         dieuHuong.accept(MaManHinh.IN_HOA_DON);
     }
 
-    @Override
-    protected void traHang() {
+    private void traHang() {
         if (!banHang.kiemTraTrong()) {
             int luaChon = javax.swing.JOptionPane.showConfirmDialog(
                     this,
@@ -68,5 +73,6 @@ public final class DoiTraPanel extends NghiepVuBanHangPanel {
             banHang,
             dieuHuong
         ).setVisible(true);
+        lamMoi();
     }
 }

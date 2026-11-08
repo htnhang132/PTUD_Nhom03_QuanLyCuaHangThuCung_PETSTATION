@@ -20,6 +20,15 @@ public final class ThaoTacSQL {
         return HIEN_TAI.get() != null;
     }
 
+    static Connection layKetNoiHienTai() {
+        return HIEN_TAI.get();
+    }
+
+    static void ganKetNoiHienTai(Connection ketNoi) {
+        if (ketNoi == null) HIEN_TAI.remove();
+        else HIEN_TAI.set(ketNoi);
+    }
+
     private ThaoTacSQL() {}
 
     public static void cauHinh(KetNoiCSDL giaTri) {

@@ -59,16 +59,24 @@ public final class CaLamViecDAOImpl implements CaLamViecDAO {
 
     @Override
     public List<Object[]> timHienTai(Object... cacThamSo) {
-        List<Object[]> kq = ThaoTacSQL.truyVan(
-                "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
-                        + " ten_dang_nhap=? AND trang_thai='DANG_MO'",
-                cacThamSo);
-        if (kq.isEmpty()) {
-            kq = ThaoTacSQL.truyVan(
-                    "SELECT TOP 1 ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
-                            + " trang_thai='DANG_MO' ORDER BY mo_luc DESC");
+        Object tk = cacThamSo != null && cacThamSo.length > 0 ? cacThamSo[0] : null;
+        String cur = null;
+        try {
+            cur = com.petstation.util.BoiCanhDangNhap.layTenDangNhap();
+        } catch (Exception ignored) {}
+        if (cur != null && !cur.isBlank()) {
+            List<Object[]> kq = ThaoTacSQL.truyVan(
+                    "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
+                            + " ten_dang_nhap=? AND trang_thai='DANG_MO' ORDER BY mo_luc DESC",
+                    cur);
+            if (!kq.isEmpty()) return kq;
         }
-        return kq;
+        if (tk == null) return java.util.List.of();
+        return ThaoTacSQL.truyVan(
+                "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
+                        + " (ten_dang_nhap=CAST(? AS VARCHAR) OR ten_dang_nhap IN (SELECT ten_dang_nhap FROM tai_khoan WHERE ma_nhan_vien=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT)=TRY_CAST(? AS BIGINT)))"
+                        + " AND trang_thai='DANG_MO' ORDER BY mo_luc DESC",
+                tk, tk, tk);
     }
 
     @Override

@@ -16,8 +16,13 @@ public final class QuanLyGiaoDich {
     }
 
     public <KieuDuLieu> KieuDuLieu thucThi(CongViecGiaoDich<KieuDuLieu> lamViec) {
+        Connection dangCo = ThaoTacSQL.layKetNoiHienTai();
+        if (dangCo != null) {
+            return ThaoTacSQL.thucHienGiaoDich(lamViec::thucThi);
+        }
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
+            ThaoTacSQL.ganKetNoiHienTai(ketNoi);
             try {
                 KieuDuLieu ketQua = lamViec.thucThi(ketNoi);
                 ketNoi.commit();
@@ -29,6 +34,7 @@ public final class QuanLyGiaoDich {
                 ketNoi.rollback();
                 throw new TruyCapDuLieuException("Giao dịch đã bị hoàn tác.", ngoaiLe);
             } finally {
+                ThaoTacSQL.ganKetNoiHienTai(null);
                 ketNoi.setAutoCommit(true);
             }
         } catch (SQLException ngoaiLe) {

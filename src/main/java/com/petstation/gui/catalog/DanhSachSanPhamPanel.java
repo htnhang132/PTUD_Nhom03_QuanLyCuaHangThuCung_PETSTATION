@@ -76,10 +76,12 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                                                         .doc(String.valueOf(dong[4]));
                                                         long giaNhap = com.petstation.util.TienTe
                                                                         .doc(String.valueOf(dong[5]));
-                                                        if (giaBan <= 0) {
+                                                        boolean laQuanLy = com.petstation.service.PhienDangNhapService.layPhien()
+                                                                        .docVaiTro() == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG;
+                                                        if (laQuanLy && giaBan <= 0) {
                                                                 return "Giá bán phải lớn hơn 0.";
                                                         }
-                                                        if (giaNhap > 0 && giaBan < giaNhap) {
+                                                        if (giaBan > 0 && giaNhap > 0 && giaBan < giaNhap) {
                                                                 return "Giá bán ("
                                                                                 + com.petstation.util.TienTe
                                                                                                 .dinhDang(giaBan)
@@ -93,18 +95,6 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                                                         : "";
                                                         if (!barcode.isBlank() && !barcode.matches("\\d{13}")) {
                                                                 return "Mã vạch (Barcode) phải gồm đúng 13 chữ số chuẩn EAN-13.";
-                                                        }
-                                                        return null;
-                                                })
-                                .datDieuKienXoa(
-                                                dong -> {
-                                                        String ma = String.valueOf(dong[0]);
-                                                        long spId = DanhMucService.layId("san_pham", "ma_san_pham", ma);
-                                                        if (DanhMucService.kiemTraSanPhamCoGiaoDich(spId)) {
-                                                                DanhMucService.ngungKinhDoanhSanPham(spId);
-                                                                return "Sản phẩm đã có lịch sử giao dịch. Hệ thống"
-                                                                                + " đã tự động chuyển sang 'Ngừng kinh doanh' để"
-                                                                                + " bảo toàn dữ liệu sổ sách.";
                                                         }
                                                         return null;
                                                 })

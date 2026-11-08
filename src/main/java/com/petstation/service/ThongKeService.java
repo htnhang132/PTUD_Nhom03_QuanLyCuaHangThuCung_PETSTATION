@@ -8,21 +8,12 @@ import com.petstation.dao.impl.ThongKeDAOImpl;
 import com.petstation.model.KhoangNgay;
 import com.petstation.model.Quyen;
 
-import java.time.LocalDate;
 import java.util.*;
 
 public final class ThongKeService {
     private static final ThongKeDAO thongKeDAO = new ThongKeDAOImpl();
 
     private ThongKeService() {}
-
-    private static LocalDate layNgayBatDau(int soNgay) {
-        return LocalDate.now().minusDays(Math.max(1, soNgay) - 1L);
-    }
-
-    private static LocalDate layNgayKetThuc() {
-        return LocalDate.now().plusDays(1);
-    }
 
     private static void kiemTraQuyenBaoCao() {
         if (!layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)) yeuCau(Quyen.XEM_BAO_CAO_CA);
@@ -170,14 +161,11 @@ public final class ThongKeService {
     public static List<Object[]> layDoanhThuHoanTat(KhoangNgay k) {
         kiemTraQuyenBaoCao();
         Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layDoanhThuHoanTat(k.getTuNgay(), k.getCanTren(), taiKhoan, taiKhoan);
     }
 
     public static List<Object[]> layBienDongKho(KhoangNgay k) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layBienDongKho(
                 k.getTuNgay(),
                 k.getCanTren(),
@@ -191,7 +179,6 @@ public final class ThongKeService {
 
     public static List<Object[]> layPhieuSpaTheoTrangThai(KhoangNgay k) {
         kiemTraQuyenBaoCao();
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
         Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layPhieuSpaTheoTrangThai(k.getTuNgay(), k.getCanTren(), nhanVien, nhanVien);
     }
@@ -199,42 +186,32 @@ public final class ThongKeService {
     public static List<Object[]> layHopDongTrongKy(KhoangNgay k) {
         kiemTraQuyenBaoCao();
         Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layHopDongTrongKy(k.getTuNgay(), k.getCanTren(), taiKhoan, taiKhoan);
     }
 
     public static List<Object[]> layCocTrongKy(KhoangNgay k) {
         kiemTraQuyenBaoCao();
         Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layCocTrongKy(k.getTuNgay(), k.getCanTren(), taiKhoan, taiKhoan);
     }
 
     public static List<Object[]> layLuotKhach(KhoangNgay k) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layLuotKhach(k.getTuNgay(), k.getTuNgay(), k.getCanTren());
     }
 
     public static List<Object[]> laySuDungVoucher(KhoangNgay k) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.laySuDungVoucher(k.getTuNgay(), k.getCanTren());
     }
 
     public static List<Object[]> layTongHopCa(KhoangNgay k) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layTongHopCa(k.getTuNgay(), k.getCanTren());
     }
 
     public static List<Object[]> layDuNoHienTai(KhoangNgay k) {
         yeuCau(Quyen.XEM_BAO_CAO_CHUNG);
-        Long taiKhoan = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdTaiKhoan();
-        Long nhanVien = layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG) ? null : layIdNhanVien();
         return thongKeDAO.layDuNoHienTai();
     }
 

@@ -33,6 +33,12 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     }
 
     public void datDuLieu(ChiTietBienLai thongTin) {
+        if (thongTin == null) {
+            cacKhoi = List.of();
+            revalidate();
+            repaint();
+            return;
+        }
         List<Khoi> khoi = new ArrayList<>();
         if (LOGO != null) khoi.add(new Khoi(51, List.of(), false, true));
         themChu(khoi, thongTin.getTenCuaHang(), 12, true, 1);

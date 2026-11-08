@@ -6,7 +6,6 @@ import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.KhaNangThanhCongCu;
 import com.petstation.gui.components.MauUngDung;
 import com.petstation.gui.components.NutDinhDang;
-import com.petstation.gui.components.common.KiemTraBieuMau;
 import com.petstation.gui.components.common.TruongMatKhauAnHien;
 import com.petstation.service.TaiKhoanService;
 
@@ -24,18 +23,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu {
-    private final java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong;
-
     private TruongMatKhauAnHien pnlTruongHienTaiMatKhau;
 
     private TruongMatKhauAnHien pnlTruongMoiMatKhau;
 
     private TruongMatKhauAnHien pnlTruongXacNhanMatKhau;
 
-    private KiemTraBieuMau boKiemTra;
-
-    public DoiMatKhauPanel(java.util.function.Consumer<com.petstation.model.MaManHinh> dieuHuong) {
-        this.dieuHuong = dieuHuong;
+    public DoiMatKhauPanel() {
         setLayout(new BorderLayout());
 
         JPanel pnlNoiDung = layThe(new GridBagLayout());
@@ -144,7 +138,8 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
 
         btnLuu.addActionListener(suKien -> luuMatKhauMoi());
 
-        dangKyBanPhimPhimTat("F4", suKien -> luuMatKhauMoi());
+        dangKyBanPhimPhimTat("control S", suKien -> luuMatKhauMoi());
+        dangKyBanPhimPhimTat("ENTER", suKien -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("ESCAPE", suKien -> btnHuy.doClick());
 
         pnlNoiDung.setPreferredSize(new Dimension(520, 425));
@@ -247,14 +242,6 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
         return Math.min(doManh, 5);
     }
 
-    private void dieuHuongQuayLai() {
-        dieuHuong.accept(com.petstation.model.MaManHinh.TONG_QUAN);
-    }
-
-    private void dieuHuongDenTrangChinh() {
-        dieuHuong.accept(com.petstation.model.MaManHinh.TONG_QUAN);
-    }
-
     private void dangKyBanPhimPhimTat(String khoa, java.awt.event.ActionListener thaoTac) {
         javax.swing.KeyStroke khoaNetVe = javax.swing.KeyStroke.getKeyStroke(khoa);
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(khoaNetVe, khoa);
@@ -296,13 +283,18 @@ public final class DoiMatKhauPanel extends CoSoPanel implements HoTroThanhCongCu
     }
 
     @Override
+    public void xuLyLuu() {
+        luuMatKhauMoi();
+    }
+
+    @Override
     public void xuLyTroGiup() {
         hienThiThongBao(
                 "Hướng dẫn đổi mật khẩu:\n\n"
                         + "1. Nhập mật khẩu hiện tại\n"
                         + "2. Nhập mật khẩu mới (tối thiểu 8 ký tự)\n"
                         + "3. Xác nhận lại mật khẩu mới\n"
-                        + "4. Nhấn 'Lưu mật khẩu' hoặc phím F4\n\n"
+                        + "4. Nhấn 'Lưu mật khẩu' hoặc phím Ctrl+S / Enter\n\n"
                         + "Mẹo: Nhấn nút Hiện/Ẩn để xem hoặc che mật khẩu",
                 "Trợ giúp",
                 JOptionPane.INFORMATION_MESSAGE);

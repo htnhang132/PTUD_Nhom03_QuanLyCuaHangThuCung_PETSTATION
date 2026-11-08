@@ -85,16 +85,25 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         themDong(bieuMau, "Dịch vụ", cboDichVu);
         themDong(bieuMau, "Giá dự kiến", lblGia);
         themDong(bieuMau, "", nut("Xem giá", this::xemGia));
-        cboDichVu.addActionListener(e -> lblGia.setText("Nhấn Xem giá để cập nhật"));
+        cboDichVu.addActionListener(e -> capNhatGiaTuDong());
         txtCanNang.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { doiCanNang(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { doiCanNang(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { doiCanNang(); }
-            private void doiCanNang() { lblGia.setText("Nhấn Xem giá để cập nhật"); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { capNhatGiaTuDong(); }
         });
         cboThuCung.addActionListener(e -> {
             chkSucKhoe.setSelected(false);
-            lblGia.setText("Nhấn Xem giá để cập nhật");
+            LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
+            if (thu != null && txtCanNang.getText().trim().isEmpty()) {
+                DanhMucService.layThuCung().stream()
+                        .filter(t -> thu.giaTri().equals(String.valueOf(t[0])))
+                        .findFirst()
+                        .ifPresent(t -> {
+                            String cn = t[6] == null ? "" : String.valueOf(t[6]).trim();
+                            if (!cn.isEmpty()) txtCanNang.setText(cn);
+                        });
+            }
+            capNhatGiaTuDong();
         });
         JPanel thaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         thaoTac.setOpaque(false);
@@ -162,69 +171,10 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         khiTreo.run();
     }
 
-    public boolean xacNhanDong() {
-        if (!chupNhap().coNoiDung()) return true;
-        String[] luaChon = {"Treo phiếu", "Bỏ thay đổi", "Tiếp tục nhập"};
-        int chon = JOptionPane.showOptionDialog(this, "Bạn muốn lưu phiếu đang nhập để tiếp tục sau?",
-            "Đóng phiếu Spa", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-            null, luaChon, luaChon[0]);
-        if (chon == 0) { treoPhieu(); return true; }
-        return chon == 1;
-    }
-
     public void moDanhSachPhieuTreo() {
         if (khiTreo != null) {
             khiTreo.run();
-            return;
         }
-        var cacPhieu = PhieuSpaTreoService.danhSach();
-        if (cacPhieu.isEmpty()) {
-            HopThoai.hienThiThongTin(this, "Chưa có phiếu Spa đang treo.");
-            return;
-        }
-        var moHinh = new javax.swing.table.DefaultTableModel(
-            new String[] {"ID", "Mã phiếu treo", "Khách hàng", "Số điện thoại", "Thú cưng", "Dịch vụ", "Cập nhật lúc"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        cacPhieu.forEach(moHinh::addRow);
-        JScrollPane cuon = taoBangDinhDang(moHinh);
-        JTable bang = layBang(cuon);
-        bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        bang.removeColumn(bang.getColumnModel().getColumn(0));
-        JDialog ds = new JDialog(SwingUtilities.getWindowAncestor(this), "Phiếu Spa đang treo",
-            Dialog.ModalityType.APPLICATION_MODAL);
-        JPanel noiDung = new JPanel(new BorderLayout(0, 12));
-        noiDung.setBackground(MauUngDung.NEN_KEM);
-        noiDung.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
-        noiDung.add(cuon, BorderLayout.CENTER);
-        java.util.function.LongSupplier chonId = () -> {
-            if (bang.getSelectedRow() < 0) throw new IllegalArgumentException("Chọn một phiếu đang treo.");
-            return ((Number) moHinh.getValueAt(bang.convertRowIndexToModel(bang.getSelectedRow()), 0)).longValue();
-        };
-        JPanel nutDong = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        nutDong.setOpaque(false);
-        nutDong.add(nut("Xóa phiếu treo", () -> {
-            long id = chonId.getAsLong();
-            if (!HopThoai.xacNhan(ds, "Xóa phiếu Spa đang treo đã chọn?")) return;
-            PhieuSpaTreoService.xoa(id);
-            if (idPhieuTreo == id) idPhieuTreo = 0;
-            moHinh.setRowCount(0);
-            PhieuSpaTreoService.danhSach().forEach(moHinh::addRow);
-        }));
-        nutDong.add(nut("Đóng", ds::dispose));
-        nutDong.add(nut("Mở lại phiếu", () -> {
-            long id = chonId.getAsLong();
-            if (chupNhap().coNoiDung() && !HopThoai.xacNhan(ds,
-                "Thay nội dung trên biểu mẫu bằng phiếu treo đã chọn? Nội dung chưa treo sẽ bị bỏ.")) return;
-            khoiPhucPhieu(id);
-            ds.dispose();
-        }));
-        noiDung.add(nutDong, BorderLayout.SOUTH);
-        ds.setContentPane(noiDung);
-        ds.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        ds.setSize(1000, 480);
-        HopThoai.chuanHoaCuaSo(ds, this);
-        ds.setVisible(true);
     }
 
     public void khoiPhucPhieu(long id) {
@@ -301,8 +251,35 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     private double canNang() {
-        try { return Double.parseDouble(txtCanNang.getText().trim().replace(',', '.')); }
-        catch (NumberFormatException e) { throw new IllegalArgumentException("Cân nặng phải là số, ví dụ 5,2."); }
+        try {
+            double cn = Double.parseDouble(txtCanNang.getText().trim().replace(',', '.'));
+            if (!Double.isFinite(cn) || cn <= 0)
+                throw new IllegalArgumentException("Cân nặng phải lớn hơn 0, ví dụ 5,2.");
+            return cn;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Cân nặng phải là số, ví dụ 5,2.");
+        }
+    }
+
+    private void capNhatGiaTuDong() {
+        LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
+        LuaChon goi = (LuaChon) cboDichVu.getSelectedItem();
+        String cnStr = txtCanNang.getText().trim().replace(',', '.');
+        if (thu == null || goi == null || cnStr.isEmpty()) {
+            lblGia.setText("Chọn thú cưng, dịch vụ và nhập cân nặng để tự động tính giá");
+            return;
+        }
+        try {
+            double cn = Double.parseDouble(cnStr);
+            if (cn <= 0) {
+                lblGia.setText("Cân nặng phải lớn hơn 0");
+                return;
+            }
+            long gia = LapPhieuSpaService.baoGia(thu.giaTri(), goi.giaTri(), cn);
+            lblGia.setText(TienTe.dinhDang(gia));
+        } catch (RuntimeException ex) {
+            lblGia.setText(ex.getMessage());
+        }
     }
 
     private void xemGia() {

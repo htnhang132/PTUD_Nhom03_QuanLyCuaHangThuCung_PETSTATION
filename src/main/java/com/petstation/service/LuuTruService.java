@@ -81,8 +81,13 @@ public final class LuuTruService {
                                     .contains(chuyenThanhChuoi(phong.get(0)[2])))
                         throw new IllegalArgumentException("Phòng không nhận đặt chỗ.");
                     Object[] p = phong.get(0);
-                    if ("Mèo".equals(p[3]) && !"Mèo".equalsIgnoreCase(String.valueOf(thu[2])) && !"CAT".equalsIgnoreCase(String.valueOf(thu[2])))
+                    String loaiThu = String.valueOf(thu[2]);
+                    boolean laMeo = "Mèo".equalsIgnoreCase(loaiThu) || "CAT".equalsIgnoreCase(loaiThu);
+                    String loaiPhong = String.valueOf(p[3]);
+                    if ("Mèo".equalsIgnoreCase(loaiPhong) && !laMeo)
                         throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
+                    if (("Chó".equalsIgnoreCase(loaiPhong) || "DOG".equalsIgnoreCase(loaiPhong)) && laMeo)
+                        throw new IllegalArgumentException("Phòng Chó chỉ dành cho chó.");
                     if (luuTruDAO.demThuCungDatTrung(
                                     layGiaTri(thu[0]), ketThuc, batDau)
                             > 0)
@@ -257,10 +262,13 @@ public final class LuuTruService {
                         throw new IllegalArgumentException(
                                 "Phòng không nhận đặt chỗ do đang dọn, bảo trì hoặc ngừng hoạt động.");
 
-                    if ("Mèo".equals(chuyenThanhChuoi(phong[3]))
-                            && !"Mèo".equalsIgnoreCase(chuyenThanhChuoi(thu[2]))
-                            && !"CAT".equalsIgnoreCase(chuyenThanhChuoi(thu[2])))
+                    String loaiThu = chuyenThanhChuoi(thu[2]);
+                    boolean laMeo = "Mèo".equalsIgnoreCase(loaiThu) || "CAT".equalsIgnoreCase(loaiThu);
+                    String loaiPhong = chuyenThanhChuoi(phong[3]);
+                    if ("Mèo".equalsIgnoreCase(loaiPhong) && !laMeo)
                         throw new IllegalArgumentException("Phòng Mèo chỉ dành cho mèo.");
+                    if (("Chó".equalsIgnoreCase(loaiPhong) || "DOG".equalsIgnoreCase(loaiPhong)) && laMeo)
+                        throw new IllegalArgumentException("Phòng Chó chỉ dành cho chó.");
 
                     long thuCungId = layGiaTri(thu[0]);
                     long phongId = layGiaTri(phong[0]);
@@ -366,14 +374,16 @@ public final class LuuTruService {
 
     public static void ghiNhatKy(long hopDongLuuTru, String anUong, String veSinh, String sucKhoe) {
         yeuCau(Quyen.QUAN_LY_LUU_TRU);
-        if (sucKhoe.isBlank()) throw new IllegalArgumentException("Cần ghi tình trạng thú cưng.");
+        if (sucKhoe == null || sucKhoe.isBlank()) throw new IllegalArgumentException("Cần ghi tình trạng thú cưng.");
+        String anUongChuan = anUong == null ? "" : anUong;
+        String veSinhChuan = veSinh == null ? "" : veSinh;
         thucHienGiaoDich(
                 ketNoi -> {
                     if (luuTruDAO.demNhatKy(hopDongLuuTru) == 0)
                         throw new IllegalArgumentException(
                                 "Thú cưng chưa nhận phòng hoặc đã trả phòng.");
                     luuTruDAO.capNhatNhatKy(
-                            hopDongLuuTru, layIdNhanVien(), anUong, veSinh, sucKhoe);
+                            hopDongLuuTru, layIdNhanVien(), anUongChuan, veSinhChuan, sucKhoe);
                     NhatKyHeThongService.ghiNhatKy(
                             "Ghi nhật ký Hotel", chuyenThanhChuoi(hopDongLuuTru));
                     return null;

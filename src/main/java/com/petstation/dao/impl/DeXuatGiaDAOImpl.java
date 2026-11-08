@@ -26,7 +26,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                 sanPham, sanPham);
         if (hienTai.isEmpty())
             throw new IllegalArgumentException("Không tìm thấy sản phẩm.");
-        boolean dangCho = String.valueOf(hienTai.get(0)[0]).startsWith("CHO_DUYET|");
+        String hienTaiStr = String.valueOf(hienTai.get(0)[0]);
+        boolean dangCho = hienTaiStr.startsWith("CHO_DUYET|") || hienTaiStr.startsWith("PENDING|");
         long yeuCauMo = laySo(
                 "SELECT COUNT(*) FROM yeu_cau_phe_duyet"
                         + " WHERE loai_doi_tuong='DOI_GIA' AND ma_doi_tuong=?"
@@ -61,9 +62,10 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         String dxg = String.valueOf(d[2]).trim();
         if (dxg.isEmpty()) return List.of();
         String[] p = dxg.split("\\|");
-        if (p.length < 4 || !"CHO_DUYET".equals(p[0].trim())) return List.of();
-        long giaHienTai = Long.parseLong(p[2].trim());
-        long giaDeXuat = Long.parseLong(p[3].trim());
+        String trangThaiDxg = p[0].trim();
+        if (p.length < 4 || (!"CHO_DUYET".equals(trangThaiDxg) && !"PENDING".equals(trangThaiDxg))) return List.of();
+        long giaHienTai = new java.math.BigDecimal(p[2].trim()).longValue();
+        long giaDeXuat = new java.math.BigDecimal(p[3].trim()).longValue();
         return List.<Object[]>of(new Object[] {id, giaHienTai, giaDeXuat, d[1]});
     }
 
@@ -72,7 +74,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         long giaCu = choDuyet.isEmpty() ? gia : ((Number) choDuyet.get(0)[1]).longValue();
         capNhat(
                 "UPDATE san_pham SET gia_ban=?,"
-                    + " de_xuat_gia=REPLACE(COALESCE(de_xuat_gia,N''),N'CHO_DUYET|',N'DA_DUYET|'),"
+                    + " de_xuat_gia=REPLACE(REPLACE(COALESCE(de_xuat_gia,N''),N'CHO_DUYET|',N'DA_DUYET|'),N'PENDING|',N'DA_DUYET|'),"
                     + " lich_su_gia = CASE WHEN lich_su_gia IS NULL OR lich_su_gia=N'' THEN N''"
                     + " ELSE lich_su_gia + N';' END + CONVERT(NVARCHAR(19), SYSDATETIME(), 120) +"
                     + " N'|' + CAST(? AS NVARCHAR(20)) + N'|' + CAST(? AS NVARCHAR(20)) + N'|' +"
@@ -87,7 +89,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     public void tuChoi(long id) {
         capNhat(
                 "UPDATE san_pham SET"
-                        + " de_xuat_gia=REPLACE(COALESCE(de_xuat_gia,N''),N'CHO_DUYET|',N'TU_CHOI|')"
+                        + " de_xuat_gia=REPLACE(REPLACE(COALESCE(de_xuat_gia,N''),N'CHO_DUYET|',N'TU_CHOI|'),N'PENDING|',N'TU_CHOI|')"
                         + " WHERE (ma_san_pham=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_san_pham, PATINDEX('%[0-9]%', ma_san_pham), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
                 id, id);
     }

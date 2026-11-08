@@ -36,15 +36,7 @@ public final class QuyTrinhManHinh {
                             "Bán hàng",
                             List.of(MaManHinh.LAP_HOA_DON, MaManHinh.THANH_TOAN, MaManHinh.IN_HOA_DON),
                             List.of("Lập hóa đơn", "Thanh toán", "Xem hóa đơn"),
-                            false),
-                    new QuyTrinh(
-                            "Quản lý lưu trú",
-                            List.of(
-                                    MaManHinh.DAT_PHONG_LUU_TRU,
-                                    MaManHinh.NHAT_KY_CHAM_SOC,
-                                    MaManHinh.TRA_PHONG_LUU_TRU),
-                            List.of("Đặt phòng", "Nhật ký lưu trú", "Trả phòng"),
-                            true));
+                            false));
 
     private QuyTrinhManHinh() {}
 

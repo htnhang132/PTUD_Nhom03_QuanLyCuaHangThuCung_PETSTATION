@@ -111,6 +111,8 @@ public final class LichLamViecService {
 
     public static void xoa(Muc muc) {
         yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
+        if (muc == null || muc.caLamViec < 0 || muc.caLamViec >= CAC_MA.length)
+            throw new IllegalArgumentException("Ca làm việc không hợp lệ.");
         lichLamViecDAO.capNhatXoa(muc.maNhanVien, muc.ngay, CAC_MA[muc.caLamViec]);
         thongBao();
     }

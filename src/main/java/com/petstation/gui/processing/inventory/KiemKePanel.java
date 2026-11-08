@@ -37,11 +37,14 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     public KiemKePanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.KIEM_KE, banHang, dieuHuong);
 
-        themNut(pnlCacThaoTac, "+ Lập đợt kiểm kê", this::moWorkspaceKiemKe);
+        themNut(pnlCacThaoTac, "+ Lập đợt kiểm kê", NutDinhDang.KieuNut.CHINH, this::moWorkspaceKiemKe);
+        NutDinhDang btnCanBang = null;
         if (PhienDangNhapService.layPhien().kiemTraCo(Quyen.XU_LY_PHE_DUYET)) {
-            themNut(pnlCacThaoTac, "Cân bằng kho (Duyệt)", this::thucHienCanBangKho);
+            btnCanBang = themNut(pnlCacThaoTac, "Cân bằng kho (Duyệt)", NutDinhDang.KieuNut.THANH_CONG, this::thucHienCanBangKho);
+            btnCanBang.setEnabled(false);
         }
-        themNut(pnlCacThaoTac, "Xem chi tiết", this::xemChiTietBienBan);
+        final NutDinhDang refBtnCanBang = btnCanBang;
+        ganSuKienDupChuot(this::xemChiTietBienBan);
 
         String[] cotChiTiet = {
             "ID",
@@ -132,7 +135,21 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         tblBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
-                            if (e.getValueIsAdjusting() || tblBang.getSelectedRow() < 0) return;
+                            if (e.getValueIsAdjusting()) return;
+                            int row = tblBang.getSelectedRow();
+                            if (row < 0) {
+                                if (refBtnCanBang != null) refBtnCanBang.setEnabled(false);
+                                return;
+                            }
+                            if (refBtnCanBang != null) {
+                                String tt = layNoiDungDongChon(3);
+                                refBtnCanBang.setEnabled(
+                                        "DANG_KIEM".equalsIgnoreCase(tt)
+                                                || "Đang kiểm".equalsIgnoreCase(tt)
+                                                || "Đang kiểm kê".equalsIgnoreCase(tt)
+                                                || "CHO_DUYET".equalsIgnoreCase(tt)
+                                                || "Chờ duyệt".equalsIgnoreCase(tt));
+                            }
                             long id = layDongChon();
                             taiChiTietBienBan(id);
                         });
@@ -143,9 +160,14 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         moHinhChiTiet.setRowCount(0);
         try {
             int row = tblBang.getSelectedRow();
-            String soBB = row >= 0 ? tblBang.getValueAt(row, 0).toString() : ("#" + bienBanId);
-            String trangThai = row >= 0 ? tblBang.getValueAt(row, 2).toString() : "";
-            lblTieuDeChiTiet.setText("Chi tiết đợt kiểm kê: " + soBB + " (" + trangThai + ")");
+            String soBB = row >= 0 ? layNoiDungDongChon(1) : ("#" + bienBanId);
+            String trangThai = row >= 0 ? layNoiDungDongChon(3) : "";
+            lblTieuDeChiTiet.setText(
+                    "Chi tiết đợt kiểm kê: "
+                            + soBB
+                            + " ("
+                            + com.petstation.gui.components.common.DinhDangBang.tenTrangThai(trangThai)
+                            + ")");
 
             List<Object[]> cacDong = KhoService.layChiTietKiemKe(bienBanId);
             int demLech = 0;
@@ -190,8 +212,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         }
 
         int row = tblBang.getSelectedRow();
-        String soBB = row >= 0 ? tblBang.getValueAt(row, 0).toString() : ("#" + bienBanHienTaiId);
-        String trangThai = row >= 0 ? tblBang.getValueAt(row, 2).toString() : "";
+        String soBB = row >= 0 ? layNoiDungDongChon(1) : ("#" + bienBanHienTaiId);
+        String trangThai = row >= 0 ? layNoiDungDongChon(3) : "";
 
         if ("DA_DUYET".equalsIgnoreCase(trangThai) || "Đã duyệt".equalsIgnoreCase(trangThai)) {
             HopThoai.hienThiThongTin(this, "Biên bản " + soBB + " đã được cân bằng kho trước đó.");
@@ -531,8 +553,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                     moHinhWs.setValueAt(tonHienTai + 1, i, 7);
 
                                     int viewRow = tblWs.convertRowIndexToView(i);
-                                    tblWs.setRowSelectionInterval(viewRow, viewRow);
-                                    tblWs.scrollRectToVisible(tblWs.getCellRect(viewRow, 0, true));
+                                    if (viewRow >= 0) {
+                                        tblWs.setRowSelectionInterval(viewRow, viewRow);
+                                        tblWs.scrollRectToVisible(tblWs.getCellRect(viewRow, 0, true));
+                                    }
 
                                     String tenSP = moHinhWs.getValueAt(i, 2).toString();
                                     lblBarcodeStatus.setText(
@@ -592,8 +616,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                             + tenSP
                                             + ")");
                             int viewRow = tblWs.convertRowIndexToView(i);
-                            tblWs.setRowSelectionInterval(viewRow, viewRow);
-                            tblWs.scrollRectToVisible(tblWs.getCellRect(viewRow, 0, true));
+                            if (viewRow >= 0) {
+                                tblWs.setRowSelectionInterval(viewRow, viewRow);
+                                tblWs.scrollRectToVisible(tblWs.getCellRect(viewRow, 0, true));
+                            }
                             return;
                         }
 

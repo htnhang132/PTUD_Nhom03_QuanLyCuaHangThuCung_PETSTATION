@@ -47,11 +47,8 @@ public class DongThuTien implements Serializable {
 
     public long getKhachDua() { return this.khachDua; }
     public void setKhachDua(long khachDua) {
-        if (khachDua < this.soTien) {
-            throw new IllegalArgumentException("Tiền khách đưa không được nhỏ hơn số tiền thu.");
-        }
-        if (this.phuongThuc != null && this.phuongThuc != PhuongThuc.TIEN_MAT && khachDua != this.soTien) {
-            throw new IllegalArgumentException("Khoản thu không hợp lệ; chỉ tiền mặt có tiền thừa.");
+        if (khachDua < 0) {
+            throw new IllegalArgumentException("Tiền khách đưa không được âm.");
         }
         this.khachDua = khachDua;
     }
@@ -69,6 +66,11 @@ public class DongThuTien implements Serializable {
         java.util.Set<PhuongThuc> used = java.util.EnumSet.noneOf(PhuongThuc.class);
         long sum = 0;
         for (var d : cacDong) {
+            if (d.getPhuongThuc() == null || d.getPhuongThuc() == PhuongThuc.KET_HOP)
+                throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ.");
+            if (d.getSoTien() < 0 || d.getKhachDua() < d.getSoTien()
+                    || (d.getPhuongThuc() != PhuongThuc.TIEN_MAT && d.getKhachDua() != d.getSoTien()))
+                throw new IllegalArgumentException("Khoản thu không hợp lệ; chỉ tiền mặt có tiền thừa.");
             if (!used.add(d.getPhuongThuc()))
                 throw new IllegalArgumentException("Mỗi phương thức chỉ một dòng.");
             if (d.getPhuongThuc() != PhuongThuc.TIEN_MAT && !d.isDaXacNhan())

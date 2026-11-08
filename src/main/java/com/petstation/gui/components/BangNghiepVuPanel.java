@@ -150,7 +150,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
         getActionMap().put(actionKey, new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                thaoTac.run();
+                try {
+                    thaoTac.run();
+                } catch (RuntimeException ex) {
+                    HopThoai.hienThiCanhBao(BangNghiepVuPanel.this, ex.getMessage());
+                }
             }
         });
     }
@@ -162,6 +166,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel implements HoTroThanhC
                 if (e.getClickCount() == 2 && tblBang.getSelectedRow() >= 0) {
                     try {
                         thaoTac.run();
+                        lamMoi();
                     } catch (RuntimeException ex) {
                         HopThoai.hienThiCanhBao(BangNghiepVuPanel.this, ex.getMessage());
                     }

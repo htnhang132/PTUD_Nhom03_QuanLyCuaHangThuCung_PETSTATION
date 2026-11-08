@@ -34,7 +34,9 @@ public final class LapPhieuSpaService {
         return ThaoTacSQL.thucHienGiaoDich(c -> {
             long id = SpaService.tiepNhan(maThu, maHen, canNang, ghiChu);
 
-            if (maHen == null || maHen.isBlank()) SpaService.themDichVuSpa(id, maGoi);
+            if (maHen == null || maHen.isBlank() || SpaService.layPhieuSpaChiTiet(id).isEmpty()) {
+                SpaService.themDichVuSpa(id, maGoi);
+            }
             return id;
         });
     }

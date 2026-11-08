@@ -146,7 +146,7 @@ public final class TiemPhongDAOImpl implements TiemPhongDAO {
         Date ganNhat = danhSach.isEmpty() ? null : (Date) danhSach.get(0)[2];
         capNhat(
                 "UPDATE thu_cung SET tiem_chung=?, so_mui_tiem=?, ngay_tiem_gan_nhat=? WHERE (ma_thu_cung=CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_thu_cung, PATINDEX('%[0-9]%', ma_thu_cung), 20) AS BIGINT)=TRY_CAST(? AS BIGINT))",
-                chuoi.isBlank() ? null : chuoi,
+                chuoi.isBlank() ? "" : chuoi,
                 danhSach.size(),
                 ganNhat,
                 thuCung, thuCung);

@@ -50,7 +50,7 @@ public final class DuLieu {
         else if ("VC".equals(p)) p = "VOUCHER";
         else if ("P".equals(p) || "PH".equals(p)) p = "P";
         else if ("DH".equals(p)) p = "HD";
-        else if ("PN".equals(p)) p = "PNK";
+        else if ("PN".equals(p) || "NK".equals(p)) p = "PNK";
         else if ("PX".equals(p)) p = "PXK";
         else if ("SYS".equals(p)) p = "LOG";
         else if ("GIO".equals(p)) p = "TREO";
@@ -102,7 +102,7 @@ public final class DuLieu {
                                     + " SELECT TRY_CAST(RIGHT(ma_hoa_don, 4) AS INT) AS val"
                                     + " FROM hoa_don"
                                     + " WHERE ma_hoa_don LIKE ? AND LEN(ma_hoa_don) = 12"
-                                    + ") t WHERE val IS NOT NULL AND val < 500",
+                                    + ") t WHERE val IS NOT NULL",
                             tienToNgay + "[0-9][0-9][0-9][0-9]");
             long tiepTheo =
                     (ketQua.isEmpty() || ketQua.get(0)[0] == null
@@ -145,7 +145,7 @@ public final class DuLieu {
                                 + " WHERE "
                                 + q.cot()
                                 + " LIKE ?"
-                                + ") t WHERE val IS NOT NULL AND val < 1000";
+                                + ") t WHERE val IS NOT NULL";
                 List<Object[]> ketQua =
                         ThaoTacSQL.truyVan(
                                 sql,

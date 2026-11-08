@@ -109,12 +109,15 @@ public final class ChamSocService {
             Path truoc,
             Path sau) {
         quyen(loai);
+        String anChuan = an == null ? "" : an;
+        String thuocChuan = thuoc == null ? "" : thuoc;
+        String viecChuan = viec == null ? "" : viec;
         if (tinhTrang == null
                 || tinhTrang.isBlank()
                 || tinhTrang.length() > 1000
-                || an.length() > 1000
-                || thuoc.length() > 1000
-                || viec.length() > 2000)
+                || anChuan.length() > 1000
+                || thuocChuan.length() > 1000
+                || viecChuan.length() > 2000)
             throw new IllegalArgumentException("Cần tình trạng; nội dung vượt độ dài cho phép.");
         List<Path> copied = new ArrayList<>();
         try {
@@ -138,9 +141,9 @@ public final class ChamSocService {
                                 loai.equals("HOTEL") ? id : null,
                                 layIdNhanVien(),
                                 tinhTrang,
-                                an,
-                                thuoc,
-                                viec,
+                                anChuan,
+                                thuocChuan,
+                                viecChuan,
                                 before == null ? null : before.toString(),
                                 after == null ? null : after.toString());
                         NhatKyHeThongService.ghiNhatKy("Ghi phiếu chăm sóc", loai + " / " + id);

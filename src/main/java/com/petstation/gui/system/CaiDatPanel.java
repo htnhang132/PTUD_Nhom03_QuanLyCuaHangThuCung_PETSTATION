@@ -433,6 +433,12 @@ public final class CaiDatPanel extends CoSoPanel implements HoTroThanhCongCu {
     }
 
     @Override
+    public com.petstation.gui.components.KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        return new com.petstation.gui.components.KhaNangThanhCongCu(
+                false, coTheSua, false, false, false, true);
+    }
+
+    @Override
     public void xuLyHienThi() {
         if (!coThayDoiChuaLuu()) nap();
     }

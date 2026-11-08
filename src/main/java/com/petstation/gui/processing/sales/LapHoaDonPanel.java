@@ -95,7 +95,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 	private final BoChonKhachHang pnlBoChon;
 	private final JLabel lblNhanKhuyenMai = new JLabel("—");
 	private final NutDinhDang btnNutThanhToan = new NutDinhDang("Thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
-	private final NutDinhDang btnNutTreo = new NutDinhDang("Lưu đơn nháp (F7)", NutDinhDang.KieuNut.PHU);
+	private final NutDinhDang btnNutTreo = new NutDinhDang("Lưu đơn nháp (Ctrl+S)", NutDinhDang.KieuNut.PHU);
 	private final NutDinhDang btnNutLay = new NutDinhDang("Mở đơn nháp (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
 	private final List<GioHang.DongHang> gioHang = new ArrayList<>();
 	private final Deque<String> lichSuThem = new ArrayDeque<>();
@@ -271,10 +271,9 @@ public class LapHoaDonPanel extends CoSoPanel {
 		lamMoiGioHang();
 
 		dangKyPhimTat("F9", "pay", suKien -> quyetToan());
-		dangKyPhimTat("F7", "hold", suKien -> treoGioHangHienTai());
+		dangKyPhimTat("Ctrl+S", "hold", suKien -> treoGioHangHienTai());
 		dangKyPhimTat("F8", "retrieve", suKien -> hienThiTreoCacGioHang());
 		dangKyPhimTat("Ctrl+K", "search", suKien -> txtTimKiem.requestFocusInWindow());
-		dangKyPhimTat("F1", "search_focus", suKien -> txtTimKiem.requestFocusInWindow());
 
 		addHierarchyListener(
 				suKien -> {
@@ -628,14 +627,6 @@ public class LapHoaDonPanel extends CoSoPanel {
 		return pnlGioHangVungHienThi;
 	}
 
-	private JLabel layNhanNho(String vanBan) {
-		JLabel lblDongDangXet = new JLabel(vanBan);
-		lblDongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-		lblDongDangXet.setForeground(MauUngDung.VAN_BAN_XAM);
-		lblDongDangXet.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return lblDongDangXet;
-	}
-
 	private JPanel tinhTongDong(String nhan, JLabel lblGiaTri, boolean manh) {
 		JPanel pnlDong = taoVungTrongSuot(new BorderLayout());
 		JLabel lblDongDangXet = new JLabel(nhan);
@@ -920,7 +911,12 @@ public class LapHoaDonPanel extends CoSoPanel {
 
 	@Override
 	public KhaNangThanhCongCu layKhaNangThanhCongCu() {
-		return new KhaNangThanhCongCu(true, false, true, false, true, true);
+		return new KhaNangThanhCongCu(true, true, true, false, true, true);
+	}
+
+	@Override
+	public void xuLyLuu() {
+		treoGioHangHienTai();
 	}
 
 	@Override

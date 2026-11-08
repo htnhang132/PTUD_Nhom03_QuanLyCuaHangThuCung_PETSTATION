@@ -43,8 +43,6 @@ public final class DonDoiTreoService {
             throw new IllegalArgumentException("Không có đơn đổi phụ kiện để treo.");
         var yc = gio.getDoiHang();
         var hang = gio.getCacDong().get(0);
-        if (hang.getSoLuong() != yc.getSoLuong())
-            throw new IllegalArgumentException("Số lượng phụ kiện thay thế phải bằng số lượng hàng đổi.");
         return treo(0, new DonDoiTreo(dao.layMaHoaDonGoc(yc.getDongGoc()), yc.getDongGoc(),
                 hang.getMa(), hang.getMa(), yc.getSoLuong(), yc.getLyDo(), true, true));
     }

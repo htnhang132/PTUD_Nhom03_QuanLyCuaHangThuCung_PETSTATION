@@ -22,9 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 
 public final class BoChonKhachHang extends JPanel {
@@ -37,12 +35,6 @@ public final class BoChonKhachHang extends JPanel {
     private final JPanel pnlNhan = new JPanel();
 
     private final JLabel lblVanBanNhan = new JLabel();
-
-    private final JSpinner spnDiem = new JSpinner(new SpinnerNumberModel(0, 0, 0, 1));
-
-    private final JLabel lblDiemGoiY = new JLabel();
-
-    private boolean dangCapNhat;
 
     public BoChonKhachHang(GioHang banHang, Runnable khiThayDoi) {
         this.banHang = banHang;
@@ -269,37 +261,8 @@ public final class BoChonKhachHang extends JPanel {
                             + "  ·  "
                             + banHang.getKhachHangDiem()
                             + " điểm");
-            dangCapNhat = true;
-
-            long lonNhat =
-                    Math.max(
-                            0,
-                            Math.min(
-                                    banHang.getKhachHangDiem(),
-                                    (banHang.tinhTamTinh()
-                                                    - banHang.getKhuyenMaiGiamGia()
-                                                    - banHang.getSoTienVoucher())
-                                            / Math.max(
-                                                    1,
-                                                    com.petstation.service.CaiDatService
-                                                            .layGiaTriQuyDoiMoiDiem())));
-            spnDiem.setModel(
-                    new SpinnerNumberModel(
-                            (int) Math.min(banHang.getDiemDaDung(), lonNhat), 0, (int) lonNhat, 1));
-            dangCapNhat = false;
-            lamMoiDiemGoiY();
         }
         revalidate();
         repaint();
-    }
-
-    private void lamMoiDiemGoiY() {
-        lblDiemGoiY.setText(
-                "= "
-                        + TienTe.dinhDang(banHang.getGiaTriDiem())
-                        + " (1 điểm = "
-                        + TienTe.dinhDang(
-                                com.petstation.service.CaiDatService.layGiaTriQuyDoiMoiDiem())
-                        + ")");
     }
 }

@@ -30,7 +30,7 @@ public final class KhoService {
         yeuCau(Quyen.NHAP_KHO);
         kiemTraDuong(soLuong);
         kiemTraDuong(giaNhap);
-        if (loHang.isBlank() || daTra < 0 || daTra > soLuong * giaNhap)
+        if (loHang == null || loHang.isBlank() || daTra < 0 || daTra > Math.multiplyExact((long) soLuong, giaNhap))
             throw new IllegalArgumentException("Số lô hoặc tiền đã trả không hợp lệ.");
         return thucHienGiaoDich(
                 ketNoi -> {
@@ -76,7 +76,7 @@ public final class KhoService {
     public static long ghiHuy(long loHang, int soLuong, String lyDo) {
         yeuCau(Quyen.XUAT_HUY_KHO);
         kiemTraDuong(soLuong);
-        if (lyDo.isBlank())
+        if (lyDo == null || lyDo.isBlank())
             throw new IllegalArgumentException("Cần lý do xuất kho.");
         return thucHienGiaoDich(
                 ketNoi -> {
@@ -252,7 +252,7 @@ public final class KhoService {
                         throw new IllegalArgumentException("Không tìm thấy lô.");
 
                     int datPhong = ((Number) cacDong.get(0)[0]).intValue();
-                    if (datPhong != thucTe && lyDo.isBlank())
+                    if (datPhong != thucTe && (lyDo == null || lyDo.isBlank()))
                         throw new IllegalArgumentException("Cần lý do chênh lệch.");
                     long ketQua = khoDAO.themKiemKe(
                             taoMa("KK"),

@@ -26,6 +26,8 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     }
 
     protected void nhapKho() {
+        String soLoGoiY = "LOTE" + LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyMMdd"));
+        String hanDungGoiY = LocalDate.now().plusYears(1).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         Map<String, String> giaTri =
                 BieuMauSQL.layYeuCauNhap(
                         this,
@@ -36,10 +38,10 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                                 LuaChonNghiepVuService.layLuaChonNhaCungCap()),
                         taoLuaChon(
                                 "product", "Sản phẩm", LuaChonNghiepVuService.layLuaChonSanPham()),
-                        layTruongVanBan("batch", "Số lô", ""),
-                        layTruongVanBan("expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", ""),
-                        layTruongVanBan("qty", "Số lượng", "1"),
-                        layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", ""),
+                        layTruongVanBan("batch", "Số lô", soLoGoiY),
+                        layTruongVanBan("expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", hanDungGoiY),
+                        layTruongVanBan("qty", "Số lượng", "10"),
+                        layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", "50000"),
                         layTruongVanBan("da_tra", "Đã trả (đồng)", "0"));
         if (giaTri != null) {
             try {

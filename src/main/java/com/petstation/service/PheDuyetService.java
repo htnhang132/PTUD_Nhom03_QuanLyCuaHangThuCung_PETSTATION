@@ -181,7 +181,7 @@ public final class PheDuyetService {
 
     public static void tuChoi(YeuCau yeuCau, String nguoiDuyet, String lyDo) {
         yeuCau(Quyen.XU_LY_PHE_DUYET);
-        if (lyDo.isBlank()) throw new IllegalArgumentException("Cần lý do từ chối.");
+        if (lyDo == null || lyDo.isBlank()) throw new IllegalArgumentException("Cần lý do từ chối.");
         thucHienGiaoDich(
                 ketNoi -> {
                     List<Object[]> cacDong = pheDuyetDAO.timTuChoi(yeuCau.id);
@@ -219,7 +219,7 @@ public final class PheDuyetService {
         yeuCau(Quyen.BAN_HANG);
 
         long id = layId("hoa_don", "ma_hoa_don", hoaDon);
-        if (lyDo.isBlank() || !huy && thayDoi.isBlank())
+        if (lyDo == null || lyDo.isBlank() || (!huy && (thayDoi == null || thayDoi.isBlank())))
             throw new IllegalArgumentException("Cần lý do và nội dung cần sửa.");
         PheDuyetService.guiThaoTac(
                 PheDuyetService.Loai.SUA_HOA_DON,

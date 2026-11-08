@@ -72,7 +72,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT loai_doi_tuong,ma_doi_tuong,payload FROM"
                         + " yeu_cau_phe_duyet WITH(UPDLOCK,HOLDLOCK) WHERE"
-                        + " ma_yeu_cau=? AND trang_thai='CHO_DUYET'",
+                        + " ma_yeu_cau=? AND trang_thai IN ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 cacThamSo);
     }
 
@@ -97,7 +97,7 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
         return ThaoTacSQL.truyVan(
                 "SELECT loai_doi_tuong,ma_doi_tuong FROM yeu_cau_phe_duyet"
                         + " WITH(UPDLOCK,HOLDLOCK) WHERE ma_yeu_cau=? AND"
-                        + " trang_thai='CHO_DUYET'",
+                        + " trang_thai IN ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 cacThamSo);
     }
 

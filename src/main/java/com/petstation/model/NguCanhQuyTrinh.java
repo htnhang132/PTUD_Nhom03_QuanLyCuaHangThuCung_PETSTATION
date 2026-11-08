@@ -50,7 +50,7 @@ public final class NguCanhQuyTrinh {
             lichHen = 0;
             phieuSpa = 0;
         }
-        if ("HOTEL".equals(nguon)) {
+        if ("HOTEL".equals(nguon) || "LUU_TRU".equals(nguon)) {
             hopDongHotel = 0;
             phongHotel = 0;
             maPhongHotel = "";

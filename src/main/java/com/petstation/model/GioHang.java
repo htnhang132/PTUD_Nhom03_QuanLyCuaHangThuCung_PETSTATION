@@ -479,7 +479,7 @@ public final class GioHang {
 
             String phamVi = String.valueOf(dongDuLieu[3]);
             for (DongHang dongDangXet : cacDong) {
-                boolean laDichVu = "SPA".equals(kieuNguon) || "HOTEL".equals(kieuNguon);
+                boolean laDichVu = "SPA".equals(kieuNguon) || "HOTEL".equals(kieuNguon) || "LUU_TRU".equals(kieuNguon);
                 if (phamVi.equals("Cả đơn")
                         || (phamVi.equals("Sản phẩm") && !laDichVu)
                         || (phamVi.equals("Dịch vụ") && laDichVu)) coSo += dongDangXet.docSoTien();

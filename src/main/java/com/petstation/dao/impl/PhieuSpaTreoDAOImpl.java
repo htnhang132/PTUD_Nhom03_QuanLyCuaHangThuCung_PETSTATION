@@ -17,7 +17,9 @@ public final class PhieuSpaTreoDAOImpl implements PhieuSpaTreoDAO {
             tenDangNhap = BoiCanhDangNhap.layTenDangNhap();
         } catch (Exception ignored) {}
         if (tenDangNhap == null || tenDangNhap.isBlank()) {
-            List<Object[]> rTk = truyVan("SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ten_dang_nhap, PATINDEX('%[0-9]%', ten_dang_nhap), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))", nguoiLap, nguoiLap);
+            List<Object[]> rTk = truyVan(
+                    "SELECT TOP 1 ten_dang_nhap FROM tai_khoan WHERE (ten_dang_nhap = CAST(? AS VARCHAR) OR ma_nhan_vien = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(ma_nhan_vien, PATINDEX('%[0-9]%', ma_nhan_vien), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                    nguoiLap, nguoiLap, nguoiLap);
             if (!rTk.isEmpty()) {
                 tenDangNhap = String.valueOf(rTk.get(0)[0]);
             } else {

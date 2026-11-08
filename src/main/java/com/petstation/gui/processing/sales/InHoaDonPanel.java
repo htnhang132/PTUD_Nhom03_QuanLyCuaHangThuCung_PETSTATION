@@ -312,7 +312,7 @@ public final class InHoaDonPanel extends CoSoPanel {
             case TIEN_MAT -> "Tiền mặt";
             case CHUYEN_KHOAN -> "Chuyển khoản / QR";
             case THE_NGAN_HANG -> "Thẻ";
-                    case DIEM_TICH_LUY -> "Điểm tích lũy";
+            case DIEM_TICH_LUY -> "Điểm tích lũy";
             case KET_HOP -> "Kết hợp";
         };
     }
@@ -338,10 +338,6 @@ public final class InHoaDonPanel extends CoSoPanel {
     private static String layGiua(String chuoi) {
         int dem = Math.max(0, (CHIEU_RONG - chuoi.length()) / 2);
         return " ".repeat(dem) + chuoi;
-    }
-
-    private static String layCat(String chuoi, int lonNhat) {
-        return chuoi.length() <= lonNhat ? chuoi : chuoi.substring(0, lonNhat - 1) + "…";
     }
 
     private static String layCap(String trai, String phai) {

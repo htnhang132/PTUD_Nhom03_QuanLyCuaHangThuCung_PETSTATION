@@ -23,15 +23,36 @@ public final class TruongNghiepVu {
     }
 
     public static long docSoTien(Map<String, String> giaTri, String khoa) {
-        return Long.parseLong(giaTri.get(khoa));
+        String s = giaTri == null ? null : giaTri.get(khoa);
+        if (s == null || s.isBlank())
+            throw new IllegalArgumentException("Vui lòng nhập số tiền hợp lệ.");
+        try {
+            return Long.parseLong(s.trim().replaceAll("[.,\\s₫đ]", ""));
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Số tiền nhập vào không hợp lệ.");
+        }
     }
 
     public static int docSoLuong(Map<String, String> giaTri, String khoa) {
-        return Integer.parseInt(giaTri.get(khoa));
+        String s = giaTri == null ? null : giaTri.get(khoa);
+        if (s == null || s.isBlank())
+            throw new IllegalArgumentException("Vui lòng nhập số lượng hợp lệ.");
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Số lượng phải là số nguyên hợp lệ.");
+        }
     }
 
     public static LocalDateTime docThoiGian(Map<String, String> giaTri, String khoa) {
-        return LocalDateTime.parse(giaTri.get(khoa), THOI_GIAN_NGAY);
+        String s = giaTri == null ? null : giaTri.get(khoa);
+        if (s == null || s.isBlank())
+            throw new IllegalArgumentException("Vui lòng nhập thời gian theo định dạng yyyy-MM-dd HH:mm.");
+        try {
+            return LocalDateTime.parse(s.trim(), THOI_GIAN_NGAY);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Thời gian không hợp lệ (định dạng chuẩn: yyyy-MM-dd HH:mm).");
+        }
     }
 
     public static String layThoiGianHienTai() {

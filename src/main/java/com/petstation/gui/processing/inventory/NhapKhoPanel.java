@@ -17,8 +17,31 @@ public final class NhapKhoPanel extends NghiepVuKhoPanel {
     public NhapKhoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.PHIEU_NHAP_KHO, banHang, dieuHuong);
 
-        themNut(pnlCacThaoTac, "+ Lập phiếu nhập kho", this::nhapKho);
-        themNut(pnlCacThaoTac, "Chi tiết", this::layNhapKhoChiTiet);
-        themNut(pnlCacThaoTac, "Trả công nợ", this::thanhToanNhaCungCap);
+        themNut(pnlCacThaoTac, "+ Lập phiếu nhập kho", com.petstation.gui.components.NutDinhDang.KieuNut.CHINH, this::nhapKho);
+        var btnChiTiet = themNut(pnlCacThaoTac, "Chi tiết", com.petstation.gui.components.NutDinhDang.KieuNut.PHU, this::layNhapKhoChiTiet);
+        var btnTraNo = themNut(pnlCacThaoTac, "Trả công nợ", com.petstation.gui.components.NutDinhDang.KieuNut.THANH_CONG, this::thanhToanNhaCungCap);
+
+        Runnable capNhatNut = () -> {
+            int row = tblBang.getSelectedRow();
+            if (row < 0) {
+                btnChiTiet.setEnabled(false);
+                btnTraNo.setEnabled(false);
+                return;
+            }
+            btnChiTiet.setEnabled(true);
+            int dong = tblBang.convertRowIndexToModel(row);
+            long tongTien = moHinh.getValueAt(dong, 4) instanceof Number n
+                    ? n.longValue()
+                    : com.petstation.util.TienTe.doc(String.valueOf(moHinh.getValueAt(dong, 4)));
+            long daTra = moHinh.getValueAt(dong, 5) instanceof Number n
+                    ? n.longValue()
+                    : com.petstation.util.TienTe.doc(String.valueOf(moHinh.getValueAt(dong, 5)));
+            btnTraNo.setEnabled(tongTien > daTra);
+        };
+        tblBang.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) capNhatNut.run();
+        });
+        capNhatNut.run();
+        ganSuKienDupChuot(this::layNhapKhoChiTiet);
     }
 }

@@ -18,7 +18,14 @@ final class HoTroNghiepVuService {
     }
 
     static long layGiaTri(Object giaTri) {
-        return ((Number) giaTri).longValue();
+        if (giaTri instanceof Number n) return n.longValue();
+        if (giaTri == null) return 0L;
+        String s = String.valueOf(giaTri).trim();
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException ignored) {
+            return com.petstation.util.DuLieu.layIdCauNoi(null, s);
+        }
     }
 
     static void kiemTraDuong(long soLuong) {

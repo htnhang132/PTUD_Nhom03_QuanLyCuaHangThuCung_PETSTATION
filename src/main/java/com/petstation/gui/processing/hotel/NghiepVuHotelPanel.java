@@ -30,24 +30,45 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 () ->
                         com.petstation.gui.components.common.NhatKyChamSocDialog.mo(
                                 this, "HOTEL", layDongChon()));
-        themNut(
-                pnlCacThaoTac,
-                "Lịch sử cọc",
-                () ->
-                        hienThiChiTiet(
-                                "Lịch sử thu cọc",
-                                new String[] {
-                                    "Phương thức",
-                                    "Thực thu",
-                                    "Khách đưa",
-                                    "Tiền thừa",
-                                    "Lúc nhận",
-                                    "Ca"
-                                },
-                                LuuTruService.layCoc(layDongChon())));
-        if (com.petstation.service.PhienDangNhapService.layPhien().docVaiTro()
-                == com.petstation.model.VaiTro.QUAN_LY_CUA_HANG)
-            themNut(pnlCacThaoTac, "Điều chỉnh cọc", this::doiCoc);
+    }
+
+    protected void lichSuCoc() {
+        hienThiChiTiet(
+                "Lịch sử thu cọc",
+                new String[] {
+                    "Phương thức",
+                    "Thực thu",
+                    "Khách đưa",
+                    "Tiền thừa",
+                    "Lúc nhận",
+                    "Ca"
+                },
+                LuuTruService.layCoc(layDongChon()));
+    }
+
+    public void moDonPhong(long id) {
+        var cacPhongDangDon = LuuTruService.layPhongDangDon();
+        if (cacPhongDangDon.isEmpty()) {
+            com.petstation.gui.components.HopThoai.hienThiThongTin(
+                    this, "Hiện không có phòng nào đang ở trạng thái chờ dọn vệ sinh.");
+            return;
+        }
+        var field =
+                com.petstation.gui.components.common.BieuMauSQL.TruongDuLieu.layLuaChon(
+                        "room", "Phòng đang dọn", cacPhongDangDon);
+        if (id > 0)
+            field =
+                    new com.petstation.gui.components.common.BieuMauSQL.TruongDuLieu(
+                            field.khoa(), field.nhan(), String.valueOf(id), field.cacLuaChon());
+        var values =
+                com.petstation.gui.components.common.BieuMauSQL.layYeuCauNhap(
+                        this, "Hoàn thành dọn phòng", field);
+        if (values != null) {
+            LuuTruService.hoanTatDonPhong(Long.parseLong(values.get("room")));
+            taiLaiNen();
+            com.petstation.gui.components.HopThoai.hienThiThanhCong(
+                    this, "Đã xác nhận dọn phòng xong, phòng đã chuyển sang trạng thái Trống.");
+        }
     }
 
     @Override
@@ -154,18 +175,27 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         String input =
                 JOptionPane.showInputDialog(
                         this,
-                        "Yêu cầu: "
-                                + muc[0]
+                        "Yêu cầu cọc: "
+                                + com.petstation.util.TienTe.dinhDang(muc[0])
                                 + " · Đã thu: "
-                                + muc[1]
-                                + "\nSố thu lần này (tối đa "
-                                + thieu
+                                + com.petstation.util.TienTe.dinhDang(muc[1])
+                                + "\nSố tiền thu lần này (tối đa "
+                                + com.petstation.util.TienTe.dinhDang(thieu)
                                 + "):",
                         String.valueOf(thieu));
         if (input == null) return;
-        long so = Long.parseLong(input.trim());
+        String daDon = input.trim().replaceAll("[.,\\s₫đ]", "");
+        if (!daDon.matches("\\d+")) {
+            throw new IllegalArgumentException("Vui lòng nhập số tiền hợp lệ (chỉ gồm chữ số).");
+        }
+        long so;
+        try {
+            so = Long.parseLong(daDon);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Số tiền thu cọc vượt giới hạn hợp lệ.");
+        }
         if (so <= 0 || so > thieu)
-            throw new IllegalArgumentException("Số thu vượt phần cọc còn thiếu.");
+            throw new IllegalArgumentException("Số thu vượt phần cọc còn thiếu (" + com.petstation.util.TienTe.dinhDang(thieu) + ").");
 
         String maHopDong = layNoiDungDongChon(1);
 
@@ -194,7 +224,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         }
     }
 
-    private void doiCoc() {
+    protected void doiCoc() {
         long id = layDongChon();
         Map<String, String> v =
                 BieuMauSQL.layYeuCauNhap(
@@ -205,21 +235,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 "Mức yêu cầu mới (đồng)",
                                 String.valueOf(LuuTruService.layMucCoc(id)[0])),
                         layTruongVanBan("lydo", "Lý do", ""));
-        if (v != null) LuuTruService.dieuChinhCoc(id, Long.parseLong(v.get("muc")), v.get("lydo"));
-    }
-
-    protected void ghiNhatKy() {
-        long hopDongLuuTru = layDongChon();
-        Map<String, String> giaTri =
-                BieuMauSQL.layYeuCauNhap(
-                        this,
-                        "Nhật ký chăm sóc",
-                        layTruongVanBan("food", "Ăn uống", ""),
-                        layTruongVanBan("hygiene", "Vệ sinh", ""),
-                        layTruongVanBan("health", "Tình trạng thú cưng", ""));
-        if (giaTri != null)
-            LuuTruService.ghiNhatKy(
-                    hopDongLuuTru, giaTri.get("food"), giaTri.get("hygiene"), giaTri.get("health"));
+        if (v != null) LuuTruService.dieuChinhCoc(id, docSoTien(v, "muc"), v.get("lydo"));
     }
 
     protected void layNhatKyChiTiet() {
@@ -245,15 +261,5 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         }
         BanHangService.quyetToan(loai, layDongChon(), banHang);
         dieuHuong.accept(MaManHinh.THANH_TOAN);
-    }
-
-    private BieuMauSQL.TruongDuLieu layTruongPhongDaChon() {
-        var truong = taoLuaChon("room", "Phòng", LuaChonNghiepVuService.layLuaChonPhong());
-        long id = banHang.getQuyTrinh().getPhongHotel();
-        return new BieuMauSQL.TruongDuLieu(
-                truong.khoa(),
-                truong.nhan(),
-                id > 0 ? banHang.getQuyTrinh().getMaPhongHotel() : "",
-                truong.cacLuaChon());
     }
 }

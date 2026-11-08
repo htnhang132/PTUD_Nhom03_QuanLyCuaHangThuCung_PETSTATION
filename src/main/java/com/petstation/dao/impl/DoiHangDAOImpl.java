@@ -50,7 +50,8 @@ public final class DoiHangDAOImpl implements DoiHangDAO {
             hoaDon, hoaDon);
         for (Object[] r : rows) {
             if (r[0] != null) {
-                r[0] = DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
+                long spId = DuLieu.layIdCauNoi(null, String.valueOf(r[0]));
+                r[0] = (hoaDon > 0 && spId > 0 && spId < 100_000L) ? (hoaDon * 100_000L + spId) : spId;
             }
         }
         return rows;
@@ -75,13 +76,27 @@ public final class DoiHangDAOImpl implements DoiHangDAO {
     }
 
     public List<Object[]> timDongGoc(long id) {
+        if (id > 100_000L) {
+            long hdId = id / 100_000L;
+            long spId = id % 100_000L;
+            return truyVan(
+                    "SELECT"
+                        + " h.ma_hoa_don,h.tong_tien,h.tam_tinh,h.thanh_toan_luc,i.don_gia,i.so_luong,h.trang_thai,p.nhom_hang,COALESCE(k.ma_khach_hang,''),COALESCE(k.ho_ten,''),COALESCE(k.diem_tich_luy,0)"
+                        + " FROM chi_tiet_hoa_don i WITH(UPDLOCK,HOLDLOCK) JOIN hoa_don h"
+                        + " WITH(UPDLOCK,HOLDLOCK) ON h.ma_hoa_don=i.ma_hoa_don JOIN san_pham p ON"
+                        + " p.ma_san_pham=i.ma_san_pham LEFT JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                        + " (h.ma_hoa_don = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(h.ma_hoa_don, PATINDEX('%[0-9]%', h.ma_hoa_don), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                        + " AND (i.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(i.ma_san_pham, PATINDEX('%[0-9]%', i.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                    hdId, hdId, spId, spId);
+        }
         return truyVan(
                 "SELECT"
                     + " h.ma_hoa_don,h.tong_tien,h.tam_tinh,h.thanh_toan_luc,i.don_gia,i.so_luong,h.trang_thai,p.nhom_hang,COALESCE(k.ma_khach_hang,''),COALESCE(k.ho_ten,''),COALESCE(k.diem_tich_luy,0)"
                     + " FROM chi_tiet_hoa_don i WITH(UPDLOCK,HOLDLOCK) JOIN hoa_don h"
                     + " WITH(UPDLOCK,HOLDLOCK) ON h.ma_hoa_don=i.ma_hoa_don JOIN san_pham p ON"
                     + " p.ma_san_pham=i.ma_san_pham LEFT JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
-                    + " (i.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(i.ma_san_pham, PATINDEX('%[0-9]%', i.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))",
+                    + " (i.ma_san_pham = CAST(? AS VARCHAR) OR TRY_CAST(SUBSTRING(i.ma_san_pham, PATINDEX('%[0-9]%', i.ma_san_pham), 20) AS BIGINT) = TRY_CAST(? AS BIGINT))"
+                    + " ORDER BY h.thanh_toan_luc DESC",
                 id, id);
     }
 

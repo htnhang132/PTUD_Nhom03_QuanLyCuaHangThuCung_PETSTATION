@@ -40,18 +40,32 @@ public final class DoiTraService {
     static void kiemTraHanDoi(
         LocalDateTime ngayLap,
         LocalDateTime hienTai) {
+        int soGio = 72;
+        if (dangTrongGiaoDich()) {
+            try {
+                soGio = Math.max(1, CaiDatService.laySoNgayDuocDoiTra()) * 24;
+            } catch (Exception ignored) {
+            }
+        }
         if (ngayLap == null
             || hienTai.isBefore(ngayLap)
-            || hienTai.isAfter(ngayLap.plusHours(72))) {
+            || hienTai.isAfter(ngayLap.plusHours(soGio))) {
             throw new IllegalArgumentException(
-                "Chỉ được đổi trong 72 giờ kể từ ngày lập hóa đơn.");
+                "Chỉ được đổi trong " + soGio + " giờ kể từ ngày lập hóa đơn.");
         }
     }
 
     private record DuLieu(Object[] goc, long giaTri, long daDoi) {}
 
     private static long so(Object v) {
-        return ((Number) v).longValue();
+        if (v instanceof Number n) return n.longValue();
+        if (v == null) return 0L;
+        String s = String.valueOf(v).trim();
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException ignored) {
+            return com.petstation.util.DuLieu.layIdCauNoi(null, s);
+        }
     }
 
     private static long phanBo(long soLuong, Object[] goc) {
@@ -195,8 +209,14 @@ public final class DoiTraService {
             throw new IllegalArgumentException(
                 "Tiền chênh lệch không được âm.");
         }
-
-        return tienThucTra / 10_000;
+        long tyLe = 10_000L;
+        if (dangTrongGiaoDich()) {
+            try {
+                tyLe = Math.max(1L, CaiDatService.laySoTienChoMoiDiemTichLuy());
+            } catch (Exception ignored) {
+            }
+        }
+        return tienThucTra / tyLe;
     }
     static long tinhDiemCong(GioHang gio) {
         return tinhDiemChenhLech(gio.tinhTong());

@@ -72,8 +72,13 @@ public final class TiemPhongService {
         if (lichSu.size() < 2)
             throw new IllegalArgumentException(
                     "Cần bổ sung hồ sơ đủ 2 mũi tiêm phòng trước khi nhận Spa.");
-        LocalDate ganNhat = ((java.sql.Date) lichSu.get(0)[2]).toLocalDate();
-        if (ganNhat.plusDays(14).isAfter(homNay))
+        long soMuiDu14Ngay =
+                lichSu.stream()
+                        .filter(r -> r[2] instanceof java.sql.Date)
+                        .map(r -> ((java.sql.Date) r[2]).toLocalDate())
+                        .filter(ngayTiem -> !ngayTiem.plusDays(14).isAfter(homNay))
+                        .count();
+        if (soMuiDu14Ngay < 2)
             throw new IllegalArgumentException(
                     "Mũi tiêm gần nhất phải cách ngày nhận Spa ít nhất 14 ngày.");
     }

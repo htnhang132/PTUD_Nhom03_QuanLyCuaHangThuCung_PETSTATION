@@ -122,7 +122,9 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
         List<YeuCau> tatCa = new ArrayList<>(PheDuyetService.layTatCa());
 
         for (YeuCau dongDuLieu : tatCa) {
-            if (btnDangChoChi.isSelected() && !dongDuLieu.trangThai.equals("Chờ duyệt")) continue;
+            if (btnDangChoChi.isSelected()
+                    && !dongDuLieu.trangThai.equals("Chờ duyệt")
+                    && !dongDuLieu.trangThai.equals("Chờ bổ sung")) continue;
             daHienThi.add(dongDuLieu);
             moHinh.addRow(
                     new Object[] {
@@ -139,7 +141,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
                 dangCho == 0 ? "Không có yêu cầu chờ duyệt" : dangCho + " yêu cầu chờ duyệt");
 
         int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
-        if (chiSo >= 0) tblBang.setRowSelectionInterval(chiSo, chiSo);
+        int viewRow = chiSo < 0 ? -1 : tblBang.convertRowIndexToView(chiSo);
+        if (viewRow >= 0) tblBang.setRowSelectionInterval(viewRow, viewRow);
         else {
             daChon = null;
             hienThiChiTiet();
@@ -184,6 +187,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             pnlChiTiet.add(pnlSoSanh, BorderLayout.CENTER);
 
             boolean dangCho = dongDuLieu.trangThai.equals("Chờ duyệt");
+            boolean coTheQuyetDinh =
+                    dangCho || dongDuLieu.trangThai.equals("Chờ bổ sung");
 
             JPanel pnlCacNut = new JPanel(new GridLayout(1, 3, 8, 0));
 
@@ -214,8 +219,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel implements HoTroThanh
             NutDinhDang btnDuyet = new NutDinhDang("Duyệt", NutDinhDang.KieuNut.THANH_CONG);
 
             NutDinhDang btnTuChoi = new NutDinhDang("Từ chối", NutDinhDang.KieuNut.NGUY_HIEM);
-            btnDuyet.setEnabled(dangCho);
-            btnTuChoi.setEnabled(dangCho);
+            btnDuyet.setEnabled(coTheQuyetDinh);
+            btnTuChoi.setEnabled(coTheQuyetDinh);
             btnDuyet.addActionListener(suKien -> duyet(dongDuLieu));
             btnTuChoi.addActionListener(suKien -> tuChoi(dongDuLieu));
             pnlCacNut.add(btnDuyet);

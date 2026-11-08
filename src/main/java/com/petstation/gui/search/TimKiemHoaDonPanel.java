@@ -76,7 +76,7 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
             Component btnXuat = null;
             for (Component c : thanh.getComponents()) {
                 if (c instanceof JButton b) {
-                    if ("Làm mới".equals(b.getText())) btnLamMoi = b;
+                    if (b.getText().startsWith("Làm mới")) btnLamMoi = b;
                     else if ("Xuất Excel".equals(b.getText())) btnXuat = b;
                 }
             }
@@ -199,6 +199,8 @@ public final class TimKiemHoaDonPanel extends NghiepVuBanHangPanel {
     private void capNhatXemTruocHoaDon() {
         int row = tblBang.getSelectedRow();
         if (row < 0) {
+            bienLaiDangChon = null;
+            pnlHoaDon.datDuLieu(null);
             btnInLai.setEnabled(false);
             btnXuatHtml.setEnabled(false);
             lblBillStatus.setText("Chưa chọn hóa đơn");

@@ -19,6 +19,7 @@ import javax.swing.*;
 public final class TraCuuPhongHotelPanel extends CoSoPanel {
     private final GioHang gio;
     private final Consumer<MaManHinh> dieuHuong;
+    private final Consumer<PhongHotel> khiChonPhong;
     private final JPanel pnlPhong = new JPanel(new GridLayout(0, 3, 14, 14));
     private final JTextField txtLoc = new JTextField(16);
     private final JComboBox<String> cboLoai = new JComboBox<>();
@@ -34,8 +35,14 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     private javax.swing.Timer choHienThi;
 
     public TraCuuPhongHotelPanel(GioHang gio, Consumer<MaManHinh> dieuHuong) {
+        this(gio, dieuHuong, null);
+    }
+
+    public TraCuuPhongHotelPanel(
+            GioHang gio, Consumer<MaManHinh> dieuHuong, Consumer<PhongHotel> khiChonPhong) {
         this.gio = gio;
         this.dieuHuong = dieuHuong;
+        this.khiChonPhong = khiChonPhong;
         setLayout(new BorderLayout(0, 14));
         pnlPhong.setOpaque(false);
         JPanel dau = taoVungTrongSuot(new BorderLayout(0, 12));
@@ -252,7 +259,30 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         }
     }
 
+    public void lamMoiSoDo() {
+        nap();
+    }
+
     public void moPhong(PhongHotel phong) {
+        if ("DANG_DON".equals(phong.getTrangThai())) {
+            if (HopThoai.xacNhan(
+                    this,
+                    "Phòng "
+                            + phong.getMa()
+                            + " đang chờ dọn vệ sinh.\n"
+                            + "Bạn có muốn xác nhận đã dọn phòng xong để chuyển sang trạng thái Trống không?")) {
+                try {
+                    com.petstation.service.LuuTruService.hoanTatDonPhong(
+                            DuLieu.layIdCauNoi(phong, phong.getMa()));
+                    nap();
+                    HopThoai.hienThiThanhCong(
+                            this, "Đã xác nhận dọn xong phòng " + phong.getMa() + ".");
+                } catch (RuntimeException ex) {
+                    HopThoai.hienThiCanhBao(this, ex.getMessage());
+                }
+            }
+            return;
+        }
         if (!List.of("TRONG", "DANG_O").contains(phong.getTrangThai())) {
             HopThoai.hienThiThongTin(
                     this,
@@ -264,6 +294,10 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             return;
         }
         gio.getQuyTrinh().chonPhongHotel(DuLieu.layIdCauNoi(phong, phong.getMa()), phong.getMa());
+        if (khiChonPhong != null) {
+            khiChonPhong.accept(phong);
+            return;
+        }
         if (phong.getTrangThai().equals("DANG_O")) {
             if (phong.getDangO() == null) {
                 HopThoai.hienThiCanhBao(this, "Chưa tìm thấy hợp đồng đang ở. Hãy làm mới sơ đồ.");

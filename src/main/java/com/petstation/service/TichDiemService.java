@@ -32,7 +32,11 @@ public final class TichDiemService {
         return thucHienGiaoDich(
                 ketNoi -> {
                     var khach = tichDiemDAO.timKhachHang(maKhachHang);
-                    if (khach.isEmpty() || !Boolean.TRUE.equals(khach.get(0)[2]))
+                    Object ttKhach = khach.isEmpty() ? null : khach.get(0)[2];
+                    boolean dangHoatDong =
+                            Boolean.TRUE.equals(ttKhach)
+                                    || (ttKhach instanceof Number n && n.intValue() != 0);
+                    if (!dangHoatDong)
                         throw new IllegalArgumentException("Khách hàng không hoạt động.");
                     long id = ((Number) khach.get(0)[0]).longValue();
                     var cu = tichDiemDAO.timTheoKhoa(khoa);
@@ -62,7 +66,9 @@ public final class TichDiemService {
             throw new IllegalArgumentException("Voucher đã hết hạn.");
         if (!v[7].toString().isEmpty() && !v[7].toString().equals(khachHang))
             throw new IllegalArgumentException("Voucher không thuộc khách hàng đang chọn.");
-        if (Boolean.TRUE.equals(v[6]) && !"SPA".equals(nguon))
+        boolean chiSpa =
+                Boolean.TRUE.equals(v[6]) || (v[6] instanceof Number n && n.intValue() != 0);
+        if (chiSpa && !"SPA".equals(nguon))
             throw new IllegalArgumentException("Voucher chỉ áp dụng cho thanh toán Spa.");
         if (tamTinh < ((Number) v[4]).longValue())
             throw new IllegalArgumentException("Chưa đủ giá trị đơn tối thiểu của voucher.");

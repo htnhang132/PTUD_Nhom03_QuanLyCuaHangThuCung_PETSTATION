@@ -13,7 +13,7 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
     public ChiTietBaoCao lay(
             String baoCao, String goc, KhoangNgay ky, Long taiKhoan, Long nhanVien) {
         boolean all = taiKhoan == null;
-        String own = all ? "" : " AND (s.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + ")";
+        String own = all ? "" : " AND s.ten_dang_nhap IN (SELECT tk2.ten_dang_nhap FROM tai_khoan tk2 WHERE tk2.ten_dang_nhap = CAST(" + taiKhoan + " AS VARCHAR) OR TRY_CAST(SUBSTRING(tk2.ma_nhan_vien, PATINDEX('%[0-9]%', tk2.ma_nhan_vien), 20) AS BIGINT) = " + taiKhoan + ")";
         String nv = all ? "" : " AND (t.ma_nhan_vien = CAST(" + nhanVien + " AS VARCHAR) OR TRY_CAST(SUBSTRING(t.ma_nhan_vien, PATINDEX('%[0-9]%', t.ma_nhan_vien), 20) AS BIGINT) = " + nhanVien + ")";
         Object tu = ky.getTuNgay(), den = ky.getCanTren();
         if (baoCao.contains("doanh thu")) {
@@ -194,9 +194,9 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                     + (all
                                             ? ""
                                             : " AND EXISTS(SELECT 1 FROM phien_lam_viec s WHERE"
-                                                  + " s.ma_phien=t.ma_phien_nhan_coc AND (s.ten_dang_nhap=CAST("
-                                                    + taiKhoan
-                                                    + " AS VARCHAR) OR TRY_CAST(SUBSTRING(s.ten_dang_nhap, PATINDEX('%[0-9]%', s.ten_dang_nhap), 20) AS BIGINT) = " + taiKhoan + "))"),
+                                                  + " s.ma_phien=t.ma_phien_nhan_coc"
+                                                  + own
+                                                  + ")"),
                             tu,
                             den),
                     3);
@@ -272,21 +272,21 @@ public final class ChiTietThongKeDAOImpl implements ChiTietThongKeDAO {
                                 tu,
                                 den),
                         1);
-            if (goc.equals("Tồn kho hiện tại") || goc.equals("Sắp hết hạn"))
+            if (goc.equals("Tồn kho hiện tại") || goc.equals("Sắp hết hạn")) {
                 return new ChiTietBaoCao(
                         new String[] {
                             "Lô hàng", "Mã SP", "Sản phẩm", "Hạn dùng", "Tồn", "Trạng thái"
                         },
-                        truyVan(
-                                "SELECT"
-                                    + " l.so_lo,p.ma_san_pham,p.ten,l.han_su_dung,l.so_luong_ton,l.trang_thai"
-                                    + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham"
-                                        + (goc.equals("Sắp hết hạn")
-                                                ? " WHERE l.so_luong_ton>0 AND"
-                                                      + " l.han_su_dung<=DATEADD(day,30,CAST(GETDATE()"
-                                                      + " AS date))"
-                                                : "")),
+                        goc.equals("Sắp hết hạn")
+                                ? truyVan(
+                                        "SELECT l.so_lo,p.ma_san_pham,p.ten,l.han_su_dung,l.so_luong_ton,l.trang_thai"
+                                                + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham"
+                                                + " WHERE l.so_luong_ton>0 AND l.han_su_dung<=DATEADD(day,COALESCE((SELECT TRY_CAST(gia_tri AS INT) FROM cai_dat_he_thong WHERE khoa='SO_NGAY_CANH_BAO_HET_HAN'),30),CAST(GETDATE() AS date))")
+                                : truyVan(
+                                        "SELECT l.so_lo,p.ma_san_pham,p.ten,l.han_su_dung,l.so_luong_ton,l.trang_thai"
+                                                + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham"),
                         1);
+            }
             if (goc.equals("Hàng tồn đọng / chôn vốn") || goc.equals("Hao hụt từ kiểm kê")) {
                 return null;
             }

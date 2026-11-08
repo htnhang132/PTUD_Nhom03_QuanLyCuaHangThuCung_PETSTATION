@@ -25,6 +25,43 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
     }
 
     @Override
+    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            return giaTriTam.layKhaNangThanhCongCu();
+        return super.layKhaNangThanhCongCu();
+    }
+
+    @Override
+    public void xuLyTaoMoi() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyTaoMoi();
+    }
+
+    @Override
+    public void xuLyLuu() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyLuu();
+    }
+
+    @Override
+    public void xuLyTimKiem() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyTimKiem();
+    }
+
+    @Override
+    public void xuLyIn() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyIn();
+    }
+
+    @Override
+    public void xuLyHoanTac() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyHoanTac();
+    }
+
+    @Override
     public void xuLyHienThi() {
         if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
             giaTriTam.xuLyHienThi();

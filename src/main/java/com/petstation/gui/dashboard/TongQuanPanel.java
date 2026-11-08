@@ -236,6 +236,7 @@ public final class TongQuanPanel extends CoSoPanel implements HoTroThanhCongCu {
     private static long layThapTonKho() {
         long soPhanTu = 0;
         for (Object[] vungDangXet : DanhMucService.laySanPham()) {
+            if (!"Đang kinh doanh".equals(vungDangXet[9])) continue;
             if (TienTe.doc(String.valueOf(vungDangXet[8]))
                     <= Math.max(0, TienTe.doc(String.valueOf(vungDangXet[6])))) soPhanTu++;
         }

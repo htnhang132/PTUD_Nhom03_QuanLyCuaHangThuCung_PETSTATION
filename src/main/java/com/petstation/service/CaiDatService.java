@@ -1,7 +1,8 @@
 package com.petstation.service;
 
 import static com.petstation.database.ThaoTacSQL.thucHienGiaoDich;
-import static com.petstation.service.PhienDangNhapService.layIdTaiKhoan;
+import static com.petstation.service.PhienDangNhapService.layPhienHienTai;
+import static com.petstation.service.PhienDangNhapService.layTenDangNhap;
 import static com.petstation.service.PhienDangNhapService.yeuCau;
 import static com.petstation.util.DuLieu.chuyenThanhChuoi;
 
@@ -162,20 +163,21 @@ public final class CaiDatService {
     public static void ghi(String khoa, String giaTri) {
         yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         String khoaChuan = chuanHoaKhoa(khoa);
+        String nguoiCapNhat = layPhienHienTai() == null ? null : layTenDangNhap();
         thucHienGiaoDich(
                 ketNoi -> {
-                    if (caiDatDAO.capNhatGiaTri(giaTri, layIdTaiKhoan(), khoaChuan) == 0)
-                        caiDatDAO.themGiaTri(khoaChuan, giaTri, layIdTaiKhoan());
+                    if (caiDatDAO.capNhatGiaTri(giaTri, nguoiCapNhat, khoaChuan) == 0)
+                        caiDatDAO.themGiaTri(khoaChuan, giaTri, nguoiCapNhat);
                     return null;
                 });
     }
 
     private static int laySoNguyen(String khoaDangXet) {
-        return Integer.parseInt(lay(khoaDangXet));
+        return Integer.parseInt(lay(khoaDangXet).trim());
     }
 
     private static long docSoTien(String khoaDangXet) {
-        return Long.parseLong(lay(khoaDangXet));
+        return Long.parseLong(lay(khoaDangXet).trim());
     }
 
     public static long laySoTienChoMoiDiemTichLuy() {
@@ -187,7 +189,11 @@ public final class CaiDatService {
     }
 
     public static long[] layHangChiTieu() {
-        return Arrays.stream(lay("MUC_CHI_TIEU_HANG").split(",")).mapToLong(Long::parseLong).toArray();
+        return Arrays.stream(lay("MUC_CHI_TIEU_HANG").split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .mapToLong(Long::parseLong)
+                .toArray();
     }
 
     public static int layVATPhanTram() {

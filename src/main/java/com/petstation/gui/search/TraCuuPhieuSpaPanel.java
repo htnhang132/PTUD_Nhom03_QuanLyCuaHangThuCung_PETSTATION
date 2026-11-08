@@ -1,6 +1,7 @@
 package com.petstation.gui.search;
 
 import com.petstation.gui.components.common.BoChonKhoangNgay;
+import com.petstation.gui.components.HopThoai;
 import com.petstation.gui.components.ThanhDanhSach;
 import com.petstation.gui.processing.spa.NghiepVuSpaPanel;
 import com.petstation.model.GioHang;
@@ -76,14 +77,14 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
         pnlHaiHang.add(pnlThaoTacPhieu, BorderLayout.SOUTH);
         pnlDauTrang.add(pnlHaiHang, BorderLayout.CENTER);
 
-        themNut(
+        var btnChiTiet = themNut(
             pnlThaoTacPhieu,
             "Chi tiết dịch vụ",
             this::laySpaChiTiet);
 
-        themNut(pnlThaoTacPhieu, "Mở xử lý", () -> {
+        var btnMoXuLy = themNut(pnlThaoTacPhieu, "Mở xử lý", () -> {
             gio.getQuyTrinh().chonSpa(layDongChon());
-            dieuHuong.accept(MaManHinh.CAP_NHAT_TIEN_DO_SPA);
+            dieuHuong.accept(MaManHinh.QUAN_LY_SPA);
         });
 
         themNut(pnlThaoTacPhieu, "In danh sách", () -> {
@@ -94,13 +95,29 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
                     "Không thể in: " + ex.getMessage(), ex);
             }
         });
+
+        Runnable capNhatNut = () -> {
+            boolean coChon = tblBang.getSelectedRow() >= 0;
+            btnChiTiet.setEnabled(coChon);
+            btnMoXuLy.setEnabled(coChon);
+        };
+        tblBang.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) capNhatNut.run();
+        });
+        capNhatNut.run();
+        ganSuKienDupChuot(this::laySpaChiTiet);
     }
 
     private void ghiNhanBoLoc() {
         LocalDate tuNgay = khoangNgay.layNgayBatDau();
         LocalDate denNgay = khoangNgay.layNgayKetThuc();
 
+        if ((tuNgay == null) != (denNgay == null)) {
+            HopThoai.hienThiCanhBao(this, "Vui lòng chọn đủ Từ ngày và Đến ngày.");
+            return;
+        }
         if (tuNgay != null && denNgay != null && tuNgay.isAfter(denNgay)) {
+            HopThoai.hienThiCanhBao(this, "Từ ngày không được lớn hơn Đến ngày.");
             return;
         }
 

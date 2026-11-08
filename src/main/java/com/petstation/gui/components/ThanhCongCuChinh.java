@@ -73,20 +73,28 @@ public final class ThanhCongCuChinh extends JPanel {
         btnNutQuayLai.setEnabled(duocBat);
     }
 
-    public void diQuayLaiNeuCoThe() {
-        if (btnNutQuayLai.isEnabled()) btnNutQuayLai.doClick(0);
-    }
-
     public void kichHoat(ThaoTac thaoTac) {
-        JButton btnNut = cacNut.get(thaoTac);
-        if (btnNut == null || !btnNut.isEnabled() || hoatDongVungHienThi == null) return;
+        if (hoatDongVungHienThi == null) return;
+        KhaNangThanhCongCu khaNang = hoatDongVungHienThi.layKhaNangThanhCongCu();
         switch (thaoTac) {
-            case MOI -> hoatDongVungHienThi.xuLyTaoMoi();
-            case LUU -> hoatDongVungHienThi.xuLyLuu();
-            case TIM -> hoatDongVungHienThi.xuLyTimKiem();
-            case IN -> hoatDongVungHienThi.xuLyIn();
-            case HOAN_TAC -> hoatDongVungHienThi.xuLyHoanTac();
-            case TRO_GIUP -> hoatDongVungHienThi.xuLyTroGiup();
+            case MOI -> {
+                if (khaNang.coTheTao()) hoatDongVungHienThi.xuLyTaoMoi();
+            }
+            case LUU -> {
+                if (khaNang.coTheLuu()) hoatDongVungHienThi.xuLyLuu();
+            }
+            case TIM -> {
+                if (khaNang.coTheTim()) hoatDongVungHienThi.xuLyTimKiem();
+            }
+            case IN -> {
+                if (khaNang.coTheIn()) hoatDongVungHienThi.xuLyIn();
+            }
+            case HOAN_TAC -> {
+                if (khaNang.coTheHoanTac()) hoatDongVungHienThi.xuLyHoanTac();
+            }
+            case TRO_GIUP -> {
+                if (khaNang.coTheTroGiup()) hoatDongVungHienThi.xuLyTroGiup();
+            }
         }
     }
 

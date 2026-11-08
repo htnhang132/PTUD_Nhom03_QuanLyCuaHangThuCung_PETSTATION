@@ -188,6 +188,10 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         JPanel pnlThaoTacVungHienThi = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
         pnlThaoTacVungHienThi.setOpaque(false);
 
+        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới (F5)", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnLamMoi.addActionListener(suKien -> taiLai());
+        pnlThaoTacVungHienThi.add(btnLamMoi);
+
         NutDinhDang btnXoaNut = new NutDinhDang("Xóa bộ lọc", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXoaNut.addActionListener(suKien -> xoaCacBoLoc());
         pnlThaoTacVungHienThi.add(btnXoaNut);
@@ -195,6 +199,14 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         NutDinhDang btnApDungNut = new NutDinhDang("Áp dụng", NutDinhDang.KieuNut.CHINH);
         btnApDungNut.addActionListener(suKien -> apDungCacBoLoc());
         pnlThaoTacVungHienThi.add(btnApDungNut);
+
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F5"), "refreshLog");
+        getActionMap().put("refreshLog", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                taiLai();
+            }
+        });
 
         rangBuocBoCuc.gridx = 3;
         rangBuocBoCuc.weightx = 0.0;
@@ -345,6 +357,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
         LocalDate den = pnlKhoangNgayBoChon.layNgayKetThuc();
 
+        if (tu != null && den != null && tu.isAfter(den)) {
+            HopThoai.hienThiCanhBao(this, "Từ ngày không được lớn hơn Đến ngày.");
+            return;
+        }
+
         String kieu = String.valueOf(cboSuKienKieuHopChon.getSelectedItem());
 
         String kieuKhoa = kieu.startsWith("Tất cả") ? "" : kieu.split(" ")[0];
@@ -429,22 +446,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     private void xuLyXuat() {
         XuatExcel.xuatBang(this, tblBang, "Audit_Log");
-    }
-
-    private void dieuHuongQuayLai() {
-        HopThoai.hienThiThongBaoHopThoai(
-                this,
-                "Chức năng quay lại sẽ được triển khai khi có navigation system",
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void dieuHuongDenTrangChinh() {
-        HopThoai.hienThiThongBaoHopThoai(
-                this,
-                "Chức năng về màn hình chính sẽ được triển khai khi có navigation system",
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override

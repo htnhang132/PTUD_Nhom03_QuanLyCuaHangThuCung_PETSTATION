@@ -178,12 +178,12 @@ public final class DanhMucService {
 
         Quyen quyen =
                 switch (danhMuc.loai) {
-                    case KHACH_HANG, VOUCHER -> Quyen.QUAN_LY_KHACH_HANG;
+                    case KHACH_HANG -> Quyen.QUAN_LY_KHACH_HANG;
                     case THU_CUNG -> Quyen.QUAN_LY_THU_CUNG;
                     case NHAN_VIEN, TAI_KHOAN -> Quyen.QUAN_LY_TAI_KHOAN;
                     case SAN_PHAM -> Quyen.QUAN_LY_SAN_PHAM;
                     case NHA_CUNG_CAP -> Quyen.QUAN_LY_NHA_CUNG_CAP;
-                    case KHUYEN_MAI -> Quyen.QUAN_LY_KHUYEN_MAI;
+                    case KHUYEN_MAI, VOUCHER -> Quyen.QUAN_LY_KHUYEN_MAI;
                     case DICH_VU_SPA -> Quyen.QUAN_LY_SPA;
                     case PHONG_LUU_TRU -> Quyen.QUAN_LY_LUU_TRU;
                 };

@@ -141,16 +141,26 @@ public final class XuatExcel {
                     } else {
                         String vanBan = giaTri.toString();
                         if (laTien && vanBan.matches("[-−]?[0-9.,\\s]+[₫đ]?")) {
-                            o.setCellValue(
-                                    Double.parseDouble(
-                                            vanBan.replace("−", "-").replaceAll("[.,\\s₫đ]", "")));
-                            o.setCellStyle(tien);
+                            try {
+                                String chuan =
+                                        vanBan.replace("−", "-")
+                                                .replaceAll("[\\s₫đ]", "")
+                                                .replaceFirst("[.,]00$", "");
+                                o.setCellValue(Double.parseDouble(chuan.replaceAll("[.,]", "")));
+                                o.setCellStyle(tien);
+                            } catch (NumberFormatException ignored) {
+                                o.setCellValue(vanBan);
+                            }
                         } else if (nhan.contains("ngày")
                                 && vanBan.matches("[0-9]{2}/[0-9]{2}/[0-9]{4}")) {
-                            o.setCellValue(
-                                    LocalDate.parse(
-                                            vanBan, DateTimeFormatter.ofPattern("dd/MM/uuuu")));
-                            o.setCellStyle(ngay);
+                            try {
+                                o.setCellValue(
+                                        LocalDate.parse(
+                                                vanBan, DateTimeFormatter.ofPattern("dd/MM/uuuu")));
+                                o.setCellStyle(ngay);
+                            } catch (Exception ignored) {
+                                o.setCellValue(vanBan);
+                            }
                         } else o.setCellValue(vanBan);
                     }
                 }

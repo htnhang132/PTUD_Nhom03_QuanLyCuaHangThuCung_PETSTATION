@@ -11,10 +11,7 @@ import com.petstation.gui.catalog.DanhMucThuCungPanel;
 import com.petstation.gui.catalog.TichDiemVoucherPanel;
 import com.petstation.gui.dashboard.TongQuanPanel;
 import com.petstation.gui.processing.approval.TrungTamPheDuyetPanel;
-import com.petstation.gui.processing.hotel.DatPhongHotelPanel;
 import com.petstation.gui.processing.hotel.LuuTruHotelPanel;
-import com.petstation.gui.processing.hotel.NhatKyLuuTruPanel;
-import com.petstation.gui.processing.hotel.QuyetToanLuuTruPanel;
 import com.petstation.gui.processing.inventory.KiemKePanel;
 import com.petstation.gui.processing.inventory.NhapKhoPanel;
 import com.petstation.gui.processing.inventory.XuatHuyKhoPanel;
@@ -24,7 +21,6 @@ import com.petstation.gui.processing.sales.DonHangTreoPanel;
 import com.petstation.gui.processing.sales.InHoaDonPanel;
 import com.petstation.gui.processing.sales.LapHoaDonPanel;
 import com.petstation.gui.processing.sales.ThanhToanPanel;
-import com.petstation.gui.processing.spa.LichHenSpaPanel;
 import com.petstation.gui.processing.spa.TiepNhanSpaPanel;
 import com.petstation.gui.processing.staff.PhanLichNhanVienPanel;
 import com.petstation.gui.reports.ThongKeCongNoPanel;
@@ -365,12 +361,6 @@ public final class DangKyManHinh {
                 && (ngayDangXet.quyen() == null || phienDangNhap.kiemTraCo(ngayDangXet.quyen()));
     }
 
-    public List<DinhNghiaManHinh> layCacDinhNghiaHienThi() {
-        return cacDinhNghia.values().stream()
-                .filter(ngayDangXet -> coTheTruyCap(ngayDangXet.id()))
-                .toList();
-    }
-
     public JPanel tao(MaManHinh id) {
         if (!coTheTruyCap(id))
             throw new com.petstation.service.PhanQuyenException(
@@ -378,7 +368,7 @@ public final class DangKyManHinh {
         return switch (id) {
             case TONG_QUAN -> new TongQuanPanel(boDieuHuong, this::coTheTruyCap, caLamViec);
 
-            case DOI_MAT_KHAU -> new DoiMatKhauPanel(boDieuHuong);
+            case DOI_MAT_KHAU -> new DoiMatKhauPanel();
             case TAI_KHOAN_PHAN_QUYEN -> new TaiKhoanPhanQuyenPanel();
             case CAI_DAT ->
                     new CaiDatPanel(
@@ -425,15 +415,15 @@ public final class DangKyManHinh {
                  TIEP_NHAN_SPA,
                  CHON_GOI_SPA,
                  CAP_NHAT_TIEN_DO_SPA,
-                 HOAN_TAT_SPA ->
+                 HOAN_TAT_SPA,
+                 DAT_LICH_HEN_SPA ->
                 new TiepNhanSpaPanel(banHang, boDieuHuong);
 
-            case DAT_LICH_HEN_SPA -> new LichHenSpaPanel(banHang, boDieuHuong);
-
-            case QUAN_LY_LUU_TRU -> new LuuTruHotelPanel(banHang, boDieuHuong);
-            case DAT_PHONG_LUU_TRU -> new DatPhongHotelPanel(banHang, boDieuHuong);
-            case NHAT_KY_CHAM_SOC -> new NhatKyLuuTruPanel(banHang, boDieuHuong);
-            case TRA_PHONG_LUU_TRU -> new QuyetToanLuuTruPanel(banHang, boDieuHuong);
+            case QUAN_LY_LUU_TRU,
+                 DAT_PHONG_LUU_TRU,
+                 NHAT_KY_CHAM_SOC,
+                 TRA_PHONG_LUU_TRU ->
+                new LuuTruHotelPanel(banHang, boDieuHuong);
 
             case NHAP_KHO -> new NhapKhoPanel(banHang, boDieuHuong);
             case XUAT_HUY_KHO -> new XuatHuyKhoPanel(banHang, boDieuHuong);

@@ -93,7 +93,11 @@ public final class BanHangService {
                                             banHang.getMaKhachHang());
                     if (khachHang != null) {
                         List<Object[]> cacKhachHang = banHangDAO.timThanhToan(khachHang);
-                        if (cacKhachHang.isEmpty() || !Boolean.TRUE.equals(cacKhachHang.get(0)[1]))
+                        Object ttKhach = cacKhachHang.isEmpty() ? null : cacKhachHang.get(0)[1];
+                        boolean dangHoatDong =
+                                Boolean.TRUE.equals(ttKhach)
+                                        || (ttKhach instanceof Number n && n.intValue() != 0);
+                        if (!dangHoatDong)
                             throw new IllegalArgumentException("Khách hàng đã ngừng hoạt động.");
                         if (((Number) cacKhachHang.get(0)[0]).longValue() < banHang.getDiemDaDung())
                             throw new IllegalArgumentException(
@@ -239,7 +243,7 @@ public final class BanHangService {
 
         int hang = 0;
         while (hang < cacHang.length && chiTieu >= cacHang[hang]) hang++;
-        banHangDAO.capNhatCapNhatHang(cacTen[hang], khachHang);
+        banHangDAO.capNhatCapNhatHang(cacTen[Math.min(hang, cacTen.length - 1)], khachHang);
     }
 
     public static GioHang.BienLai layBienLai(String khong) {
@@ -423,7 +427,10 @@ public final class BanHangService {
         layPhien();
         var bienLai = layBienLai(soHoaDon);
         var nguon = layNguonBienLai(soHoaDon);
-        var dong = banHangDAO.layThongTinIn(soHoaDon).get(0);
+        var dsThongTin = banHangDAO.layThongTinIn(soHoaDon);
+        if (dsThongTin.isEmpty())
+            throw new IllegalArgumentException("Không tìm thấy thông tin in hóa đơn: " + soHoaDon);
+        var dong = dsThongTin.get(0);
         return new com.petstation.model.ChiTietBienLai(
                 bienLai,
                 CaiDatService.lay("TEN_CUA_HANG"),

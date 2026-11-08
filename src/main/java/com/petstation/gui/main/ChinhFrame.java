@@ -270,6 +270,13 @@ public final class ChinhFrame extends JFrame {
                         });
         pnlManHinh.putClientProperty("maManHinh", id);
         manHinhBoCuc.show(pnlLamViecVung, id.name());
+        if (id == MaManHinh.DAT_LICH_HEN_SPA
+                && pnlManHinh instanceof com.petstation.gui.processing.spa.TiepNhanSpaPanel spa) {
+            spa.chonTab(2);
+        } else if (id == MaManHinh.QUAN_LY_SPA
+                && pnlManHinh instanceof com.petstation.gui.processing.spa.TiepNhanSpaPanel spa) {
+            spa.chonTab(0);
+        }
         if (pnlManHinh instanceof HoTroThanhCongCu hoTro) hoTro.xuLyHienThi();
         if (yeuCau != null && yeuCau.manHinh() == id)
             com.petstation.gui.navigation.NguCanhMoBanGhi.apDung(pnlManHinh);
@@ -279,7 +286,7 @@ public final class ChinhFrame extends JFrame {
                 && yeuCau.manHinh() == id
                 && id == MaManHinh.DAT_PHONG_LUU_TRU
                 && pnlManHinh
-                        instanceof com.petstation.gui.processing.hotel.DatPhongHotelPanel dat) {
+                        instanceof com.petstation.gui.processing.hotel.NghiepVuHotelPanel dat) {
             com.petstation.gui.navigation.NguCanhMoBanGhi.xoa();
             SwingUtilities.invokeLater(
                     () -> {
