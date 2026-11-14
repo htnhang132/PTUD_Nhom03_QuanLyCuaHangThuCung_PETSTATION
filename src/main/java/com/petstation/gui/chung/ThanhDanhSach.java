@@ -47,7 +47,9 @@ public final class ThanhDanhSach extends JPanel {
     }
 
     public void themBoLoc(String nhan, JComponent c) {
-        JPanel nhom = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        FlowLayout boCuc = new FlowLayout(FlowLayout.LEFT, 4, 0);
+        boCuc.setAlignOnBaseline(true);
+        JPanel nhom = new JPanel(boCuc);
         nhom.setOpaque(false);
         JLabel label = new JLabel(nhan);
         label.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
@@ -123,12 +125,18 @@ public final class ThanhDanhSach extends JPanel {
         }
         if (rong <= 0) rong = 960;
         List<Component> cacPhanTu = new ArrayList<>();
+        List<Component> cacPhanTuCuoi = new ArrayList<>();
         for (Component c : getComponents()) {
-            if (c.isVisible()) {
-                chuanHoaKichThuocCon(c);
+            if (!c.isVisible()) continue;
+            chuanHoaKichThuocCon(c);
+            if (c instanceof JComponent jc
+                    && Boolean.TRUE.equals(jc.getClientProperty("luonCuoi"))) {
+                cacPhanTuCuoi.add(c);
+            } else {
                 cacPhanTu.add(c);
             }
         }
+        cacPhanTu.addAll(cacPhanTuCuoi);
         Insets le = getInsets();
         int rongNoiDung = Math.max(1, rong - le.left - le.right);
         int caoHang = CAO_HANG;

@@ -97,4 +97,25 @@ class ThanhDanhSachTest {
                             .isLessThanOrEqualTo(bar.getHeight() - 6);
                 });
     }
+
+    @Test
+    void nutDanhDauLuonCuoiLuonXepNgaySauNutTruocDo() throws Exception {
+        SwingUtilities.invokeAndWait(
+                () -> {
+                    ThanhDanhSach bar = new ThanhDanhSach();
+                    JTextField tim = new JTextField(16);
+                    JButton xuat = new JButton("Xuất Excel");
+                    xuat.putClientProperty("luonCuoi", Boolean.TRUE);
+                    JButton thaoTac = new JButton("+ Thêm mới");
+                    bar.add(tim);
+                    bar.add(xuat);
+                    bar.add(thaoTac);
+
+                    bar.setSize(1200, 34);
+                    bar.setSize(1200, bar.getPreferredSize().height);
+                    bar.doLayout();
+
+                    assertThat(xuat.getX()).isEqualTo(thaoTac.getX() + thaoTac.getWidth() + 6);
+                });
+    }
 }

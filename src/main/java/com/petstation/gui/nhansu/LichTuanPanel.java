@@ -213,31 +213,32 @@ public class LichTuanPanel extends CoSoPanel {
     }
 
     private JPanel taoThanhCongCu() {
-        JPanel khungThanh = new JPanel(new BorderLayout(10, 0));
-        khungThanh.setOpaque(false);
-        khungThanh.add(taoCumBoLocTrai(), BorderLayout.WEST);
-        khungThanh.add(taoCumDieuHuongGiua(), BorderLayout.CENTER);
-        khungThanh.add(taoCumTacVuPhai(), BorderLayout.EAST);
+        ThanhDanhSach khungThanh = new ThanhDanhSach();
+        themCumBoLoc(khungThanh);
+        themCumDieuHuong(khungThanh);
+        themCumTacVu(khungThanh);
         return khungThanh;
     }
 
-    private JPanel taoCumBoLocTrai() {
-        JPanel khungTrai = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        khungTrai.setOpaque(false);
+    private void themCumBoLoc(ThanhDanhSach khungThanh) {
+        FlowLayout boCuc = new FlowLayout(FlowLayout.LEFT, 6, 0);
+        boCuc.setAlignOnBaseline(true);
+        JPanel nhomCheDo = new JPanel(boCuc);
+        nhomCheDo.setOpaque(false);
         ButtonGroup nhom = new ButtonGroup();
         for (JRadioButton btnDongDuLieu : new JRadioButton[] {btnTatCa, btnLamViec, btnNghiPhep}) {
             btnDongDuLieu.setOpaque(false);
             btnDongDuLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+            btnDongDuLieu.setVerticalAlignment(SwingConstants.CENTER);
+            Dimension kichThuoc = btnDongDuLieu.getPreferredSize();
+            btnDongDuLieu.setPreferredSize(new Dimension(kichThuoc.width, 34));
             btnDongDuLieu.addActionListener(suKien -> dungLai());
             nhom.add(btnDongDuLieu);
-            khungTrai.add(btnDongDuLieu);
+            nhomCheDo.add(btnDongDuLieu);
         }
+        khungThanh.themBoLoc(nhomCheDo);
         if (cheDo != CheDo.CA_NHAN) {
-            JLabel nhanLocNV = new JLabel("Lọc NV:");
-            nhanLocNV.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-            nhanLocNV.setForeground(MauUngDung.VAN_BAN_XAM);
-            khungTrai.add(nhanLocNV);
-            oLocNhanVien.setPreferredSize(new Dimension(160, 34));
+            oLocNhanVien.setPreferredSize(new Dimension(145, 34));
             oLocNhanVien.setToolTipText("Lọc theo tên, mã NV hoặc chức vụ");
             oLocNhanVien.addActionListener(
                     suKien -> {
@@ -248,15 +249,12 @@ public class LichTuanPanel extends CoSoPanel {
                     () -> {
                         if (!dangDatLaiBoLoc) dungLai();
                     });
-            khungTrai.add(oLocNhanVien);
+            khungThanh.themBoLoc("Lọc NV:", oLocNhanVien);
         }
-        return khungTrai;
     }
 
-    private JPanel taoCumDieuHuongGiua() {
-        JPanel khungGiua = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-        khungGiua.setOpaque(false);
-        khungGiua.add(
+    private void themCumDieuHuong(ThanhDanhSach khungThanh) {
+        khungThanh.add(
                 taoNutCongCu(
                         "< Tuần trước",
                         NutDinhDang.KieuNut.TRONG_SUOT,
@@ -279,8 +277,8 @@ public class LichTuanPanel extends CoSoPanel {
                         dungLai();
                     }
                 });
-        khungGiua.add(oTruongNgay);
-        khungGiua.add(
+        khungThanh.add(oTruongNgay);
+        khungThanh.add(
                 taoNutCongCu(
                         "Tuần sau >",
                         NutDinhDang.KieuNut.TRONG_SUOT,
@@ -290,7 +288,7 @@ public class LichTuanPanel extends CoSoPanel {
                             thuHai = thuHai.plusWeeks(1);
                             dungLai();
                         }));
-        khungGiua.add(
+        khungThanh.add(
                 taoNutCongCu(
                         "Hiện tại",
                         NutDinhDang.KieuNut.PHU,
@@ -300,28 +298,25 @@ public class LichTuanPanel extends CoSoPanel {
                             thuHai = LichLamViecService.macDinh().layThuHaiCuaTuan(LocalDate.now());
                             dungLai();
                         }));
-        return khungGiua;
     }
 
-    private JPanel taoCumTacVuPhai() {
-        JPanel khungPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        khungPhai.setOpaque(false);
+    private void themCumTacVu(ThanhDanhSach khungThanh) {
         if (cheDo == CheDo.SUA) {
-            khungPhai.add(
+            khungThanh.add(
                     taoNutCongCu(
                             "Sao chép tuần trước",
                             NutDinhDang.KieuNut.TRONG_SUOT,
                             150,
                             "Sao chép phân ca từ tuần trước sang tuần này",
                             this::saoChepLichTuan));
-            khungPhai.add(
+            khungThanh.add(
                     taoNutCongCu(
                             "Đổi ca",
                             NutDinhDang.KieuNut.TRONG_SUOT,
                             85,
                             "Hoán đổi ca làm việc trực tiếp giữa 2 nhân viên",
                             this::hoanDoiCaNhanVien));
-            khungPhai.add(
+            khungThanh.add(
                     taoNutCongCu(
                             "Khóa lịch tuần",
                             NutDinhDang.KieuNut.PHU,
@@ -329,14 +324,14 @@ public class LichTuanPanel extends CoSoPanel {
                             "Khóa lịch tuần này để công bố chính thức",
                             this::khoaLichTuan));
         } else if (cheDo == CheDo.CA_NHAN) {
-            khungPhai.add(
+            khungThanh.add(
                     taoNutCongCu(
                             "Đăng ký nghỉ phép",
                             NutDinhDang.KieuNut.PHU,
                             145,
                             null,
                             () -> ThaoTacNhanh.layNghiPhep(this)));
-            khungPhai.add(
+            khungThanh.add(
                     taoNutCongCu(
                             "Yêu cầu đổi ca",
                             NutDinhDang.KieuNut.TRONG_SUOT,
@@ -344,10 +339,9 @@ public class LichTuanPanel extends CoSoPanel {
                             null,
                             this::guiYeuCauDoiCaCaNhan));
         }
-        khungPhai.add(
+        khungThanh.add(
                 taoNutCongCu(
                         "In lịch", NutDinhDang.KieuNut.TRONG_SUOT, 85, null, this::inLichLamViec));
-        return khungPhai;
     }
 
     private static NutDinhDang taoNutCongCu(

@@ -121,6 +121,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                                                 bangBang.getRowCount(), moHinh.getRowCount())));
         add(scrCuon, BorderLayout.CENTER);
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnXuat.putClientProperty("luonCuoi", Boolean.TRUE);
         btnXuat.addActionListener(
                 suKien -> XuatExcelDialog.xuatBang(this, bangBang, hienThi.tieuDe()));
         khungCacThaoTac.add(btnXuat);

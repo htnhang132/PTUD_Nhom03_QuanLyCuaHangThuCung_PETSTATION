@@ -3,7 +3,6 @@ package com.petstation.gui.spa;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.SpaDTO;
 import com.petstation.gui.chung.HopThoai;
-import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.BoChonKhoangNgay;
 import com.petstation.model.chung.LoaiNghiepVu;
@@ -11,18 +10,12 @@ import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.TrangThaiPhieuSpa;
 import com.petstation.service.spa.SpaService;
 
-import java.awt.BorderLayout;
-import java.awt.print.PrinterJob;
-import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTable;
 
 // Màn hình: Tra cứu phiếu Spa (Mã: TRA_CUU_PHIEU_SPA)
 // Luồng xử lý: GUI -> TiepNhanSpaService -> PhieuTiepNhanSpaDAOImpl -> SQL (phieu_tiep_nhan_spa)
@@ -93,35 +86,16 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
 
         ghiNhanBoLoc();
 
-        JPanel khungThaoTacPhieu = new ThanhDanhSach();
-        khungThaoTacPhieu.setBorder(BorderFactory.createEmptyBorder());
-        JPanel khungDauTrang = (JPanel) layKhungThaoTac().getParent();
-        JPanel khungHaiHang = new JPanel(new BorderLayout(0, 8));
-        khungHaiHang.setOpaque(false);
-        khungDauTrang.remove(layKhungThaoTac());
-        khungHaiHang.add(layKhungThaoTac(), BorderLayout.CENTER);
-        khungHaiHang.add(khungThaoTacPhieu, BorderLayout.SOUTH);
-        khungDauTrang.add(khungHaiHang, BorderLayout.CENTER);
-
-        var btnChiTiet = themNut(khungThaoTacPhieu, "Chi tiết dịch vụ", this::laySpaChiTiet);
-
         var btnMoXuLy =
                 themNut(
-                        khungThaoTacPhieu,
+                        layKhungThaoTac(),
                         "Mở xử lý",
                         () -> {
                             gio.getQuyTrinh().chonSpa(layDongChon());
                             dieuHuong.accept(MaManHinh.QUAN_LY_SPA);
                         });
 
-        themNut(khungThaoTacPhieu, "In danh sách", this::inDanhSach);
-
-        Runnable capNhatNut =
-                () -> {
-                    boolean coChon = layBangDuLieu().getSelectedRow() >= 0;
-                    btnChiTiet.setEnabled(coChon);
-                    btnMoXuLy.setEnabled(coChon);
-                };
+        Runnable capNhatNut = () -> btnMoXuLy.setEnabled(layBangDuLieu().getSelectedRow() >= 0);
         layBangDuLieu()
                 .getSelectionModel()
                 .addListSelectionListener(
@@ -130,31 +104,6 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
                         });
         capNhatNut.run();
         ganSuKienDupChuot(this::laySpaChiTiet);
-    }
-
-    private void inDanhSach() {
-        try {
-            var job = PrinterJob.getPrinterJob();
-            job.setJobName("Danh sách phiếu Spa");
-            job.setPrintable(
-                    layBangDuLieu()
-                            .getPrintable(
-                                    JTable.PrintMode.FIT_WIDTH,
-                                    new MessageFormat("Danh sách phiếu Spa"),
-                                    new MessageFormat("Trang {0}")));
-            if (!job.printDialog()) return;
-            TacVuNen.chay(
-                    () -> {
-                        job.print();
-                        return null;
-                    },
-                    v -> {},
-                    ex ->
-                            HopThoai.hienThiCanhBao(
-                                    this, "Không thể in: " + TacVuNen.thongDiepLoi(ex)));
-        } catch (Exception ex) {
-            HopThoai.hienThiCanhBao(this, "Không thể in: " + ex.getMessage());
-        }
     }
 
     private void ghiNhanBoLoc() {
