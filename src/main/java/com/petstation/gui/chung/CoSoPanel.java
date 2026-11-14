@@ -17,8 +17,6 @@ import java.awt.LayoutManager;
 import java.awt.RenderingHints;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.text.MessageFormat;
@@ -244,50 +242,13 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     protected JTextField taoOTimKiem(String goiYNhap) {
-        JTextField oTruongDangXet =
-                new JTextField() {
-                    @Override
-                    protected void paintComponent(Graphics doHoa) {
-                        super.paintComponent(doHoa);
-                        if (getText().isEmpty() && !isFocusOwner()) {
-                            Graphics2D doHoa2 = (Graphics2D) doHoa.create();
-                            doHoa2.setRenderingHint(
-                                    RenderingHints.KEY_TEXT_ANTIALIASING,
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                            doHoa2.setColor(MauUngDung.VO_HIEU_HOA);
-                            doHoa2.setFont(getFont());
-                            Insets vao = getInsets();
-                            doHoa2.drawString(
-                                    goiYNhap,
-                                    vao.left,
-                                    (getHeight()
-                                                    + doHoa2.getFontMetrics().getAscent()
-                                                    - doHoa2.getFontMetrics().getDescent())
-                                            / 2);
-                            doHoa2.dispose();
-                        }
-                    }
-                };
+        JTextField oTruongDangXet = new JTextField();
         oTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
         oTruongDangXet.setPreferredSize(new Dimension(220, 34));
-        oTruongDangXet.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
-                        new EmptyBorder(4, 12, 4, 12)));
+        oTruongDangXet.putClientProperty("JTextField.placeholderText", goiYNhap);
+        oTruongDangXet.putClientProperty("JTextField.padding", new Insets(4, 10, 4, 10));
         oTruongDangXet.getAccessibleContext().setAccessibleName(goiYNhap);
-        oTruongDangXet.addFocusListener(
-                new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent suKien) {
-                        oTruongDangXet.repaint();
-                    }
-
-                    @Override
-                    public void focusGained(FocusEvent suKien) {
-                        oTruongDangXet.repaint();
-                    }
-                });
         if (oTimKiemChinh == null) oTimKiemChinh = oTruongDangXet;
         oChuaRangBuocTimKiem = oTruongDangXet;
         return oTruongDangXet;

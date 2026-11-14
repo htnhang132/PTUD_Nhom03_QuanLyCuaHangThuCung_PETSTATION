@@ -691,10 +691,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                     }
                 };
         oGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oGiaTriTam.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN),
-                        new EmptyBorder(5, 8, 5, 8)));
+        oGiaTriTam.putClientProperty("JTextField.padding", new Insets(5, 8, 5, 8));
         if (truongDangXet.kieu == Kieu.NGAY)
             oGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy hoặc chọn từ lịch");
         ToolTipManager.sharedInstance().registerComponent(oGiaTriTam);

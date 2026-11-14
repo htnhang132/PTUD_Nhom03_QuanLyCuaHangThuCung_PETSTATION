@@ -3,13 +3,12 @@ package com.petstation.gui.chung;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 
 public final class BieuMauPanel extends JPanel {
     private BieuMauPanel() {}
@@ -22,10 +21,7 @@ public final class BieuMauPanel extends JPanel {
 
     public static void dinhDangDauVao(JComponent truongDangXet) {
         truongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        truongDangXet.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
-                        new EmptyBorder(6, 10, 6, 10)));
+        truongDangXet.putClientProperty("JTextField.padding", new Insets(4, 10, 4, 10));
         truongDangXet.setPreferredSize(new Dimension(160, 36));
     }
 

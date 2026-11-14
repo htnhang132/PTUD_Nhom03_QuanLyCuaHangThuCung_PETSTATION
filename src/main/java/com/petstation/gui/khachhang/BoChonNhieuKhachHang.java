@@ -12,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -57,10 +58,8 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         this.nguonLuaChon = nguonLuaChon;
         khungChinh.setOpaque(false);
         oTimKiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oTimKiem.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN),
-                        new EmptyBorder(4, 8, 4, 8)));
+        oTimKiem.setPreferredSize(new Dimension(0, 32));
+        oTimKiem.putClientProperty("JTextField.padding", new Insets(4, 8, 4, 8));
         oTimKiem.putClientProperty("JTextField.placeholderText", "Tìm mã hoặc tên khách hàng...");
         CoSoPanel.themBoLangNgheTaiLieu(oTimKiem, this::locDanhSach);
         chkChonTatCa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));

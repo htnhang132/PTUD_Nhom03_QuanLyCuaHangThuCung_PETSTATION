@@ -408,10 +408,7 @@ public class DangNhapFrame extends JFrame {
         oTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
         oTruongDangXet.setBackground(Color.WHITE);
         oTruongDangXet.setCaretColor(MauUngDung.DO_THUONG_HIEU);
-        oTruongDangXet.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
-                        new EmptyBorder(10, 14, 10, 14)));
+        oTruongDangXet.putClientProperty("JTextField.padding", new Insets(8, 12, 8, 12));
         oTruongDangXet.setPreferredSize(new Dimension(CHIEU_RONG_BIEU_MAU, 44));
         oTruongDangXet.setMinimumSize(new Dimension(CHIEU_RONG_BIEU_MAU, 44));
         oTruongDangXet.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
