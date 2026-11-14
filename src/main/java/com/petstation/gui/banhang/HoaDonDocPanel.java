@@ -18,13 +18,20 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.zip.DeflaterOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -448,6 +455,135 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
 
     public boolean getScrollableTracksViewportWidth() {
         return true;
+    }
+
+    public static void xuatPdf(ChiTietBienLai thongTin, File tep) throws IOException {
+        if (tep == null) throw new IllegalArgumentException("Đường dẫn tệp PDF không hợp lệ.");
+        HoaDonDocPanel tam = new HoaDonDocPanel();
+        tam.datDuLieu(thongTin);
+        if (tam.cacKhoi.isEmpty()) {
+            throw new IllegalArgumentException("Không có dữ liệu hóa đơn để xuất PDF.");
+        }
+        double rongPt = RONG_GIAY;
+        double caoPt = Math.max(120, tam.chieuCao());
+        double tiLe = 3.0;
+        int pixW = Math.max(1, (int) Math.ceil(rongPt * tiLe));
+        int pixH = Math.max(1, (int) Math.ceil(caoPt * tiLe));
+        BufferedImage anh = new BufferedImage(pixW, pixH, BufferedImage.TYPE_INT_RGB);
+        Graphics2D net = anh.createGraphics();
+        try {
+            net.setColor(Color.WHITE);
+            net.fillRect(0, 0, pixW, pixH);
+            net.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            net.setRenderingHint(
+                    RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            net.setRenderingHint(
+                    RenderingHints.KEY_FRACTIONALMETRICS,
+                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            net.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            net.scale(tiLe, tiLe);
+            net.translate(LE, LE);
+            double doc = 0;
+            for (var khoi : tam.cacKhoi) {
+                tam.veKhoi(net, khoi, doc);
+                doc += khoi.cao;
+            }
+        } finally {
+            net.dispose();
+        }
+        byte[] duLieuAnh = nenAnhRgb(anh);
+        ghiTepPdf(tep, rongPt, caoPt, pixW, pixH, duLieuAnh);
+    }
+
+    private static byte[] nenAnhRgb(BufferedImage anh) throws IOException {
+        int pixW = anh.getWidth(), pixH = anh.getHeight();
+        int[] px = ((DataBufferInt) anh.getRaster().getDataBuffer()).getData();
+        ByteArrayOutputStream nen = new ByteArrayOutputStream();
+        try (DeflaterOutputStream def = new DeflaterOutputStream(nen)) {
+            byte[] hang = new byte[pixW * 3];
+            for (int y = 0; y < pixH; y++) {
+                int base = y * pixW;
+                for (int x = 0; x < pixW; x++) {
+                    int rgb = px[base + x];
+                    int off = x * 3;
+                    hang[off] = (byte) ((rgb >> 16) & 0xFF);
+                    hang[off + 1] = (byte) ((rgb >> 8) & 0xFF);
+                    hang[off + 2] = (byte) (rgb & 0xFF);
+                }
+                def.write(hang);
+            }
+        }
+        return nen.toByteArray();
+    }
+
+    private static void ghiTepPdf(
+            File tep, double rongPt, double caoPt, int pixW, int pixH, byte[] duLieuAnh)
+            throws IOException {
+        String w = String.format(Locale.US, "%.2f", rongPt);
+        String h = String.format(Locale.US, "%.2f", caoPt);
+        byte[] noiDung =
+                ("q " + w + " 0 0 " + h + " 0 0 cm /Im1 Do Q\n")
+                        .getBytes(StandardCharsets.US_ASCII);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write("%PDF-1.4\n".getBytes(StandardCharsets.US_ASCII));
+        List<Integer> offsets = new ArrayList<>();
+        themObjPdf(out, offsets, 1, "<< /Type /Catalog /Pages 2 0 R >>", null);
+        themObjPdf(out, offsets, 2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>", null);
+        themObjPdf(
+                out,
+                offsets,
+                3,
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "
+                        + w
+                        + " "
+                        + h
+                        + "] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>",
+                null);
+        themObjPdf(
+                out,
+                offsets,
+                4,
+                "<< /Type /XObject /Subtype /Image /Width "
+                        + pixW
+                        + " /Height "
+                        + pixH
+                        + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode"
+                        + " /Length "
+                        + duLieuAnh.length
+                        + " >>",
+                duLieuAnh);
+        themObjPdf(out, offsets, 5, "<< /Length " + noiDung.length + " >>", noiDung);
+        int xrefPos = out.size();
+        StringBuilder xref = new StringBuilder();
+        xref.append("xref\n0 ").append(offsets.size() + 1).append('\n');
+        xref.append("0000000000 65535 f \n");
+        for (int off : offsets) {
+            xref.append(String.format(Locale.US, "%010d 00000 n \n", off));
+        }
+        xref.append("trailer\n<< /Size ")
+                .append(offsets.size() + 1)
+                .append(" /Root 1 0 R >>\nstartxref\n")
+                .append(xrefPos)
+                .append("\n%%EOF\n");
+        out.write(xref.toString().getBytes(StandardCharsets.US_ASCII));
+        try (FileOutputStream fos = new FileOutputStream(tep)) {
+            out.writeTo(fos);
+        }
+    }
+
+    private static void themObjPdf(
+            ByteArrayOutputStream out, List<Integer> offsets, int id, String dict, byte[] stream)
+            throws IOException {
+        offsets.add(out.size());
+        out.write((id + " 0 obj\n" + dict + "\n").getBytes(StandardCharsets.US_ASCII));
+        if (stream != null) {
+            out.write("stream\n".getBytes(StandardCharsets.US_ASCII));
+            out.write(stream);
+            out.write("\nendstream\n".getBytes(StandardCharsets.US_ASCII));
+        }
+        out.write("endobj\n".getBytes(StandardCharsets.US_ASCII));
     }
 
     public boolean getScrollableTracksViewportHeight() {

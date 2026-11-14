@@ -28,8 +28,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.io.FileWriter;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,7 +63,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private final HoaDonDocPanel khungHoaDon = new HoaDonDocPanel();
     private final JLabel nhanTrangThaiHoaDon = new JLabel("Chọn hóa đơn bên trái để xem trước");
     private NutDinhDang btnInLai;
-    private NutDinhDang btnXuatHtml;
+    private NutDinhDang btnXuatPdf;
     private NutDinhDang btnYeuCauPheDuyet;
 
     private final BoChonNgay oTuNgay;
@@ -93,13 +91,9 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         super(LoaiNghiepVu.HOA_DON, banHang, dieuHuong);
         oTuNgay = new BoChonNgay(LocalDate.now().minusDays(60));
         oDenNgay = new BoChonNgay(LocalDate.now());
-        cboPhuongThuc =
-                new JComboBox<>(
-                        new String[] {
-                            "TẤT CẢ", "Tiền mặt", "Chuyển khoản", "Thẻ", "Điểm tích lũy"
-                        });
+        cboPhuongThuc = new JComboBox<>(new String[] {"Tất cả", "Tiền mặt", "Chuyển khoản", "Thẻ"});
         cboTrangThai =
-                new JComboBox<>(new String[] {"TẤT CẢ", "Đã thanh toán", "Đã hủy", "Đã hoàn"});
+                new JComboBox<>(new String[] {"Tất cả", "Đã thanh toán", "Đã hủy", "Đã hoàn"});
         cauHinhThanhBoLocHoaDon();
         ganKhungXemTruocHoaDon(taoKhungXemTruocHoaDon());
         dangKySuKienTimKiemHoaDon();
@@ -148,19 +142,17 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khungThaoTacHoaDon.setBorder(new EmptyBorder(6, 0, 0, 0));
         btnInLai =
                 taoNutXemTruocHoaDon(
-                        "In lại hóa đơn (K80 / A5)",
-                        NutDinhDang.KieuNut.CHINH,
-                        e -> inHoaDonDangChon());
-        btnXuatHtml =
+                        "In lại hóa đơn", NutDinhDang.KieuNut.CHINH, e -> inHoaDonDangChon());
+        btnXuatPdf =
                 taoNutXemTruocHoaDon(
-                        "Xuất file HTML", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
+                        "Xuất file PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
         btnYeuCauPheDuyet =
                 taoNutXemTruocHoaDon(
                         "Yêu cầu hủy / sửa HĐ",
                         NutDinhDang.KieuNut.NGUY_HIEM,
                         e -> xuLyYeuCauHuySua());
         khungThaoTacHoaDon.add(btnInLai);
-        khungThaoTacHoaDon.add(btnXuatHtml);
+        khungThaoTacHoaDon.add(btnXuatPdf);
         khungThaoTacHoaDon.add(btnYeuCauPheDuyet);
         khungChiTietPhai.add(khungThaoTacHoaDon, BorderLayout.SOUTH);
         return khungChiTietPhai;
@@ -284,7 +276,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         chiTietDangChon = null;
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
-        btnXuatHtml.setEnabled(false);
+        btnXuatPdf.setEnabled(false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("");
     }
@@ -304,7 +296,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         chiTietDangChon = null;
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
-        btnXuatHtml.setEnabled(false);
+        btnXuatPdf.setEnabled(false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("Đang tải hóa đơn " + soHoaDon + "...");
         TacVuNen.chayCoPhien(
@@ -324,7 +316,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                     nhanTrangThaiHoaDon.setText(
                             "Hóa đơn: " + soHoaDon + " (" + trangThaiHienThi + ")");
                     btnInLai.setEnabled(duLieu.chiTiet != null);
-                    btnXuatHtml.setEnabled(duLieu.bienLai != null);
+                    btnXuatPdf.setEnabled(duLieu.chiTiet != null);
                     btnYeuCauPheDuyet.setEnabled(!daKhoaPheDuyet(trangThai, trangThaiHienThi));
                 },
                 ex -> nhanTrangThaiHoaDon.setText("Lỗi nạp hóa đơn: " + ex.getMessage()));
@@ -392,18 +384,20 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
             cacBoLoc.add(taoBoLocTuKhoa(tuKhoa));
         }
         String phuongThuc = (String) cboPhuongThuc.getSelectedItem();
-        if (phuongThuc != null && !"TẤT CẢ".equals(phuongThuc)) {
+        if (phuongThuc != null && !"Tất cả".equals(phuongThuc)) {
             String maPt =
                     switch (phuongThuc) {
                         case "Tiền mặt" -> "TIEN_MAT|Tiền mặt";
                         case "Chuyển khoản" -> "CHUYEN_KHOAN|Chuyển khoản.*";
                         case "Thẻ" -> "THE_NGAN_HANG|THE|Thẻ";
-                        default -> "DIEM_TICH_LUY|Điểm tích lũy";
+                        default -> "";
                     };
-            cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maPt + ")$", 6));
+            if (!maPt.isEmpty()) {
+                cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maPt + ")$", 6));
+            }
         }
         String trangThai = (String) cboTrangThai.getSelectedItem();
-        if (trangThai != null && !"TẤT CẢ".equals(trangThai)) {
+        if (trangThai != null && !"Tất cả".equals(trangThai)) {
             String maTt =
                     switch (trangThai) {
                         case "Đã thanh toán" -> "DA_THANH_TOAN|Đã thanh toán";
@@ -524,17 +518,17 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     }
 
     private void xuLyXuatHoaDon() {
-        if (bienLaiDangChon == null) return;
+        if (bienLaiDangChon == null || chiTietDangChon == null) return;
         JFileChooser chooser = new JFileChooser();
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setFileFilter(new FileNameExtensionFilter("Tệp HTML (*.html)", "html"));
-        chooser.setSelectedFile(new File("HoaDon_" + bienLaiDangChon.getSoHoaDon() + ".html"));
+        chooser.setFileFilter(new FileNameExtensionFilter("Tệp PDF (*.pdf)", "pdf"));
+        chooser.setSelectedFile(new File("HoaDon_" + bienLaiDangChon.getSoHoaDon() + ".pdf"));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         File chon = chooser.getSelectedFile();
         File file =
-                chon.getName().toLowerCase(Locale.ROOT).endsWith(".html")
+                chon.getName().toLowerCase(Locale.ROOT).endsWith(".pdf")
                         ? chon
-                        : new File(chon.getParentFile(), chon.getName() + ".html");
+                        : new File(chon.getParentFile(), chon.getName() + ".pdf");
         if (file.exists()
                 && !HopThoai.xacNhanDongY(
                         this,
@@ -542,20 +536,21 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         "Xác nhận ghi đè")) {
             return;
         }
-        GioHang.BienLai bienLaiXuat = bienLaiDangChon;
+        ChiTietBienLai chiTietXuat = chiTietDangChon;
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
                 () -> {
-                    try (FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8)) {
-                        writer.write(InHoaDonPanel.hienThiHTML(bienLaiXuat));
+                    try {
+                        HoaDonDocPanel.xuatPdf(chiTietXuat, file);
                         return file.getAbsolutePath();
                     } catch (Exception ex) {
                         throw new RuntimeException(ex.getMessage(), ex);
                     }
                 },
                 duongDan ->
-                        HopThoai.hienThiThanhCong(this, "Đã xuất hóa đơn ra file:\n" + duongDan),
-                ex -> HopThoai.hienThiLoi(this, "Lỗi khi ghi file: " + ex.getMessage()));
+                        HopThoai.hienThiThanhCong(
+                                this, "Đã xuất hóa đơn ra file PDF:\n" + duongDan),
+                ex -> HopThoai.hienThiLoi(this, "Lỗi khi xuất PDF: " + ex.getMessage()));
     }
 }
