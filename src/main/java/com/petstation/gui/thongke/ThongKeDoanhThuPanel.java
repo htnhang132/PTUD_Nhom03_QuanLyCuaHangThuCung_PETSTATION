@@ -46,7 +46,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                chiSo("Số ngày có thu", "Tổng tiền thu", "TB/ngày"),
+                                chiSo("Số ngày có thu", "Tổng tiền thu", "TB/ngày phát sinh"),
                                 thongKeService::layDoanhThuTheoNgay),
                         taoKieuHienThi(
                                 "Theo thanh toán",
@@ -54,7 +54,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Thu ròng TB/HĐ (gồm cọc)"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "method")),
                         taoKieuHienThi(
                                 "Theo thu ngân",
@@ -62,7 +62,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Thu ròng TB/HĐ (gồm cọc)"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "staff")),
                         taoKieuHienThi(
                                 "Theo nguồn",
@@ -70,7 +70,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Thu ròng TB/HĐ (gồm cọc)"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "source")),
                         taoKieuHienThi(
                                 "Theo ca",
@@ -78,7 +78,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
-                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Thu ròng TB/HĐ (gồm cọc)"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "shift")),
                         taoKieuHienThi(
                                 "Theo khung giờ",

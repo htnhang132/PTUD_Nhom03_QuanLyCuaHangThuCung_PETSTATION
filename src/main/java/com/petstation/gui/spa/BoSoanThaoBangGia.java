@@ -148,6 +148,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             Object[] duLieu = {loai.getSelectedItem(), khoang, DinhDang.dinhDang(soTien)};
             DinhDangBang.capNhatHoacThemDong(bang, model, laSua, dong, duLieu);
             capNhatKichThuocBang();
+            if (!laSua && Double.isFinite(den)) {
+                tuKg.setText(soCan(den));
+                denKg.setText("");
+            }
             gia.setText("");
         } catch (Exception ex) {
             HopThoai.hienThiCanhBao(panel, ex.getMessage());
@@ -200,6 +204,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                     model.addRow(new Object[] {p[0], p[1], DinhDang.dinhDang(DinhDang.doc(p[2]))});
             }
         }
+        loai.setSelectedIndex(0);
+        tuKg.setText("0");
+        denKg.setText("5");
+        gia.setText("");
         capNhatKichThuocBang();
     }
 

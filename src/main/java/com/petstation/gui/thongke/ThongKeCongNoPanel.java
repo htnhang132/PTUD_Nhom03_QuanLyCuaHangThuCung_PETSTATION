@@ -25,21 +25,6 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                 "Báo cáo theo kỳ lọc ngày nhập; đã trả và dư nợ là số cập nhật hiện tại.",
                 "Công nợ nhà cung cấp".replace(' ', '_'),
                 List.of(
-                        taoKieuHienTai(
-                                        "Dư nợ hiện tại",
-                                        new String[] {
-                                            "Mã NCC",
-                                            "Nhà cung cấp",
-                                            "Tổng nhập",
-                                            "Đã trả hiện tại",
-                                            "Dư nợ hiện tại"
-                                        },
-                                        1,
-                                        4,
-                                        true,
-                                        chiSo("Số nhà cung cấp", "Tổng dư nợ"),
-                                        thongKeService::layDuNoHienTai)
-                                .chiQuanLy(),
                         taoKieuHienThi(
                                         "Công nợ theo kỳ nhập",
                                         new String[] {
@@ -54,6 +39,21 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         true,
                                         chiSo("Số nhà cung cấp", "Tổng dư nợ", "Dư nợ TB/NCC"),
                                         thongKeService::layCongNoNhaCungCap)
+                                .chiQuanLy(),
+                        taoKieuHienTai(
+                                        "Dư nợ hiện tại",
+                                        new String[] {
+                                            "Mã NCC",
+                                            "Nhà cung cấp",
+                                            "Tổng nhập",
+                                            "Đã trả hiện tại",
+                                            "Dư nợ hiện tại"
+                                        },
+                                        1,
+                                        4,
+                                        true,
+                                        chiSo("Số nhà cung cấp", "Tổng dư nợ"),
+                                        thongKeService::layDuNoHienTai)
                                 .chiQuanLy()),
                 false,
                 false);

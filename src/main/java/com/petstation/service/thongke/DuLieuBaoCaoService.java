@@ -7,6 +7,7 @@ import com.petstation.dto.KhoangNgay;
 import com.petstation.util.DinhDang;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -100,7 +101,7 @@ public final class DuLieuBaoCaoService {
         boolean coLoiNhuanGop = cacCot.length >= 7 && "Lợi nhuận gộp".equals(cacCot[6]);
         int cotSoDon = timCotSoDon(cacCot);
         for (int i = 0; i < cacHang.size(); i++) {
-            Object[] dong = cacHang.get(i).thanhHang();
+            Object[] dong = chuanHoaDong(cacCot, cacHang.get(i).thanhHang());
             cacDong[i] = dong;
             cacNhan[i] = String.valueOf(dong[nhan]);
             Object giaTri = dong[chiSo];
@@ -128,6 +129,50 @@ public final class DuLieuBaoCaoService {
                 tongDon,
                 cacHang.size(),
                 khoang);
+    }
+
+    private static Object[] chuanHoaDong(String[] cacCot, Object[] dongGoc) {
+        Object[] dong = dongGoc;
+        if (cacCot.length == 10
+                && dongGoc.length == 9
+                && "Tổng thu trong ca (HĐ + Cọc)".equals(cacCot[7])) {
+            double hoaDon = dongGoc[5] instanceof Number n ? n.doubleValue() : 0;
+            double coc = dongGoc[6] instanceof Number n ? n.doubleValue() : 0;
+            dong =
+                    new Object[] {
+                        dongGoc[0],
+                        dongGoc[1],
+                        dongGoc[2],
+                        dongGoc[3],
+                        dongGoc[4],
+                        dongGoc[5],
+                        dongGoc[6],
+                        hoaDon + coc,
+                        dongGoc[7],
+                        dongGoc[8]
+                    };
+        }
+        if (cacCot.length == 7
+                && dong.length == 7
+                && "Ngày tạo".equals(cacCot[6])
+                && dong[6] instanceof String s
+                && !s.isBlank()) {
+            dong = dong.clone();
+            dong[6] = phanTichNgayGio(s);
+        }
+        return dong;
+    }
+
+    private static Object phanTichNgayGio(String chuoi) {
+        try {
+            return LocalDateTime.parse(chuoi.trim().replace(' ', 'T'));
+        } catch (RuntimeException ignored) {
+            try {
+                return LocalDate.parse(chuoi.trim());
+            } catch (RuntimeException ignored2) {
+                return chuoi;
+            }
+        }
     }
 
     private static int timCotSoDon(String[] cacCot) {

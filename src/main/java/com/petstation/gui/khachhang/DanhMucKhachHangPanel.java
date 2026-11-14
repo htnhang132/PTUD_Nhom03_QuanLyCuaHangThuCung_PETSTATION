@@ -3,6 +3,7 @@ package com.petstation.gui.khachhang;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.model.chung.Quyen;
+import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.khachhang.KhachHangService;
@@ -60,13 +61,24 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
     }
 
     private static CauHinh taoCauHinh() {
-        CauHinh cauHinh =
-                CauHinh.tao("Danh mục khách hàng", "khách hàng")
-                        .themBoLoc("Hạng thành viên", d -> String.valueOf(d[6]))
-                        .datTienTo("KH")
-                        .timKiem("Tìm theo tên, SĐT, mã khách...")
-                        .datTrangThai(8, "Đang hoạt động", "Ngừng hoạt động");
-        return cauHinh;
+        return CauHinh.tao("Danh mục khách hàng", "khách hàng")
+                .themBoLoc("Hạng thành viên", d -> String.valueOf(d[6]))
+                .datTienTo("KH")
+                .timKiem("Tìm theo tên, SĐT, Email, Địa chỉ, mã khách...")
+                .datTrangThai(8, "Đang hoạt động", "Ngừng hoạt động")
+                .datBoKiemTra(
+                        d -> {
+                            String ten = d[1] == null ? "" : d[1].toString().trim();
+                            if (ten.length() < 2 || ten.matches("\\d+")) {
+                                return "Họ và tên phải có ít nhất 2 ký tự và không chỉ gồm chữ"
+                                        + " số.";
+                            }
+                            return null;
+                        })
+                .datDieuKienXoa(
+                        d ->
+                                DanhMucService.macDinh()
+                                        .kiemTraDieuKienXoaKhachHang(String.valueOf(d[0])));
     }
 
     private static List<TruongDuLieu> taoCacTruong() {

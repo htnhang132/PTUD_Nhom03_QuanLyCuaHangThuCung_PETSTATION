@@ -15,9 +15,6 @@ import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.util.DinhDang;
 import com.petstation.util.TaiAnhSanPham;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +25,6 @@ import java.util.Optional;
 
 // Tầng dịch vụ Quản lý Danh mục dùng chung (Service)
 public final class DanhMucService {
-    private static final Logger LOG = LoggerFactory.getLogger(DanhMucService.class);
     private static final DanhMucService MAC_DINH = new DanhMucService();
 
     public static DanhMucService macDinh() {
@@ -265,6 +261,46 @@ public final class DanhMucService {
         if (loai == LoaiDanhMuc.VOUCHER) kiemTraLuuVoucher(truoc, giaTri);
         else if (loai == LoaiDanhMuc.NHA_CUNG_CAP) kiemTraLuuNcc(truoc, giaTri, xacNhanTrungSdt);
         else if (loai == LoaiDanhMuc.SAN_PHAM) kiemTraLuuSanPham(giaTri);
+        else if (loai == LoaiDanhMuc.KHACH_HANG) kiemTraLuuKhachHang(truoc, giaTri);
+        else if (loai == LoaiDanhMuc.THU_CUNG) kiemTraLuuThuCung(giaTri);
+    }
+
+    private void kiemTraLuuKhachHang(Object[] truoc, Object[] giaTri) {
+        String hoTen = giaTri.length > 1 ? String.valueOf(giaTri[1]).trim() : "";
+        if (hoTen.length() < 2 || hoTen.matches("\\d+")) {
+            throw new IllegalArgumentException(
+                    "Họ tên khách hàng phải có ít nhất 2 ký tự và không chỉ gồm chữ số.");
+        }
+        if (truoc != null
+                && "Đang hoạt động".equals(truoc[8])
+                && !"Đang hoạt động".equals(giaTri[8])) {
+            String lyDo = danhMucDAO.kiemTraKhachHangDangGiaoDich(String.valueOf(giaTri[0]));
+            if (lyDo != null && !lyDo.isBlank()) {
+                throw new IllegalStateException(lyDo);
+            }
+        }
+    }
+
+    private void kiemTraLuuThuCung(Object[] giaTri) {
+        String ngaySinhStr = giaTri.length > 5 ? String.valueOf(giaTri[5]).trim() : "";
+        if (!ngaySinhStr.isEmpty()) {
+            LocalDate ngaySinh;
+            try {
+                ngaySinh = LocalDate.parse(ngaySinhStr, DinhDang.NGAY_CHUAN);
+            } catch (RuntimeException ex) {
+                throw new IllegalArgumentException(
+                        "Ngày sinh thú cưng không hợp lệ (định dạng dd/MM/yyyy).");
+            }
+            if (ngaySinh.isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException(
+                        "Ngày sinh thú cưng không được lớn hơn ngày hiện tại.");
+            }
+        }
+        String canNangStr = giaTri.length > 6 ? String.valueOf(giaTri[6]).trim() : "";
+        String loiCanNang = kiemTraCanNangThuCung(canNangStr);
+        if (loiCanNang != null) {
+            throw new IllegalArgumentException(loiCanNang);
+        }
     }
 
     private void kiemTraLuuVoucher(Object[] truoc, Object[] giaTri) {
@@ -306,25 +342,42 @@ public final class DanhMucService {
     }
 
     private void kiemTraLuuSanPham(Object[] giaTri) {
-        if (giaTri.length >= 17) {
+        if (giaTri.length > 10) {
             String anh = String.valueOf(giaTri[10]);
-            if (!anh.isBlank() && !TaiAnhSanPham.kiemTraDuongDan(anh))
+            if (!anh.isBlank() && !TaiAnhSanPham.kiemTraDuongDan(anh)) {
                 throw new IllegalArgumentException("Ảnh sản phẩm phải nằm trong images/products.");
-            int[] chiSo = {11, 12, 13, 14};
-            int[] gioiHan = {100, 100, 100, 1000};
-            for (int i = 0; i < chiSo.length; i++)
-                if (String.valueOf(giaTri[chiSo[i]]).length() > gioiHan[i])
-                    throw new IllegalArgumentException("Thông tin chi tiết sản phẩm quá dài.");
+            }
         }
+        kiemTraDoDaiChiTietSanPham(giaTri);
         if (phienDangNhapService.layPhien().kiemTraCo(Quyen.DUYET_GIA)) {
             phienDangNhapService.yeuCau(Quyen.DUYET_GIA);
         } else {
             Optional<Long> gia = danhMucDAO.layGiaBanSanPham(String.valueOf(giaTri[0]));
-            long giaCu = gia.orElse(0L);
-            if (DinhDang.doc(String.valueOf(giaTri[4])) != giaCu)
-                throw new SecurityException(
-                        "Nhân viên kho dùng nút Đề xuất giá; chỉ quản lý được áp dụng giá bán.");
-            if (gia.isEmpty()) giaTri[9] = "Ngừng kinh doanh";
+            long giaMoi = DinhDang.doc(String.valueOf(giaTri[4]));
+            if (gia.isPresent()) {
+                if (giaMoi != gia.get()) {
+                    throw new SecurityException(
+                            "Chỉ quản lý mới được sửa giá bán sản phẩm đang có; vui lòng gửi đề"
+                                    + " xuất giá ở Trung tâm phê duyệt.");
+                }
+            } else {
+                if (giaMoi <= 0) {
+                    throw new IllegalArgumentException("Giá bán sản phẩm mới phải lớn hơn 0.");
+                }
+                giaTri[9] = "Ngừng kinh doanh";
+            }
+        }
+    }
+
+    private static void kiemTraDoDaiChiTietSanPham(Object[] giaTri) {
+        if (giaTri.length > 11 && String.valueOf(giaTri[11]).length() > 100) {
+            throw new IllegalArgumentException("Thương hiệu sản phẩm quá 100 ký tự.");
+        }
+        if (giaTri.length > 12 && String.valueOf(giaTri[12]).length() > 1000) {
+            throw new IllegalArgumentException("Mô tả sản phẩm quá 1000 ký tự.");
+        }
+        if (giaTri.length > 13 && String.valueOf(giaTri[13]).length() > 80) {
+            throw new IllegalArgumentException("Mã vạch (Barcode) quá 80 ký tự.");
         }
     }
 
@@ -374,6 +427,16 @@ public final class DanhMucService {
         }
     }
 
+    public String kiemTraDieuKienXoaKhachHang(String maKhachHang) {
+        phienDangNhapService.yeuCau(Quyen.QUAN_LY_KHACH_HANG);
+        return danhMucDAO.kiemTraKhachHangDangGiaoDich(maKhachHang);
+    }
+
+    public int moKhoaTaiKhoanNhanVien(String maNhanVien) {
+        phienDangNhapService.yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+        return danhMucDAO.moKhoaTaiKhoanNhanVien(maNhanVien);
+    }
+
     // 7. KIỂM TRA DỮ LIỆU NGHIỆP VỤ DANH MỤC
 
     public static String kiemTraNhanVien(String hoTen, String sdt, String cccd, String ngayVaoLam) {
@@ -395,26 +458,32 @@ public final class DanhMucService {
                 (maTheKy == 0 || maTheKy == 1)
                         ? (1900 + haiSoNam)
                         : (maTheKy == 2 || maTheKy == 3) ? (2000 + haiSoNam) : -1;
-        if (namSinh < 0) {
-            return "Mã thế kỷ / giới tính trên CCCD (chữ số thứ 4) phải từ 0 đến 3.";
+        LocalDate homNay = LocalDate.now();
+        if (namSinh < 1920 || namSinh > homNay.getYear()) {
+            return "Năm sinh trên CCCD không hợp lệ (" + namSinh + ").";
         }
-        int namHienTai = LocalDate.now().getYear();
-        if (namHienTai - namSinh < 18) {
-            return "Nhân viên phải đủ từ 18 tuổi trở lên (theo năm sinh trên CCCD: "
+        if (LocalDate.of(namSinh, 12, 31).plusYears(18).isAfter(homNay)) {
+            return "Nhân viên phải đủ từ 18 tuổi trở lên tính đến ngày hiện tại (năm sinh CCCD: "
                     + namSinh
                     + ").";
         }
+        return kiemTraNgayVaoLamNhanVien(ngayVaoLam, namSinh, homNay);
+    }
+
+    private static String kiemTraNgayVaoLamNhanVien(
+            String ngayVaoLam, int namSinh, LocalDate homNay) {
+        String giaTri = ngayVaoLam == null ? "" : ngayVaoLam.trim();
+        if (giaTri.isEmpty()) return null;
         try {
-            LocalDate ngayVao =
-                    LocalDate.parse(ngayVaoLam == null ? "" : ngayVaoLam.trim(), DinhDang.NGAY_U);
-            if (ngayVao.isAfter(LocalDate.now())) {
+            LocalDate ngayVao = LocalDate.parse(giaTri, DinhDang.NGAY_CHUAN);
+            if (ngayVao.isAfter(homNay)) {
                 return "Ngày vào làm không được lớn hơn ngày hiện tại.";
             }
+            if (LocalDate.of(namSinh, 1, 1).plusYears(18).isAfter(ngayVao)) {
+                return "Ngày vào làm không hợp lệ vì nhân viên chưa đủ 18 tuổi ở thời điểm đó.";
+            }
         } catch (RuntimeException ex) {
-            LOG.debug(
-                    "Bỏ qua kiểm tra ngày vào làm chưa đúng định dạng '{}': {}",
-                    ngayVaoLam,
-                    ex.getMessage());
+            return "Ngày vào làm phải đúng định dạng dd/MM/yyyy.";
         }
         return null;
     }
@@ -442,9 +511,21 @@ public final class DanhMucService {
 
     public static String kiemTraCanNangThuCung(String canNang) {
         String giaTri = canNang == null ? "" : canNang.trim();
-        return giaTri.isEmpty() || giaTri.matches("\\d{1,3}([.,]\\d{1,2})?")
+        if (giaTri.isEmpty()) return null;
+        if (!giaTri.matches("\\d{1,3}([.,]\\d{1,2})?")) {
+            return "Cân nặng phải là số dương (kg), ví dụ 5.2.";
+        }
+        double so = Double.parseDouble(giaTri.replace(',', '.'));
+        return so <= 0 ? "Cân nặng phải lớn hơn 0 kg." : null;
+    }
+
+    public static String kiemTraMaSoThue(String maSoThue) {
+        String giaTri = maSoThue == null ? "" : maSoThue.trim();
+        if (giaTri.isEmpty()) return null;
+        return giaTri.matches("\\d{10}(-\\d{3})?")
                 ? null
-                : "Cân nặng phải là số (kg), ví dụ 5.2.";
+                : "Mã số thuế phải gồm 10 chữ số hoặc 13 ký tự dạng 10 số-3 số (ví dụ 0312345678"
+                        + " hoặc 0312345678-001).";
     }
 
     public static String kiemTraVoucherSoLuong(long soLuong, long daDung) {

@@ -13,22 +13,28 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.IntFunction;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -70,6 +76,10 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private boolean dangDatLaiBoLoc;
 
     private int luotTai;
+
+    private boolean dangXemChiTiet;
+
+    private ChiTietKhachHangPanel chiTietHienTai;
 
     private void taiLaiCacKhachHangNen() {
         int luot = ++luotTai;
@@ -164,19 +174,10 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         khungPhai.themBoLoc("Điểm:", cboMucDiem);
         khungPhai.add(btnHienThi);
         khungPhai.add(btnXuat);
-        JPanel khungThanh = new JPanel(new BorderLayout(10, 8));
-        khungThanh.setOpaque(false);
-        JPanel khungTieuDe = new JPanel(new BorderLayout(0, 3));
-        khungTieuDe.setOpaque(false);
-        khungTieuDe.add(
+        JPanel khungThanh = taoVungTrongSuot(new BorderLayout());
+        khungThanh.add(
                 ThanhDanhSach.tieuDe(taoTieuDeManHinh("Lịch sử khách hàng"), nhanSoLuong),
                 BorderLayout.NORTH);
-        JLabel nhanMoTa =
-                new JLabel("Chọn khách hàng để xem thú cưng, hóa đơn, spa, lưu trú và voucher");
-        nhanMoTa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        nhanMoTa.setForeground(MauUngDung.VAN_BAN_XAM);
-        khungTieuDe.add(nhanMoTa, BorderLayout.SOUTH);
-        khungThanh.add(khungTieuDe, BorderLayout.NORTH);
         khungThanh.add(khungPhai, BorderLayout.CENTER);
         khungChon.add(khungThanh, BorderLayout.NORTH);
         JScrollPane scrCuon = taoBangKhachHang(oTimKiem);
@@ -213,6 +214,29 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                             moDaChon();
                     }
                 });
+        oTimKiem.addActionListener(
+                suKien -> {
+                    if (bangBang.getSelectedRow() >= 0) {
+                        moDaChon();
+                    } else if (bangBang.getRowCount() == 1) {
+                        bangBang.setRowSelectionInterval(0, 0);
+                        moDaChon();
+                    } else if (bangBang.getRowCount() > 1) {
+                        bangBang.setRowSelectionInterval(0, 0);
+                        bangBang.requestFocusInWindow();
+                    }
+                });
+        bangBang.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "moChiTietKhachHang");
+        bangBang.getActionMap()
+                .put(
+                        "moChiTietKhachHang",
+                        new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if (bangBang.getSelectedRow() >= 0) moDaChon();
+                            }
+                        });
         return scrCuon;
     }
 
@@ -261,14 +285,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
 
     private static boolean khopMucDiem(Object giaTriDiem, int mucDiemChon) {
         if (mucDiemChon <= 0) return true;
-        long diem = 0;
-        if (giaTriDiem != null) {
-            try {
-                diem = Long.parseLong(String.valueOf(giaTriDiem).trim());
-            } catch (NumberFormatException ignored) {
-                diem = 0;
-            }
-        }
+        long diem = docDiemAnToan(giaTriDiem);
         return switch (mucDiemChon) {
             case 1 -> diem > 0;
             case 2 -> diem >= 100;
@@ -278,21 +295,36 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         };
     }
 
+    private static long docDiemAnToan(Object giaTri) {
+        if (giaTri == null) return 0L;
+        if (giaTri instanceof Number so) return so.longValue();
+        String chuoi = giaTri.toString().trim();
+        if (chuoi.isEmpty()) return 0L;
+        try {
+            return Long.parseLong(chuoi);
+        } catch (NumberFormatException ignored) {
+            return 0L;
+        }
+    }
+
     private void cauHinhSapXepBangKhach() {
         @SuppressWarnings("unchecked")
         TableRowSorter<TableModel> boSapXep = (TableRowSorter<TableModel>) bangBang.getRowSorter();
         boSapXep.setComparator(
                 4, Comparator.comparingInt(giaTri -> thuTuHangThe(String.valueOf(giaTri))));
-        boSapXep.setComparator(
-                5,
-                Comparator.comparingLong(giaTri -> Long.parseLong(String.valueOf(giaTri).trim())));
+        boSapXep.setComparator(5, Comparator.comparingLong(LichSuKhachHangPanel::docDiemAnToan));
     }
 
     private JPanel taoVungChiTietKhachHang() {
         JPanel khungChiTiet = new JPanel(new BorderLayout(0, 8));
         khungChiTiet.setOpaque(false);
         NutDinhDang btnQuayLai = new NutDinhDang("Chọn khách khác", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnQuayLai.addActionListener(suKien -> cacThe.show(khungGoc, CHON));
+        btnQuayLai.addActionListener(
+                suKien -> {
+                    dangXemChiTiet = false;
+                    chiTietHienTai = null;
+                    cacThe.show(khungGoc, CHON);
+                });
         JPanel khungQuayLaiThanh = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         khungQuayLaiThanh.setOpaque(false);
         khungQuayLaiThanh.setBorder(new EmptyBorder(0, 0, 4, 0));
@@ -309,25 +341,28 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         int moHinhDangXet = bangBang.convertRowIndexToModel(dong);
         IntFunction<String> giaTri =
                 giaTriDangXet ->
-                        String.valueOf(
-                                bangBang.getModel().getValueAt(moHinhDangXet, giaTriDangXet));
-        khungChiTietVungChua.removeAll();
-        khungChiTietVungChua.add(
+                        Objects.toString(
+                                bangBang.getModel().getValueAt(moHinhDangXet, giaTriDangXet), "");
+        chiTietHienTai =
                 new ChiTietKhachHangPanel(
                         giaTri.apply(0),
                         giaTri.apply(1),
                         giaTri.apply(2),
                         giaTri.apply(3),
                         giaTri.apply(4),
-                        giaTri.apply(5)),
-                BorderLayout.CENTER);
+                        giaTri.apply(5));
+        khungChiTietVungChua.removeAll();
+        khungChiTietVungChua.add(chiTietHienTai, BorderLayout.CENTER);
         khungChiTietVungChua.revalidate();
         khungChiTietVungChua.repaint();
+        dangXemChiTiet = true;
         cacThe.show(khungGoc, CHI_TIET);
     }
 
     @Override
     public void xuLyHienThi() {
+        dangXemChiTiet = false;
+        chiTietHienTai = null;
         taiLaiCacKhachHangNen();
         cacThe.show(khungGoc, CHON);
         bangBang.clearSelection();
@@ -335,6 +370,11 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
 
     @Override
     public void xuLyLamMoi() {
+        if (dangXemChiTiet && chiTietHienTai != null) {
+            chiTietHienTai.lamMoiDuLieu();
+            taiLaiCacKhachHangNen();
+            return;
+        }
         dangDatLaiBoLoc = true;
         try {
             if (oTimKiem != null && !oTimKiem.getText().isEmpty()) oTimKiem.setText("");

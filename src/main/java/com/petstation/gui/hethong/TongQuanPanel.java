@@ -59,7 +59,9 @@ public final class TongQuanPanel extends CoSoPanel {
 
     private final JPanel khungCacPhimTat = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
 
-    private final JPanel khungCacChiSo = new JPanel(new GridLayout(1, 4, 14, 0));
+    private final JPanel khungCacChiSo = new JPanel(new GridLayout(1, 0, 14, 0));
+
+    private int luotTai;
 
     private final BieuDoCot bieuDo = new BieuDoCot();
 
@@ -166,6 +168,8 @@ public final class TongQuanPanel extends CoSoPanel {
         final String[] soNgay;
         final double[] cacGiaTri;
         final List<SanPhamBanChay> spBanChay;
+        final boolean coQuyenPheDuyet;
+        final boolean coQuyenKho;
 
         private DuLieuTongQuan(
                 long dangCho,
@@ -176,7 +180,9 @@ public final class TongQuanPanel extends CoSoPanel {
                 String tenCa,
                 String[] soNgay,
                 double[] cacGiaTri,
-                List<SanPhamBanChay> spBanChay) {
+                List<SanPhamBanChay> spBanChay,
+                boolean coQuyenPheDuyet,
+                boolean coQuyenKho) {
             this.dangCho = dangCho;
             this.doanhThu = doanhThu;
             this.thapTonKho = thapTonKho;
@@ -186,14 +192,44 @@ public final class TongQuanPanel extends CoSoPanel {
             this.soNgay = soNgay;
             this.cacGiaTri = cacGiaTri;
             this.spBanChay = spBanChay;
+            this.coQuyenPheDuyet = coQuyenPheDuyet;
+            this.coQuyenKho = coQuyenKho;
         }
     }
 
     private void lamMoi() {
         capNhatCacPhimTat(0);
         PheDuyetService pheDuyetService = new PheDuyetService();
-        // Tải dữ liệu bất đồng bộ qua TacVuNen để không làm khựng giao diện
-        TacVuNen.chay(() -> taiDuLieuTongQuan(pheDuyetService), this::hienThiDuLieuTongQuan, null);
+        int luot = ++luotTai;
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        TacVuNen.chay(
+                () -> taiDuLieuTongQuan(pheDuyetService),
+                duLieu -> {
+                    if (luot != luotTai
+                            || PhienDangNhapService.macDinh().layPhienHienTai() != phien) {
+                        return;
+                    }
+                    hienThiDuLieuTongQuan(duLieu);
+                },
+                ngoaiLe -> {
+                    if (luot != luotTai
+                            || PhienDangNhapService.macDinh().layPhienHienTai() != phien) {
+                        return;
+                    }
+                    hienThiLoiTongQuan(ngoaiLe);
+                });
+    }
+
+    private void hienThiLoiTongQuan(Throwable ngoaiLe) {
+        khungCacChiSo.removeAll();
+        khungCacChiSo.add(
+                layChiSoThe(
+                        "Không tải được dữ liệu",
+                        "Lỗi",
+                        TacVuNen.thongDiepLoi(ngoaiLe),
+                        MauUngDung.NGUY_HIEM));
+        khungCacChiSo.revalidate();
+        khungCacChiSo.repaint();
     }
 
     private void capNhatCacPhimTat(long dangChoSoBo) {
@@ -215,7 +251,15 @@ public final class TongQuanPanel extends CoSoPanel {
     }
 
     private DuLieuTongQuan taiDuLieuTongQuan(PheDuyetService pheDuyetService) {
-        long dangCho = pheDuyetService.demChoDuyet();
+        var phien = PhienDangNhapService.macDinh().layPhien();
+        boolean coQuyenPheDuyet = phien != null && phien.kiemTraCo(Quyen.XU_LY_PHE_DUYET);
+        boolean coQuyenKho =
+                phien != null
+                        && (phien.kiemTraCo(Quyen.QUAN_LY_SAN_PHAM)
+                                || phien.kiemTraCo(Quyen.NHAP_KHO)
+                                || phien.kiemTraCo(Quyen.KIEM_KE_KHO));
+        long dangCho = coQuyenPheDuyet ? pheDuyetService.demChoDuyet() : 0;
+        long thapTonKho = coQuyenKho ? layThapTonKho() : 0;
         boolean moCa = caLamViec.kiemTraMo();
         String tenCa = moCa ? caLamViec.layTenCa() : "";
         int demHoaDon = moCa ? caLamViec.demHoaDon() : 0;
@@ -225,13 +269,9 @@ public final class TongQuanPanel extends CoSoPanel {
                         + caLamViec.layDoanhThuThe()
                         + caLamViec.layTongCocHotel();
         boolean coQuyenBaoCao =
-                PhienDangNhapService.macDinh().layPhien() != null
-                        && (PhienDangNhapService.macDinh()
-                                        .layPhien()
-                                        .kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)
-                                || PhienDangNhapService.macDinh()
-                                        .layPhien()
-                                        .kiemTraCo(Quyen.XEM_BAO_CAO_CA));
+                phien != null
+                        && (phien.kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)
+                                || phien.kiemTraCo(Quyen.XEM_BAO_CAO_CA));
         Map<LocalDate, Double> doanhThuTheoNgay = new HashMap<>();
         if (coQuyenBaoCao) {
             for (DoanhThuTheoNgay dong : thongKeService.layDoanhThuTheoNgay(7)) {
@@ -250,13 +290,15 @@ public final class TongQuanPanel extends CoSoPanel {
         return new DuLieuTongQuan(
                 dangCho,
                 doanhThu,
-                layThapTonKho(),
+                thapTonKho,
                 demHoaDon,
                 moCa,
                 tenCa,
                 soNgay,
                 cacGiaTri,
-                spBanChay);
+                spBanChay,
+                coQuyenPheDuyet,
+                coQuyenKho);
     }
 
     private void hienThiDuLieuTongQuan(DuLieuTongQuan d) {
@@ -274,18 +316,22 @@ public final class TongQuanPanel extends CoSoPanel {
                         d.moCa ? String.valueOf(d.demHoaDon) : "—",
                         "",
                         MauUngDung.NAU));
-        khungCacChiSo.add(
-                layChiSoThe(
-                        "Sản phẩm tồn thấp",
-                        String.valueOf(d.thapTonKho),
-                        "Cần nhập thêm",
-                        MauUngDung.DO_THUONG_HIEU));
-        khungCacChiSo.add(
-                layChiSoThe(
-                        "Yêu cầu chờ duyệt",
-                        String.valueOf(d.dangCho),
-                        d.dangCho > 0 ? "Cần Cửa hàng trưởng xử lý" : "Không có",
-                        MauUngDung.CAM));
+        if (d.coQuyenKho) {
+            khungCacChiSo.add(
+                    layChiSoThe(
+                            "Sản phẩm tồn thấp",
+                            String.valueOf(d.thapTonKho),
+                            "Cần nhập thêm",
+                            MauUngDung.DO_THUONG_HIEU));
+        }
+        if (d.coQuyenPheDuyet) {
+            khungCacChiSo.add(
+                    layChiSoThe(
+                            "Yêu cầu chờ duyệt",
+                            String.valueOf(d.dangCho),
+                            d.dangCho > 0 ? "Cần Cửa hàng trưởng xử lý" : "Không có",
+                            MauUngDung.CAM));
+        }
         khungCacChiSo.revalidate();
         khungCacChiSo.repaint();
         bieuDo.datDuLieu(d.soNgay, d.cacGiaTri, true, "");
@@ -315,6 +361,11 @@ public final class TongQuanPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        lamMoi();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
         lamMoi();
     }
 

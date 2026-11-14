@@ -11,6 +11,7 @@ import com.petstation.gui.chung.thanhphan.BieuMauTruong.LuaChon;
 import com.petstation.gui.khachhang.DanhMucKhachHangPanel;
 import com.petstation.gui.khachhang.DanhMucThuCungPanel;
 import com.petstation.model.chung.Quyen;
+import com.petstation.model.chung.TrangThaiTaiKhoan;
 import com.petstation.model.khachhang.KhachHang;
 import com.petstation.model.khachhang.ThuCung;
 import com.petstation.model.spa.GoiDichVuSpa;
@@ -36,6 +37,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -118,6 +120,13 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private int luotGia;
     private int luotHoSo;
     private boolean boQuaSuKienThuCung;
+    private boolean hoSoDuDieuKien;
+
+    private static boolean laDangHoatDong(Object giaTri) {
+        String s = giaTri == null ? "" : String.valueOf(giaTri).trim();
+        return "Đang hoạt động".equalsIgnoreCase(s)
+                || TrangThaiTaiKhoan.HOAT_DONG.maDB().equalsIgnoreCase(s);
+    }
 
     public LapPhieuSpaPanel(Consumer<String> khiLuu, Runnable chonLich, Runnable khiTreo) {
         this.khiLuu = khiLuu;
@@ -143,10 +152,33 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         add(taoThanhThaoTac(), BorderLayout.SOUTH);
     }
 
+    @Override
+    public void xuLyHienThi() {
+        lamMoiDuLieuTab();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        lamMoiDuLieuTab();
+    }
+
+    private void lamMoiDuLieuTab() {
+        taiGoiDichVuNen(
+                () -> {
+                    if (khachHang != null) {
+                        taiThuCung();
+                    } else {
+                        capNhatDanhGiaHoSo(false);
+                    }
+                    capNhatGiaTuDong();
+                });
+    }
+
     private void khoiTaoThanhPhanNhapLieu() {
         nhanNguon.setForeground(MauUngDung.NAU);
         nhanNguon.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
-        oSoDienThoai.setPreferredSize(new Dimension(160, 32));
+        oSoDienThoai.setPreferredSize(new Dimension(180, 32));
+        oSoDienThoai.putClientProperty("JTextField.placeholderText", "Tên, mã KH hoặc SĐT...");
         oSoDienThoai.addActionListener(e -> anToan(this::timKhach));
         nhanKhachHang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         nhanKhachHang.setForeground(MauUngDung.DO_THUONG_HIEU);
@@ -223,7 +255,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                     ex -> {});
         }
         capNhatGiaTuDong();
-        capNhatDanhGiaHoSo();
+        capNhatDanhGiaHoSo(true);
     }
 
     private JPanel taoNhomNguonVaKhach(Runnable chonLich) {
@@ -242,7 +274,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                         nhanNguon,
                         Box.createHorizontalStrut(12),
                         btnChonLich),
-                hang(nhan("Số điện thoại:"), oSoDienThoai, btnTim, themKhach),
+                hang(nhan("Tìm khách (Tên/Mã/SĐT):"), oSoDienThoai, btnTim, themKhach),
                 hang(nhan("Khách hàng:"), nhanKhachHang));
     }
 
@@ -446,7 +478,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         cboKiemTraMatTai.setSelectedIndex(0);
         cboKiemTraLong.setSelectedIndex(0);
         cboKetLuanTiepNhan.setSelectedIndex(0);
-        capNhatDanhGiaHoSo();
+        capNhatDanhGiaHoSo(false);
     }
 
     private PhieuSpaTreo chupNhap() {
@@ -535,7 +567,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                                 .filter(
                                         k ->
                                                 maKhach.equals(String.valueOf(k[0]))
-                                                        && "Đang hoạt động".equals(k[8]))
+                                                        && laDangHoatDong(k[8]))
                                 .findFirst()
                                 .orElseThrow(
                                         () ->
@@ -548,7 +580,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                         .noneMatch(
                                 t ->
                                         maThu.equals(String.valueOf(t[0]))
-                                                && "Đang hoạt động".equals(t[13])
+                                                && laDangHoatDong(t[13])
                                                 && maKhach.equals(
                                                         DanhMucService.layMaTuLuaChon(t[8])))) {
             throw new IllegalArgumentException(
@@ -605,9 +637,15 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         cboKiemTraMatTai.setSelectedIndex(0);
         cboKiemTraLong.setSelectedIndex(0);
         cboKetLuanTiepNhan.setSelectedIndex(0);
-        capNhatDanhGiaHoSo();
-        nhanGia.setText("Kiểm tra lại sức khỏe thực tế và nhấn Xem giá trước khi tạo phiếu");
+        capNhatDanhGiaHoSo(false);
+        capNhatGiaTuDong();
         maPhieuTreo = ma;
+        HopThoai.hienThiCanhBao(
+                this,
+                "Đã khôi phục phiếu treo #"
+                        + ma
+                        + ".\nVui lòng kiểm tra và chọn lại 5 mục sức khỏe thực tế trước khi tạo"
+                        + " phiếu.");
     }
 
     private void capNhatComboDichVuTuDanhSach(List<MucLuaChon> cacGoi) {
@@ -691,7 +729,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         cboKiemTraMatTai.setSelectedIndex(0);
         cboKiemTraLong.setSelectedIndex(0);
         cboKetLuanTiepNhan.setSelectedIndex(0);
-        capNhatDanhGiaHoSo();
+        capNhatDanhGiaHoSo(false);
     }
 
     private double canNang() {
@@ -765,43 +803,84 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             throw new IllegalArgumentException(
                     "Nhấn Lập phiếu mới để chuyển sang khách đến trực tiếp.");
         chonKhach(null);
-        String sdt = soDienThoai();
-        if (!sdt.matches("0\\d{9}"))
-            throw new IllegalArgumentException("Nhập số điện thoại gồm 10 chữ số, bắt đầu bằng 0.");
+        String tuKhoa = oSoDienThoai.getText() == null ? "" : oSoDienThoai.getText().trim();
+        if (tuKhoa.isEmpty())
+            throw new IllegalArgumentException(
+                    "Nhập tên, mã khách hàng hoặc số điện thoại để tìm.");
+        String tuKhoaThuong = tuKhoa.toLowerCase(Locale.ROOT);
+        String tuKhoaSo = tuKhoa.replaceAll("[\\s.]", "").toLowerCase(Locale.ROOT);
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chayCoPhien(
                 phien,
                 () -> true,
                 () ->
                         DanhMucService.macDinh().layKhachHang().stream()
-                                .filter(k -> sdt.equals(String.valueOf(k[2])))
+                                .filter(k -> khopKhachHang(k, tuKhoaThuong, tuKhoaSo))
                                 .toList(),
                 null,
-                ketQua -> {
-                    if (!ketQua.isEmpty()) {
-                        Object[] khach = ketQua.get(0);
-                        if (!"Đang hoạt động".equals(khach[8])) {
-                            HopThoai.hienThiCanhBao(
-                                    this,
-                                    "Hồ sơ khách đã ngừng hoạt động; cần khôi phục tại danh mục.");
-                            return;
-                        }
-                        chonKhach(khach);
-                    } else if (HopThoai.xacNhan(
-                            this, "Chưa có khách với số điện thoại này. Thêm khách hàng mới?")) {
-                        themKhach();
-                    }
-                },
+                ketQua -> xuLyKetQuaTimKhach(ketQua),
                 ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+    }
+
+    private static boolean khopKhachHang(Object[] khach, String tuKhoaThuong, String tuKhoaSo) {
+        String ma = String.valueOf(khach[0]).toLowerCase(Locale.ROOT);
+        String ten = String.valueOf(khach[1]).toLowerCase(Locale.ROOT);
+        String sdt = String.valueOf(khach[2]).replaceAll("[\\s.]", "").toLowerCase(Locale.ROOT);
+        return ma.contains(tuKhoaThuong)
+                || ten.contains(tuKhoaThuong)
+                || (!tuKhoaSo.isEmpty() && sdt.contains(tuKhoaSo));
+    }
+
+    private void xuLyKetQuaTimKhach(List<Object[]> ketQua) {
+        if (ketQua.isEmpty()) {
+            if (HopThoai.xacNhan(this, "Chưa có khách hàng phù hợp. Thêm khách hàng mới?")) {
+                themKhach();
+            }
+            return;
+        }
+        List<Object[]> hoatDong = ketQua.stream().filter(k -> laDangHoatDong(k[8])).toList();
+        if (hoatDong.isEmpty()) {
+            HopThoai.hienThiCanhBao(
+                    this,
+                    "Hồ sơ khách hàng tìm thấy đã ngừng hoạt động; cần khôi phục tại danh mục.");
+            return;
+        }
+        if (hoatDong.size() == 1) {
+            chonKhach(hoatDong.get(0));
+            return;
+        }
+        Object[] daChon = chonTuNhieuKhach(hoatDong);
+        if (daChon != null) chonKhach(daChon);
+    }
+
+    private Object[] chonTuNhieuKhach(List<Object[]> hoatDong) {
+        LuaChon[] muc = new LuaChon[hoatDong.size()];
+        for (int i = 0; i < hoatDong.size(); i++) {
+            Object[] k = hoatDong.get(i);
+            muc[i] = new LuaChon(String.valueOf(k[0]), k[0] + " — " + k[1] + " (" + k[2] + ")");
+        }
+        Object chon =
+                HopThoai.chonMuc(
+                        this,
+                        "Tìm thấy " + hoatDong.size() + " khách hàng phù hợp. Vui lòng chọn:",
+                        "Chọn khách hàng",
+                        muc,
+                        muc[0]);
+        if (!(chon instanceof LuaChon luaChon)) return null;
+        return hoatDong.stream()
+                .filter(k -> luaChon.giaTri().equals(String.valueOf(k[0])))
+                .findFirst()
+                .orElse(null);
     }
 
     private void themKhach() {
         if (!maHen.isBlank())
             throw new IllegalArgumentException("Nhấn Lập phiếu mới để tiếp nhận khách khác.");
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_KHACH_HANG);
-        Object[] moi = DanhMucKhachHangPanel.moThem(this, soDienThoai());
+        String sdtGoiY = soDienThoai().matches("\\d{1,15}") ? soDienThoai() : "";
+        Object[] moi = DanhMucKhachHangPanel.moThem(this, sdtGoiY);
         if (moi != null) {
-            if (!"Đang hoạt động".equals(moi[8]))
+            if (!laDangHoatDong(moi[8]))
                 throw new IllegalArgumentException(
                         "Khách vừa lưu đã ngừng hoạt động. Chọn hồ sơ đang hoạt động.");
             chonKhach(moi);
@@ -856,7 +935,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             if (khachHang == null) return;
             String maKhach = String.valueOf(khachHang[0]);
             for (Object[] thu : dsThu) {
-                if ("Đang hoạt động".equals(thu[13])
+                if (laDangHoatDong(thu[13])
                         && maKhach.equals(DanhMucService.layMaTuLuaChon(thu[8])))
                     cboThuCung.addItem(
                             new LuaChon(String.valueOf(thu[0]), thu[0] + " - " + thu[1]));
@@ -896,22 +975,34 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
         if (thu == null) return;
         DanhMucThuCungPanel.moSua(this, thu.giaTri());
-        capNhatDanhGiaHoSo();
+        capNhatDanhGiaHoSo(false);
     }
 
-    private void capNhatDanhGiaHoSo() {
+    private void capNhatDanhGiaHoSo(boolean canhBaoSom) {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
         if (thu == null) {
+            hoSoDuDieuKien = false;
             nhanHuyHieuHoSo.setText("CHƯA CHỌN THÚ CƯNG");
             nhanHuyHieuHoSo.setForeground(MauUngDung.VAN_BAN_XAM);
             nhanChiTietHoSo.setText(
                     "Chọn thú cưng bên trên để hệ thống tự động kiểm tra điều kiện tuổi và tiêm"
                             + " phòng.");
             khungTheHoSo.setBackground(MauUngDung.XAM_SIEU_NHAT);
+            datVienKhungHoSo(MauUngDung.VIEN);
             btnCapNhatSoTiem.setEnabled(false);
+            if (btnTaoPhieu != null) {
+                btnTaoPhieu.setEnabled(true);
+                btnTaoPhieu.setToolTipText(null);
+            }
             return;
         }
-        btnCapNhatSoTiem.setEnabled(true);
+        boolean coQuyenThuCung =
+                PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.QUAN_LY_THU_CUNG);
+        btnCapNhatSoTiem.setEnabled(coQuyenThuCung);
+        btnCapNhatSoTiem.setToolTipText(
+                coQuyenThuCung
+                        ? null
+                        : "Chỉ tài khoản có quyền Quản lý thú cưng mới được sửa sổ tiêm.");
         final int luot = ++luotHoSo;
         String maThu = thu.giaTri();
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
@@ -920,25 +1011,50 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                 () -> luot == luotHoSo,
                 () -> tiemPhongService.danhGiaNhanSpa(maThu),
                 null,
-                kq -> hienThiKetQuaHoSo(kq),
-                ex -> nhanChiTietHoSo.setText(TacVuNen.thongDiepLoi(ex)));
+                kq -> hienThiKetQuaHoSo(kq, canhBaoSom),
+                ex -> {
+                    hoSoDuDieuKien = false;
+                    nhanChiTietHoSo.setText(TacVuNen.thongDiepLoi(ex));
+                });
     }
 
-    private void hienThiKetQuaHoSo(TiemPhongService.KetQuaTiemPhong kq) {
+    private void datVienKhungHoSo(Color mauVien) {
+        khungTheHoSo.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(mauVien, 1, true),
+                        BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+    }
+
+    private void hienThiKetQuaHoSo(TiemPhongService.KetQuaTiemPhong kq, boolean canhBaoSom) {
+        hoSoDuDieuKien = kq.duDieuKien;
         if (kq.duDieuKien) {
             nhanHuyHieuHoSo.setText("✓ ĐẠT ĐIỀU KIỆN HỒ SƠ TIÊM PHÒNG");
             nhanHuyHieuHoSo.setForeground(MauUngDung.mau(0x065F46));
             khungTheHoSo.setBackground(MauUngDung.mau(0xECFDF5));
+            datVienKhungHoSo(MauUngDung.mau(0x10B981));
             nhanChiTietHoSo.setText(kq.thongDiep);
+            if (btnTaoPhieu != null) {
+                btnTaoPhieu.setEnabled(true);
+                btnTaoPhieu.setToolTipText(null);
+            }
         } else {
             boolean thieuHoSo = kq.soMui == 0;
             nhanHuyHieuHoSo.setText(
-                    thieuHoSo ? "⚠ CHƯA CÓ HỒ SƠ TIÊM PHÒNG" : "✕ CHƯA THỂ TIẾP NHẬN");
-            nhanHuyHieuHoSo.setForeground(
-                    thieuHoSo ? MauUngDung.CAM_NHAN : MauUngDung.DO_THUONG_HIEU);
-            khungTheHoSo.setBackground(
-                    thieuHoSo ? MauUngDung.mau(0xFFFBEB) : MauUngDung.mau(0xFEF2F2));
+                    thieuHoSo
+                            ? "✕ CHƯA ĐỦ ĐIỀU KIỆN SPA — CHƯA CÓ HỒ SƠ TIÊM PHÒNG"
+                            : "✕ KHÔNG ĐỦ ĐIỀU KIỆN TIẾP NHẬN SPA");
+            nhanHuyHieuHoSo.setForeground(MauUngDung.DO_THUONG_HIEU);
+            khungTheHoSo.setBackground(MauUngDung.mau(0xFEF2F2));
+            datVienKhungHoSo(MauUngDung.DO_THUONG_HIEU);
             nhanChiTietHoSo.setText(kq.thongDiep);
+            if (btnTaoPhieu != null) {
+                btnTaoPhieu.setEnabled(false);
+                btnTaoPhieu.setToolTipText(kq.thongDiep);
+            }
+            if (canhBaoSom) {
+                HopThoai.hienThiCanhBao(
+                        this, "Thú cưng chưa đủ điều kiện làm Spa:\n" + kq.thongDiep);
+            }
         }
         khungTheHoSo.revalidate();
         khungTheHoSo.repaint();
@@ -947,9 +1063,13 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private void luu() {
         if (khachHang == null)
             throw new IllegalArgumentException("Tìm hoặc thêm khách hàng trước khi lưu phiếu.");
-        if (!soDienThoai().equals(String.valueOf(khachHang[2])))
+        String nhapHienTai = oSoDienThoai.getText() == null ? "" : oSoDienThoai.getText().trim();
+        String sdtKhach = String.valueOf(khachHang[2]);
+        if (!nhapHienTai.replaceAll("[\\s.]", "").equals(sdtKhach.replaceAll("[\\s.]", ""))
+                && !nhapHienTai.equalsIgnoreCase(String.valueOf(khachHang[0]))
+                && !nhapHienTai.equalsIgnoreCase(String.valueOf(khachHang[1])))
             throw new IllegalArgumentException(
-                    "Số điện thoại đã thay đổi. Nhấn Tìm khách để chọn lại.");
+                    "Thông tin khách hàng ở ô tìm kiếm đã thay đổi. Nhấn Tìm khách để chọn lại.");
         LuaChon thuCung = (LuaChon) cboThuCung.getSelectedItem();
         if (thuCung == null)
             throw new IllegalArgumentException(

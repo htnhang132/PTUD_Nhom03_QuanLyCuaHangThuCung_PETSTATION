@@ -1,6 +1,5 @@
 package com.petstation.gui.pheduyet;
 
-import com.petstation.gui.chung.BieuMauDialog;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
@@ -16,20 +15,25 @@ import com.petstation.service.pheduyet.PheDuyetService.YeuCau;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -240,16 +244,16 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         btnBoSung.setEnabled(dangCho);
         btnBoSung.addActionListener(
                 e -> {
-                    List<String> nhap =
-                            BieuMauDialog.layYeuCauNhap(
-                                    this,
+                    String noiDung =
+                            nhapNoiDungBatBuoc(
                                     "Yêu cầu bổ sung",
-                                    new String[] {"Nội dung cần bổ sung *"},
-                                    new String[] {""});
-                    if (nhap == null) return;
+                                    "Nội dung cần bổ sung *",
+                                    "Cần nhập nội dung yêu cầu bổ sung.");
+                    if (noiDung == null) return;
                     thucHienXuLyPheDuyet(
-                            () -> pheDuyetService.yeuCauBoSung(dongDuLieu.layId(), nhap.get(0)),
-                            false);
+                            () -> pheDuyetService.yeuCauBoSung(dongDuLieu.layId(), noiDung),
+                            false,
+                            "Đã gửi yêu cầu bổ sung cho " + dongDuLieu.layId() + ".");
                 });
         NutDinhDang btnDuyet = new NutDinhDang("Duyệt", NutDinhDang.KieuNut.THANH_CONG);
         NutDinhDang btnTuChoi = new NutDinhDang("Từ chối", NutDinhDang.KieuNut.NGUY_HIEM);
@@ -269,12 +273,21 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         JLabel nhanDongDangXet =
                 new JLabel(
                         "<html><span style='color:#7a7a7a'>"
-                                + khoaDangXet
+                                + thoatHtml(khoaDangXet)
                                 + ":</span> "
-                                + giaTri
+                                + thoatHtml(giaTri)
                                 + "</html>");
         nhanDongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         return nhanDongDangXet;
+    }
+
+    private static String thoatHtml(String giaTri) {
+        if (giaTri == null) return "";
+        return giaTri.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private static JPanel layHop(String tieuDe, String vanBan, Color nen) {
@@ -304,33 +317,77 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                         + dongDuLieu.layLoai().layNhan()
                         + ")?\nHệ thống sẽ tự thực hiện thay đổi và ghi Nhật ký.")) return;
         String nguoiDuyet = NhatKyHeThongService.macDinh().layNguoiDung();
-        thucHienXuLyPheDuyet(() -> pheDuyetService.duyet(dongDuLieu, nguoiDuyet), true);
+        thucHienXuLyPheDuyet(
+                () -> pheDuyetService.duyet(dongDuLieu, nguoiDuyet),
+                true,
+                "Đã duyệt yêu cầu " + dongDuLieu.layId() + ".");
     }
 
     private void tuChoi(YeuCau dongDuLieu) {
-        List<String> giaTri =
-                BieuMauDialog.layYeuCauNhap(
-                        this,
+        String lyDo =
+                nhapNoiDungBatBuoc(
                         "Từ chối yêu cầu " + dongDuLieu.layId(),
-                        new String[] {"Lý do từ chối *"},
-                        new String[] {""});
-        if (giaTri == null) return;
-        if (giaTri.get(0).isBlank()) {
-            HopThoai.hienThiCanhBao(this, "Cần nhập lý do từ chối.");
-            return;
-        }
+                        "Lý do từ chối *",
+                        "Cần nhập lý do từ chối.");
+        if (lyDo == null) return;
         String nguoiDuyet = NhatKyHeThongService.macDinh().layNguoiDung();
-        String lyDo = giaTri.get(0);
-        thucHienXuLyPheDuyet(() -> pheDuyetService.tuChoi(dongDuLieu, nguoiDuyet, lyDo), true);
+        thucHienXuLyPheDuyet(
+                () -> pheDuyetService.tuChoi(dongDuLieu, nguoiDuyet, lyDo),
+                true,
+                "Đã từ chối yêu cầu " + dongDuLieu.layId() + ".");
     }
 
-    private void thucHienXuLyPheDuyet(Runnable tacVu, boolean taiLaiKhiLoi) {
-        TacVuNen.chay(
+    private String nhapNoiDungBatBuoc(String tieuDe, String nhan, String thongBaoTrong) {
+        Window cha = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(cha, tieuDe, Dialog.ModalityType.APPLICATION_MODAL);
+        JTextField oNhap = new JTextField(26);
+        String[] ketQua = {null};
+        JPanel noiDung = new JPanel(new GridLayout(0, 1, 0, 6));
+        noiDung.setBorder(new EmptyBorder(14, 16, 6, 16));
+        noiDung.add(new JLabel(nhan));
+        noiDung.add(oNhap);
+        JButton nutOk = new NutDinhDang("Xác nhận", NutDinhDang.KieuNut.CHINH);
+        JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.PHU);
+        nutOk.addActionListener(
+                e -> {
+                    String vanBan = oNhap.getText() == null ? "" : oNhap.getText().trim();
+                    if (vanBan.isEmpty()) {
+                        HopThoai.hienThiCanhBao(dlg, thongBaoTrong);
+                        oNhap.requestFocusInWindow();
+                        return;
+                    }
+                    ketQua[0] = vanBan;
+                    dlg.dispose();
+                });
+        nutHuy.addActionListener(e -> dlg.dispose());
+        JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        chan.add(nutHuy);
+        chan.add(nutOk);
+        dlg.getRootPane().setDefaultButton(nutOk);
+        dlg.setLayout(new BorderLayout(8, 8));
+        dlg.add(noiDung, BorderLayout.CENTER);
+        dlg.add(chan, BorderLayout.SOUTH);
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+        return ketQua[0];
+    }
+
+    private void thucHienXuLyPheDuyet(
+            Runnable tacVu, boolean taiLaiKhiLoi, String thongBaoThanhCong) {
+        var phien = PhienDangNhapService.macDinh().yeuCauHienTai();
+        TacVuNen.chayCoPhien(
+                phien,
+                this::isDisplayable,
                 () -> {
                     tacVu.run();
                     return null;
                 },
                 null,
+                v -> {
+                    HopThoai.hienThiThanhCong(TrungTamPheDuyetPanel.this, thongBaoThanhCong);
+                    taiLai();
+                },
                 ex -> {
                     HopThoai.hienThiCanhBao(TrungTamPheDuyetPanel.this, TacVuNen.thongDiepLoi(ex));
                     if (taiLaiKhiLoi) {

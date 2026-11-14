@@ -72,17 +72,6 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
     }
 
     private void traHang() {
-        if (!layBanHang().kiemTraTrong()) {
-            if (HopThoai.xacNhanDongY(
-                    this,
-                    "Giỏ hàng hiện tại đang có sản phẩm chưa thanh toán.\n"
-                            + "Bạn có muốn làm trống giỏ hàng để bắt đầu đổi hàng ngay không?",
-                    "Giỏ hàng đang có sản phẩm")) {
-                layBanHang().xoa();
-            } else {
-                return;
-            }
-        }
         new DoiPhuKienDialog(this, layBanHang(), layDieuHuong()).setVisible(true);
         lamMoi();
     }

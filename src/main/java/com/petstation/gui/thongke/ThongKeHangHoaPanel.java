@@ -73,7 +73,7 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                             "Mã SP",
                             "Sản phẩm",
                             "Số lô",
-                            "Chênh lệch",
+                            "Chênh lệch SL",
                             "Giá trị lệch",
                             "Lý do",
                             "Ngày tạo"

@@ -4,6 +4,8 @@ import com.petstation.dto.ChiTietBienLai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.model.chung.LoaiPhieuDoiTra;
 import com.petstation.model.chung.PhuongThuc;
+import com.petstation.service.hethong.CaiDatService;
+import com.petstation.service.khachhang.TichDiemService;
 import com.petstation.util.DinhDang;
 
 import java.awt.BasicStroke;
@@ -72,7 +74,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     }
 
     public void datDuLieu(ChiTietBienLai thongTin) {
-        if (thongTin == null) {
+        if (thongTin == null || thongTin.getBienLai() == null) {
             cacKhoi = List.of();
             revalidate();
             repaint();
@@ -91,59 +93,69 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
 
     private static void themPhanDauBienLaiDoc(List<Khoi> khoi, ChiTietBienLai thongTin) {
         var bienLai = thongTin.getBienLai();
-        themChu(khoi, thongTin.getTenCuaHang(), 12, true, 1);
-        themChu(khoi, thongTin.getDiaChi(), 8, false, 1);
-        themChu(khoi, thongTin.getDienThoaiCuaHang(), 8, false, 1);
+        themChu(khoi, Objects.toString(thongTin.getTenCuaHang(), ""), 12, true, 1);
+        themChu(khoi, Objects.toString(thongTin.getDiaChi(), ""), 8, false, 1);
+        themChu(khoi, Objects.toString(thongTin.getDienThoaiCuaHang(), ""), 8, false, 1);
         khoi.add(new Khoi(8, List.of(), false, false));
         themChu(khoi, "HÓA ĐƠN", 12, true, 1);
-        themChu(khoi, "Số: " + bienLai.getSoHoaDon(), 9, true, 1);
+        themChu(khoi, "Số: " + Objects.toString(bienLai.getSoHoaDon(), ""), 9, true, 1);
         gach(khoi);
-        themChu(khoi, "Ngày: " + bienLai.getThoiGian().format(DinhDang.NGAY_GIO), 8, false, 0);
-        themChu(khoi, "KH: " + bienLai.getKhachHang(), 8, false, 0);
-        if (!thongTin.getDienThoaiKhach().isBlank())
-            themChu(khoi, "SĐT: " + thongTin.getDienThoaiKhach(), 8, false, 0);
-        themChu(khoi, "NVBH: " + bienLai.getThuNgan(), 8, false, 0);
-        if (!thongTin.getMaNguon().isBlank())
-            themChu(khoi, "Chứng từ: " + thongTin.getMaNguon(), 8, false, 0);
-        if (!thongTin.getHoaDonGoc().isBlank())
-            themChu(khoi, "Hóa đơn gốc: " + thongTin.getHoaDonGoc(), 8, false, 0);
+        String ngay =
+                bienLai.getThoiGian() == null
+                        ? ""
+                        : bienLai.getThoiGian().format(DinhDang.NGAY_GIO);
+        themChu(khoi, "Ngày: " + ngay, 8, false, 0);
+        themChu(khoi, "KH: " + Objects.toString(bienLai.getKhachHang(), ""), 8, false, 0);
+        String dienThoai = Objects.toString(thongTin.getDienThoaiKhach(), "");
+        if (!dienThoai.isBlank()) themChu(khoi, "SĐT: " + dienThoai, 8, false, 0);
+        themChu(khoi, "NVBH: " + Objects.toString(bienLai.getThuNgan(), ""), 8, false, 0);
+        String maNguon = Objects.toString(thongTin.getMaNguon(), "");
+        if (!maNguon.isBlank()) themChu(khoi, "Chứng từ: " + maNguon, 8, false, 0);
+        String hoaDonGoc = Objects.toString(thongTin.getHoaDonGoc(), "");
+        if (!hoaDonGoc.isBlank()) themChu(khoi, "Hóa đơn gốc: " + hoaDonGoc, 8, false, 0);
         gach(khoi);
     }
 
     private static void themBangMatHangBienLaiDoc(List<Khoi> khoi, ChiTietBienLai thongTin) {
         themHang(khoi, "#", "Tên hàng / dịch vụ", "SL", "ĐG", "TT", true);
         int stt = 0;
-        for (var dong : thongTin.getBienLai().getCacDong())
-            themHang(
-                    khoi,
-                    String.valueOf(++stt),
-                    dong.getTen(),
-                    String.valueOf(dong.getSoLuong()),
-                    DinhDang.dinhDang(dong.getDonGia()),
-                    DinhDang.dinhDang(dong.docSoTien()),
-                    false);
+        var cacDong = thongTin.getBienLai().getCacDong();
+        if (cacDong != null) {
+            for (var dong : cacDong) {
+                if (dong == null) continue;
+                themHang(
+                        khoi,
+                        String.valueOf(++stt),
+                        Objects.toString(dong.getTen(), ""),
+                        String.valueOf(dong.getSoLuong()),
+                        DinhDang.dinhDang(dong.getDonGia()),
+                        DinhDang.dinhDang(dong.docSoTien()),
+                        false);
+            }
+        }
         gach(khoi);
     }
 
     private static void themTongKetVaThanhToanBienLaiDoc(List<Khoi> khoi, ChiTietBienLai thongTin) {
         var bienLai = thongTin.getBienLai();
+        String loaiNguon = Objects.toString(thongTin.getLoaiNguon(), "");
         themCap(khoi, "Tổng SL mua", String.valueOf(thongTin.tongSoLuong()), false);
         themCap(
                 khoi,
-                thongTin.getLoaiNguon().equals("LUU_TRU") ? "Phải thu sau cọc" : "Tiền hàng",
+                "LUU_TRU".equals(loaiNguon) ? "Phải thu sau cọc" : "Tiền hàng",
                 DinhDang.dinhDang(bienLai.getTamTinh()),
                 false);
         if (bienLai.getGiamGia() > 0)
             themCap(
                     khoi,
-                    thongTin.getLoaiNguon().equals(LoaiPhieuDoiTra.DOI_HANG.maDB())
+                    LoaiPhieuDoiTra.DOI_HANG.maDB().equals(loaiNguon)
                             ? "Giá trị hàng được đổi"
                             : "Giảm giá / voucher",
                     "−" + DinhDang.dinhDang(bienLai.getGiamGia()),
                     false);
-        if (!bienLai.getVoucher().isBlank())
-            themChu(khoi, "Voucher: " + bienLai.getVoucher(), 8, false, 0);
-        if (thongTin.getLoaiNguon().equals("LUU_TRU"))
+        String voucher = Objects.toString(bienLai.getVoucher(), "");
+        if (!voucher.isBlank()) themChu(khoi, "Voucher: " + voucher, 8, false, 0);
+        if ("LUU_TRU".equals(loaiNguon))
             themCap(khoi, "Cọc đã cấn trừ", DinhDang.dinhDang(thongTin.getDaCanTru()), false);
         themCap(khoi, "Tổng thanh toán", DinhDang.dinhDang(bienLai.getTong()), true);
         if (bienLai.getVatPhanTram() > 0)
@@ -163,6 +175,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     }
 
     private static String tenPhuongThucBienLai(PhuongThuc pt) {
+        if (pt == null) return "Không rõ";
         return switch (pt) {
             case TIEN_MAT -> "Tiền mặt";
             case CHUYEN_KHOAN -> "Chuyển khoản / QR";
@@ -176,10 +189,45 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         if (thongTin.getSoDuDiemSau() != null)
             themCap(khoi, "Điểm sau giao dịch", String.valueOf(thongTin.getSoDuDiemSau()), false);
         gach(khoi);
-        themChu(khoi, "Tích đủ 200 điểm, đổi voucher Spa 150.000đ — hạn 60 ngày.", 9, true, 1);
-        themChu(khoi, "10.000đ = 1 điểm", 9, true, 1);
+        long tienMoiDiem = docSoTienMoiDiem();
+        long diemDoiVoucher = docSoCauHinh("DIEM_DOI_VOUCHER", TichDiemService.DIEM_DOI_VOUCHER);
+        long giaTriVoucher = docSoCauHinh("GIA_TRI_VOUCHER_DOI_DIEM", 150_000L);
+        long hanVoucherNgay = docSoCauHinh("HAN_VOUCHER_DOI_DIEM_NGAY", 60L);
+        themChu(
+                khoi,
+                "Tích đủ "
+                        + diemDoiVoucher
+                        + " điểm, đổi voucher Spa "
+                        + DinhDang.dinhDang(giaTriVoucher)
+                        + " — hạn "
+                        + hanVoucherNgay
+                        + " ngày.",
+                9,
+                true,
+                1);
+        themChu(khoi, DinhDang.dinhDang(tienMoiDiem) + " = 1 điểm", 9, true, 1);
         khoi.add(new Khoi(7, List.of(), false, false));
         themChu(khoi, "Trân trọng cảm ơn và hẹn gặp lại!", 8, false, 1);
+    }
+
+    private static long docSoTienMoiDiem() {
+        try {
+            long giaTri = CaiDatService.macDinh().laySoTienChoMoiDiemTichLuy();
+            return giaTri > 0 ? giaTri : TichDiemService.SO_TIEN_MOI_DIEM;
+        } catch (RuntimeException loi) {
+            return TichDiemService.SO_TIEN_MOI_DIEM;
+        }
+    }
+
+    private static long docSoCauHinh(String khoa, long macDinh) {
+        try {
+            String chuoi = CaiDatService.macDinh().layTuyChonHoacMacDinh(khoa, "");
+            if (chuoi == null || chuoi.isBlank()) return macDinh;
+            long giaTri = Long.parseLong(chuoi.trim());
+            return giaTri > 0 ? giaTri : macDinh;
+        } catch (RuntimeException loi) {
+            return macDinh;
+        }
     }
 
     private static Font font(float co, boolean dam) {
@@ -245,19 +293,34 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         Font phong = font(7.5f, dam);
         List<Chu> chu = new ArrayList<>();
         double doc = 10;
-        var dongTen = xuongDong(ten, phong, 77);
+        var dongTen = xuongDong(Objects.toString(ten, ""), phong, 68);
         for (String dong : dongTen) {
-            chu.add(new Chu(13, doc, dong, phong, 0));
+            chu.add(new Chu(12, doc, dong, phong, 0));
             doc += 10;
         }
-        chu.add(new Chu(0, 10, stt, phong, 0));
-        chu.add(new Chu(99, 10, soLuong, phong, 1));
-        Font so = phong;
-        while ((rong(gia, so) > 43 || rong(tien, so) > 49) && so.getSize2D() > 6)
-            so = so.deriveFont(so.getSize2D() - .25f);
-        chu.add(new Chu(150, 10, gia, so, 2));
-        chu.add(new Chu(RONG_NOI_DUNG, 10, tien, so, 2));
-        khoi.add(new Khoi(doc - 6, chu, true, false));
+        String sttAnToan = Objects.toString(stt, "");
+        String slAnToan = Objects.toString(soLuong, "");
+        String giaAnToan = Objects.toString(gia, "");
+        String tienAnToan = Objects.toString(tien, "");
+        Font fontSl = thuNhoDeVua(slAnToan, phong, 16);
+        Font fontSo = phong;
+        while ((rong(giaAnToan, fontSo) > 46 || rong(tienAnToan, fontSo) > 51)
+                && fontSo.getSize2D() > 5.5f) {
+            fontSo = fontSo.deriveFont(fontSo.getSize2D() - .25f);
+        }
+        chu.add(new Chu(0, 10, sttAnToan, phong, 0));
+        chu.add(new Chu(91, 10, slAnToan, fontSl, 1));
+        chu.add(new Chu(150, 10, giaAnToan, fontSo, 2));
+        chu.add(new Chu(RONG_NOI_DUNG, 10, tienAnToan, fontSo, 2));
+        khoi.add(new Khoi(Math.max(14, doc - 6), chu, true, false));
+    }
+
+    private static Font thuNhoDeVua(String chu, Font goc, double rongToiDa) {
+        Font ketQua = goc;
+        while (rong(chu, ketQua) > rongToiDa && ketQua.getSize2D() > 5.5f) {
+            ketQua = ketQua.deriveFont(ketQua.getSize2D() - .25f);
+        }
+        return ketQua;
     }
 
     private static void gach(List<Khoi> khoi) {

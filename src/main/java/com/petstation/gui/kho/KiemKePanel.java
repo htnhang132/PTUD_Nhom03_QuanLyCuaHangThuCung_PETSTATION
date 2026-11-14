@@ -187,6 +187,10 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         e -> {
                             if (e.getValueIsAdjusting()) return;
                             if (layBangDuLieu().getSelectedRow() < 0) {
+                                bienBanHienTaiMa = null;
+                                moHinhChiTiet.setRowCount(0);
+                                nhanTieuDeChiTiet.setText("Chi tiết đợt kiểm kê");
+                                nhanThongKeChiTiet.setText("");
                                 if (refBtnCanBang != null) refBtnCanBang.setEnabled(false);
                                 return;
                             }
@@ -403,7 +407,13 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         Runnable taiDuLieu =
                 () ->
                         taiDuLieuKiemKe(
-                                dlg, moHinhWs, cboNhomHang, chkSapHetHan, oTuKhoa, capNhatThongKe);
+                                dlg,
+                                moHinhWs,
+                                cboNhomHang,
+                                chkSapHetHan,
+                                oTuKhoa,
+                                hopChonKiemDemMu.isSelected(),
+                                capNhatThongKe);
         btnTaiDanhSach.addActionListener(e -> taiDuLieu.run());
         cboNhomHang.addActionListener(e -> taiDuLieu.run());
         chkSapHetHan.addActionListener(e -> taiDuLieu.run());
@@ -415,7 +425,11 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         btnLuu.addActionListener(
                 e -> luuBienBanKiemKe(dlg, btnLuu, oKyKiemKe, moHinhWs, bangLamViec));
         dienDuLieuBangKiemKe(
-                dsBanDau, moHinhWs, oTuKhoa.getText().trim().toLowerCase(), capNhatThongKe);
+                dsBanDau,
+                moHinhWs,
+                oTuKhoa.getText().trim().toLowerCase(),
+                hopChonKiemDemMu.isSelected(),
+                capNhatThongKe);
         apDungCheDoKiemKeMu(bangLamViec, hopChonKiemDemMu.isSelected());
         dlg.setVisible(true);
     }
@@ -565,13 +579,30 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         return khungChanHopThoai;
     }
 
+    private static Integer docTonThucTe(Object giaTri) {
+        if (giaTri == null) return null;
+        String chuoi = giaTri.toString().trim();
+        if (chuoi.isEmpty()) return null;
+        try {
+            return Integer.parseInt(chuoi);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
     private void capNhatThongKeKiemKe(DefaultTableModel moHinhWs, JLabel nhanThongKeKhongGian) {
         int tongMatHang = moHinhWs.getRowCount();
+        int chuaDem = 0;
         int soLuongLech = 0;
         int tongChenhLech = 0;
         for (int i = 0; i < tongMatHang; i++) {
             int tonHT = Integer.parseInt(moHinhWs.getValueAt(i, 6).toString());
-            int tonTT = Integer.parseInt(moHinhWs.getValueAt(i, 7).toString());
+            Integer tonTT = docTonThucTe(moHinhWs.getValueAt(i, 7));
+            if (tonTT == null) {
+                moHinhWs.setValueAt("", i, 8);
+                chuaDem++;
+                continue;
+            }
             int diff = tonTT - tonHT;
             moHinhWs.setValueAt(diff, i, 8);
             if (diff != 0) {
@@ -579,31 +610,59 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 tongChenhLech += diff;
             }
         }
-        nhanThongKeKhongGian.setText(
-                String.format(
-                        "Tổng: %d mặt hàng | Lệch: %d mặt hàng (%s%d)",
-                        tongMatHang, soLuongLech, tongChenhLech > 0 ? "+" : "", tongChenhLech));
+        String mau =
+                chuaDem > 0
+                        ? String.format(
+                                "Tổng: %d mặt hàng | Chưa đếm: %d | Lệch: %d (%s%d)",
+                                tongMatHang,
+                                chuaDem,
+                                soLuongLech,
+                                tongChenhLech > 0 ? "+" : "",
+                                tongChenhLech)
+                        : String.format(
+                                "Tổng: %d mặt hàng | Lệch: %d mặt hàng (%s%d)",
+                                tongMatHang,
+                                soLuongLech,
+                                tongChenhLech > 0 ? "+" : "",
+                                tongChenhLech);
+        nhanThongKeKhongGian.setText(mau);
     }
 
     private void ganBoLangNgheBangKiemKe(
             JDialog dlg, DefaultTableModel moHinhWs, Runnable capNhatThongKe) {
+        boolean[] dangCapNhat = {false};
         moHinhWs.addTableModelListener(
                 e -> {
-                    if (e.getColumn() == 7 && e.getFirstRow() >= 0) {
-                        int row = e.getFirstRow();
+                    if (dangCapNhat[0] || e.getColumn() != 7 || e.getFirstRow() < 0) return;
+                    int row = e.getFirstRow();
+                    dangCapNhat[0] = true;
+                    try {
+                        Object val = moHinhWs.getValueAt(row, 7);
+                        String raw = val == null ? "" : val.toString().trim();
+                        if (raw.isEmpty()) {
+                            moHinhWs.setValueAt("", row, 8);
+                            capNhatThongKe.run();
+                            return;
+                        }
                         try {
-                            int tonTT = Integer.parseInt(moHinhWs.getValueAt(row, 7).toString());
+                            int tonTT = Integer.parseInt(raw);
                             if (tonTT < 0) {
                                 HopThoai.hienThiCanhBao(dlg, "Tồn thực tế không được âm.");
-                                moHinhWs.setValueAt(0, row, 7);
-                                return;
+                                moHinhWs.setValueAt("", row, 7);
+                                moHinhWs.setValueAt("", row, 8);
+                            } else {
+                                int tonHT =
+                                        Integer.parseInt(moHinhWs.getValueAt(row, 6).toString());
+                                moHinhWs.setValueAt(tonTT - tonHT, row, 8);
                             }
-                            int tonHT = Integer.parseInt(moHinhWs.getValueAt(row, 6).toString());
-                            moHinhWs.setValueAt(tonTT - tonHT, row, 8);
                         } catch (NumberFormatException ex) {
                             HopThoai.hienThiCanhBao(dlg, "Vui lòng nhập số nguyên hợp lệ.");
+                            moHinhWs.setValueAt("", row, 7);
+                            moHinhWs.setValueAt("", row, 8);
                         }
                         capNhatThongKe.run();
+                    } finally {
+                        dangCapNhat[0] = false;
                     }
                 });
     }
@@ -614,6 +673,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             JComboBox<String> cboNhomHang,
             JCheckBox chkSapHetHan,
             JTextField oTuKhoa,
+            boolean kiemDemMu,
             Runnable capNhatThongKe) {
         String nhom = (String) cboNhomHang.getSelectedItem();
         boolean chiSapHetHan = chkSapHetHan.isSelected();
@@ -624,14 +684,18 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 dlg::isDisplayable,
                 () -> kiemKeService.layDanhSachLoHangKiemKe(nhom, chiSapHetHan),
                 null,
-                ds -> dienDuLieuBangKiemKe(ds, moHinhWs, tuKhoa, capNhatThongKe),
+                ds -> dienDuLieuBangKiemKe(ds, moHinhWs, tuKhoa, kiemDemMu, capNhatThongKe),
                 ex ->
                         HopThoai.hienThiCanhBao(
                                 dlg, "Không tải được danh sách: " + TacVuNen.thongDiepLoi(ex)));
     }
 
     private void dienDuLieuBangKiemKe(
-            List<Object[]> ds, DefaultTableModel moHinhWs, String tuKhoa, Runnable capNhatThongKe) {
+            List<Object[]> ds,
+            DefaultTableModel moHinhWs,
+            String tuKhoa,
+            boolean kiemDemMu,
+            Runnable capNhatThongKe) {
         moHinhWs.setRowCount(0);
         for (Object[] r : ds) {
             String maSP = String.valueOf(r[1]);
@@ -653,8 +717,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         r[4],
                         r[5] == null ? "-" : r[5].toString(),
                         tonHT,
-                        tonHT,
-                        0,
+                        kiemDemMu ? "" : tonHT,
+                        kiemDemMu ? "" : 0,
                         ""
                     });
         }
@@ -683,30 +747,59 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() != KeyEvent.VK_ENTER) return;
                 String code = oMaVach.getText().trim();
+                oMaVach.setText("");
                 if (code.isEmpty()) return;
-                boolean timThay = false;
-                for (int i = 0; i < moHinhWs.getRowCount(); i++) {
-                    String barcode = moHinhWs.getValueAt(i, 3).toString();
-                    String maSP = moHinhWs.getValueAt(i, 1).toString();
-                    if (code.equalsIgnoreCase(barcode) || code.equalsIgnoreCase(maSP)) {
-                        int tonHienTai = Integer.parseInt(moHinhWs.getValueAt(i, 7).toString());
-                        moHinhWs.setValueAt(tonHienTai + 1, i, 7);
-                        chonVaCuonDong(bangLamViec, i);
-                        String tenSP = moHinhWs.getValueAt(i, 2).toString();
-                        nhanTrangThaiQuetMa.setText(
-                                "[OK] " + tenSP + " (Tồn TT: " + (tonHienTai + 1) + ")");
-                        nhanTrangThaiQuetMa.setForeground(MauUngDung.mau(0x16A34A));
-                        timThay = true;
-                        break;
-                    }
-                }
-                if (!timThay) {
+                int dongMucTieu = timDongQuetKiemKe(moHinhWs, bangLamViec, code);
+                if (dongMucTieu < 0) {
                     nhanTrangThaiQuetMa.setText("[!] Không tìm thấy SP có Barcode: " + code);
                     nhanTrangThaiQuetMa.setForeground(MauUngDung.DO_BAO_LOI);
+                    return;
                 }
-                oMaVach.setText("");
+                Integer tonHienTai = docTonThucTe(moHinhWs.getValueAt(dongMucTieu, 7));
+                int tonMoi = (tonHienTai == null ? 0 : tonHienTai) + 1;
+                moHinhWs.setValueAt(tonMoi, dongMucTieu, 7);
+                chonVaCuonDong(bangLamViec, dongMucTieu);
+                String tenSP = moHinhWs.getValueAt(dongMucTieu, 2).toString();
+                String soLo = moHinhWs.getValueAt(dongMucTieu, 4).toString();
+                nhanTrangThaiQuetMa.setText(
+                        "[OK] " + tenSP + " - Lô " + soLo + " (Tồn TT: " + tonMoi + ")");
+                nhanTrangThaiQuetMa.setForeground(MauUngDung.mau(0x16A34A));
             }
         };
+    }
+
+    private int timDongQuetKiemKe(DefaultTableModel moHinhWs, JTable bangLamViec, String code) {
+        List<Integer> khop = new ArrayList<>();
+        int viewRow = bangLamViec.getSelectedRow();
+        int modelSel = viewRow >= 0 ? bangLamViec.convertRowIndexToModel(viewRow) : -1;
+        for (int i = 0; i < moHinhWs.getRowCount(); i++) {
+            String barcode = moHinhWs.getValueAt(i, 3).toString();
+            String maSP = moHinhWs.getValueAt(i, 1).toString();
+            if (code.equalsIgnoreCase(barcode) || code.equalsIgnoreCase(maSP)) {
+                if (i == modelSel) return i;
+                khop.add(i);
+            }
+        }
+        if (khop.isEmpty()) return -1;
+        if (khop.size() == 1) return khop.get(0);
+        String[] cacLuaChon = new String[khop.size()];
+        for (int k = 0; k < khop.size(); k++) {
+            int r = khop.get(k);
+            cacLuaChon[k] =
+                    "Lô " + moHinhWs.getValueAt(r, 4) + " (HSD: " + moHinhWs.getValueAt(r, 5) + ")";
+        }
+        Object daChon =
+                HopThoai.chonMuc(
+                        bangLamViec,
+                        "Sản phẩm có nhiều lô hàng, chọn lô cần cộng (+1):",
+                        "Chọn lô kiểm kê",
+                        cacLuaChon,
+                        cacLuaChon[0]);
+        if (daChon == null) return -1;
+        for (int k = 0; k < cacLuaChon.length; k++) {
+            if (cacLuaChon[k].equals(daChon)) return khop.get(k);
+        }
+        return -1;
     }
 
     private void luuBienBanKiemKe(
@@ -715,6 +808,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             JTextField oKyKiemKe,
             DefaultTableModel moHinhWs,
             JTable bangLamViec) {
+        if (bangLamViec.isEditing()) {
+            bangLamViec.getCellEditor().stopCellEditing();
+        }
         if (moHinhWs.getRowCount() == 0) {
             HopThoai.hienThiCanhBao(dlg, "Chưa có mặt hàng nào trong danh sách kiểm kê.");
             return;
@@ -724,36 +820,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             HopThoai.hienThiCanhBao(dlg, "Vui lòng nhập tên kỳ kiểm kê.");
             return;
         }
-        List<KiemKeService.DongKiemKe> danhSach = new ArrayList<>();
-        for (int i = 0; i < moHinhWs.getRowCount(); i++) {
-            String maLo = String.valueOf(moHinhWs.getValueAt(i, 0));
-            String maSP = moHinhWs.getValueAt(i, 1).toString();
-            String tenSP = moHinhWs.getValueAt(i, 2).toString();
-            String barcode = moHinhWs.getValueAt(i, 3).toString();
-            String soLo = moHinhWs.getValueAt(i, 4).toString();
-            String hsdStr = moHinhWs.getValueAt(i, 5).toString();
-            LocalDate hsd = "-".equals(hsdStr) ? null : LocalDate.parse(hsdStr);
-            int tonHT = Integer.parseInt(moHinhWs.getValueAt(i, 6).toString());
-            int tonTT = Integer.parseInt(moHinhWs.getValueAt(i, 7).toString());
-            String lyDo =
-                    moHinhWs.getValueAt(i, 9) == null
-                            ? ""
-                            : moHinhWs.getValueAt(i, 9).toString().trim();
-            if (tonTT != tonHT && lyDo.isEmpty()) {
-                HopThoai.hienThiCanhBao(
-                        dlg,
-                        "Vui lòng chọn lý do chênh lệch cho sản phẩm: "
-                                + maSP
-                                + " ("
-                                + tenSP
-                                + ")");
-                chonVaCuonDong(bangLamViec, i);
-                return;
-            }
-            danhSach.add(
-                    new KiemKeService.DongKiemKe(
-                            maLo, maSP, tenSP, barcode, soLo, hsd, tonHT, tonTT, lyDo));
-        }
+        List<KiemKeService.DongKiemKe> danhSach = thuThapDongKiemKe(dlg, moHinhWs, bangLamViec);
+        if (danhSach == null) return;
         btnLuu.setEnabled(false);
         TacVuNen.chayCoPhien(
                 dlg,
@@ -776,6 +844,53 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                     HopThoai.hienThiLoi(
                             dlg, "Lỗi khi lưu đợt kiểm kê: " + TacVuNen.thongDiepLoi(ex));
                 });
+    }
+
+    private List<KiemKeService.DongKiemKe> thuThapDongKiemKe(
+            JDialog dlg, DefaultTableModel moHinhWs, JTable bangLamViec) {
+        List<KiemKeService.DongKiemKe> danhSach = new ArrayList<>();
+        for (int i = 0; i < moHinhWs.getRowCount(); i++) {
+            String maLo = String.valueOf(moHinhWs.getValueAt(i, 0));
+            String maSP = moHinhWs.getValueAt(i, 1).toString();
+            String tenSP = moHinhWs.getValueAt(i, 2).toString();
+            String barcode = moHinhWs.getValueAt(i, 3).toString();
+            String soLo = moHinhWs.getValueAt(i, 4).toString();
+            String hsdStr = moHinhWs.getValueAt(i, 5).toString();
+            LocalDate hsd = "-".equals(hsdStr) ? null : LocalDate.parse(hsdStr);
+            int tonHT = Integer.parseInt(moHinhWs.getValueAt(i, 6).toString());
+            Integer tonTTObj = docTonThucTe(moHinhWs.getValueAt(i, 7));
+            if (tonTTObj == null || tonTTObj < 0) {
+                HopThoai.hienThiCanhBao(
+                        dlg,
+                        "Vui lòng nhập số lượng tồn thực tế hợp lệ cho sản phẩm: "
+                                + maSP
+                                + " ("
+                                + tenSP
+                                + ")");
+                chonVaCuonDong(bangLamViec, i);
+                return null;
+            }
+            int tonTT = tonTTObj;
+            String lyDo =
+                    moHinhWs.getValueAt(i, 9) == null
+                            ? ""
+                            : moHinhWs.getValueAt(i, 9).toString().trim();
+            if (tonTT != tonHT && lyDo.isEmpty()) {
+                HopThoai.hienThiCanhBao(
+                        dlg,
+                        "Vui lòng chọn lý do chênh lệch cho sản phẩm: "
+                                + maSP
+                                + " ("
+                                + tenSP
+                                + ")");
+                chonVaCuonDong(bangLamViec, i);
+                return null;
+            }
+            danhSach.add(
+                    new KiemKeService.DongKiemKe(
+                            maLo, maSP, tenSP, barcode, soLo, hsd, tonHT, tonTT, lyDo));
+        }
+        return danhSach;
     }
 
     private static void chonVaCuonDong(JTable bangLamViec, int modelRow) {

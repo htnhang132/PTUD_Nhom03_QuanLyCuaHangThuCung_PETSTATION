@@ -2,6 +2,7 @@ package com.petstation.gui.nhansu;
 
 import static com.petstation.gui.chung.TruongDanhMuc.layTenCacVaiTro;
 
+import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.nhansu.NhanVienService;
@@ -41,10 +42,25 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                 String.valueOf(dong[2]),
                                                 String.valueOf(dong[3]),
                                                 String.valueOf(dong[5])))
-                        .themThaoTacBoSung(
+                        .themThaoTacBoSungKhongLuu(
                                 "Đặt lại MK",
                                 dong -> {
+                                    if ("Nghỉ việc".equals(String.valueOf(dong[6]))) {
+                                        throw new IllegalStateException(
+                                                "Nhân viên đã nghỉ việc, không thể cấp hoặc đặt"
+                                                        + " lại mật khẩu.");
+                                    }
                                     String maNv = String.valueOf(dong[0]);
+                                    if (!HopThoai.xacNhan(
+                                            null,
+                                            "Xác nhận cấp/đặt lại mật khẩu mặc định cho nhân"
+                                                    + " viên "
+                                                    + dong[1]
+                                                    + " ("
+                                                    + maNv
+                                                    + ")?")) {
+                                        return null;
+                                    }
                                     String tenDangNhap =
                                             NhanVienService.macDinh()
                                                     .layTenDangNhapTheoNhanVien(maNv);

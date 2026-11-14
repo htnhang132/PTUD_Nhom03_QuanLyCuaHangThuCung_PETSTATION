@@ -2,6 +2,7 @@ package com.petstation.gui.hethong;
 
 import com.petstation.gui.chung.BieuTuong;
 import com.petstation.gui.chung.CoSoPanel;
+import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.chung.VaiTro;
@@ -9,6 +10,8 @@ import com.petstation.service.hethong.QuyenVaiTroService;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -19,6 +22,10 @@ import javax.swing.table.DefaultTableModel;
 public final class MaTranQuyenPanel extends CoSoPanel {
     private final QuyenVaiTroService quyenVaiTroService = new QuyenVaiTroService();
 
+    private final DefaultTableModel moHinh;
+
+    private int luotTai;
+
     public MaTranQuyenPanel() {
         setLayout(new BorderLayout(0, 10));
         VaiTro[] cacVaiTro = VaiTro.values();
@@ -26,20 +33,26 @@ public final class MaTranQuyenPanel extends CoSoPanel {
         cacCot[0] = "Chức năng";
         for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
             cacCot[chiSo + 1] = cacVaiTro[chiSo].getTenHienThi();
-        DefaultTableModel moHinh = DinhDangBang.taoMoHinhChiDoc(cacCot);
-        for (Quyen vungDangXet : Quyen.values()) {
-            Object[] dong = new Object[cacCot.length];
-            dong[0] = quyenVaiTroService.layNhan(vungDangXet);
-            for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++)
-                dong[chiSo + 1] = quyenVaiTroService.tao(cacVaiTro[chiSo]).contains(vungDangXet);
-            moHinh.addRow(dong);
-        }
+        moHinh = DinhDangBang.taoMoHinhChiDoc(cacCot);
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         JTable bangBang = layBang(scrCuon);
         bangBang.getColumnModel().getColumn(0).setMinWidth(245);
         bangBang.getColumnModel().getColumn(0).setPreferredWidth(285);
         bangBang.setAutoCreateRowSorter(false);
         bangBang.setRowSorter(null);
+        DefaultTableCellRenderer nhanGiua = taoTrinhVeQuyen();
+        for (int chiSo = 1; chiSo < cacCot.length; chiSo++)
+            bangBang.getColumnModel().getColumn(chiSo).setCellRenderer(nhanGiua);
+        add(
+                taoTieuDeManHinh(
+                        "Ma trận quyền theo vai trò (4 vai trò)",
+                        "Tổng hợp các quyền chức năng mặc định của từng vai trò nhân sự"),
+                BorderLayout.NORTH);
+        add(scrCuon, BorderLayout.CENTER);
+        taiLai();
+    }
+
+    private DefaultTableCellRenderer taoTrinhVeQuyen() {
         DefaultTableCellRenderer nhanGiua =
                 new DefaultTableCellRenderer() {
                     @Override
@@ -62,14 +75,42 @@ public final class MaTranQuyenPanel extends CoSoPanel {
                     }
                 };
         nhanGiua.setHorizontalAlignment(JLabel.CENTER);
-        for (int chiSo = 1; chiSo < cacCot.length; chiSo++)
-            bangBang.getColumnModel().getColumn(chiSo).setCellRenderer(nhanGiua);
-        add(
-                taoTieuDeManHinh(
-                        "Ma trận quyền theo vai trò (4 vai trò)",
-                        "Tổng hợp các quyền chức năng mặc định của từng vai trò nhân sự"),
-                BorderLayout.NORTH);
-        add(scrCuon, BorderLayout.CENTER);
+        return nhanGiua;
+    }
+
+    private void taiLai() {
+        int luot = ++luotTai;
+        TacVuNen.chayCoPhien(
+                this, () -> luot == luotTai, this::taiDuLieuMaTran, this::hienThiMaTran);
+    }
+
+    private List<Object[]> taiDuLieuMaTran() {
+        VaiTro[] cacVaiTro = VaiTro.values();
+        List<Object[]> ketQua = new ArrayList<>();
+        for (Quyen quyen : Quyen.values()) {
+            Object[] dong = new Object[cacVaiTro.length + 1];
+            dong[0] = quyenVaiTroService.layNhan(quyen);
+            for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++) {
+                dong[chiSo + 1] = quyenVaiTroService.tao(cacVaiTro[chiSo]).contains(quyen);
+            }
+            ketQua.add(dong);
+        }
+        return ketQua;
+    }
+
+    private void hienThiMaTran(List<Object[]> cacDong) {
+        moHinh.setRowCount(0);
+        for (Object[] dong : cacDong) moHinh.addRow(dong);
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        taiLai();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        taiLai();
     }
 
     @Override

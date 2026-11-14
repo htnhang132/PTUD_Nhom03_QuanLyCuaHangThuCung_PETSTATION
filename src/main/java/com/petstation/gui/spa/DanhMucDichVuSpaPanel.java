@@ -30,10 +30,15 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
                 .timKiem("Tìm theo mã, tên dịch vụ...")
                 .datTrangThai(5, "Đang hoạt động", "Ngừng hoạt động")
                 .datBoKiemTra(
-                        d ->
-                                BoSoanThaoBangGia.layGiaNhoNhat(String.valueOf(d[4])) <= 0
-                                        ? "Bảng giá cần ít nhất một mức giá lớn hơn 0."
-                                        : null);
+                        d -> {
+                            if (DinhDang.doc(String.valueOf(d[3])) <= 0) {
+                                return "Thời gian thực hiện phải lớn hơn 0 phút.";
+                            }
+                            if (BoSoanThaoBangGia.layGiaNhoNhat(String.valueOf(d[4])) <= 0) {
+                                return "Bảng giá cần ít nhất một mức giá lớn hơn 0.";
+                            }
+                            return null;
+                        });
     }
 
     private static List<TruongDuLieu> cacTruong() {

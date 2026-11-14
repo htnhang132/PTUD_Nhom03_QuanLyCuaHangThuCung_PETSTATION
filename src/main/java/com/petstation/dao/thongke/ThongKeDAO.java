@@ -39,9 +39,9 @@ public interface ThongKeDAO {
 
     List<DoanhThuHoanTat> layDoanhThuHoanTat(LocalDate tu, LocalDate denNgay, String maNhanVien);
 
-    List<ThongKeNhom> layDoanhThuTheoGio(LocalDate tu, LocalDate denNgay);
+    List<ThongKeNhom> layDoanhThuTheoGio(LocalDate tu, LocalDate denNgay, String maNhanVien);
 
-    List<ThongKeNhom> layDoanhThuTheoThu(LocalDate tu, LocalDate denNgay);
+    List<ThongKeNhom> layDoanhThuTheoThu(LocalDate tu, LocalDate denNgay, String maNhanVien);
 
     // 2. THỐNG KÊ HÀNG HÓA & TỒN KHO
 

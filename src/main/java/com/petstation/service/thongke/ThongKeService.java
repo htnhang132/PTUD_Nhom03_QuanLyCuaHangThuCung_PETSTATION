@@ -92,23 +92,28 @@ public final class ThongKeService {
                 tatCa ? null : phienDangNhapService.layMaNhanVien());
     }
 
+    private String layMaNhanVienLocTheoQuyen() {
+        return phienDangNhapService.layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)
+                ? null
+                : phienDangNhapService.layMaNhanVien();
+    }
+
     public List<DoanhThuHoanTat> layDoanhThuHoanTat(KhoangNgay k) {
         kiemTraQuyenBaoCao();
-        String maNhanVien =
-                phienDangNhapService.layPhien().kiemTraCo(Quyen.XEM_BAO_CAO_CHUNG)
-                        ? null
-                        : phienDangNhapService.layMaNhanVien();
-        return thongKeDAO.layDoanhThuHoanTat(k.getTuNgay(), k.getCanTren(), maNhanVien);
+        return thongKeDAO.layDoanhThuHoanTat(
+                k.getTuNgay(), k.getCanTren(), layMaNhanVienLocTheoQuyen());
     }
 
     public List<ThongKeNhom> layDoanhThuTheoGio(KhoangNgay k) {
         kiemTraQuyenBaoCao();
-        return thongKeDAO.layDoanhThuTheoGio(k.getTuNgay(), k.getCanTren());
+        return thongKeDAO.layDoanhThuTheoGio(
+                k.getTuNgay(), k.getCanTren(), layMaNhanVienLocTheoQuyen());
     }
 
     public List<ThongKeNhom> layDoanhThuTheoThu(KhoangNgay k) {
         kiemTraQuyenBaoCao();
-        return thongKeDAO.layDoanhThuTheoThu(k.getTuNgay(), k.getCanTren());
+        return thongKeDAO.layDoanhThuTheoThu(
+                k.getTuNgay(), k.getCanTren(), layMaNhanVienLocTheoQuyen());
     }
 
     // 2. THỐNG KÊ HÀNG HÓA & TỒN KHO (ThongKeHangHoaPanel)

@@ -257,7 +257,34 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
     }
 
     private void capNhatTrangThaiSpaNen(String trangThaiMoi) {
+        int dongChon = layBangDuLieu().getSelectedRow();
+        if (dongChon < 0) {
+            HopThoai.hienThiCanhBao(this, "Vui lòng chọn một phiếu Spa cần cập nhật.");
+            return;
+        }
         String ma = layDongChon();
+        String trangThaiHienTai =
+                String.valueOf(
+                        layMoHinh()
+                                .getValueAt(layBangDuLieu().convertRowIndexToModel(dongChon), 7));
+        boolean batDauLam = TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThaiMoi);
+        String yeuCauHienTai =
+                batDauLam
+                        ? TrangThaiPhieuSpa.TIEP_NHAN.maDB()
+                        : TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB();
+        if (!yeuCauHienTai.equals(trangThaiHienTai)) {
+            HopThoai.hienThiCanhBao(
+                    this,
+                    batDauLam
+                            ? "Chỉ phiếu ở trạng thái Tiếp nhận mới có thể Bắt đầu làm."
+                            : "Chỉ phiếu Đang thực hiện mới có thể đánh dấu Hoàn thành.");
+            return;
+        }
+        String loiNhac =
+                batDauLam
+                        ? "Xác nhận bắt đầu thực hiện phiếu Spa #" + ma + "?"
+                        : "Xác nhận đã hoàn thành phiếu Spa #" + ma + "?";
+        if (!HopThoai.xacNhan(this, loiNhac)) return;
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chayCoPhien(
                 phien,

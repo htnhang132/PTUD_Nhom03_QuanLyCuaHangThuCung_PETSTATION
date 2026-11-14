@@ -35,13 +35,14 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                     "Tiền đầu ca",
                                     "Thu hóa đơn",
                                     "Cọc lưu trú",
+                                    "Tổng thu trong ca (HĐ + Cọc)",
                                     "Thực đếm",
                                     "Chênh lệch"
                                 },
                                 0,
-                                5,
+                                7,
                                 true,
-                                chiSo("Số ca thu ngân", "Tổng thu hóa đơn", "TB/ca"),
+                                chiSo("Số ca thu ngân", "Tổng thu trong ca", "TB thu/ca"),
                                 thongKeService::layTongHopCa),
 
                         // 2. CHẾ ĐỘ XEM: LỊCH LÀM VIỆC & SỐ GIỜ CÔNG NHÂN VIÊN

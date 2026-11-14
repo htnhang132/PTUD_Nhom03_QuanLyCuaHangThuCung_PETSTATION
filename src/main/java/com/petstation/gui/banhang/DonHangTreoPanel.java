@@ -33,30 +33,61 @@ public final class DonHangTreoPanel extends BangNghiepVuPanel {
 
     private void moLaiDon(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         try {
-            if (!banHang.kiemTraTrong()) {
-                throw new IllegalArgumentException("Hãy treo hoặc thanh toán giỏ hiện tại trước.");
-            }
             String maDon = layNoiDungDongChon(1);
-            TacVuNen.chayCoPhien(
-                    this,
-                    () -> true,
-                    () -> donDoiTreoService.lay(maDon),
-                    donDoi -> {
-                        if (donDoi != null) {
-                            new DoiPhuKienDialog(this, banHang, dieuHuong, maDon, donDoi)
-                                    .setVisible(true);
+            if (banHang.kiemTraTrong()) {
+                moLaiSauKhiXuLyGio(maDon, banHang, dieuHuong, false);
+                return;
+            }
+            int luaChon =
+                    HopThoai.tuyChon(
+                            this,
+                            "Giỏ hàng hiện tại đang có sản phẩm. Bạn muốn xử lý thế nào trước khi"
+                                    + " mở đơn treo "
+                                    + maDon
+                                    + "?",
+                            "Giỏ hàng đang có sản phẩm",
+                            new String[] {
+                                "Treo giỏ hiện tại rồi mở", "Thay thế (xóa giỏ hiện tại)", "Hủy"
+                            },
+                            true);
+            if (luaChon == 0) {
+                TacVuNen.chayCoPhien(
+                        this,
+                        () -> true,
+                        () -> banHangService.treo(banHang),
+                        () -> {
+                            banHang.xoa();
                             taiLaiNen();
-                            return;
-                        }
-                        TacVuNen.chayCoPhien(
-                                this,
-                                () -> true,
-                                () -> banHangService.moLai(maDon, banHang),
-                                () -> dieuHuong.accept(MaManHinh.LAP_HOA_DON));
-                    });
+                            moLaiSauKhiXuLyGio(maDon, banHang, dieuHuong, false);
+                        });
+            } else if (luaChon == 1) {
+                moLaiSauKhiXuLyGio(maDon, banHang, dieuHuong, true);
+            }
         } catch (RuntimeException ex) {
             HopThoai.hienThiCanhBao(this, ex.getMessage());
         }
+    }
+
+    private void moLaiSauKhiXuLyGio(
+            String maDon, GioHang banHang, Consumer<MaManHinh> dieuHuong, boolean xoaGioTruoc) {
+        TacVuNen.chayCoPhien(
+                this,
+                () -> true,
+                () -> donDoiTreoService.lay(maDon),
+                donDoi -> {
+                    if (xoaGioTruoc) banHang.xoa();
+                    if (donDoi != null) {
+                        new DoiPhuKienDialog(this, banHang, dieuHuong, maDon, donDoi)
+                                .setVisible(true);
+                        taiLaiNen();
+                        return;
+                    }
+                    TacVuNen.chayCoPhien(
+                            this,
+                            () -> true,
+                            () -> banHangService.moLai(maDon, banHang),
+                            () -> dieuHuong.accept(MaManHinh.LAP_HOA_DON));
+                });
     }
 
     private void xoaDonTreo() {

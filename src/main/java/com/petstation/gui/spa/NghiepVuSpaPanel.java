@@ -1,7 +1,5 @@
 package com.petstation.gui.spa;
 
-import static com.petstation.gui.chung.TruongNghiepVu.docThoiGian;
-import static com.petstation.gui.chung.TruongNghiepVu.layThoiGianHienTai;
 import static com.petstation.gui.chung.TruongNghiepVu.layTruongVanBan;
 import static com.petstation.gui.chung.TruongNghiepVu.taoLuaChonMuc;
 import static com.petstation.util.DuLieu.chuyenThanhChuoi;
@@ -88,48 +86,7 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     }
 
     protected void datLichHen() {
-        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
-        TacVuNen.chayCoPhien(
-                phien,
-                () -> true,
-                () ->
-                        new Object[] {
-                            layNghiepVuService().layLuaChonThuCung(),
-                            layNghiepVuService().layLuaChonGoiDichVu(),
-                            layNghiepVuService().layLuaChonNhanVien()
-                        },
-                null,
-                duLieu -> hienThiHopThoaiDatLich(duLieu, phien),
-                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
-    }
-
-    @SuppressWarnings("unchecked")
-    private void hienThiHopThoaiDatLich(Object[] duLieu, PhienDangNhap phien) {
-        Map<String, String> giaTri =
-                BieuMauTruong.layYeuCauNhap(
-                        this,
-                        "Đặt lịch Spa",
-                        taoLuaChonMuc("pet", "Thú cưng", (List<MucLuaChon>) duLieu[0]),
-                        taoLuaChonMuc("package", "Dịch vụ", (List<MucLuaChon>) duLieu[1]),
-                        taoLuaChonMuc("staff", "Nhân viên", (List<MucLuaChon>) duLieu[2]),
-                        layTruongVanBan(
-                                "start", "Bắt đầu (yyyy-MM-dd HH:mm)", layThoiGianHienTai()));
-        if (giaTri == null) return;
-        TacVuNen.chayCoPhien(
-                phien,
-                () -> true,
-                () ->
-                        spaService.datLichHen(
-                                giaTri.get("pet"),
-                                giaTri.get("package"),
-                                giaTri.get("staff"),
-                                docThoiGian(giaTri, "start")),
-                null,
-                ma -> {
-                    layBanHang().getQuyTrinh().chonLichHen(ma);
-                    lamMoi();
-                },
-                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+        DatLichSpaDialog.mo(this, this::lamMoi);
     }
 
     protected void huyLichHen() {

@@ -30,6 +30,8 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
                 CauHinh.tao("Danh mục nhà cung cấp", "nhà cung cấp")
                         .datTienTo("NCC")
                         .timKiem("Tìm theo tên, người liên hệ, MST...")
+                        .datBoKiemTra(
+                                dong -> DanhMucService.kiemTraMaSoThue(String.valueOf(dong[5])))
                         .datTrangThai(7, "Đang hợp tác", "Ngừng hợp tác");
         return cauHinh;
     }

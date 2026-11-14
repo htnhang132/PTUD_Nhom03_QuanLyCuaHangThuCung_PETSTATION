@@ -59,6 +59,14 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     private void hienThiHopThoaiNhapKho(Object[] duLieu, PhienDangNhap phien) {
         var dsNcc = (List<MucLuaChon>) duLieu[0];
         var dsSp = (List<MucLuaChon>) duLieu[1];
+        if (dsNcc.isEmpty()) {
+            HopThoai.hienThiCanhBao(this, "Chưa có nhà cung cấp nào đang hợp tác.");
+            return;
+        }
+        if (dsSp.isEmpty()) {
+            HopThoai.hienThiCanhBao(this, "Chưa có sản phẩm nào đang kinh doanh để nhập kho.");
+            return;
+        }
         String soLoGoiY = "LOTE" + LocalDate.now().format(DinhDang.MA_NGAY);
         String hanDungGoiY = LocalDate.now().plusYears(1).format(DinhDang.NGAY);
         Map<String, String> giaTri =
@@ -70,55 +78,86 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         layTruongVanBan("batch", "Số lô", soLoGoiY),
                         layTruongVanBan(
                                 "expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", hanDungGoiY),
-                        layTruongVanBan("qty", "Số lượng", "10"),
-                        layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", "50000"),
+                        layTruongVanBan("qty", "Số lượng", ""),
+                        layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", ""),
                         layTruongVanBan("da_tra", "Đã trả (đồng)", "0"));
-        if (giaTri != null) {
-            int sl;
-            long gia;
-            long daTra;
-            LocalDate hsd;
-            try {
-                sl = docSoLuong(giaTri, "qty");
-                gia = docSoTien(giaTri, "cost");
-                daTra = docSoTien(giaTri, "da_tra");
-                hsd = phanTichNgay(giaTri.get("expiry"));
-            } catch (NumberFormatException ex) {
-                HopThoai.hienThiCanhBao(this, "Số lượng và giá nhập phải là số hợp lệ.");
-                return;
-            } catch (RuntimeException ex) {
-                HopThoai.hienThiCanhBao(this, ex.getMessage());
-                return;
-            }
-            if (sl <= 0) {
-                HopThoai.hienThiCanhBao(this, "Số lượng nhập kho phải lớn hơn 0.");
-                return;
-            }
-            if (gia <= 0) {
-                HopThoai.hienThiCanhBao(this, "Giá nhập mỗi đơn vị phải lớn hơn 0 đồng.");
-                return;
-            }
-            TacVuNen.chayCoPhien(
-                    phien,
-                    () -> true,
-                    () -> {
-                        nhapXuatKhoService.nhapKho(
-                                giaTri.get("supplier"),
-                                giaTri.get("product"),
-                                giaTri.get("batch"),
-                                hsd,
-                                sl,
-                                gia,
-                                daTra);
-                        return null;
-                    },
-                    null,
-                    v -> {
-                        HopThoai.hienThiThanhCong(this, "Đã lập phiếu nhập kho thành công.");
-                        lamMoi();
-                    },
-                    ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+        if (giaTri == null) return;
+        DuLieuNhapKho duLieuNhap = docVaKiemTraNhapKho(giaTri);
+        if (duLieuNhap == null) return;
+        TacVuNen.chayCoPhien(
+                phien,
+                () -> true,
+                () -> {
+                    nhapXuatKhoService.nhapKho(
+                            giaTri.get("supplier"),
+                            giaTri.get("product"),
+                            giaTri.get("batch"),
+                            duLieuNhap.hsd,
+                            duLieuNhap.sl,
+                            duLieuNhap.gia,
+                            duLieuNhap.daTra);
+                    return null;
+                },
+                null,
+                v -> {
+                    HopThoai.hienThiThanhCong(this, "Đã lập phiếu nhập kho thành công.");
+                    lamMoi();
+                },
+                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+    }
+
+    private static final class DuLieuNhapKho {
+        private final int sl;
+        private final long gia;
+        private final long daTra;
+        private final LocalDate hsd;
+
+        private DuLieuNhapKho(int sl, long gia, long daTra, LocalDate hsd) {
+            this.sl = sl;
+            this.gia = gia;
+            this.daTra = daTra;
+            this.hsd = hsd;
         }
+    }
+
+    private DuLieuNhapKho docVaKiemTraNhapKho(Map<String, String> giaTri) {
+        int sl;
+        long gia;
+        long daTra;
+        LocalDate hsd;
+        try {
+            sl = docSoLuong(giaTri, "qty");
+            gia = docSoTien(giaTri, "cost");
+            daTra = docSoTien(giaTri, "da_tra");
+            hsd = phanTichNgay(giaTri.get("expiry"));
+        } catch (NumberFormatException ex) {
+            HopThoai.hienThiCanhBao(this, "Số lượng và giá nhập phải là số hợp lệ.");
+            return null;
+        } catch (RuntimeException ex) {
+            HopThoai.hienThiCanhBao(this, ex.getMessage());
+            return null;
+        }
+        if (sl <= 0) {
+            HopThoai.hienThiCanhBao(this, "Số lượng nhập kho phải lớn hơn 0.");
+            return null;
+        }
+        if (gia <= 0) {
+            HopThoai.hienThiCanhBao(this, "Giá nhập mỗi đơn vị phải lớn hơn 0 đồng.");
+            return null;
+        }
+        long tongNhap;
+        try {
+            tongNhap = Math.multiplyExact((long) sl, gia);
+        } catch (ArithmeticException ex) {
+            HopThoai.hienThiCanhBao(this, "Tổng giá trị nhập kho vượt quá giới hạn cho phép.");
+            return null;
+        }
+        if (daTra < 0 || daTra > tongNhap) {
+            HopThoai.hienThiCanhBao(
+                    this, "Tiền đã trả phải từ 0 đến " + DinhDang.dinhDang(tongNhap) + ".");
+            return null;
+        }
+        return new DuLieuNhapKho(sl, gia, daTra, hsd);
     }
 
     // Hiển thị bảng chi tiết các mặt hàng và lô hàng của phiếu nhập đang chọn
@@ -172,9 +211,28 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                             BieuMauTruong.layYeuCauNhap(
                                     this,
                                     "Trả công nợ",
-                                    layTruongVanBan("da_tra", "Số tiền trả thêm (đồng)", ""));
+                                    layTruongVanBan(
+                                            "da_tra",
+                                            "Số tiền trả thêm (còn nợ "
+                                                    + DinhDang.dinhDang(conLai)
+                                                    + ")",
+                                            String.valueOf(conLai)));
                     if (giaTri == null) return;
-                    long soTien = docSoTien(giaTri, "da_tra");
+                    long soTien;
+                    try {
+                        soTien = docSoTien(giaTri, "da_tra");
+                    } catch (RuntimeException ex) {
+                        HopThoai.hienThiCanhBao(this, "Số tiền trả thêm phải là số nguyên hợp lệ.");
+                        return;
+                    }
+                    if (soTien <= 0 || soTien > conLai) {
+                        HopThoai.hienThiCanhBao(
+                                this,
+                                "Số tiền trả thêm phải lớn hơn 0 và không vượt quá "
+                                        + DinhDang.dinhDang(conLai)
+                                        + ".");
+                        return;
+                    }
                     TacVuNen.chayCoPhien(
                             phien,
                             () -> true,
@@ -230,6 +288,10 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
     }
 
     private void hienThiHopThoaiGhiHuy(List<MucLuaChon> dsLo, PhienDangNhap phien) {
+        if (dsLo.isEmpty()) {
+            HopThoai.hienThiCanhBao(this, "Không có lô hàng nào còn tồn kho để xuất hủy.");
+            return;
+        }
         Map<String, String> giaTri =
                 BieuMauTruong.layYeuCauNhap(
                         this,

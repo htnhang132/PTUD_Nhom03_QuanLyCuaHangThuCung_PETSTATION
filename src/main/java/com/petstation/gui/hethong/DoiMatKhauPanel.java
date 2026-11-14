@@ -41,6 +41,8 @@ public final class DoiMatKhauPanel extends CoSoPanel {
 
     private TruongMatKhauAnHien khungTruongXacNhanMatKhau;
 
+    private JLabel nhanNhanDoManh;
+
     public DoiMatKhauPanel() {
         setLayout(new BorderLayout());
         JPanel khungNoiDung = taoKhungBieuMauDoiMatKhau();
@@ -70,9 +72,9 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         themDong(khungNoiDung, gc, 2, "Mật khẩu hiện tại", khungTruongHienTaiMatKhau);
         themDong(khungNoiDung, gc, 3, "Mật khẩu mới", khungTruongMoiMatKhau);
         themDong(khungNoiDung, gc, 4, "Xác nhận mật khẩu", khungTruongXacNhanMatKhau);
-        JLabel nhanNhanDoManh = taoNhanDoManhMatKhau(khungNoiDung, gc);
+        nhanNhanDoManh = taoNhanDoManhMatKhau(khungNoiDung, gc);
         themGhiChuQuyTacMatKhau(khungNoiDung, gc);
-        themThanhThaoTacDoiMatKhau(khungNoiDung, gc, nhanNhanDoManh);
+        themThanhThaoTacDoiMatKhau(khungNoiDung, gc);
         khungNoiDung.setMinimumSize(new Dimension(480, 0));
         return khungNoiDung;
     }
@@ -90,15 +92,15 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     }
 
     private JLabel taoNhanDoManhMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
-        JLabel nhanNhanDoManh = new JLabel("");
-        nhanNhanDoManh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+        JLabel nhanDoManh = new JLabel("");
+        nhanDoManh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         gc.gridy = 5;
         gc.gridx = 1;
         gc.gridwidth = 1;
-        khungNoiDung.add(nhanNhanDoManh, gc);
+        khungNoiDung.add(nhanDoManh, gc);
         themBoLangNgheTaiLieu(
-                khungTruongMoiMatKhau.layTruongMatKhau(), () -> capNhatNhanDoManh(nhanNhanDoManh));
-        return nhanNhanDoManh;
+                khungTruongMoiMatKhau.layTruongMatKhau(), () -> capNhatNhanDoManh(nhanDoManh));
+        return nhanDoManh;
     }
 
     private void capNhatNhanDoManh(JLabel nhanNhanDoManh) {
@@ -133,8 +135,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         khungNoiDung.add(nhanQuyTac, gc);
     }
 
-    private void themThanhThaoTacDoiMatKhau(
-            JPanel khungNoiDung, GridBagConstraints gc, JLabel nhanNhanDoManh) {
+    private void themThanhThaoTacDoiMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
         JPanel khungCacThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         khungCacThaoTac.setOpaque(false);
         NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -145,15 +146,49 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         khungNoiDung.add(khungCacThaoTac, gc);
         btnHuy.addActionListener(
                 e -> {
-                    khungTruongHienTaiMatKhau.xoa();
-                    khungTruongMoiMatKhau.xoa();
-                    khungTruongXacNhanMatKhau.xoa();
-                    nhanNhanDoManh.setText("");
+                    if (coThayDoiChuaLuu()
+                            && !HopThoai.xacNhan(this, "Hủy bỏ thông tin mật khẩu đang nhập?")) {
+                        return;
+                    }
+                    xoaBieuMau();
                 });
         btnLuu.addActionListener(e -> luuMatKhauMoi());
+        khungTruongHienTaiMatKhau
+                .layTruongMatKhau()
+                .addActionListener(
+                        e -> khungTruongMoiMatKhau.layTruongMatKhau().requestFocusInWindow());
+        khungTruongMoiMatKhau
+                .layTruongMatKhau()
+                .addActionListener(
+                        e -> khungTruongXacNhanMatKhau.layTruongMatKhau().requestFocusInWindow());
+        khungTruongXacNhanMatKhau.layTruongMatKhau().addActionListener(e -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("control S", e -> luuMatKhauMoi());
-        dangKyBanPhimPhimTat("ENTER", e -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("ESCAPE", e -> btnHuy.doClick());
+    }
+
+    private void xoaBieuMau() {
+        khungTruongHienTaiMatKhau.xoa();
+        khungTruongMoiMatKhau.xoa();
+        khungTruongXacNhanMatKhau.xoa();
+        if (nhanNhanDoManh != null) nhanNhanDoManh.setText("");
+    }
+
+    public boolean coThayDoiChuaLuu() {
+        return !khungTruongHienTaiMatKhau.layVanBanMatKhau().isEmpty()
+                || !khungTruongMoiMatKhau.layVanBanMatKhau().isEmpty()
+                || !khungTruongXacNhanMatKhau.layVanBanMatKhau().isEmpty();
+    }
+
+    @Override
+    public boolean coTheRoiManHinh() {
+        if (!coThayDoiChuaLuu()) return true;
+        return HopThoai.xacNhan(
+                this, "Thông tin đổi mật khẩu chưa được lưu. Bạn có chắc muốn rời màn hình này?");
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        xoaBieuMau();
     }
 
     private TruongMatKhauAnHien taoTruongMatKhau() {
@@ -201,9 +236,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
                 () -> taiKhoanService.layThayDoiMatKhau(hienTai, moiMatKhau),
                 () -> {
                     HopThoai.hienThiThongTin(this, "Đã cập nhật mật khẩu.", "Thành công");
-                    khungTruongHienTaiMatKhau.xoa();
-                    khungTruongMoiMatKhau.xoa();
-                    khungTruongXacNhanMatKhau.xoa();
+                    xoaBieuMau();
                 },
                 ngoaiLe -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ngoaiLe), "Lỗi"));
     }

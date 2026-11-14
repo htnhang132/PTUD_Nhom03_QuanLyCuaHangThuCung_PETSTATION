@@ -14,7 +14,13 @@ import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -31,6 +37,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -119,6 +126,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                                 nhanSoLuong.setText(
                                         ThanhDanhSach.soKetQua(
                                                 bangBang.getRowCount(), moHinh.getRowCount())));
+        ganHienThiTrangThaiRong(scrCuon);
         add(scrCuon, BorderLayout.CENTER);
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuat.putClientProperty("luonCuoi", Boolean.TRUE);
@@ -136,9 +144,65 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                 BorderLayout.NORTH);
         khungCacThaoTac = new ThanhDanhSach();
         oTimKiem = taoOTimKiem("Tìm trong danh sách...");
+        ganPhimTimKiem(oTimKiem);
         khungCacThaoTac.add(oTimKiem);
         khungTren.add(khungCacThaoTac, BorderLayout.CENTER);
         return khungTren;
+    }
+
+    private void ganPhimTimKiem(JTextField oTruong) {
+        oTruong.addActionListener(
+                suKien -> {
+                    if (bangBang != null && bangBang.getRowCount() > 0) {
+                        bangBang.setRowSelectionInterval(0, 0);
+                        bangBang.requestFocusInWindow();
+                    }
+                });
+        oTruong.getInputMap(JComponent.WHEN_FOCUSED)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "xoaTimKiem");
+        oTruong.getActionMap()
+                .put(
+                        "xoaTimKiem",
+                        new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if (!oTruong.getText().isEmpty()) {
+                                    oTruong.setText("");
+                                }
+                            }
+                        });
+    }
+
+    private void ganHienThiTrangThaiRong(JScrollPane scrCuon) {
+        JViewport khungXem =
+                new JViewport() {
+                    @Override
+                    public void paint(Graphics g) {
+                        super.paint(g);
+                        veTrangThaiRong(g, this);
+                    }
+                };
+        khungXem.setBackground(MauUngDung.THE_NEN);
+        khungXem.setView(bangBang);
+        scrCuon.setViewport(khungXem);
+    }
+
+    private void veTrangThaiRong(Graphics g, JViewport khungXem) {
+        if (bangBang.getRowCount() > 0) return;
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 13));
+        g2.setColor(MauUngDung.VAN_BAN_XAM);
+        String thongBao =
+                moHinh.getRowCount() == 0
+                        ? "Chưa có dữ liệu để hiển thị."
+                        : "Không tìm thấy kết quả phù hợp.";
+        FontMetrics fm = g2.getFontMetrics();
+        int x = Math.max(12, (khungXem.getWidth() - fm.stringWidth(thongBao)) / 2);
+        int y = Math.max(fm.getAscent() + 20, khungXem.getHeight() / 2);
+        g2.drawString(thongBao, x, y);
+        g2.dispose();
     }
 
     private void dangKyChonDongNghiepVu() {
@@ -169,18 +233,22 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
     protected NutDinhDang themNut(
             JPanel khungVungChua, String nhan, NutDinhDang.KieuNut kieu, Runnable thaoTac) {
         NutDinhDang btnNut = new NutDinhDang(nhan, kieu);
-        btnNut.addActionListener(
-                suKien -> {
-                    try {
-                        thaoTac.run();
-                        lamMoi();
-                    } catch (RuntimeException ngoaiLe) {
-                        HopThoai.hienThiCanhBao(this, ngoaiLe.getMessage());
-                    }
-                });
+        btnNut.addActionListener(suKien -> chayThaoTacVaLamMoiNeuConHienThi(thaoTac));
         khungVungChua.add(btnNut);
         capNhatThaoTac();
         return btnNut;
+    }
+
+    private void chayThaoTacVaLamMoiNeuConHienThi(Runnable thaoTac) {
+        boolean dangHienThiTruoc = isShowing();
+        try {
+            thaoTac.run();
+            if (!dangHienThiTruoc || isShowing()) {
+                lamMoi();
+            }
+        } catch (RuntimeException ngoaiLe) {
+            HopThoai.hienThiCanhBao(this, ngoaiLe.getMessage());
+        }
     }
 
     protected NutDinhDang themNut(JPanel khungVungChua, String nhan, Runnable thaoTac) {
@@ -216,13 +284,12 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                 new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        if (e.getClickCount() == 2 && bangBang.getSelectedRow() >= 0) {
-                            try {
-                                thaoTac.run();
-                                lamMoi();
-                            } catch (RuntimeException ex) {
-                                HopThoai.hienThiCanhBao(BangNghiepVuPanel.this, ex.getMessage());
-                            }
+                        int dongClick = bangBang.rowAtPoint(e.getPoint());
+                        if (SwingUtilities.isLeftMouseButton(e)
+                                && e.getClickCount() == 2
+                                && dongClick >= 0) {
+                            bangBang.setRowSelectionInterval(dongClick, dongClick);
+                            chayThaoTacVaLamMoiNeuConHienThi(thaoTac);
                         }
                     }
                 });

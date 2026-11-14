@@ -2,26 +2,33 @@ package com.petstation.gui.khachhang;
 
 import static com.petstation.util.DuLieu.chuyenThanhChuoi;
 
-import com.petstation.gui.banhang.InHoaDonPanel;
+import com.petstation.dto.ChiTietBienLai;
+import com.petstation.gui.banhang.HoaDonDocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.khachhang.LichSuKhachHangService;
 import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.print.PrinterJob;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 public final class ChiTietKhachHangPanel extends CoSoPanel {
@@ -75,31 +82,67 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                         "Mã voucher", "Mệnh giá", "Hạn dùng", "Đã dùng", "Số lượng", "Trạng thái"
                     });
 
+    private final String maKhachHang;
+    private int luotTai;
+
     public ChiTietKhachHangPanel(
             String ma, String ten, String soDienThoai, String diaChi, String hang, String diem) {
+        this.maKhachHang = lamSachChuoi(ma);
+        setBorder(new EmptyBorder(0, 0, 0, 0));
         setLayout(new BorderLayout(0, 10));
         add(
-                taoTieuDeMuc(
-                        ten
-                                + " · "
-                                + ma
-                                + " · "
-                                + soDienThoai
-                                + " · "
-                                + hang
-                                + " · "
-                                + diem
-                                + " điểm"),
+                taoTieuDeMuc(taoTieuDeKhachHang(ma, ten, soDienThoai, diaChi, hang, diem)),
                 BorderLayout.NORTH);
         JTabbedPane tabCacTab = new JTabbedPane();
-        tabCacTab.addTab("Thú cưng", taoBangDinhDang(moHinhThuCung));
-        tabCacTab.addTab("Hóa đơn", taoTabHoaDon(taoBangDinhDang(moHinhHoaDon)));
-        tabCacTab.addTab("Spa", taoBangDinhDang(moHinhSpa));
-        tabCacTab.addTab("Lưu trú", taoBangDinhDang(moHinhLuuTru));
-        tabCacTab.addTab("Voucher cá nhân", taoBangDinhDang(moHinhVoucher));
+        tabCacTab.addTab(
+                "Thú cưng",
+                taoTabLichSu(taoBangDinhDang(moHinhThuCung), "ThuCung_" + maKhachHang, false));
+        tabCacTab.addTab(
+                "Hóa đơn",
+                taoTabLichSu(taoBangDinhDang(moHinhHoaDon), "HoaDon_" + maKhachHang, true));
+        tabCacTab.addTab(
+                "Spa", taoTabLichSu(taoBangDinhDang(moHinhSpa), "Spa_" + maKhachHang, false));
+        tabCacTab.addTab(
+                "Lưu trú",
+                taoTabLichSu(taoBangDinhDang(moHinhLuuTru), "LuuTru_" + maKhachHang, false));
+        tabCacTab.addTab(
+                "Voucher cá nhân",
+                taoTabLichSu(taoBangDinhDang(moHinhVoucher), "Voucher_" + maKhachHang, false));
         add(tabCacTab, BorderLayout.CENTER);
+        lamMoiDuLieu();
+    }
+
+    public void lamMoiDuLieu() {
+        int luot = ++luotTai;
         TacVuNen.chayCoPhien(
-                this, () -> true, () -> taiDuLieuChiTiet(ma), this::apDungDuLieuChiTiet);
+                this,
+                () -> luot == luotTai,
+                () -> taiDuLieuChiTiet(maKhachHang),
+                this::apDungDuLieuChiTiet);
+    }
+
+    private static String taoTieuDeKhachHang(
+            String ma, String ten, String soDienThoai, String diaChi, String hang, String diem) {
+        List<String> phan = new ArrayList<>();
+        themNeuCo(phan, ten);
+        themNeuCo(phan, ma);
+        themNeuCo(phan, soDienThoai);
+        themNeuCo(phan, diaChi);
+        themNeuCo(phan, hang);
+        String diemSach = lamSachChuoi(diem);
+        phan.add((diemSach.isEmpty() ? "0" : diemSach) + " điểm");
+        return String.join(" · ", phan);
+    }
+
+    private static void themNeuCo(List<String> danhSach, String giaTri) {
+        String sach = lamSachChuoi(giaTri);
+        if (!sach.isEmpty()) danhSach.add(sach);
+    }
+
+    private static String lamSachChuoi(String giaTri) {
+        if (giaTri == null) return "";
+        String cat = giaTri.trim();
+        return "null".equalsIgnoreCase(cat) ? "" : cat;
     }
 
     private static DefaultTableModel taoMoHinhChiDoc(String[] cacCot) {
@@ -206,13 +249,31 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         for (Object[] dong : cacDong) moHinh.addRow(dong);
     }
 
-    private JPanel taoTabHoaDon(JScrollPane scrHoaDonBang) {
-        JPanel khungCacDonHang = taoVungTrongSuot(new BorderLayout(0, 8));
-        khungCacDonHang.add(scrHoaDonBang, BorderLayout.CENTER);
-        NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
-        btnXemTruoc.addActionListener(suKien -> xemHoaDonChon(scrHoaDonBang));
-        khungCacDonHang.add(btnXemTruoc, BorderLayout.SOUTH);
-        return khungCacDonHang;
+    private JPanel taoTabLichSu(JScrollPane scrBang, String tenXuat, boolean laHoaDon) {
+        JPanel khung = taoVungTrongSuot(new BorderLayout(0, 8));
+        khung.add(scrBang, BorderLayout.CENTER);
+        JPanel thanhNut = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        if (laHoaDon) {
+            JTable bangHoaDon = layBang(scrBang);
+            bangHoaDon.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 2 && bangHoaDon.getSelectedRow() >= 0) {
+                                xemHoaDonChon(scrBang);
+                            }
+                        }
+                    });
+            NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
+            btnXemTruoc.addActionListener(suKien -> xemHoaDonChon(scrBang));
+            thanhNut.add(btnXemTruoc);
+        }
+        NutDinhDang btnXuatExcel = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.PHU);
+        btnXuatExcel.addActionListener(
+                suKien -> XuatExcelDialog.xuatBang(this, layBang(scrBang), tenXuat));
+        thanhNut.add(btnXuatExcel);
+        khung.add(thanhNut, BorderLayout.SOUTH);
+        return khung;
     }
 
     private void xemHoaDonChon(JScrollPane scrHoaDonBang) {
@@ -232,39 +293,48 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
-                () -> InHoaDonPanel.hienThi(new BanHangService().layBienLai(maHoaDon)),
-                noiDung -> {
-                    JTextArea oVanBan = new JTextArea(noiDung, 28, 48);
-                    oVanBan.setEditable(false);
-                    NutDinhDang btnIn = new NutDinhDang("In", NutDinhDang.KieuNut.CHINH);
-                    btnIn.addActionListener(
-                            suKien -> {
-                                try {
-                                    PrinterJob job = PrinterJob.getPrinterJob();
-                                    job.setJobName("Hóa đơn " + maHoaDon);
-                                    job.setPrintable(oVanBan.getPrintable(null, null));
-                                    if (!job.printDialog()) return;
-                                    TacVuNen.chay(
-                                            () -> {
-                                                job.print();
-                                                return null;
-                                            },
-                                            v -> {},
-                                            ngoaiLe ->
-                                                    HopThoai.hienThiLoi(
-                                                            this, TacVuNen.thongDiepLoi(ngoaiLe)));
-                                } catch (Exception ngoaiLe) {
-                                    HopThoai.hienThiLoi(this, ngoaiLe.getMessage());
-                                }
-                            });
-                    JPanel khungTam = new JPanel(new BorderLayout());
-                    khungTam.add(new JScrollPane(oVanBan), BorderLayout.CENTER);
-                    khungTam.add(btnIn, BorderLayout.SOUTH);
-                    HopThoai.hienThiNoiDung(this, khungTam, "Hóa đơn " + maHoaDon);
-                });
+                () -> new BanHangService().layChiTietBienLai(maHoaDon),
+                chiTiet -> hienThiHopThoaiHoaDon(maHoaDon, chiTiet));
+    }
+
+    private void hienThiHopThoaiHoaDon(String maHoaDon, ChiTietBienLai chiTiet) {
+        if (chiTiet == null || chiTiet.getBienLai() == null) {
+            HopThoai.hienThiCanhBao(this, "Không tìm thấy chi tiết hóa đơn " + maHoaDon + ".");
+            return;
+        }
+        HoaDonDocPanel khungXem = new HoaDonDocPanel();
+        khungXem.datDuLieu(chiTiet);
+        JScrollPane scrXem = new JScrollPane(khungXem);
+        scrXem.setPreferredSize(new Dimension(440, 520));
+        NutDinhDang btnIn = new NutDinhDang("In hóa đơn", NutDinhDang.KieuNut.CHINH);
+        btnIn.addActionListener(suKien -> inHoaDon(maHoaDon, chiTiet));
+        JPanel khungTam = new JPanel(new BorderLayout(0, 8));
+        khungTam.add(scrXem, BorderLayout.CENTER);
+        khungTam.add(btnIn, BorderLayout.SOUTH);
+        HopThoai.hienThiNoiDung(this, khungTam, "Hóa đơn " + maHoaDon);
+    }
+
+    private void inHoaDon(String maHoaDon, ChiTietBienLai chiTiet) {
+        try {
+            HoaDonDocPanel banIn = new HoaDonDocPanel();
+            banIn.datDuLieu(chiTiet);
+            PrinterJob job = PrinterJob.getPrinterJob();
+            job.setJobName("Hóa đơn " + maHoaDon);
+            job.setPrintable(banIn);
+            if (!job.printDialog()) return;
+            TacVuNen.chay(
+                    () -> {
+                        job.print();
+                        return null;
+                    },
+                    v -> HopThoai.hienThiThanhCong(this, "Đã gửi lệnh in hóa đơn " + maHoaDon),
+                    ngoaiLe -> HopThoai.hienThiLoi(this, TacVuNen.thongDiepLoi(ngoaiLe)));
+        } catch (Exception ngoaiLe) {
+            HopThoai.hienThiLoi(this, ngoaiLe.getMessage());
+        }
     }
 
     private static String dinhDangGio(LocalDateTime ldt) {
-        return ldt == null ? "" : ldt.format(DinhDang.NGAY_GIO_SQL);
+        return ldt == null ? "" : ldt.format(DinhDang.NGAY_GIO);
     }
 }

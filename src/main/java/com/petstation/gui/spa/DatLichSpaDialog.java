@@ -11,6 +11,7 @@ import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgayGio;
 import com.petstation.gui.khachhang.DanhMucKhachHangPanel;
 import com.petstation.gui.khachhang.DanhMucThuCungPanel;
+import com.petstation.model.spa.LichHen;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.hethong.PhienDangNhapService;
@@ -42,6 +43,7 @@ import javax.swing.border.EmptyBorder;
 public final class DatLichSpaDialog {
     private final Component parent;
     private final JDialog hopThoai;
+    private final String maLichHenSua;
     private final JTextField oTimKhach;
     private final JComboBox<BieuMauTruong.LuaChon> cboKhachHang;
     private final JComboBox<BieuMauTruong.LuaChon> cboThuCung;
@@ -58,14 +60,30 @@ public final class DatLichSpaDialog {
     private List<Object[]> tatCaThuCung = List.of();
 
     public static void mo(Component parent, Runnable onThanhCong) {
+        moSua(parent, null, onThanhCong);
+    }
+
+    public static void moSua(Component parent, String maLichHen, Runnable onThanhCong) {
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chayCoPhien(
                 phien,
                 () -> true,
-                DatLichSpaDialog::taiDuLieuBanDau,
+                () -> {
+                    Object[] duLieu = taiDuLieuBanDau();
+                    LichHen lichHen =
+                            maLichHen == null || maLichHen.isBlank()
+                                    ? null
+                                    : new SpaService().layChiTietLichHen(maLichHen);
+                    return new Object[] {duLieu, lichHen};
+                },
                 null,
-                duLieu ->
-                        new DatLichSpaDialog(parent, onThanhCong, duLieu).hopThoai.setVisible(true),
+                ketQua ->
+                        new DatLichSpaDialog(
+                                        parent,
+                                        onThanhCong,
+                                        (Object[]) ketQua[0],
+                                        (LichHen) ketQua[1])
+                                .hopThoai.setVisible(true),
                 ex -> HopThoai.hienThiCanhBao(parent, TacVuNen.thongDiepLoi(ex)));
     }
 
@@ -92,13 +110,17 @@ public final class DatLichSpaDialog {
                 .toList();
     }
 
-    private DatLichSpaDialog(Component parent, Runnable onThanhCong, Object[] duLieu) {
+    private DatLichSpaDialog(
+            Component parent, Runnable onThanhCong, Object[] duLieu, LichHen lichHenSua) {
         this.parent = parent;
         this.onThanhCong = onThanhCong;
+        this.maLichHenSua = lichHenSua == null ? null : lichHenSua.getMaLichHen();
         this.hopThoai =
                 new JDialog(
                         SwingUtilities.getWindowAncestor(parent),
-                        "Đặt lịch hẹn dịch vụ Spa",
+                        maLichHenSua == null
+                                ? "Đặt lịch hẹn dịch vụ Spa"
+                                : "Cập nhật lịch hẹn Spa #" + maLichHenSua,
                         Dialog.ModalityType.APPLICATION_MODAL);
         oTimKhach = new JTextField(12);
         oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
@@ -120,13 +142,77 @@ public final class DatLichSpaDialog {
         btnThemThuCung = new NutDinhDang("+ Thêm thú cưng", NutDinhDang.KieuNut.PHU);
         btnThemThuCung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnThemThuCung.setPreferredSize(new Dimension(130, 34));
-        spThoiGian =
-                new BoChonNgayGio(LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0));
-        btnLuu = new NutDinhDang("Đặt lịch hẹn", NutDinhDang.KieuNut.CHINH);
+        LocalDateTime macDau =
+                lichHenSua != null && lichHenSua.getBatDau() != null
+                        ? lichHenSua.getBatDau()
+                        : LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0);
+        spThoiGian = new BoChonNgayGio(macDau);
+        btnLuu =
+                new NutDinhDang(
+                        maLichHenSua == null ? "Đặt lịch hẹn" : "Lưu thay đổi",
+                        NutDinhDang.KieuNut.CHINH);
         btnHuy = new NutDinhDang("Hủy bỏ (ESC)", NutDinhDang.KieuNut.PHU);
         napDuLieu(duLieu);
+        if (lichHenSua != null) {
+            dienDuLieuSua(lichHenSua);
+        }
         thietKeGiaoDien();
         caiDatSuKien();
+    }
+
+    private void dienDuLieuSua(LichHen lichHen) {
+        String maKhach = "";
+        String tenKhach = "";
+        if (lichHen.getKhachHang() != null) {
+            maKhach = lichHen.getKhachHang().getMaKhachHang();
+            tenKhach = lichHen.getKhachHang().getHoTen();
+        } else if (lichHen.getThuCung() != null && lichHen.getThuCung().getKhachHang() != null) {
+            maKhach = lichHen.getThuCung().getKhachHang().getMaKhachHang();
+            tenKhach = lichHen.getThuCung().getKhachHang().getHoTen();
+        }
+        if (maKhach != null && !maKhach.isBlank()) {
+            chonHoacThemLuaChon(
+                    cboKhachHang, maKhach, maKhach + " — " + (tenKhach == null ? "" : tenKhach));
+        }
+        capNhatDanhSachThuCung();
+        if (lichHen.getThuCung() != null) {
+            chonHoacThemLuaChon(
+                    cboThuCung,
+                    lichHen.getThuCung().getMaThuCung(),
+                    lichHen.getThuCung().getMaThuCung()
+                            + " — "
+                            + (lichHen.getThuCung().getTen() == null
+                                    ? ""
+                                    : lichHen.getThuCung().getTen()));
+        }
+        if (lichHen.getDichVu() != null) {
+            chonHoacThemLuaChon(
+                    cboGoiDichVu, lichHen.getDichVu().getMaGoi(), lichHen.getDichVu().getTenGoi());
+        }
+        if (lichHen.getNhanVien() != null) {
+            chonHoacThemLuaChon(
+                    cboNhanVien,
+                    lichHen.getNhanVien().getMaNhanVien(),
+                    lichHen.getNhanVien().getHoTen());
+        }
+        oGhiChu.setText(lichHen.getGhiChu() == null ? "" : lichHen.getGhiChu());
+    }
+
+    private static void chonHoacThemLuaChon(
+            JComboBox<BieuMauTruong.LuaChon> combo, String giaTri, String nhanFallback) {
+        if (giaTri == null || giaTri.isBlank()) return;
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            if (giaTri.equals(combo.getItemAt(i).giaTri())) {
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
+        BieuMauTruong.LuaChon muc =
+                new BieuMauTruong.LuaChon(
+                        giaTri,
+                        nhanFallback == null || nhanFallback.isBlank() ? giaTri : nhanFallback);
+        combo.addItem(muc);
+        combo.setSelectedItem(muc);
     }
 
     @SuppressWarnings("unchecked")
@@ -391,20 +477,38 @@ public final class DatLichSpaDialog {
             if (batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0))) {
                 throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
             }
+            String ghiChu = oGhiChu.getText() == null ? "" : oGhiChu.getText().trim();
+            if (ghiChu.length() > 1000) {
+                throw new IllegalArgumentException("Ghi chú tối đa 1.000 ký tự.");
+            }
             btnLuu.setEnabled(false);
             var phien = PhienDangNhapService.macDinh().layPhienHienTai();
             TacVuNen.chayCoPhien(
                     phien,
                     hopThoai::isDisplayable,
                     () -> {
-                        new SpaService()
-                                .datLichHen(thu.giaTri(), goi.giaTri(), tho.giaTri(), batDau);
+                        SpaService service = new SpaService();
+                        if (maLichHenSua == null) {
+                            service.datLichHen(
+                                    thu.giaTri(), goi.giaTri(), tho.giaTri(), batDau, ghiChu);
+                        } else {
+                            service.suaLichHen(
+                                    maLichHenSua,
+                                    thu.giaTri(),
+                                    goi.giaTri(),
+                                    tho.giaTri(),
+                                    batDau,
+                                    ghiChu);
+                        }
                         return null;
                     },
                     null,
                     v -> {
                         HopThoai.hienThiThanhCong(
-                                hopThoai, "Đã đặt lịch hẹn Spa thành công cho thú cưng.");
+                                hopThoai,
+                                maLichHenSua == null
+                                        ? "Đã đặt lịch hẹn Spa thành công cho thú cưng."
+                                        : "Đã cập nhật lịch hẹn Spa thành công.");
                         if (onThanhCong != null) {
                             onThanhCong.run();
                         }

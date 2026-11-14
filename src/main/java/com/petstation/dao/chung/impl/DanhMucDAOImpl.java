@@ -226,12 +226,15 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                         + " N'Giảm tiền' END,CASE nguon WHEN 'PRODUCT' THEN N'Sản phẩm' WHEN"
                         + " 'SERVICE' THEN N'Dịch vụ' ELSE N'Cả đơn'"
                         + " END,gia_tri,don_toi_thieu,CONVERT(varchar(10),bat_dau,103),CONVERT(varchar(10),DATEADD(second,-1,ket_thuc),103),CASE"
-                        + " trang_thai WHEN 'NGUNG_HOAT_DONG' THEN N'Ngừng áp dụng' ELSE N'Đang áp"
-                        + " dụng' END FROM chuong_trinh_khuyen_mai ORDER BY ma_chuong_trinh";
+                        + " WHEN trang_thai = 'NGUNG_HOAT_DONG' THEN N'Ngừng áp dụng' WHEN"
+                        + " CAST(bat_dau AS date) > CAST(GETDATE() AS date) THEN N'Chưa áp dụng'"
+                        + " ELSE N'Đang áp dụng' END FROM chuong_trinh_khuyen_mai ORDER BY"
+                        + " ma_chuong_trinh";
             case VOUCHER ->
                     "SELECT"
                         + " v.ma_voucher,v.menh_gia,CONVERT(varchar(10),DATEADD(second,-1,v.hieu_luc_den),103),v.so_luong,v.da_dung,v.don_toi_thieu,CASE"
-                        + " v.trang_thai WHEN 'CON_HAN' THEN N'Còn hiệu lực' ELSE N'Ngừng'"
+                        + " v.trang_thai WHEN 'CON_HAN' THEN N'Còn hiệu lực' WHEN 'HET_HAN' THEN"
+                        + " N'Hết hạn' WHEN 'DA_DUNG' THEN N'Hết lượt' ELSE N'Ngừng'"
                         + " END,COALESCE(k.ma_khach_hang+' - '+k.ho_ten,''),CASE WHEN"
                         + " v.chi_ap_dung_spa=1 THEN N'Chỉ Spa' ELSE N'Mọi hóa đơn' END FROM"
                         + " voucher v LEFT JOIN khach_hang k ON k.ma_khach_hang=v.ma_khach_hang"
@@ -244,9 +247,8 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
             case PHONG_LUU_TRU ->
                     "SELECT ma_phong,loai_phong,suc_chua,gia_dem,ghi_chu,CASE trang_thai"
                             + " WHEN 'TRONG' THEN N'Trống' WHEN 'DANG_O' THEN N'Có thú'"
-                            + " WHEN 'DANG_DON' THEN N'Đang dọn' WHEN 'BAO_TRI' THEN N'Bảo"
-                            + " trì' ELSE N'Ngừng hoạt động' END FROM phong_hotel ORDER BY"
-                            + " ma_phong";
+                            + " WHEN 'DANG_DON' THEN N'Đang dọn' ELSE N'Bảo trì' END"
+                            + " FROM phong_hotel ORDER BY ma_phong";
         };
     }
 
@@ -613,6 +615,13 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
             throw new IllegalArgumentException(
                     "Ngày hiệu lực đến của voucher không được để trống.");
         }
+        String trangThaiVoucher =
+                switch (chuyenThanhChuoi(giaTri2[6])) {
+                    case "Hết hạn" -> TrangThaiVoucher.HET_HAN.maDB();
+                    case "Hết lượt" -> TrangThaiVoucher.DA_DUNG.maDB();
+                    case "Ngừng" -> TrangThaiVoucher.DA_HUY.maDB();
+                    default -> TrangThaiVoucher.CON_HAN.maDB();
+                };
         String khachStr = chuyenThanhChuoi(giaTri2[7]);
         layThemHoacCapNhat(
                 "voucher",
@@ -633,9 +642,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 hieuLucDen.plusDays(1).atStartOfDay(),
                 Integer.parseInt(chuyenThanhChuoi(giaTri2[3])),
                 docSoThapPhan(giaTri2[5]),
-                "Ngừng".equals(giaTri2[6])
-                        ? TrangThaiVoucher.HET_HAN.maDB()
-                        : TrangThaiVoucher.CON_HAN.maDB(),
+                trangThaiVoucher,
                 "Chỉ Spa".equals(giaTri2[8]),
                 khachStr.isBlank() ? null : khachStr.split(" - ", 2)[0]);
     }
@@ -931,7 +938,31 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 maNhanVien);
     }
 
+    @Override
+    public int moKhoaTaiKhoanNhanVien(String maNhanVien) {
+        Object dangLam =
+                layGiaTriDon(
+                        "SELECT dang_lam_viec FROM nhan_vien WHERE ma_nhan_vien=?", maNhanVien);
+        if (!Boolean.TRUE.equals(dangLam) && !"1".equals(String.valueOf(dangLam))) {
+            throw new IllegalStateException(
+                    "Chỉ mở khóa được tài khoản cho nhân viên đang làm việc.");
+        }
+        return capNhat(
+                "UPDATE tai_khoan SET trang_thai='HOAT_DONG', so_lan_dang_nhap_sai=0,"
+                        + " khoa_den=NULL WHERE ma_nhan_vien=? AND trang_thai='NGUNG_HOAT_DONG'",
+                maNhanVien);
+    }
+
     public void datLaiMatKhau(String tenDangNhap, String matKhau) {
+        Object dangLam =
+                layGiaTriDon(
+                        "SELECT nv.dang_lam_viec FROM tai_khoan tk JOIN nhan_vien nv ON"
+                                + " nv.ma_nhan_vien = tk.ma_nhan_vien WHERE tk.ten_dang_nhap=?",
+                        tenDangNhap);
+        if (Boolean.FALSE.equals(dangLam) || "0".equals(String.valueOf(dangLam))) {
+            throw new IllegalStateException(
+                    "Không thể đặt lại mật khẩu cho nhân viên đã nghỉ việc.");
+        }
         String maBam;
         if (matKhau != null && matKhau.startsWith("$2") && matKhau.length() >= 59) {
             maBam = matKhau;
@@ -960,6 +991,15 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
     @Override
     public void taoTaiKhoanNhanVien(
             String maNhanVien, String tenDangNhap, String matKhauHash, String vaiTro) {
+        Object dangLam =
+                layGiaTriDon(
+                        "SELECT dang_lam_viec FROM nhan_vien WHERE ma_nhan_vien=?", maNhanVien);
+        if (dangLam == null
+                || Boolean.FALSE.equals(dangLam)
+                || "0".equals(String.valueOf(dangLam))) {
+            throw new IllegalStateException(
+                    "Không thể tạo tài khoản hoạt động cho nhân viên đã nghỉ việc.");
+        }
         VaiTro vt = VaiTro.docTuCSDL(vaiTro);
         String dsQuyen = TaiKhoanDAOImpl.macDinhTheoVaiTro(vt);
         String maBam =
@@ -974,6 +1014,32 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 maBam,
                 vt.name(),
                 dsQuyen);
+    }
+
+    @Override
+    public String kiemTraKhachHangDangGiaoDich(String maKhachHang) {
+        if (laySo(
+                        "SELECT COUNT(*) FROM thu_cung WHERE ma_khach_hang=? AND dang_theo_doi=1",
+                        maKhachHang)
+                > 0) {
+            return "Khách hàng vẫn còn thú cưng đang theo dõi. Hãy ngừng theo dõi thú cưng trước.";
+        }
+        if (laySo(
+                        "SELECT COUNT(*) FROM phieu_tiep_nhan_spa p JOIN thu_cung tc ON"
+                                + " tc.ma_thu_cung=p.ma_thu_cung WHERE tc.ma_khach_hang=? AND"
+                                + " p.trang_thai IN ('TIEP_NHAN','DANG_THUC_HIEN','HOAN_TAT')",
+                        maKhachHang)
+                > 0) {
+            return "Khách hàng đang có phiếu dịch vụ Spa chưa thanh toán/hoàn tất.";
+        }
+        if (laySo(
+                        "SELECT COUNT(*) FROM hop_dong_luu_tru WHERE ma_khach_hang=? AND"
+                                + " trang_thai IN ('DA_DAT','DANG_O')",
+                        maKhachHang)
+                > 0) {
+            return "Khách hàng đang có hợp đồng lưu trú đặt trước hoặc đang ở.";
+        }
+        return null;
     }
 
     // 6. NGHIỆP VỤ BỔ TRỢ NHÀ CUNG CẤP (KIỂM TRA TRÙNG TÊN / SĐT & ẢNH CHỤP JSON)

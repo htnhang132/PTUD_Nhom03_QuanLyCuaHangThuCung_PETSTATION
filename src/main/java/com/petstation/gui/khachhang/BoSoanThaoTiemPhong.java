@@ -11,7 +11,10 @@ import com.petstation.util.DinhDang;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.time.LocalDate;
 
 import javax.swing.BorderFactory;
@@ -51,14 +54,16 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                         "Mũi nhắc lại định kỳ"
                     });
 
-    private final JTextField oNgayTiem = new JTextField(LocalDate.now().format(DinhDang.NGAY), 9);
-    private final JTextField oNgayHan =
-            new JTextField(LocalDate.now().plusYears(1).format(DinhDang.NGAY), 9);
+    private final JTextField oNgayTiem =
+            new JTextField(LocalDate.now().format(DinhDang.NGAY_CHUAN), 9);
+    private final JTextField oNgayHan = new JTextField("", 9);
     private final JTextField oGhiChu = new JTextField(12);
+    private final JButton btnLichNgayTiem = BoChonNgay.taoNutLich(oNgayTiem, DinhDang.NGAY_CHUAN);
+    private final JButton btnLichNgayHan = BoChonNgay.taoNutLich(oNgayHan, DinhDang.NGAY_CHUAN);
 
-    private final JButton btnThem = new NutDinhDang("+ Thêm mũi tiêm", NutDinhDang.KieuNut.PHU);
-    private final JButton btnSua = new NutDinhDang("Sửa mũi tiêm", NutDinhDang.KieuNut.PHU);
-    private final JButton btnXoa = new NutDinhDang("Xóa mũi tiêm", NutDinhDang.KieuNut.NGUY_HIEM);
+    private final JButton btnThem = new NutDinhDang("+ Thêm mũi", NutDinhDang.KieuNut.PHU);
+    private final JButton btnSua = new NutDinhDang("Cập nhật mũi", NutDinhDang.KieuNut.PHU);
+    private final JButton btnXoa = new NutDinhDang("Xóa mũi", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public BoSoanThaoTiemPhong() {
         DinhDangBang.apDung(bang);
@@ -82,38 +87,58 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         cboLoai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         cboLoai.setPreferredSize(new Dimension(160, 32));
         oNgayTiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oNgayTiem.setPreferredSize(new Dimension(100, 32));
+        oNgayTiem.setPreferredSize(new Dimension(95, 32));
         oNgayHan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oNgayHan.setPreferredSize(new Dimension(100, 32));
+        oNgayHan.setPreferredSize(new Dimension(95, 32));
+        oNgayHan.putClientProperty("JTextField.placeholderText", "dd/MM/yyyy");
         oGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oGhiChu.setPreferredSize(new Dimension(140, 32));
-        oGhiChu.putClientProperty("JTextField.placeholderText", "Ghi chú / Số lô / Sổ tiêm...");
-        JPanel nhap = new JPanel(new GridLayout(2, 2, 8, 6));
+        oGhiChu.putClientProperty("JTextField.placeholderText", "Ghi chú / Số lô / Phòng khám...");
+        JPanel nhap = new JPanel(new GridBagLayout());
         nhap.setOpaque(false);
-        nhap.add(DinhDangBang.taoHangNhap("Loại vắc-xin", cboLoai, 3, 12));
-        nhap.add(DinhDangBang.taoHangNhap("Ghi chú / Phòng khám", oGhiChu, 3, 12));
-        nhap.add(DinhDangBang.taoHangNhap("Ngày tiêm *", taoOTruongCoNutLich(oNgayTiem), 3, 12));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(0, 0, 6, 0);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        nhap.add(DinhDangBang.taoHangNhap("Loại vắc-xin", cboLoai, 3, 12), gbc);
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(0, 0, 6, 4);
         nhap.add(
                 DinhDangBang.taoHangNhap(
-                        "Ngày hết hạn (tùy chọn)", taoOTruongCoNutLich(oNgayHan), 3, 12));
+                        "Ngày tiêm *", taoOTruongCoNutLich(oNgayTiem, btnLichNgayTiem), 3, 12),
+                gbc);
+        gbc.gridx = 1;
+        gbc.insets = new Insets(0, 4, 6, 0);
+        nhap.add(
+                DinhDangBang.taoHangNhap(
+                        "Hết hạn (tùy chọn)", taoOTruongCoNutLich(oNgayHan, btnLichNgayHan), 3, 12),
+                gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 4, 0);
+        nhap.add(DinhDangBang.taoHangNhap("Ghi chú / Phòng khám", oGhiChu, 3, 12), gbc);
         Border viNut = BorderFactory.createEmptyBorder(4, 8, 4, 8);
         btnThem.setBorder(viNut);
         btnSua.setBorder(viNut);
         btnXoa.setBorder(viNut);
-        JPanel nut = new JPanel(new GridLayout(1, 3, 8, 0));
+        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
         nut.setOpaque(false);
         nut.add(btnThem);
         nut.add(btnSua);
         nut.add(btnXoa);
-        JPanel dau = new JPanel(new BorderLayout(0, 8));
+        JPanel dau = new JPanel(new BorderLayout(0, 4));
         dau.setOpaque(false);
         dau.add(nhap, BorderLayout.CENTER);
         dau.add(nut, BorderLayout.SOUTH);
         return dau;
     }
 
-    private static JPanel taoOTruongCoNutLich(JTextField oNgay) {
-        JButton btnLich = BoChonNgay.taoNutLich(oNgay, DinhDang.NGAY);
+    private static JPanel taoOTruongCoNutLich(JTextField oNgay, JButton btnLich) {
         btnLich.setPreferredSize(new Dimension(32, 32));
         JPanel khungTam = new JPanel(new BorderLayout(4, 0));
         khungTam.setOpaque(false);
@@ -126,7 +151,10 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         btnThem.addActionListener(e -> capNhat(false));
         btnSua.addActionListener(e -> capNhat(true));
         btnXoa.addActionListener(
-                e -> DinhDangBang.xoaDongDangChon(bang, model, this::capNhatKichThuocBang));
+                e -> {
+                    DinhDangBang.xoaDongDangChon(bang, model, this::capNhatKichThuocBang);
+                    xoaTrangNhap();
+                });
         bang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
@@ -145,6 +173,14 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                         });
     }
 
+    private void xoaTrangNhap() {
+        if (cboLoai.getItemCount() > 0) cboLoai.setSelectedIndex(0);
+        oNgayTiem.setText(LocalDate.now().format(DinhDang.NGAY_CHUAN));
+        oNgayHan.setText("");
+        oGhiChu.setText("");
+        bang.clearSelection();
+    }
+
     private final JScrollPane cuon;
 
     private void capNhatKichThuocBang() {
@@ -159,7 +195,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                 throw new IllegalArgumentException("Vui lòng chọn hoặc nhập tên loại vắc-xin.");
             }
             LocalDate ngayTiem =
-                    BoChonNgay.docNgayLinhHoat(oNgayTiem.getText().trim(), DinhDang.NGAY);
+                    BoChonNgay.docNgayLinhHoat(oNgayTiem.getText().trim(), DinhDang.NGAY_CHUAN);
             if (ngayTiem == null) {
                 throw new IllegalArgumentException(
                         "Ngày tiêm không hợp lệ (định dạng dd/MM/yyyy).");
@@ -168,10 +204,16 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                 throw new IllegalArgumentException("Ngày tiêm không được ở tương lai.");
             }
             String hanStr = oNgayHan.getText().trim();
-            LocalDate ngayHan =
-                    hanStr.isEmpty() ? null : BoChonNgay.docNgayLinhHoat(hanStr, DinhDang.NGAY);
-            if (ngayHan != null && ngayHan.isBefore(ngayTiem)) {
-                throw new IllegalArgumentException("Ngày hết hạn không được trước ngày tiêm.");
+            LocalDate ngayHan = null;
+            if (!hanStr.isEmpty()) {
+                ngayHan = BoChonNgay.docNgayLinhHoat(hanStr, DinhDang.NGAY_CHUAN);
+                if (ngayHan == null) {
+                    throw new IllegalArgumentException(
+                            "Ngày hết hạn không hợp lệ (định dạng dd/MM/yyyy).");
+                }
+                if (ngayHan.isBefore(ngayTiem)) {
+                    throw new IllegalArgumentException("Ngày hết hạn không được trước ngày tiêm.");
+                }
             }
             int dong =
                     laSua && bang.getSelectedRow() >= 0
@@ -183,12 +225,13 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             }
             Object[] duLieu = {
                 loai,
-                ngayTiem.format(DinhDang.NGAY),
-                ngayHan == null ? "" : ngayHan.format(DinhDang.NGAY),
+                ngayTiem.format(DinhDang.NGAY_CHUAN),
+                ngayHan == null ? "" : ngayHan.format(DinhDang.NGAY_CHUAN),
                 oGhiChu.getText().trim()
             };
             DinhDangBang.capNhatHoacThemDong(bang, model, laSua, dong, duLieu);
             capNhatKichThuocBang();
+            if (!laSua) xoaTrangNhap();
         } catch (Exception ex) {
             HopThoai.hienThiCanhBao(panel, ex.getMessage());
         }
@@ -207,7 +250,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             String loai =
                     String.valueOf(model.getValueAt(i, 0)).replace("|", "/").replace(";", ",");
             String ngayTiemStr = String.valueOf(model.getValueAt(i, 1));
-            LocalDate nt = BoChonNgay.docNgayLinhHoat(ngayTiemStr, DinhDang.NGAY);
+            LocalDate nt = BoChonNgay.docNgayLinhHoat(ngayTiemStr, DinhDang.NGAY_CHUAN);
             String ntIso = nt == null ? ngayTiemStr : nt.toString();
             String ngayHanStr =
                     model.getValueAt(i, 2) == null
@@ -216,7 +259,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             LocalDate nh =
                     ngayHanStr.isEmpty()
                             ? null
-                            : BoChonNgay.docNgayLinhHoat(ngayHanStr, DinhDang.NGAY);
+                            : BoChonNgay.docNgayLinhHoat(ngayHanStr, DinhDang.NGAY_CHUAN);
             String nhIso = nh == null ? "" : nh.toString();
             String ghiChu =
                     model.getValueAt(i, 3) == null
@@ -244,18 +287,19 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                 String[] p = dong.split("\\|", -1);
                 if (p.length >= 2) {
                     String loai = p[0].trim();
-                    LocalDate nt = BoChonNgay.docNgayLinhHoat(p[1].trim(), DinhDang.NGAY);
-                    String ntHienThi = nt != null ? nt.format(DinhDang.NGAY) : p[1].trim();
+                    LocalDate nt = BoChonNgay.docNgayLinhHoat(p[1].trim(), DinhDang.NGAY_CHUAN);
+                    String ntHienThi = nt != null ? nt.format(DinhDang.NGAY_CHUAN) : p[1].trim();
                     String nhHienThi = "";
                     if (p.length >= 3 && !p[2].isBlank()) {
-                        LocalDate nh = BoChonNgay.docNgayLinhHoat(p[2].trim(), DinhDang.NGAY);
-                        nhHienThi = nh != null ? nh.format(DinhDang.NGAY) : p[2].trim();
+                        LocalDate nh = BoChonNgay.docNgayLinhHoat(p[2].trim(), DinhDang.NGAY_CHUAN);
+                        nhHienThi = nh != null ? nh.format(DinhDang.NGAY_CHUAN) : p[2].trim();
                     }
                     String ghiChu = p.length >= 4 ? p[3].trim() : "";
                     model.addRow(new Object[] {loai, ntHienThi, nhHienThi, ghiChu});
                 }
             }
         }
+        xoaTrangNhap();
         capNhatKichThuocBang();
     }
 
@@ -265,6 +309,8 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         cboLoai.setEnabled(duocBat);
         oNgayTiem.setEnabled(duocBat);
         oNgayHan.setEnabled(duocBat);
+        btnLichNgayTiem.setEnabled(duocBat);
+        btnLichNgayHan.setEnabled(duocBat);
         oGhiChu.setEnabled(duocBat);
         btnThem.setEnabled(duocBat);
         btnSua.setEnabled(duocBat);

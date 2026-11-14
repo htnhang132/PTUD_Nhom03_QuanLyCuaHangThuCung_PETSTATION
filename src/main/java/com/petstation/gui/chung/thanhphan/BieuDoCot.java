@@ -28,6 +28,8 @@ public final class BieuDoCot extends JComponent implements Scrollable {
     private String donVi = "";
     private Color mau = MauUngDung.DO_THUONG_HIEU;
     private final List<Rectangle> vung = new ArrayList<>();
+    private final List<Rectangle> vungNhan = new ArrayList<>();
+    private final List<String> nhanBiCat = new ArrayList<>();
     private IntConsumer chon = i -> {};
 
     public BieuDoCot() {
@@ -103,7 +105,11 @@ public final class BieuDoCot extends JComponent implements Scrollable {
     @Override
     public String getToolTipText(MouseEvent e) {
         int i = tim(e.getPoint());
-        return i < 0 ? null : DinhDangBang.tenTrangThai(nhan[i]) + ": " + format(giaTri[i]);
+        if (i >= 0) return DinhDangBang.tenTrangThai(nhan[i]) + ": " + format(giaTri[i]);
+        for (int k = 0; k < vungNhan.size(); k++) {
+            if (vungNhan.get(k).contains(e.getPoint())) return nhanBiCat.get(k);
+        }
+        return null;
     }
 
     @Override
@@ -112,6 +118,8 @@ public final class BieuDoCot extends JComponent implements Scrollable {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         vung.clear();
+        vungNhan.clear();
+        nhanBiCat.clear();
         if (giaTri.length == 0) {
             g.setColor(Color.GRAY);
             g.drawString("Chưa có dữ liệu", 20, 50);
@@ -152,14 +160,18 @@ public final class BieuDoCot extends JComponent implements Scrollable {
                         value,
                         x + (bw - g.getFontMetrics().stringWidth(value)) / 2,
                         giaTri[i] >= 0 ? y - 6 : y + 15);
-            String label = i < nhan.length ? DinhDangBang.tenTrangThai(nhan[i]) : "";
-            while (label.length() > 1 && g.getFontMetrics().stringWidth(label) > slot - 4)
+            String goc = i < nhan.length ? DinhDangBang.tenTrangThai(nhan[i]) : "";
+            String label = goc;
+            while (label.length() > 2 && g.getFontMetrics().stringWidth(label) > slot - 4)
                 label = label.substring(0, label.length() - 2) + "…";
+            int rongNhan = g.getFontMetrics().stringWidth(label);
+            int viTriNhan = 20 + (int) (i * slot + (slot - rongNhan) / 2);
+            if (!label.equals(goc)) {
+                vungNhan.add(new Rectangle(viTriNhan - 2, bottom + 10, rongNhan + 4, 18));
+                nhanBiCat.add(goc);
+            }
             g.setColor(Color.DARK_GRAY);
-            g.drawString(
-                    label,
-                    20 + (int) (i * slot + (slot - g.getFontMetrics().stringWidth(label)) / 2),
-                    bottom + 22);
+            g.drawString(label, viTriNhan, bottom + 22);
         }
         g.dispose();
     }

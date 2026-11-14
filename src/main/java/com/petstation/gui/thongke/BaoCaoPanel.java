@@ -95,6 +95,8 @@ public class BaoCaoPanel extends CoSoPanel {
             };
     private final JTable bangBang = new JTable(moHinh);
     private final JLabel nhanKhoang = new JLabel();
+    private final JLabel nhanTrangThaiTrong =
+            new JLabel("Không có dữ liệu phát sinh trong kỳ đang chọn.", JLabel.CENTER);
     private final String tenXuat;
     private KhoangNgay khoangDaApDung = KhoangNgay.ganDay(30);
     private DuLieu duLieu;
@@ -105,6 +107,8 @@ public class BaoCaoPanel extends CoSoPanel {
     private List<int[]> pieDocs;
     private final JButton xuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
     private boolean dangDatLaiBoLoc;
+    private boolean daTaiKhiKhoiTao;
+    private KhoangNgay kyTuDongGop;
 
     // 2. KHỞI TẠO BỐ CỤC MÀN HÌNH & GẮN SỰ KIỆN BỘ LỌC
 
@@ -144,6 +148,7 @@ public class BaoCaoPanel extends CoSoPanel {
         add(scrTrang, BorderLayout.CENTER);
         ganSuKienBieuDo();
         dungLai();
+        daTaiKhiKhoiTao = true;
     }
 
     private ThanhDanhSach taoThanhCongCu(boolean hienBoGop) {
@@ -164,7 +169,7 @@ public class BaoCaoPanel extends CoSoPanel {
                 e -> {
                     if (dangDatLaiBoLoc) return;
                     try {
-                        if (apDungKhoangNgayNeuHopLe()) dungLai();
+                        if (apDungKhoangNgayNeuHopLe(true)) dungLai();
                     } catch (RuntimeException ex) {
                         LoggerFactory.getLogger(BaoCaoPanel.class)
                                 .debug(
@@ -175,8 +180,10 @@ public class BaoCaoPanel extends CoSoPanel {
                 });
         cboHienThiHop.addActionListener(
                 e -> {
-                    if (dangDatLaiBoLoc) return;
-                    apDungKhoangNgayNeuHopLe();
+                    if (dangDatLaiBoLoc || cacKieuHienThi.isEmpty()) return;
+                    KieuHienThi k =
+                            cacKieuHienThi.get(Math.max(0, cboHienThiHop.getSelectedIndex()));
+                    if (!k.hienTai() && !apDungKhoangNgayNeuHopLe(true)) return;
                     dungLai();
                 });
         cboTongHop.addActionListener(
@@ -186,14 +193,22 @@ public class BaoCaoPanel extends CoSoPanel {
         return tools;
     }
 
-    private boolean apDungKhoangNgayNeuHopLe() {
+    private boolean apDungKhoangNgayNeuHopLe(boolean hienCanhBaoKhiDaoNgay) {
         var tu = cboKy.layNgayBatDau();
         var den = cboKy.layNgayKetThuc();
-        if (tu == null || den == null) return false;
-        if (tu.isAfter(den)) {
-            nhanKhoang.setText("Khoảng ngày chưa hợp lệ: Từ ngày đang lớn hơn Đến ngày");
+        if (tu == null || den == null) {
+            nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+            nhanKhoang.setText("Khoảng ngày chưa đầy đủ: vui lòng chọn đủ Từ ngày và Đến ngày");
             return false;
         }
+        if (tu.isAfter(den)) {
+            String thongBao = "Khoảng ngày chưa hợp lệ: Từ ngày đang lớn hơn Đến ngày";
+            nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+            nhanKhoang.setText(thongBao);
+            if (hienCanhBaoKhiDaoNgay) HopThoai.hienThiCanhBao(this, thongBao);
+            return false;
+        }
+        nhanKhoang.setForeground(MauUngDung.VAN_BAN_XAM);
         khoangDaApDung = new KhoangNgay(tu, den);
         return true;
     }
@@ -208,7 +223,12 @@ public class BaoCaoPanel extends CoSoPanel {
         JPanel top = taoVungTrongSuot(new BorderLayout(0, 8));
         top.add(header, BorderLayout.NORTH);
         khungCacThe.setOpaque(false);
-        top.add(khungCacThe);
+        top.add(khungCacThe, BorderLayout.CENTER);
+        nhanTrangThaiTrong.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 13));
+        nhanTrangThaiTrong.setForeground(MauUngDung.VAN_BAN_XAM);
+        nhanTrangThaiTrong.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
+        nhanTrangThaiTrong.setVisible(false);
+        top.add(nhanTrangThaiTrong, BorderLayout.SOUTH);
         return top;
     }
 
@@ -339,7 +359,9 @@ public class BaoCaoPanel extends CoSoPanel {
         KieuHienThi k = cacKieuHienThi.get(Math.max(0, cboHienThiHop.getSelectedIndex()));
         KhoangNgay ky = khoangDaApDung;
         choPhep(cboKy, !k.hienTai());
+        nhanKhoang.setForeground(MauUngDung.VAN_BAN_XAM);
         nhanKhoang.setText("Đang tải…");
+        nhanTrangThaiTrong.setVisible(false);
         xuat.setEnabled(false);
         duLieu = null;
         var phienDangNhap = PhienDangNhapService.macDinh().layPhienHienTai();
@@ -352,50 +374,86 @@ public class BaoCaoPanel extends CoSoPanel {
                     if (phienBan != phienTai
                             || PhienDangNhapService.macDinh().layPhienHienTai() != phienDangNhap)
                         return;
-                    duLieu = ketQua.duLieu;
-                    chungTu = ketQua.chungTu;
-                    kyDuLieu = ky;
-                    moHinh.setDataVector(duLieu.cacDong(), duLieu.cacCot());
-                    DinhDangBang.apDung(bangBang);
-                    nhanKhoang.setText(
-                            k.hienTai()
-                                    ? "Hiện tại (không theo kỳ)"
-                                    : "Đã áp dụng: "
-                                            + ky.getTuNgay().format(DinhDang.NGAY)
-                                            + " – "
-                                            + ky.getDenNgay().format(DinhDang.NGAY));
-                    khungCacThe.removeAll();
-                    for (int i = 0; i < duLieu.theCacTieuDe().length; i++) {
-                        JPanel card =
-                                layChiSoThe(
-                                        duLieu.theCacTieuDe()[i],
-                                        duLieu.theCacGiaTri()[i],
-                                        "",
-                                        MauUngDung.NAU);
-                        ganBam(
-                                card,
-                                () ->
-                                        chiTiet(
-                                                IntStream.range(
-                                                                0,
-                                                                duLieu == null
-                                                                        ? 0
-                                                                        : duLieu.cacDong().length)
-                                                        .toArray()));
-                        khungCacThe.add(card);
-                    }
-                    veBieuDo();
-                    khungCacThe.revalidate();
-                    khungCacThe.repaint();
-                    xuat.setEnabled(true);
+                    capNhatKetQuaTai(k, ky, ketQua);
                 },
                 ex -> {
                     if (phienBan != phienTai
                             || PhienDangNhapService.macDinh().layPhienHienTai() != phienDangNhap)
                         return;
-                    nhanKhoang.setText("Không tải được báo cáo; nhấn Làm mới (F5) để thử lại");
-                    HopThoai.hienThiCanhBao(BaoCaoPanel.this, TacVuNen.thongDiepLoi(ex));
+                    xuLyLoiTaiBaoCao(ex);
                 });
+    }
+
+    private void capNhatKetQuaTai(KieuHienThi k, KhoangNgay ky, KetQuaTai ketQua) {
+        duLieu = ketQua.duLieu;
+        chungTu = ketQua.chungTu;
+        kyDuLieu = ky;
+        moHinh.setDataVector(duLieu.cacDong(), duLieu.cacCot());
+        DinhDangBang.apDung(bangBang);
+        boolean trong = duLieu.cacDong().length == 0;
+        nhanKhoang.setForeground(MauUngDung.VAN_BAN_XAM);
+        nhanKhoang.setText(
+                (k.hienTai()
+                                ? "Hiện tại (toàn thời gian, không lọc theo kỳ)"
+                                : "Đã áp dụng: "
+                                        + ky.getTuNgay().format(DinhDang.NGAY)
+                                        + " – "
+                                        + ky.getDenNgay().format(DinhDang.NGAY))
+                        + (trong ? " · Không có dữ liệu" : ""));
+        nhanTrangThaiTrong.setVisible(trong);
+        khungCacThe.removeAll();
+        for (int i = 0; i < duLieu.theCacTieuDe().length; i++) {
+            JPanel card =
+                    layChiSoThe(
+                            duLieu.theCacTieuDe()[i], duLieu.theCacGiaTri()[i], "", MauUngDung.NAU);
+            ganBam(
+                    card,
+                    () ->
+                            chiTiet(
+                                    IntStream.range(0, duLieu == null ? 0 : duLieu.cacDong().length)
+                                            .toArray()));
+            khungCacThe.add(card);
+        }
+        tuDongChonMucGop(ky);
+        veBieuDo();
+        khungCacThe.revalidate();
+        khungCacThe.repaint();
+        xuat.setEnabled(!trong);
+    }
+
+    private void xuLyLoiTaiBaoCao(Throwable ex) {
+        duLieu = null;
+        chungTu = null;
+        tongHop = null;
+        pieDocs = null;
+        moHinh.setRowCount(0);
+        khungCacThe.removeAll();
+        khungCacThe.revalidate();
+        khungCacThe.repaint();
+        bieuDo.datDuLieu(new String[0], new double[0], false, "");
+        tron.datDuLieu(new String[0], new double[0], false);
+        nhanTrangThaiTrong.setVisible(false);
+        xuat.setEnabled(false);
+        nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+        nhanKhoang.setText("Không tải được báo cáo; nhấn Làm mới (F5) để thử lại");
+        HopThoai.hienThiCanhBao(BaoCaoPanel.this, TacVuNen.thongDiepLoi(ex));
+    }
+
+    private void tuDongChonMucGop(KhoangNgay ky) {
+        boolean temporal =
+                duLieu != null
+                        && duLieu.bieuDoCacNhan().length > 0
+                        && duLieu.bieuDoCacNhan()[0].matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*");
+        if (!temporal || ky.equals(kyTuDongGop)) return;
+        kyTuDongGop = ky;
+        long soNgay = ky.demSoNgay();
+        String muc = soNgay > 180 ? "Tháng" : soNgay > 60 ? "Tuần" : "Ngày";
+        dangDatLaiBoLoc = true;
+        try {
+            cboTongHop.setSelectedItem(muc);
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
     }
 
     private void veBieuDo() {
@@ -434,7 +492,7 @@ public class BaoCaoPanel extends CoSoPanel {
             for (int i = 0; i < chungTu.getDong().size(); i++) {
                 Object[] r = chungTu.getDong().get(i);
                 if (goods && !included.contains(khoa(r[1]))) continue;
-                String key = String.valueOf(r[group]);
+                String key = r[group] == null ? "Chưa rõ" : String.valueOf(r[group]);
                 sums.merge(key, ((Number) r[amount]).doubleValue(), Double::sum);
                 rows.computeIfAbsent(key, v -> new ArrayList<>()).add(i);
             }
@@ -605,20 +663,18 @@ public class BaoCaoPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        if (daTaiKhiKhoiTao) {
+            daTaiKhiKhoiTao = false;
+            return;
+        }
         dungLai();
     }
 
     @Override
     public void xuLyLamMoi() {
-        dangDatLaiBoLoc = true;
-        try {
-            cboKy.chonKy("30 ngày qua");
-            if (cboHienThiHop.getItemCount() > 0) cboHienThiHop.setSelectedIndex(0);
-            if (cboTongHop.getItemCount() > 0) cboTongHop.setSelectedIndex(0);
-            apDungKhoangNgayNeuHopLe();
-        } finally {
-            dangDatLaiBoLoc = false;
-        }
+        if (cacKieuHienThi.isEmpty()) return;
+        KieuHienThi k = cacKieuHienThi.get(Math.max(0, cboHienThiHop.getSelectedIndex()));
+        if (!k.hienTai() && !apDungKhoangNgayNeuHopLe(true)) return;
         dungLai();
     }
 

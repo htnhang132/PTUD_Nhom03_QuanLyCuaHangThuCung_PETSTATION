@@ -75,6 +75,10 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     private int luotTai;
 
+    private List<DongNhatKyHeThong> duLieuDaTai = new ArrayList<>();
+
+    private boolean dangDatLaiBoLoc;
+
     public NhatKyHeThongPanel() {
         setLayout(new BorderLayout());
         JPanel khungNoiDung = new JPanel(new BorderLayout(0, 12));
@@ -90,9 +94,16 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         JPanel khungChanTrang = taoChanTrang();
         khungNoiDung.add(khungChanTrang, BorderLayout.SOUTH);
         add(khungNoiDung, BorderLayout.CENTER);
+        dangDatLaiBoLoc = true;
         khungKhoangNgayBoChon.chonKy("7 ngày qua");
-        cboSuKienKieuHopChon.addActionListener(e -> apDungCacBoLoc());
-        cboKetQuaHopChon.addActionListener(e -> apDungCacBoLoc());
+        dangDatLaiBoLoc = false;
+        khungKhoangNgayBoChon.addPropertyChangeListener(
+                "dateRange",
+                e -> {
+                    if (!dangDatLaiBoLoc) taiLai();
+                });
+        cboSuKienKieuHopChon.addActionListener(e -> apDungBoLocClient());
+        cboKetQuaHopChon.addActionListener(e -> apDungBoLocClient());
         taiLai();
     }
 
@@ -138,8 +149,8 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         khungTieuDe.add(khungTraiMuc, BorderLayout.WEST);
         JPanel khungPhaiMuc = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         khungPhaiMuc.setOpaque(false);
-        NutDinhDang btnXuatNut = new NutDinhDang("Xuất CSV", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnXuatNut.setToolTipText("Xuất kết quả tìm kiếm ra file CSV");
+        NutDinhDang btnXuatNut = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnXuatNut.setToolTipText("Xuất kết quả tìm kiếm ra file Excel (.xlsx)");
         btnXuatNut.addActionListener(suKien -> xuLyXuat());
         khungPhaiMuc.add(btnXuatNut);
         khungTieuDe.add(khungPhaiMuc, BorderLayout.EAST);
@@ -206,10 +217,12 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     }
 
     private JPanel taoTruongLocNguoiDung() {
-        oTruongNguoiDungTimKiem = new JTextField();
+        oTruongNguoiDungTimKiem = taoOTimKiem("Tìm theo tên người dùng...");
         oTruongNguoiDungTimKiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oTruongNguoiDungTimKiem.setPreferredSize(new Dimension(130, 34));
+        oTruongNguoiDungTimKiem.setPreferredSize(new Dimension(170, 34));
         oTruongNguoiDungTimKiem.setToolTipText("Tìm theo tên người dùng");
+        themBoLangNgheTaiLieu(oTruongNguoiDungTimKiem, this::apDungBoLocClient);
+        oTruongNguoiDungTimKiem.addActionListener(e -> apDungBoLocClient());
         return bocNhanVaTruong("Người dùng:", 0, oTruongNguoiDungTimKiem);
     }
 
@@ -227,7 +240,8 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     private JPanel taoCumNutLoc() {
         JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         khungTam.setOpaque(false);
-        khungTam.add(taoNutLoc("Áp dụng", 90, NutDinhDang.KieuNut.CHINH, e -> apDungCacBoLoc()));
+        khungTam.add(taoNutLoc("Xóa lọc", 86, NutDinhDang.KieuNut.TRONG_SUOT, e -> xoaCacBoLoc()));
+        khungTam.add(taoNutLoc("Áp dụng", 90, NutDinhDang.KieuNut.CHINH, e -> taiLai()));
         return khungTam;
     }
 
@@ -244,7 +258,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         JPanel khungBangTieuDe = new JPanel(new BorderLayout());
         khungBangTieuDe.setOpaque(false);
         khungBangTieuDe.add(taoTieuDeMuc("Kết quả tra cứu"), BorderLayout.WEST);
-        JLabel nhanGoiY = new JLabel("Click vào dòng để xem chi tiết");
+        JLabel nhanGoiY = new JLabel("Double-click vào dòng để xem chi tiết");
         nhanGoiY.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         nhanGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
         khungBangTieuDe.add(nhanGoiY, BorderLayout.EAST);
@@ -263,13 +277,18 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         bangBang.setFillsViewportHeight(true);
         boSapXep = new TableRowSorter<>(moHinhBang);
         bangBang.setRowSorter(boSapXep);
+        datBangChinh(bangBang);
         cauHinhCotHienThiNhatKy();
         bangBang.addMouseListener(
                 new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent suKien) {
-                        if (suKien.getClickCount() == 2 && bangBang.getSelectedRow() >= 0) {
-                            xuLyHienThiChiTiet(bangBang.getSelectedRow());
+                        int dongClick = bangBang.rowAtPoint(suKien.getPoint());
+                        if (SwingUtilities.isLeftMouseButton(suKien)
+                                && suKien.getClickCount() == 2
+                                && dongClick >= 0) {
+                            bangBang.setRowSelectionInterval(dongClick, dongClick);
+                            xuLyHienThiChiTiet(dongClick);
                         }
                     }
                 });
@@ -305,6 +324,14 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                                     nhanChu.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
                                 } else if (s.contains("LOGIN") || s.contains("LOGOUT")) {
                                     nhanChu.setForeground(MauUngDung.CHINH);
+                                } else if (s.contains("APPROVAL")) {
+                                    nhanChu.setForeground(MauUngDung.CAM_NHAN);
+                                } else if (s.contains("PAYMENT")) {
+                                    nhanChu.setForeground(MauUngDung.XANH_LA);
+                                } else if (s.contains("CREATE")
+                                        || s.contains("UPDATE")
+                                        || s.contains("INVENTORY")) {
+                                    nhanChu.setForeground(MauUngDung.NAU);
                                 }
                             }
                             return nhanChu;
@@ -340,10 +367,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         return khungChanTrang;
     }
 
-    private void apDungCacBoLoc() {
-        taiLai();
-    }
-
     private void taiLai() {
         LocalDate tu = khungKhoangNgayBoChon.layNgayBatDau();
         LocalDate den = khungKhoangNgayBoChon.layNgayKetThuc();
@@ -351,16 +374,25 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             HopThoai.hienThiCanhBao(this, "Từ ngày không được lớn hơn Đến ngày.");
             return;
         }
-        String kieu = String.valueOf(cboSuKienKieuHopChon.getSelectedItem());
-        String kieuKhoa = kieu.startsWith("Tất cả") ? "" : kieu.split(" ")[0];
-        String ketQua = String.valueOf(cboKetQuaHopChon.getSelectedItem());
-        String nguoiDung = oTruongNguoiDungTimKiem.getText().trim().toLowerCase();
         int luot = ++luotTai;
         TacVuNen.chayCoPhien(
                 this,
                 () -> luot == luotTai,
                 () -> new ArrayList<>(NhatKyHeThongService.macDinh().layCacMuc(tu, den)),
-                cacMuc -> apDungDanhSachNhatKy(cacMuc, tu, den, kieuKhoa, ketQua, nguoiDung));
+                cacMuc -> {
+                    duLieuDaTai = cacMuc;
+                    apDungBoLocClient();
+                });
+    }
+
+    private void apDungBoLocClient() {
+        LocalDate tu = khungKhoangNgayBoChon.layNgayBatDau();
+        LocalDate den = khungKhoangNgayBoChon.layNgayKetThuc();
+        String kieu = String.valueOf(cboSuKienKieuHopChon.getSelectedItem());
+        String kieuKhoa = kieu.startsWith("Tất cả") ? "" : kieu.split(" ")[0];
+        String ketQua = String.valueOf(cboKetQuaHopChon.getSelectedItem());
+        String nguoiDung = oTruongNguoiDungTimKiem.getText().trim().toLowerCase();
+        apDungDanhSachNhatKy(duLieuDaTai, tu, den, kieuKhoa, ketQua, nguoiDung);
     }
 
     private void apDungDanhSachNhatKy(
@@ -380,7 +412,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             } else if (tu != null || den != null) {
                 continue;
             }
-            if (!kieuKhoa.isEmpty() && !kieuKhoa.equals(suKien.kieu())) continue;
+            if (!khopKieuSuKien(kieuKhoa, suKien.kieu())) continue;
             if (!ketQua.equals("Tất cả") && !ketQua.equals(suKien.ketQua())) continue;
             String tenNguoiDung =
                     suKien.nguoiDung() != null && suKien.nguoiDung().getHoTen() != null
@@ -407,11 +439,24 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                         + " cảnh báo/thất bại");
     }
 
+    private static boolean khopKieuSuKien(String kieuKhoa, String kieuSuKien) {
+        if (kieuKhoa == null || kieuKhoa.isEmpty()) return true;
+        if ("LOGIN".equals(kieuKhoa)) {
+            return "LOGIN".equalsIgnoreCase(kieuSuKien) || "LOGOUT".equalsIgnoreCase(kieuSuKien);
+        }
+        return kieuKhoa.equalsIgnoreCase(kieuSuKien);
+    }
+
     private void xoaCacBoLoc() {
-        khungKhoangNgayBoChon.chonKy("7 ngày qua");
-        cboSuKienKieuHopChon.setSelectedIndex(0);
-        cboKetQuaHopChon.setSelectedIndex(0);
-        oTruongNguoiDungTimKiem.setText("");
+        dangDatLaiBoLoc = true;
+        try {
+            khungKhoangNgayBoChon.chonKy("7 ngày qua");
+            cboSuKienKieuHopChon.setSelectedIndex(0);
+            cboKetQuaHopChon.setSelectedIndex(0);
+            oTruongNguoiDungTimKiem.setText("");
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         taiLai();
     }
 
@@ -471,7 +516,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                 + "• WARNING/ERROR: Cảnh báo bất thường\n"
                 + "• LOGIN thất bại nhiều lần: Nghi vấn tấn công\n\n"
                 + "【 Export 】\n"
-                + "Xuất kết quả ra CSV để phân tích chi tiết\n\n"
+                + "Xuất kết quả ra Excel (.xlsx) để phân tích chi tiết\n\n"
                 + "Mẹo: Double-click vào dòng để xem chi tiết đầy đủ.";
     }
 

@@ -81,6 +81,9 @@ public class BoChonNgay extends JPanel {
     }
 
     private void hienThiLich() {
+        if (oTruongVanBan == null || !oTruongVanBan.isShowing()) {
+            return;
+        }
         if (lichHopThoai == null) {
             taoLichHopThoai();
         }

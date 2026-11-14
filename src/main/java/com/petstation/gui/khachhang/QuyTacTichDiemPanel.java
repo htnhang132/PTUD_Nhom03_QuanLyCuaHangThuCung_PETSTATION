@@ -3,6 +3,7 @@ package com.petstation.gui.khachhang;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
@@ -24,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
 // Màn hình con (Tab 1) trong Danh mục > Điểm thưởng và voucher
@@ -36,6 +38,9 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
     private final JTextField[] cacHang = {taoTruong(), taoTruong(), taoTruong(), taoTruong()};
     private static final String[] HANG_CAC_TEN = {"Bạc", "Vàng", "Bạch Kim", "Kim Cương"};
     private final JLabel nhanThongBao = new JLabel(" ");
+    private final boolean coQuyenSua =
+            PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.QUAN_LY_TAI_KHOAN);
+    private long soTienMoiDiemDoi = 1000L;
     private int luotTai;
 
     // 2. KHỞI TẠO BỐ CỤC BIỂU MẪU CẤU HÌNH QUY TẮC TÍCH ĐIỂM & HẠNG
@@ -87,16 +92,13 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         giaTriDangXet.gridwidth = 3;
         khungThe.add(nhanThongBao, giaTriDangXet);
         NutDinhDang btnLuu = new NutDinhDang("Lưu quy tắc", NutDinhDang.KieuNut.THANH_CONG);
-        btnLuu.setEnabled(
-                PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.QUAN_LY_TAI_KHOAN));
-        btnLuu.addActionListener(
-                suKien -> {
-                    try {
-                        luu();
-                    } catch (RuntimeException loi) {
-                        HopThoai.hienThiCanhBao(this, loi.getMessage());
-                    }
-                });
+        btnLuu.setEnabled(coQuyenSua);
+        btnLuu.addActionListener(suKien -> xuLyLuu());
+        oTichDiem.addActionListener(suKien -> xuLyLuu());
+        for (JTextField oHang : cacHang) {
+            oHang.setEditable(coQuyenSua);
+            oHang.addActionListener(suKien -> xuLyLuu());
+        }
         giaTriDangXet.gridy = toaDoDoc;
         giaTriDangXet.fill = GridBagConstraints.NONE;
         khungThe.add(btnLuu, giaTriDangXet);
@@ -107,6 +109,31 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         scrCuon.getViewport().setBackground(MauUngDung.NEN_KEM);
         scrCuon.getVerticalScrollBar().setUnitIncrement(16);
         add(scrCuon, BorderLayout.CENTER);
+        nap();
+    }
+
+    @Override
+    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        return new KhaNangThanhCongCu(false, coQuyenSua, false, false, coQuyenSua, true);
+    }
+
+    @Override
+    public void xuLyLuu() {
+        if (!coQuyenSua) return;
+        try {
+            luu();
+        } catch (RuntimeException loi) {
+            HopThoai.hienThiCanhBao(this, loi.getMessage());
+        }
+    }
+
+    @Override
+    public void xuLyHoanTac() {
+        nap();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
         nap();
     }
 
@@ -144,7 +171,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
 
     private void nap() {
         oDoiDiem.setText("150.000");
-        oTichDiem.setEditable(true);
+        oTichDiem.setEditable(coQuyenSua);
         oDoiDiem.setEditable(false);
         oDoiDiem.setToolTipText("Quy đổi voucher Spa cố định: 200 điểm = 150.000₫.");
         int luot = ++luotTai;
@@ -153,34 +180,53 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 () -> luot == luotTai,
                 () -> {
                     long moiDiem = CaiDatService.macDinh().laySoTienChoMoiDiemTichLuy();
+                    long doiDiem = docSoTienDoiDiemHienTai();
                     long[] hang = CaiDatService.macDinh().layHangChiTieu();
-                    return new long[] {moiDiem, hang[0], hang[1], hang[2], hang[3]};
+                    return new long[] {moiDiem, doiDiem, hang[0], hang[1], hang[2], hang[3]};
                 },
                 ketQua -> {
+                    soTienMoiDiemDoi = ketQua[1] > 0 ? ketQua[1] : 1000L;
                     oTichDiem.setText(DinhDang.dinhDang(ketQua[0]));
                     for (int chiSo = 0; chiSo < 4; chiSo++) {
-                        cacHang[chiSo].setText(DinhDang.dinhDang(ketQua[chiSo + 1]));
+                        cacHang[chiSo].setText(DinhDang.dinhDang(ketQua[chiSo + 2]));
                     }
                 });
     }
 
+    private static long docSoTienDoiDiemHienTai() {
+        String giaTri =
+                CaiDatService.macDinh().layTuyChonHoacMacDinh("SO_TIEN_MOI_DIEM_DOI", "1000");
+        long so = DinhDang.doc(giaTri);
+        return so > 0 ? so : 1000L;
+    }
+
+    private static long docTienTeHopLe(String vanBan) {
+        String raw = vanBan == null ? "" : vanBan.trim();
+        if (raw.isEmpty()) return -1;
+        String khongDonVi = raw.replaceAll("(?i)[₫đ\\s]+$", "").trim();
+        if (!khongDonVi.matches("\\d+(?:[.,]\\d{3})*")) return -1;
+        return DinhDang.doc(khongDonVi);
+    }
+
     private void luu() {
-        long suKien = DinhDang.doc(oTichDiem.getText());
-        long dongDuLieu = 0;
-        long[] giaTriTam = new long[4];
-        for (int chiSo = 0; chiSo < 4; chiSo++)
-            giaTriTam[chiSo] = DinhDang.doc(cacHang[chiSo].getText());
-        if (suKien <= 0) {
-            HopThoai.hienThiCanhBao(this, "Số đồng cho 1 điểm phải lớn hơn 0.");
+        long tichDiemMoi = docTienTeHopLe(oTichDiem.getText());
+        long[] cacMucHang = new long[4];
+        for (int chiSo = 0; chiSo < 4; chiSo++) {
+            cacMucHang[chiSo] = docTienTeHopLe(cacHang[chiSo].getText());
+        }
+        if (tichDiemMoi <= 0) {
+            HopThoai.hienThiCanhBao(this, "Số đồng cho 1 điểm phải là số nguyên dương.");
+            oTichDiem.requestFocusInWindow();
             return;
         }
         for (int chiSo = 0; chiSo < 4; chiSo++) {
-            if (giaTriTam[chiSo] < 0) {
+            if (cacMucHang[chiSo] < 0) {
                 HopThoai.hienThiCanhBao(
                         this, "Ngưỡng hạng " + HANG_CAC_TEN[chiSo] + " không hợp lệ.");
+                cacHang[chiSo].requestFocusInWindow();
                 return;
             }
-            if (chiSo > 0 && giaTriTam[chiSo] <= giaTriTam[chiSo - 1]) {
+            if (chiSo > 0 && cacMucHang[chiSo] <= cacMucHang[chiSo - 1]) {
                 HopThoai.hienThiCanhBao(
                         this,
                         "Ngưỡng hạng phải tăng dần: "
@@ -188,6 +234,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                                 + " < "
                                 + HANG_CAC_TEN[chiSo]
                                 + ".");
+                cacHang[chiSo].requestFocusInWindow();
                 return;
             }
         }
@@ -195,15 +242,32 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 this,
                 () -> true,
                 () -> {
-                    CaiDatService.macDinh().capNhatTichLuy(suKien, dongDuLieu, giaTriTam);
+                    long doiDiemGiuNguyen =
+                            soTienMoiDiemDoi > 0 ? soTienMoiDiemDoi : docSoTienDoiDiemHienTai();
+                    CaiDatService.macDinh()
+                            .capNhatTichLuy(tichDiemMoi, doiDiemGiuNguyen, cacMucHang);
                     NhatKyHeThongService.macDinh()
                             .ghiNhatKy("Sửa", "Quy tắc tích điểm và hạng thành viên");
                 },
                 () -> {
                     nap();
-                    nhanThongBao.setForeground(MauUngDung.XANH_LA);
-                    nhanThongBao.setText("Đã lưu quy tắc.");
+                    hienThiThongBaoTam("Đã lưu quy tắc.");
                 });
+    }
+
+    private void hienThiThongBaoTam(String vanBan) {
+        nhanThongBao.setForeground(MauUngDung.XANH_LA);
+        nhanThongBao.setText(vanBan);
+        Timer boHen =
+                new Timer(
+                        3500,
+                        suKien -> {
+                            if (vanBan.equals(nhanThongBao.getText())) {
+                                nhanThongBao.setText(" ");
+                            }
+                        });
+        boHen.setRepeats(false);
+        boHen.start();
     }
 
     // 4. THÔNG TIN TRỢ GIÚP MÀN HÌNH

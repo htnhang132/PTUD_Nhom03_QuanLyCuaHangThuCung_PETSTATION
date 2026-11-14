@@ -105,16 +105,10 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         scrCuon.getVerticalScrollBar().setUnitIncrement(16);
         khungChinh.add(khungDau, BorderLayout.NORTH);
         khungChinh.add(scrCuon, BorderLayout.CENTER);
-        napDanhSach(Set.of());
+        lamMoiNguon();
     }
 
-    private void napDanhSach(Set<String> daChon) {
-        this.choChon = new LinkedHashSet<>(daChon);
-        if (danhSachNguon != null) {
-            apDungDanhSach(danhSachNguon, this.choChon);
-        } else {
-            apDungDanhSach(List.of(), this.choChon);
-        }
+    public void lamMoiNguon() {
         if (nguonLuaChon == null) return;
         int luot = ++luotTai;
         TacVuNen.chayCoPhien(
@@ -128,6 +122,16 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
                 ex ->
                         LoggerFactory.getLogger(BoChonNhieuKhachHang.class)
                                 .warn("Không tải được danh sách chọn nhiều.", ex));
+    }
+
+    private void napDanhSach(Set<String> daChon) {
+        this.choChon = new LinkedHashSet<>(daChon);
+        if (danhSachNguon != null) {
+            apDungDanhSach(danhSachNguon, this.choChon);
+        } else {
+            apDungDanhSach(List.of(), this.choChon);
+            lamMoiNguon();
+        }
     }
 
     private void apDungDanhSach(List<String> nguon, Set<String> daChon) {

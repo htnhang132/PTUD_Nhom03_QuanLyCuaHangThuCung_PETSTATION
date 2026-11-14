@@ -5,6 +5,7 @@ import static com.petstation.util.DuLieu.taoMa;
 import com.petstation.dao.spa.PhieuTiepNhanSpaDAO;
 import com.petstation.dao.spa.impl.PhieuTiepNhanSpaDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
+import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.SpaDTO;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.chung.TrangThaiLichHen;
@@ -42,9 +43,19 @@ public final class SpaService {
 
     public String datLichHen(
             String maThuCung, String maGoiDichVu, String maNhanVien, LocalDateTime batDau) {
+        return datLichHen(maThuCung, maGoiDichVu, maNhanVien, batDau, "");
+    }
+
+    public String datLichHen(
+            String maThuCung,
+            String maGoiDichVu,
+            String maNhanVien,
+            LocalDateTime batDau,
+            String ghiChu) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_SPA);
         if (batDau == null || batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0)))
             throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
+        String ghiChuChuan = chuanHoaGhiChu(ghiChu);
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
@@ -76,6 +87,7 @@ public final class SpaService {
                                             ketThuc,
                                             maNhanVien,
                                             maGoiDichVu);
+                            capNhatGhiChuLichHen(ketQua, ghiChuChuan);
                             NhatKyHeThongService.macDinh().ghiNhatKy("Tạo lịch hẹn", maThuCung);
                             return ketQua;
                         });
@@ -85,7 +97,12 @@ public final class SpaService {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_SPA);
         List<LichHen> rows = xuLySpaDAO.layChiTietLichHen(maLichHen);
         if (rows.isEmpty()) throw new IllegalArgumentException("Lịch hẹn không còn tồn tại.");
-        return rows.get(0);
+        LichHen lichHen = rows.get(0);
+        Object ghiChu =
+                ThaoTacSQL.layGiaTriDon(
+                        "SELECT ghi_chu FROM lich_hen WHERE ma_lich_hen=?", maLichHen);
+        lichHen.setGhiChu(ghiChu == null ? "" : String.valueOf(ghiChu));
+        return lichHen;
     }
 
     public void suaLichHen(
@@ -94,9 +111,20 @@ public final class SpaService {
             String maGoi,
             String maNhanVien,
             LocalDateTime batDau) {
+        suaLichHen(maLichHen, maThuCung, maGoi, maNhanVien, batDau, "");
+    }
+
+    public void suaLichHen(
+            String maLichHen,
+            String maThuCung,
+            String maGoi,
+            String maNhanVien,
+            LocalDateTime batDau,
+            String ghiChu) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_SPA);
         if (batDau == null || batDau.isBefore(LocalDateTime.now().withSecond(0).withNano(0)))
             throw new IllegalArgumentException("Giờ hẹn không được ở quá khứ.");
+        String ghiChuChuan = chuanHoaGhiChu(ghiChu);
         QuanLyGiaoDich.macDinh()
                 .thucThi(
                         c -> {
@@ -131,9 +159,22 @@ public final class SpaService {
                                     batDau,
                                     end,
                                     maLichHen);
+                            capNhatGhiChuLichHen(maLichHen, ghiChuChuan);
                             NhatKyHeThongService.macDinh().ghiNhatKy("Sửa lịch Spa", maLichHen);
                             return null;
                         });
+    }
+
+    private static String chuanHoaGhiChu(String ghiChu) {
+        String kq = ghiChu == null ? "" : ghiChu.trim();
+        if (kq.length() > 1000) {
+            throw new IllegalArgumentException("Ghi chú lịch hẹn tối đa 1.000 ký tự.");
+        }
+        return kq;
+    }
+
+    private static void capNhatGhiChuLichHen(String maLichHen, String ghiChu) {
+        ThaoTacSQL.capNhat("UPDATE lich_hen SET ghi_chu=? WHERE ma_lich_hen=?", ghiChu, maLichHen);
     }
 
     public String tiepNhan(String maThuCung, String maLichHen, double canNang, String ghiChu) {

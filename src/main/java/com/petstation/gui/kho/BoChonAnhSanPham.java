@@ -22,6 +22,7 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
     private final AnhSanPhamPanel khungXem = new AnhSanPhamPanel(100);
     private final NutDinhDang btnChon =
             new NutDinhDang("Chọn ảnh từ máy…", NutDinhDang.KieuNut.TRONG_SUOT);
+    private final NutDinhDang btnXoa = new NutDinhDang("Xóa ảnh", NutDinhDang.KieuNut.PHU);
     private String duongDan = "";
     private boolean duocSua;
     private boolean dangTai;
@@ -36,13 +37,17 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
         khungXemBao.setOpaque(false);
         khungXemBao.setBorder(null);
         khungXemBao.add(khungXem);
-        JPanel khungNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));
+        JPanel khungNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 2));
         khungNutBao.setOpaque(false);
-        btnChon.setPreferredSize(new Dimension(150, 32));
+        btnChon.setPreferredSize(new Dimension(132, 32));
         btnChon.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
+        btnXoa.setPreferredSize(new Dimension(78, 32));
+        btnXoa.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
         khungNutBao.add(btnChon);
+        khungNutBao.add(btnXoa);
         khungAnh.add(khungXemBao, BorderLayout.CENTER);
         khungAnh.add(khungNutBao, BorderLayout.SOUTH);
+        btnXoa.addActionListener(e -> dat(""));
         btnChon.addActionListener(
                 e -> {
                     JFileChooser chon = new JFileChooser();
@@ -51,18 +56,18 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
                             new FileNameExtensionFilter("Ảnh JPG, PNG", "jpg", "jpeg", "png"));
                     if (chon.showOpenDialog(khungAnh) != JFileChooser.APPROVE_OPTION) return;
                     dangTai = true;
-                    btnChon.setEnabled(false);
+                    capNhatTrangThaiNut();
                     long lanChon = phienBan;
                     TacVuNen.chay(
                             () -> TaiAnhSanPham.saoChep(chon.getSelectedFile().toPath()),
                             moi -> {
                                 dangTai = false;
-                                btnChon.setEnabled(duocSua);
+                                capNhatTrangThaiNut();
                                 if (duocSua && phienBan == lanChon) dat(moi);
                             },
                             loi -> {
                                 dangTai = false;
-                                btnChon.setEnabled(duocSua);
+                                capNhatTrangThaiNut();
                                 HopThoai.hienThiLoi(
                                         khungAnh,
                                         "Không nạp được ảnh: " + TacVuNen.thongDiepLoi(loi));
@@ -86,11 +91,17 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
         phienBan++;
         duongDan = giaTri == null || "null".equals(giaTri) ? "" : giaTri;
         khungXem.datAnh(duongDan);
+        capNhatTrangThaiNut();
     }
 
     @Override
     public void datDuocBat(boolean giaTri) {
         duocSua = giaTri;
-        btnChon.setEnabled(giaTri && !dangTai);
+        capNhatTrangThaiNut();
+    }
+
+    private void capNhatTrangThaiNut() {
+        btnChon.setEnabled(duocSua && !dangTai);
+        btnXoa.setEnabled(duocSua && !dangTai && !duongDan.isEmpty());
     }
 }

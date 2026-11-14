@@ -1,5 +1,6 @@
 package com.petstation.gui.banhang;
 
+import com.petstation.dto.DonDoiTreo;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BieuMauPanel;
 import com.petstation.gui.chung.CoSoPanel;
@@ -12,6 +13,7 @@ import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiPhieuDoiTra;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.PhuongThuc;
+import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.banhang.DonDoiTreoService;
 import com.petstation.service.hethong.CaiDatService;
@@ -38,6 +40,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -118,6 +121,80 @@ public final class ThanhToanPanel extends CoSoPanel {
     private boolean dangXuLy;
     private boolean qrHopLe;
     private String noiDungChuyenKhoanQR = "";
+    private int luotTaiQR;
+    private String khoaDonDangHien = "";
+    private String nguonDangHien = "";
+    private List<GioHang.DongHang> cacDongDangHien = List.of();
+
+    private static final class KetQuaTreoDonDoi {
+        final String maDon;
+        final DonDoiTreo nhap;
+
+        private KetQuaTreoDonDoi(String maDon, DonDoiTreo nhap) {
+            this.maDon = maDon;
+            this.nhap = nhap;
+        }
+    }
+
+    private static final class BanSaoGioHang {
+        final List<GioHang.DongHang> cacDong;
+        final String kieuNguon;
+        final String maNguon;
+        final String ghiChu;
+        final GioHang.YeuCauDoiHang doiHang;
+        final String maKhachHang;
+        final String tenKhachHang;
+        final long khachHangDiem;
+
+        private BanSaoGioHang(GioHang gio) {
+            this.cacDong = gio.getCacDong();
+            this.kieuNguon = gio.getKieuNguon();
+            this.maNguon = gio.getMaNguon();
+            this.ghiChu = gio.getGhiChu();
+            this.doiHang = gio.getDoiHang();
+            this.maKhachHang = gio.getMaKhachHang();
+            this.tenKhachHang = gio.getTenKhachHang();
+            this.khachHangDiem = gio.getKhachHangDiem();
+        }
+
+        private void khoiPhuc(GioHang gio) {
+            gio.xoa();
+            gio.setNguon(kieuNguon, maNguon);
+            gio.setGhiChu(ghiChu);
+            gio.setDoiHang(doiHang);
+            if (!maKhachHang.isBlank() || !tenKhachHang.isBlank()) {
+                gio.setKhachHang(maKhachHang, tenKhachHang, khachHangDiem);
+            }
+            gio.setCacDong(cacDong);
+        }
+    }
+
+    private static final class DuLieuVietQR {
+        final ImageIcon anhQR;
+        final String tenCuaHang;
+        final String tenChuTaiKhoan;
+        final String taiKhoan;
+        final String bin;
+        final long soTienCanChuyen;
+        final String maHoaDon;
+
+        private DuLieuVietQR(
+                ImageIcon anhQR,
+                String tenCuaHang,
+                String tenChuTaiKhoan,
+                String taiKhoan,
+                String bin,
+                long soTienCanChuyen,
+                String maHoaDon) {
+            this.anhQR = anhQR;
+            this.tenCuaHang = tenCuaHang;
+            this.tenChuTaiKhoan = tenChuTaiKhoan;
+            this.taiKhoan = taiKhoan;
+            this.bin = bin;
+            this.soTienCanChuyen = soTienCanChuyen;
+            this.maHoaDon = maHoaDon;
+        }
+    }
 
     public ThanhToanPanel(
             GioHang banHang,
@@ -171,7 +248,8 @@ public final class ThanhToanPanel extends CoSoPanel {
                         Component focusOwner =
                                 KeyboardFocusManager.getCurrentKeyboardFocusManager()
                                         .getFocusOwner();
-                        if (focusOwner instanceof JTextComponent) {
+                        if (focusOwner instanceof JTextComponent
+                                || focusOwner instanceof AbstractButton) {
                             return;
                         }
                         if (layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN
@@ -188,7 +266,7 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private MaManHinh layManHinhQuayLaiTheoNguon() {
         String nguon = banHang.getKieuNguon();
-        if ("HOTEL".equals(nguon)) {
+        if ("HOTEL".equals(nguon) || "LUU_TRU".equals(nguon)) {
             return MaManHinh.TRA_PHONG_LUU_TRU;
         }
         if ("SPA".equals(nguon)) {
@@ -212,25 +290,54 @@ public final class ThanhToanPanel extends CoSoPanel {
         btnTreoDoi.setEnabled(false);
         btnHuy.setEnabled(false);
         btnXacNhan.setEnabled(false);
-        try {
-            DonDoiTreoService donDoiTreoService = new DonDoiTreoService();
-            String maDon = donDoiTreoService.treo(banHang);
-            var nhap = suaLai ? donDoiTreoService.lay(maDon) : null;
+        BanSaoGioHang banSao = new BanSaoGioHang(banHang);
+        TacVuNen.chayCoPhien(
+                this,
+                () -> true,
+                () -> {
+                    DonDoiTreoService donDoiTreoService = new DonDoiTreoService();
+                    String maDon = donDoiTreoService.treo(banHang);
+                    DonDoiTreo nhap = suaLai ? donDoiTreoService.lay(maDon) : null;
+                    return new KetQuaTreoDonDoi(maDon, nhap);
+                },
+                kq -> xuLyKetQuaTreoDonDoi(suaLai, kq, banSao),
+                loi -> {
+                    dangXuLy = false;
+                    btnTreoDoi.setEnabled(true);
+                    btnHuy.setEnabled(true);
+                    kiemTraDauVao();
+                    HopThoai.hienThiCanhBao(this, "Chưa treo được đơn đổi: " + loi.getMessage());
+                });
+    }
+
+    private void xuLyKetQuaTreoDonDoi(boolean suaLai, KetQuaTreoDonDoi kq, BanSaoGioHang banSao) {
+        dangXuLy = false;
+        btnTreoDoi.setEnabled(true);
+        btnHuy.setEnabled(true);
+        if (!suaLai) {
             banHang.xoa();
-            boDieuHuong.accept(suaLai ? MaManHinh.DOI_TRA_HANG_HOA : MaManHinh.LAP_HOA_DON);
-            if (suaLai) {
-                new DoiPhuKienDialog(this, banHang, boDieuHuong, maDon, nhap).setVisible(true);
-            } else {
-                HopThoai.hienThiThanhCong(
-                        this, "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
-            }
-        } catch (RuntimeException loi) {
-            HopThoai.hienThiCanhBao(this, "Chưa treo được đơn đổi: " + loi.getMessage());
-        } finally {
-            dangXuLy = false;
-            btnTreoDoi.setEnabled(true);
-            btnHuy.setEnabled(true);
-            kiemTraDauVao();
+            boDieuHuong.accept(MaManHinh.LAP_HOA_DON);
+            HopThoai.hienThiThanhCong(
+                    this, "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
+            return;
+        }
+        banHang.xoa();
+        DoiPhuKienDialog hopThoai =
+                new DoiPhuKienDialog(this, banHang, boDieuHuong, kq.maDon, kq.nhap);
+        hopThoai.setVisible(true);
+        if (!hopThoai.daXuLyXong()) {
+            banSao.khoiPhuc(banHang);
+            TacVuNen.chayCoPhien(
+                    this,
+                    () -> true,
+                    () -> new BanHangService().xoaTreo(kq.maDon),
+                    () -> {},
+                    loi -> {});
+            lamMoi();
+            return;
+        }
+        if (hopThoai.daTreoDon()) {
+            boDieuHuong.accept(MaManHinh.DOI_TRA_HANG_HOA);
         }
     }
 
@@ -553,8 +660,20 @@ public final class ThanhToanPanel extends CoSoPanel {
         capNhatNhanNutQuayLai();
         capNhatTrangThaiVoucherKhach();
         if (banHang.kiemTraTrong()) {
+            khoaDonDangHien = "";
+            nguonDangHien = "";
+            cacDongDangHien = List.of();
             cacThe.show(khungGoc, "empty");
             return;
+        }
+        boolean cungDon =
+                khoaDonDangHien.equals(banHang.getKhoaThanhToan())
+                        && nguonDangHien.equals(banHang.getKieuNguon())
+                        && cacDongDangHien.equals(banHang.getCacDong());
+        if (!cungDon) {
+            khoaDonDangHien = banHang.getKhoaThanhToan();
+            nguonDangHien = banHang.getKieuNguon();
+            cacDongDangHien = banHang.getCacDong();
         }
         cacThe.show(khungGoc, "form");
         DefaultTableModel moHinh =
@@ -575,7 +694,6 @@ public final class ThanhToanPanel extends CoSoPanel {
         khungDongVungChua.add(scrHang, BorderLayout.CENTER);
         khungDongVungChua.revalidate();
         oTruongVoucher.setText(banHang.getMaVoucher());
-        nhanVoucherThongBao.setText("");
         boolean doiHang = LoaiPhieuDoiTra.DOI_HANG.maDB().equals(banHang.getKieuNguon());
         dieuKhienVoucher.forEach(c -> c.setEnabled(!doiHang));
         if (!doiHang) {
@@ -584,10 +702,16 @@ public final class ThanhToanPanel extends CoSoPanel {
         if (doiHang) {
             nhanVoucherThongBao.setForeground(MauUngDung.VAN_BAN_XAM);
             nhanVoucherThongBao.setText("Voucher Spa không áp dụng cho đổi phụ kiện.");
+        } else if (!cungDon) {
+            nhanVoucherThongBao.setText("");
         }
-        oDaNhan.setText(doiHang && banHang.tinhTong() == 0 ? "0" : "");
+        if (!cungDon) {
+            oDaNhan.setText(doiHang && banHang.tinhTong() == 0 ? "0" : "");
+            btnTienMat.setSelected(true);
+        } else if (doiHang && banHang.tinhTong() == 0 && oDaNhan.getText().isBlank()) {
+            oDaNhan.setText("0");
+        }
         dangXuLy = false;
-        btnTienMat.setSelected(true);
         capNhatPhuongThuc();
         lamMoiCacTong();
     }
@@ -628,6 +752,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void capNhatQR() {
+        int luot = ++luotTaiQR;
         boolean laTienMat = layPhuongThuc() == PhuongThuc.TIEN_MAT;
         boolean chuyenKhoan = layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN;
         khungNhapTienMat.setVisible(laTienMat);
@@ -642,60 +767,109 @@ public final class ThanhToanPanel extends CoSoPanel {
         qrHopLe = false;
         noiDungChuyenKhoanQR = "";
         btnSaoChepNoiDungQR.setEnabled(false);
-        if (chuyenKhoan) napMaVietQR();
+        chkDaNhanTien.setEnabled(!chuyenKhoan);
+        if (chuyenKhoan) napMaVietQR(luot);
         khungNoiDungVeLai();
     }
 
-    private void napMaVietQR() {
-        try {
-            String bin = CaiDatService.macDinh().layTuyChon("BANK_BIN");
-            String taiKhoan = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT");
-            String tenChuTaiKhoan = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT_NAME");
-            TaoMaVietQR.kiemTraTaiKhoan(bin, taiKhoan, tenChuTaiKhoan);
-            String maHoaDon = banHang.getMaHoaDonDuKien();
-            long soTienCanChuyen = banHang.tinhTong();
-            String duLieuQR =
-                    TaoMaVietQR.taoNoiDung(
-                            bin, taiKhoan, tenChuTaiKhoan, soTienCanChuyen, maHoaDon);
-            nhanQrLon.setText("");
-            nhanQrLon.setIcon(new ImageIcon(TaoMaVietQR.taoAnh(duLieuQR, 220)));
-            String tenCuaHang = CaiDatService.macDinh().lay("STORE_NAME");
-            nhanThongTinQR.setText(
-                    "<html><div style='width:250px'><b>"
-                            + thoatHTML(tenCuaHang)
-                            + "</b><br>"
-                            + "Người nhận: "
-                            + thoatHTML(tenChuTaiKhoan)
-                            + "<br>"
-                            + "Số tài khoản: "
-                            + thoatHTML(taiKhoan)
-                            + "<br>"
-                            + "BIN ngân hàng: "
-                            + thoatHTML(bin)
-                            + "<br><br>"
-                            + "<font color='#15803D'><b>SỐ TIỀN CẦN CHUYỂN: "
-                            + thoatHTML(DinhDang.dinhDang(soTienCanChuyen))
-                            + "</b></font><br></div></html>");
-            noiDungChuyenKhoanQR = maHoaDon;
-            nhanNoiDungQR.setText(maHoaDon);
-            nhanTrangThaiQR.setForeground(MauUngDung.CAM);
-            nhanTrangThaiQR.setText(
-                    "<html><div style='width:250px'>Đang chờ xác nhận. QR đã điền sẵn số tiền và"
-                            + " mã hóa đơn; thu ngân cần kiểm tra giao dịch thực tế trước khi"
-                            + " xác nhận.</div></html>");
-            btnSaoChepNoiDungQR.setEnabled(true);
-            qrHopLe = true;
-        } catch (RuntimeException loi) {
-            nhanQrLon.setIcon(null);
-            nhanQrLon.setText("Không tạo được mã QR");
-            nhanThongTinQR.setText(
-                    "<html><div style='width:250px'>"
-                            + thoatHTML(loi.getMessage())
-                            + "<br>Kiểm tra cấu hình ngân hàng trong Cài đặt.</div></html>");
-            nhanNoiDungQR.setText("");
-            nhanTrangThaiQR.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-            nhanTrangThaiQR.setText("Chưa thể tạo QR thanh toán.");
+    private void napMaVietQR(int luot) {
+        String maHoaDon = banHang.getMaHoaDonDuKien();
+        long soTienCanChuyen = banHang.tinhTong();
+        if (soTienCanChuyen <= 0) {
+            hienThiQRKhongCanQuet(maHoaDon);
+            return;
         }
+        nhanQrLon.setIcon(null);
+        nhanQrLon.setText("Đang tạo mã VietQR...");
+        nhanThongTinQR.setText("<html><div style='width:250px'>Đang tải thông tin...</div></html>");
+        nhanNoiDungQR.setText(maHoaDon);
+        nhanTrangThaiQR.setForeground(MauUngDung.VAN_BAN_XAM);
+        nhanTrangThaiQR.setText("Đang tạo mã QR chuyển khoản...");
+        TacVuNen.chayCoPhien(
+                this,
+                () -> luot == luotTaiQR && layPhuongThuc() == PhuongThuc.CHUYEN_KHOAN,
+                () -> {
+                    String bin = CaiDatService.macDinh().layTuyChon("BANK_BIN");
+                    String taiKhoan = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT");
+                    String tenChuTaiKhoan = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT_NAME");
+                    TaoMaVietQR.kiemTraTaiKhoan(bin, taiKhoan, tenChuTaiKhoan);
+                    String duLieuQR =
+                            TaoMaVietQR.taoNoiDung(
+                                    bin, taiKhoan, tenChuTaiKhoan, soTienCanChuyen, maHoaDon);
+                    ImageIcon anhQR = new ImageIcon(TaoMaVietQR.taoAnh(duLieuQR, 220));
+                    String tenCuaHang = CaiDatService.macDinh().lay("STORE_NAME");
+                    return new DuLieuVietQR(
+                            anhQR,
+                            tenCuaHang,
+                            tenChuTaiKhoan,
+                            taiKhoan,
+                            bin,
+                            soTienCanChuyen,
+                            maHoaDon);
+                },
+                this::hienThiDuLieuVietQR,
+                this::hienThiLoiVietQR);
+    }
+
+    private void hienThiQRKhongCanQuet(String maHoaDon) {
+        nhanQrLon.setIcon(null);
+        nhanQrLon.setText("0₫ — Không cần quét QR");
+        nhanThongTinQR.setText(
+                "<html><div style='width:250px'><font color='#15803D'><b>Số tiền cần chuyển là"
+                        + " 0₫ (không cần quét QR).</b></font><br>Thu ngân tích xác nhận bên dưới"
+                        + " để hoàn tất đơn.</div></html>");
+        noiDungChuyenKhoanQR = maHoaDon;
+        nhanNoiDungQR.setText(maHoaDon);
+        nhanTrangThaiQR.setForeground(MauUngDung.XANH_LA);
+        nhanTrangThaiQR.setText("Số tiền cần chuyển là 0₫ (không cần quét QR).");
+        btnSaoChepNoiDungQR.setEnabled(false);
+        qrHopLe = true;
+        chkDaNhanTien.setEnabled(true);
+        kiemTraDauVao();
+    }
+
+    private void hienThiDuLieuVietQR(DuLieuVietQR duLieu) {
+        nhanQrLon.setText("");
+        nhanQrLon.setIcon(duLieu.anhQR);
+        nhanThongTinQR.setText(
+                "<html><div style='width:250px'><b>"
+                        + thoatHTML(duLieu.tenCuaHang)
+                        + "</b><br>"
+                        + "Người nhận: "
+                        + thoatHTML(duLieu.tenChuTaiKhoan)
+                        + "<br>"
+                        + "Số tài khoản: "
+                        + thoatHTML(duLieu.taiKhoan)
+                        + "<br>"
+                        + "BIN ngân hàng: "
+                        + thoatHTML(duLieu.bin)
+                        + "<br><br>"
+                        + "<font color='#15803D'><b>SỐ TIỀN CẦN CHUYỂN: "
+                        + thoatHTML(DinhDang.dinhDang(duLieu.soTienCanChuyen))
+                        + "</b></font><br></div></html>");
+        noiDungChuyenKhoanQR = duLieu.maHoaDon;
+        nhanNoiDungQR.setText(duLieu.maHoaDon);
+        btnSaoChepNoiDungQR.setEnabled(true);
+        qrHopLe = true;
+        chkDaNhanTien.setEnabled(true);
+        kiemTraDauVao();
+        khungNoiDungVeLai();
+    }
+
+    private void hienThiLoiVietQR(Throwable loi) {
+        qrHopLe = false;
+        chkDaNhanTien.setSelected(false);
+        chkDaNhanTien.setEnabled(false);
+        nhanQrLon.setIcon(null);
+        nhanQrLon.setText("Không tạo được mã QR");
+        nhanThongTinQR.setText(
+                "<html><div style='width:250px'>"
+                        + thoatHTML(TacVuNen.thongDiepLoi(loi))
+                        + "<br>Kiểm tra cấu hình ngân hàng trong Cài đặt.</div></html>");
+        nhanNoiDungQR.setText("");
+        nhanTrangThaiQR.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+        nhanTrangThaiQR.setText("Chưa thể tạo QR thanh toán.");
+        kiemTraDauVao();
     }
 
     private void saoChepNoiDungQR() {
@@ -746,14 +920,20 @@ public final class ThanhToanPanel extends CoSoPanel {
         if (phuongThuc != PhuongThuc.TIEN_MAT) {
             boolean chuyenKhoan = phuongThuc == PhuongThuc.CHUYEN_KHOAN;
             chkDaNhanTien.setEnabled(!chuyenKhoan || qrHopLe);
-            if (chuyenKhoan) {
-                nhanTrangThaiQR.setForeground(
-                        chkDaNhanTien.isSelected() ? MauUngDung.XANH_LA : MauUngDung.CAM);
-                nhanTrangThaiQR.setText(
-                        chkDaNhanTien.isSelected()
-                                ? "Thu ngân đã xác nhận thủ công đã nhận đúng tiền cho hóa đơn "
-                                        + banHang.getMaHoaDonDuKien()
-                                : "Đang chờ thu ngân kiểm tra giao dịch thực tế.");
+            if (chuyenKhoan && qrHopLe) {
+                if (chkDaNhanTien.isSelected()) {
+                    nhanTrangThaiQR.setForeground(MauUngDung.XANH_LA);
+                    nhanTrangThaiQR.setText(
+                            "Thu ngân đã xác nhận thủ công đã nhận đúng tiền cho hóa đơn "
+                                    + banHang.getMaHoaDonDuKien());
+                } else if (giaTriTam <= 0) {
+                    nhanTrangThaiQR.setForeground(MauUngDung.XANH_LA);
+                    nhanTrangThaiQR.setText(
+                            "Số tiền cần chuyển là 0₫ (không cần quét QR). Hãy tích xác nhận.");
+                } else {
+                    nhanTrangThaiQR.setForeground(MauUngDung.CAM);
+                    nhanTrangThaiQR.setText("Đang chờ thu ngân kiểm tra giao dịch thực tế.");
+                }
             }
             btnXacNhan.setEnabled(
                     !dangXuLy && chkDaNhanTien.isSelected() && (!chuyenKhoan || qrHopLe));

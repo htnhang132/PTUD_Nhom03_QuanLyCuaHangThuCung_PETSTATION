@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -39,8 +41,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public final class DinhDangBang {
     private DinhDangBang() {}
@@ -59,6 +63,11 @@ public final class DinhDangBang {
         bangBang.setIntercellSpacing(new Dimension(0, 1));
         bangBang.setFillsViewportHeight(true);
         bangBang.setAutoCreateRowSorter(true);
+        cauHinhSapXepBang(bangBang);
+        bangBang.addPropertyChangeListener(
+                "model", e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
+        bangBang.addPropertyChangeListener(
+                "rowSorter", e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
         bangBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         bangBang.setFocusable(true);
         bangBang.getAccessibleContext().setAccessibleName("Bảng dữ liệu");
@@ -81,21 +90,21 @@ public final class DinhDangBang {
                 super.getTableCellRendererComponent(
                         bangGiaTriTam, giaTri, daChon, false, dong, cot);
                 setBorder(new EmptyBorder(0, 10, 0, 10));
-                String vanBan = giaTri == null ? "" : giaTri.toString();
+                String giaTriGoc = giaTri == null ? "" : giaTri.toString();
                 setBackground(
                         daChon
                                 ? bangGiaTriTam.getSelectionBackground()
                                 : (dong % 2 == 0 ? MauUngDung.THE_NEN : MauUngDung.DONG_XEN_KE));
                 setForeground(MauUngDung.VAN_BAN_TOI);
                 setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+                String vanBan = dinhDangGiaTriO(bangGiaTriTam, cot, giaTri, giaTriGoc);
                 setHorizontalAlignment(SwingConstants.LEFT);
                 if (kiemTraCotTrangThai(bangGiaTriTam, cot)) {
-                    setForeground(MauUngDung.layMauTongMau(vanBan));
+                    setForeground(MauUngDung.layMauTongMau(giaTriGoc));
                     setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-                } else if (layCoDangDangSo(vanBan)) {
+                } else if (giaTri instanceof Number || layCoDangDangSo(vanBan)) {
                     setHorizontalAlignment(SwingConstants.RIGHT);
                 }
-                vanBan = dinhDangGiaTriO(bangGiaTriTam, cot, giaTri, vanBan);
                 setText(vanBan);
                 int rongCot =
                         cot >= 0 && cot < bangGiaTriTam.getColumnModel().getColumnCount()
@@ -333,6 +342,7 @@ public final class DinhDangBang {
         if (ten.contains("lượt")
                 || ten.contains("lần")
                 || ten.contains("số lượng")
+                || ten.contains("chênh lệch sl")
                 || ten.contains("đã dùng")
                 || ten.contains("bảng giá")
                 || ten.startsWith("mã ")) {
@@ -341,6 +351,124 @@ public final class DinhDangBang {
         return ten.matches(
                 ".*(tiền|giá|doanh thu|chi tiêu|cọc|nợ|tổng nhập|đã trả|thực đếm|chênh lệch|thu hóa"
                         + " đơn|chiết khấu|voucher|hoàn trả|lợi nhuận|thành tiền).*");
+    }
+
+    private static final Comparator<Object> SO_SANH_O_GIA_TRI =
+            (a, b) -> {
+                if (a == null && b == null) return 0;
+                if (a == null) return -1;
+                if (b == null) return 1;
+                Long tgA = docMocThoiGian(a);
+                Long tgB = docMocThoiGian(b);
+                if (tgA != null && tgB != null) return Long.compare(tgA, tgB);
+                Double soA = docSoThuc(a);
+                Double soB = docSoThuc(b);
+                if (soA != null && soB != null) return Double.compare(soA, soB);
+                return a.toString().compareToIgnoreCase(b.toString());
+            };
+
+    private static void cauHinhSapXepBang(JTable bangBang) {
+        if (bangBang == null || bangBang.getModel() == null) return;
+        RowSorter<? extends TableModel> boSapXep = bangBang.getRowSorter();
+        if (!(boSapXep instanceof TableRowSorter<?> sapXep)) return;
+        int soCot = bangBang.getModel().getColumnCount();
+        for (int c = 0; c < soCot; c++) {
+            sapXep.setComparator(c, SO_SANH_O_GIA_TRI);
+        }
+    }
+
+    private static Long docMocThoiGian(Object giaTri) {
+        if (giaTri instanceof Date ngay) return ngay.getTime();
+        if (giaTri instanceof LocalDateTime ngayGio) {
+            return ngayGio.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        }
+        if (giaTri instanceof LocalDate ngay) {
+            return ngay.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        }
+        String vanBan = giaTri.toString().trim();
+        if (vanBan.isEmpty()) return null;
+        if (vanBan.matches("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}")) {
+            return LocalDateTime.parse(vanBan, DinhDang.NGAY_GIO_U)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
+        if (vanBan.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+            return LocalDateTime.parse(vanBan, DinhDang.NGAY_GIO_SQL_U)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
+        if (vanBan.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}")) {
+            return LocalDateTime.parse(vanBan, DinhDang.NGAY_GIO_ISO_U)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
+        if (vanBan.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            return LocalDate.parse(vanBan, DinhDang.NGAY_U)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
+        if (vanBan.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return LocalDate.parse(vanBan, DinhDang.NGAY_ISO)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
+        return null;
+    }
+
+    private static Double docSoThuc(Object giaTri) {
+        if (giaTri instanceof Number so) {
+            double val = so.doubleValue();
+            return Double.isFinite(val) ? val : null;
+        }
+        String vanBan = giaTri.toString().trim();
+        if (vanBan.isEmpty()) return null;
+        boolean coKyHieuSo =
+                vanBan.matches("[-−]?\\d{1,3}([.,]\\d{3})+(\\s*[₫đ%])?")
+                        || vanBan.matches("[-−]?\\d+([.,]\\d+)?\\s*[₫đ%]?");
+        if (!coKyHieuSo) return null;
+        String chuan = vanBan.replace("−", "-").replaceAll("[\\s₫đ%]", "");
+        if (chuan.matches("^-?\\d{1,3}([.,]\\d{3})+$")) {
+            chuan = chuan.replaceAll("[.,]", "");
+        } else {
+            chuan = chuan.replace(',', '.');
+            int dauChamCuoi = chuan.lastIndexOf('.');
+            if (dauChamCuoi > 0 && chuan.indexOf('.') != dauChamCuoi) {
+                chuan =
+                        chuan.substring(0, dauChamCuoi).replace(".", "")
+                                + chuan.substring(dauChamCuoi);
+            }
+        }
+        try {
+            double val = Double.parseDouble(chuan);
+            return Double.isFinite(val) ? val : null;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    public static Object giaTriXuatExcel(JTable bang, int dongHienThi, int cotHienThi) {
+        Object giaTri = bang.getValueAt(dongHienThi, cotHienThi);
+        if (giaTri == null) return null;
+        if (giaTri instanceof Number
+                || giaTri instanceof Date
+                || giaTri instanceof LocalDate
+                || giaTri instanceof LocalDateTime) {
+            return giaTri;
+        }
+        String goc = giaTri.toString();
+        TableCellRenderer trinhVe = bang.getCellRenderer(dongHienThi, cotHienThi);
+        Component comp = bang.prepareRenderer(trinhVe, dongHienThi, cotHienThi);
+        if (comp instanceof JLabel nhan && nhan.getText() != null) {
+            String hienThi = nhan.getText().replaceAll("<[^>]+>", " ").trim();
+            if (!hienThi.isEmpty()) return hienThi;
+        }
+        String daDich = tenTrangThai(goc);
+        return daDich != null ? daDich : goc;
     }
 
     private static final Map<String, String> TEN_TRANG_THAI =
@@ -432,9 +560,10 @@ public final class DinhDangBang {
     }
 
     private static boolean layCoDangDangSo(String vanBan) {
-        if (vanBan.isEmpty() || vanBan.length() > 20) return false;
+        if (vanBan.isEmpty() || vanBan.length() > 30) return false;
         String giaTriTam =
                 vanBan.replace("₫", "")
+                        .replace("đ", "")
                         .replace(".", "")
                         .replace(",", "")
                         .replace("%", "")

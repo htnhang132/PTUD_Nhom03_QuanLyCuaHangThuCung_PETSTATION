@@ -7,6 +7,8 @@ import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgayGio;
+import com.petstation.model.chung.TrangThaiHopDong;
+import com.petstation.model.chung.TrangThaiPhongHotel;
 import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.luutru.LuuTruService;
 import com.petstation.util.DinhDang;
@@ -27,6 +29,7 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -54,9 +57,13 @@ public final class DatPhongHotelDialog {
     private final JLabel nhanSoNgay = new JLabel("—");
     private final JLabel nhanTongTien = new JLabel("—");
     private final JLabel nhanCoc = new JLabel("—");
+    private final JLabel nhanThongTinCoc = new JLabel(" ");
     private final JLabel nhanTrangThai = new JLabel(" ");
+    private final JLabel nhanTieuDeHopThoai = new JLabel("THÔNG TIN ĐẶT PHÒNG");
     private final NutDinhDang btnLuu = new NutDinhDang("Lưu đặt phòng", NutDinhDang.KieuNut.CHINH);
     private boolean dangTaiDuLieu = true;
+    private boolean cheDoGiaHan;
+    private LocalDateTime ngayRaCu;
     private int luotDuKien;
     private String ketQua;
 
@@ -75,22 +82,40 @@ public final class DatPhongHotelDialog {
         }
     }
 
-    private static String dinhDangTenPhong(String raw) {
-        if (raw == null) return "";
-        var m = Pattern.compile("^(.*?/\\s*)(\\d+(?:\\.\\d+)?)(.*)$").matcher(raw);
-        if (m.find()) {
-            try {
-                long gia = Math.round(Double.parseDouble(m.group(2)));
-                return m.group(1)
-                        + DinhDang.dinhDang(gia)
-                        + " "
-                        + m.group(3).replaceAll("^\\s*/\\s*", "/ ");
-            } catch (RuntimeException ex) {
-                LoggerFactory.getLogger(DatPhongHotelDialog.class)
-                        .debug("Giữ nguyên nhãn phòng '{}': {}", raw, ex.getMessage());
+    private static String dinhDangTenPhong(String raw, String maTrangThai) {
+        String ketQua = raw == null ? "" : raw;
+        if (raw != null) {
+            var m = Pattern.compile("^(.*?/\\s*)(\\d+(?:\\.\\d+)?)(.*)$").matcher(raw);
+            if (m.find()) {
+                try {
+                    long gia = Math.round(Double.parseDouble(m.group(2)));
+                    ketQua =
+                            m.group(1)
+                                    + DinhDang.dinhDang(gia)
+                                    + " "
+                                    + m.group(3).replaceAll("^\\s*/\\s*", "/ ");
+                } catch (RuntimeException ex) {
+                    LoggerFactory.getLogger(DatPhongHotelDialog.class)
+                            .debug("Giữ nguyên nhãn phòng '{}': {}", raw, ex.getMessage());
+                }
             }
         }
-        return raw;
+        String moTa = moTaTrangThaiPhong(maTrangThai);
+        return moTa.isEmpty() ? ketQua : ketQua + " (" + moTa + ")";
+    }
+
+    private static String moTaTrangThaiPhong(String maTrangThai) {
+        if (maTrangThai == null || maTrangThai.isBlank()) return "";
+        try {
+            return switch (TrangThaiPhongHotel.tuMaDB(maTrangThai)) {
+                case TRONG -> "Trống";
+                case DANG_O -> "Đang có khách";
+                case DANG_DON -> "Đang dọn";
+                case BAO_TRI -> "Bảo trì";
+            };
+        } catch (IllegalArgumentException ignored) {
+            return maTrangThai;
+        }
     }
 
     private DatPhongHotelDialog(Component parent, String maHopDong, String maPhongMacDinh) {
@@ -129,15 +154,20 @@ public final class DatPhongHotelDialog {
                             nghiepVuService.layLuaChonThuCung().stream()
                                     .map(d -> new BieuMauTruong.LuaChon(d.giaTri(), d.nhan()))
                                     .toList();
+                    Map<String, String> trangThaiPhong = luuTruService.layTrangThaiTatCaPhong();
                     List<BieuMauTruong.LuaChon> rooms =
                             nghiepVuService.layLuaChonPhong().stream()
                                     .map(
                                             d ->
                                                     new BieuMauTruong.LuaChon(
-                                                            d.giaTri(), dinhDangTenPhong(d.nhan())))
+                                                            d.giaTri(),
+                                                            dinhDangTenPhong(
+                                                                    d.nhan(),
+                                                                    trangThaiPhong.get(
+                                                                            d.giaTri()))))
                                     .toList();
                     HotelDTO.ThongTinDatPhong thongTin =
-                            maHopDong != null ? luuTruService.layThongTinDatPhong(maHopDong) : null;
+                            maHopDong != null ? luuTruService.layThongTinChinhSua(maHopDong) : null;
                     return new DuLieuKhoiTao(pets, rooms, thongTin);
                 },
                 duLieu -> apDungDuLieuBanDau(duLieu, maPhongMacDinh),
@@ -149,12 +179,12 @@ public final class DatPhongHotelDialog {
     }
 
     private void apDungDuLieuBanDau(DuLieuKhoiTao duLieu, String maPhongMacDinh) {
-        if (duLieu.thuCung.isEmpty()) {
+        if (duLieu.thuCung.isEmpty() && maHopDong == null) {
             HopThoai.hienThiCanhBao(hopThoai, "Chưa có thú cưng đang hoạt động để đặt lưu trú.");
             hopThoai.dispose();
             return;
         }
-        if (duLieu.phong.isEmpty()) {
+        if (duLieu.phong.isEmpty() && maHopDong == null) {
             HopThoai.hienThiCanhBao(hopThoai, "Không có phòng đang sẵn sàng nhận đặt chỗ.");
             hopThoai.dispose();
             return;
@@ -165,6 +195,7 @@ public final class DatPhongHotelDialog {
             apDungDuLieuSua(duLieu.thongTinSua);
         } else {
             chonGiaTri(cboPhong, maPhongMacDinh);
+            nhanThongTinCoc.setText(" ");
             nhanTrangThai.setText(" ");
         }
         dangTaiDuLieu = false;
@@ -181,10 +212,11 @@ public final class DatPhongHotelDialog {
         JPanel root = new JPanel(new BorderLayout(0, 14));
         root.setBackground(MauUngDung.mau(0xFAF6F0));
         root.setBorder(new EmptyBorder(16, 20, 16, 20));
-        JLabel title = new JLabel(maHopDong == null ? "THÔNG TIN ĐẶT PHÒNG" : "CẬP NHẬT ĐẶT PHÒNG");
-        title.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
-        title.setForeground(MauUngDung.NAU);
-        root.add(title, BorderLayout.NORTH);
+        nhanTieuDeHopThoai.setText(
+                maHopDong == null ? "THÔNG TIN ĐẶT PHÒNG" : "CẬP NHẬT ĐẶT PHÒNG");
+        nhanTieuDeHopThoai.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
+        nhanTieuDeHopThoai.setForeground(MauUngDung.NAU);
+        root.add(nhanTieuDeHopThoai, BorderLayout.NORTH);
 
         // Khung thông tin đặt phòng - Thẻ trắng bo góc viền mảnh
         JPanel form = new JPanel(new GridBagLayout());
@@ -294,9 +326,15 @@ public final class DatPhongHotelDialog {
         JPanel khungDuoi = new JPanel(new BorderLayout(8, 10));
         khungDuoi.setOpaque(false);
         khungDuoi.add(theDuKien, BorderLayout.NORTH);
+        nhanThongTinCoc.setForeground(MauUngDung.mau(0x065F46));
+        nhanThongTinCoc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhanTrangThai.setForeground(MauUngDung.mau(0x962823));
         nhanTrangThai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        khungDuoi.add(nhanTrangThai, BorderLayout.CENTER);
+        JPanel khungThongBao = new JPanel(new GridLayout(2, 1, 0, 2));
+        khungThongBao.setOpaque(false);
+        khungThongBao.add(nhanThongTinCoc);
+        khungThongBao.add(nhanTrangThai);
+        khungDuoi.add(khungThongBao, BorderLayout.CENTER);
 
         JPanel khungThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         khungThaoTac.setOpaque(false);
@@ -365,17 +403,38 @@ public final class DatPhongHotelDialog {
         spNgayVao.datGiaTri(duLieu.getNgayVao());
         spNgayRa.datGiaTri(duLieu.getNgayRaDuKien());
         oGhiChu.setText(duLieu.getGhiChu() == null ? "" : duLieu.getGhiChu());
+        cheDoGiaHan = TrangThaiHopDong.DANG_O.maDB().equals(duLieu.getTrangThai());
+        ngayRaCu = duLieu.getNgayRaDuKien();
+        if (cheDoGiaHan) {
+            hopThoai.setTitle("Gia hạn / Đổi ngày trả Pet Hotel");
+            nhanTieuDeHopThoai.setText("GIA HẠN / ĐỔI NGÀY TRẢ PHÒNG");
+            cboThuCung.setEnabled(false);
+            cboPhong.setEnabled(false);
+            spNgayVao.setEnabled(false);
+        }
 
         long daThu = duLieu.isDaNhanCoc() ? duLieu.getTienCoc() : 0;
-        if (daThu > 0) {
-            nhanTrangThai.setText(
-                    "Đã nhận cọc: "
-                            + DinhDang.dinhDang(daThu)
-                            + ". Khi sửa, hệ thống giữ nguyên số tiền đã thu.");
+        if (cheDoGiaHan) {
+            String cocInfo =
+                    daThu > 0
+                            ? "Đang lưu trú (đã nhận cọc: " + DinhDang.dinhDang(daThu) + "). "
+                            : "Đang lưu trú. ";
+            nhanThongTinCoc.setText(
+                    cocInfo
+                            + "Gia hạn chỉ đổi ngày trả sau "
+                            + ngayRaCu.format(DinhDang.NGAY_GIO)
+                            + " và ghi chú.");
+            btnLuu.setText("Lưu gia hạn");
         } else {
-            nhanTrangThai.setText(" ");
+            nhanThongTinCoc.setText(
+                    daThu > 0
+                            ? "Đã nhận cọc: "
+                                    + DinhDang.dinhDang(daThu)
+                                    + ". Khi sửa, hệ thống giữ nguyên số tiền đã thu."
+                            : " ");
+            btnLuu.setText("Lưu thay đổi");
         }
-        btnLuu.setText("Lưu thay đổi");
+        nhanTrangThai.setText(" ");
     }
 
     private void capNhatDuKien() {
@@ -390,6 +449,17 @@ public final class DatPhongHotelDialog {
                             : "Ngày trả phòng phải sau ngày nhận phòng.");
             return;
         }
+        if (maHopDong == null && vao.isBefore(LocalDateTime.now().minusMinutes(5))) {
+            datTrangThaiDuKienLoi("Ngày/giờ nhận phòng khi đặt mới không được ở quá khứ.");
+            return;
+        }
+        if (cheDoGiaHan && ngayRaCu != null && !ra.isAfter(ngayRaCu)) {
+            datTrangThaiDuKienLoi(
+                    "Ngày trả mới khi gia hạn phải sau ngày trả dự kiến hiện tại ("
+                            + ngayRaCu.format(DinhDang.NGAY_GIO)
+                            + ").");
+            return;
+        }
         int luot = ++luotDuKien;
         btnLuu.setEnabled(false);
         TacVuNen.chayCoPhien(
@@ -400,9 +470,7 @@ public final class DatPhongHotelDialog {
                     nhanSoNgay.setText(duKien[0] + " ngày");
                     nhanTongTien.setText(DinhDang.dinhDang(duKien[1]));
                     nhanCoc.setText(DinhDang.dinhDang(duKien[2]));
-                    if (maHopDong == null || !nhanTrangThai.getText().startsWith("Đã nhận cọc")) {
-                        nhanTrangThai.setText(" ");
-                    }
+                    nhanTrangThai.setText(" ");
                     btnLuu.setEnabled(true);
                 },
                 ex -> datTrangThaiDuKienLoi(ex.getMessage()));
@@ -412,9 +480,7 @@ public final class DatPhongHotelDialog {
         nhanSoNgay.setText("—");
         nhanTongTien.setText("—");
         nhanCoc.setText("—");
-        if (maHopDong == null || nhanTrangThai.getText().isBlank()) {
-            nhanTrangThai.setText(thongDiep);
-        }
+        nhanTrangThai.setText(thongDiep);
         btnLuu.setEnabled(false);
     }
 
@@ -432,6 +498,19 @@ public final class DatPhongHotelDialog {
             HopThoai.hienThiCanhBao(hopThoai, "Ngày trả phòng phải sau ngày nhận phòng.");
             return;
         }
+        if (maHopDong == null && ngayVao.isBefore(LocalDateTime.now().minusMinutes(5))) {
+            HopThoai.hienThiCanhBao(
+                    hopThoai, "Ngày/giờ nhận phòng khi đặt mới không được ở quá khứ.");
+            return;
+        }
+        if (cheDoGiaHan && ngayRaCu != null && !ngayRa.isAfter(ngayRaCu)) {
+            HopThoai.hienThiCanhBao(
+                    hopThoai,
+                    "Ngày trả mới khi gia hạn phải sau ngày trả dự kiến hiện tại ("
+                            + ngayRaCu.format(DinhDang.NGAY_GIO)
+                            + ").");
+            return;
+        }
         btnLuu.setEnabled(false);
         TacVuNen.chayCoPhien(
                 hopThoai,
@@ -440,8 +519,12 @@ public final class DatPhongHotelDialog {
                     if (maHopDong == null) {
                         return luuTruService.giuPhong(maThuCung, maPhong, ngayVao, ngayRa, ghiChu);
                     }
-                    luuTruService.suaDatPhong(
-                            maHopDong, maThuCung, maPhong, ngayVao, ngayRa, ghiChu);
+                    if (cheDoGiaHan) {
+                        luuTruService.giaHanLuuTru(maHopDong, ngayRa, ghiChu);
+                    } else {
+                        luuTruService.suaDatPhong(
+                                maHopDong, maThuCung, maPhong, ngayVao, ngayRa, ghiChu);
+                    }
                     return maHopDong;
                 },
                 maDaLuu -> {

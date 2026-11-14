@@ -37,7 +37,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 thongKeService::layLuotKhach),
                         taoKieuHienThi(
                                 "Lượt dùng voucher trong kỳ",
-                                new String[] {"Voucher", "Khách hàng", "Lượt dùng", "Giảm giá"},
+                                new String[] {"Mã voucher", "Khách hàng", "Lượt dùng", "Giảm giá"},
                                 0,
                                 2,
                                 false,

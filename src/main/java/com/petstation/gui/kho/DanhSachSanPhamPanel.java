@@ -2,7 +2,7 @@ package com.petstation.gui.kho;
 
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.model.chung.LoaiDanhMuc;
-import com.petstation.model.chung.VaiTro;
+import com.petstation.model.chung.Quyen;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.hethong.PhienDangNhapService;
@@ -46,7 +46,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                                         : "Còn hàng")
                         .datTienTo("SP")
                         .datTruongDau(10)
-                        .themThaoTacBoSung(
+                        .themThaoTacBoSungKhongLuu(
                                 "Tạo Barcode",
                                 dong -> {
                                     String ma = String.valueOf(dong[0]);
@@ -63,15 +63,18 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                     return "Đã cấp mã vạch EAN-13 mới: " + maMoi;
                                 })
                         .datBoKiemTra(
-                                dong ->
-                                        SanPhamService.kiemTraThongTinSanPham(
-                                                DinhDang.doc(String.valueOf(dong[4])),
-                                                DinhDang.doc(String.valueOf(dong[5])),
-                                                dong.length > 13 ? String.valueOf(dong[13]) : "",
-                                                PhienDangNhapService.macDinh()
-                                                                .layPhien()
-                                                                .docVaiTro()
-                                                        == VaiTro.QUAN_LY_CUA_HANG))
+                                dong -> {
+                                    if (DinhDang.doc(String.valueOf(dong[6])) < 0) {
+                                        return "Tồn tối thiểu không được âm.";
+                                    }
+                                    return SanPhamService.kiemTraThongTinSanPham(
+                                            DinhDang.doc(String.valueOf(dong[4])),
+                                            DinhDang.doc(String.valueOf(dong[5])),
+                                            dong.length > 13 ? String.valueOf(dong[13]) : "",
+                                            PhienDangNhapService.macDinh()
+                                                    .layPhien()
+                                                    .kiemTraCo(Quyen.DUYET_GIA));
+                                })
                         .timKiem("Tìm mã, tên, mã vạch...")
                         .datTrangThai(9, "Đang kinh doanh", "Ngừng kinh doanh");
         return cauHinh;
@@ -79,8 +82,9 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
 
     private static TruongDuLieu taoTruongGia() {
         var gia = TruongDuLieu.tao("Giá bán", Kieu.TIEN_TE).batBuoc().datMacDinh("0");
-        if (PhienDangNhapService.macDinh().layPhien().docVaiTro() != VaiTro.QUAN_LY_CUA_HANG)
-            gia.chiDoc();
+        if (!PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.DUYET_GIA)) {
+            gia.chiDocKhiSua();
+        }
         return gia;
     }
 
@@ -114,6 +118,9 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                         .datBoSoanThao(BoChonAnhSanPham::new),
                 TruongDuLieu.tao("Thương hiệu", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Mô tả", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Mã vạch (Barcode)", Kieu.VAN_BAN).an().datMacDinh(""));
+                TruongDuLieu.tao("Mã vạch (Barcode)", Kieu.VAN_BAN)
+                        .an()
+                        .kiemTraDuyNhat()
+                        .datMacDinh(""));
     }
 }

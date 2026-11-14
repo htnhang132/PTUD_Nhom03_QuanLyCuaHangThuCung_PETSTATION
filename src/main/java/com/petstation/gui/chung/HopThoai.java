@@ -46,13 +46,17 @@ public final class HopThoai {
         UIManager.put("Button.arc", 10);
         UIManager.put("Component.arc", 10);
         UIManager.put("TextComponent.arc", 10);
+        UIManager.put("TextField.margin", new Insets(5, 10, 5, 10));
+        UIManager.put("PasswordField.margin", new Insets(5, 10, 5, 10));
+        UIManager.put("FormattedTextField.margin", new Insets(5, 10, 5, 10));
+        UIManager.put("Spinner.padding", new Insets(5, 8, 5, 8));
         UIManager.put("CheckBox.arc", 6);
         UIManager.put("Component.focusWidth", 1);
         UIManager.put("Component.innerFocusWidth", 0);
         UIManager.put("Component.borderColor", MauUngDung.VIEN);
         UIManager.put("Component.focusedBorderColor", MauUngDung.NAU);
         UIManager.put("Component.focusColor", MauUngDung.DO_NHAT);
-        UIManager.put("ComboBox.padding", new Insets(4, 8, 4, 8));
+        UIManager.put("ComboBox.padding", new Insets(5, 8, 5, 8));
         UIManager.put("ComboBox.selectionBackground", MauUngDung.DO_NHAT);
         UIManager.put("ComboBox.selectionForeground", MauUngDung.NAU);
         UIManager.put("TabbedPane.tabHeight", 36);

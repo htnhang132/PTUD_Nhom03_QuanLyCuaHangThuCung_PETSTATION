@@ -8,6 +8,7 @@ import com.petstation.dao.banhang.impl.HoaDonDAOImpl;
 import com.petstation.dao.luutru.HopDongLuuTruDAO;
 import com.petstation.dao.luutru.impl.HopDongLuuTruDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
+import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.HotelDTO;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.model.chung.Quyen;
@@ -25,7 +26,9 @@ import com.petstation.service.khachhang.ThuCungService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -90,6 +93,8 @@ public final class LuuTruService {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
         if (batDau == null || ketThuc == null || !ketThuc.isAfter(batDau))
             throw new IllegalArgumentException("Ngày ra phải sau ngày vào.");
+        if (batDau.isBefore(LocalDateTime.now().minusMinutes(5)))
+            throw new IllegalArgumentException("Ngày vào không được ở quá khứ.");
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
                         c -> {
@@ -286,6 +291,103 @@ public final class LuuTruService {
         if (!TrangThaiHopDong.DA_DAT.maDB().equals(dong.get(0).getTrangThai()))
             throw new IllegalArgumentException("Chỉ sửa được hợp đồng đang chờ nhận phòng.");
         return dong.get(0);
+    }
+
+    public HotelDTO.ThongTinDatPhong layThongTinChinhSua(String maHopDong) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        List<HotelDTO.ThongTinDatPhong> dong = luuTruDAO.layDatPhongSua(maHopDong);
+        if (dong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hợp đồng lưu trú.");
+        String trangThai = dong.get(0).getTrangThai();
+        if (!TrangThaiHopDong.DA_DAT.maDB().equals(trangThai)
+                && !TrangThaiHopDong.DANG_O.maDB().equals(trangThai))
+            throw new IllegalArgumentException(
+                    "Chỉ sửa hoặc gia hạn hợp đồng đang chờ nhận phòng hoặc đang lưu trú.");
+        return dong.get(0);
+    }
+
+    public void giaHanLuuTru(String maHopDong, LocalDateTime ngayRaMoi, String ghiChu) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        if (maHopDong == null || maHopDong.isBlank() || ngayRaMoi == null)
+            throw new IllegalArgumentException("Thông tin gia hạn không hợp lệ.");
+        String ghiChuChuan = ghiChu == null ? "" : ghiChu.trim();
+        if (ghiChuChuan.length() > 1000)
+            throw new IllegalArgumentException("Ghi chú tối đa 1.000 ký tự.");
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            List<HotelDTO.ThongTinDatPhong> hopDong =
+                                    luuTruDAO.layDatPhongSua(maHopDong);
+                            if (hopDong.isEmpty()
+                                    || !TrangThaiHopDong.DANG_O
+                                            .maDB()
+                                            .equals(hopDong.get(0).getTrangThai()))
+                                throw new IllegalStateException(
+                                        "Chỉ gia hạn được hợp đồng đang lưu trú.");
+                            HotelDTO.ThongTinDatPhong duLieuCu = hopDong.get(0);
+                            if (!ngayRaMoi.isAfter(duLieuCu.getNgayVao())
+                                    || !ngayRaMoi.isAfter(duLieuCu.getNgayRaDuKien()))
+                                throw new IllegalArgumentException(
+                                        "Ngày trả mới khi gia hạn phải sau ngày trả dự kiến hiện"
+                                                + " tại.");
+                            kiemTraTrungLichGiaHan(duLieuCu, maHopDong, ngayRaMoi);
+                            if (ThaoTacSQL.capNhat(
+                                            "UPDATE hop_dong_luu_tru SET ngay_ra_du_kien=?,"
+                                                    + " ghi_chu=? WHERE ma_hop_dong=? AND"
+                                                    + " trang_thai=?",
+                                            ngayRaMoi,
+                                            ghiChuChuan,
+                                            maHopDong,
+                                            TrangThaiHopDong.DANG_O.maDB())
+                                    != 1)
+                                throw new IllegalStateException(
+                                        "Hợp đồng vừa thay đổi trạng thái. Hãy tải lại danh sách.");
+                            NhatKyHeThongService.macDinh()
+                                    .ghiNhatKy(
+                                            "Gia hạn lưu trú Hotel",
+                                            maHopDong
+                                                    + " / "
+                                                    + duLieuCu.getNgayRaDuKien()
+                                                    + " -> "
+                                                    + ngayRaMoi);
+                            return null;
+                        });
+    }
+
+    private void kiemTraTrungLichGiaHan(
+            HotelDTO.ThongTinDatPhong duLieuCu, String maHopDong, LocalDateTime ngayRaMoi) {
+        String maPhong = duLieuCu.getPhong() == null ? null : duLieuCu.getPhong().getMaPhong();
+        String maThuCung =
+                duLieuCu.getThuCung() == null ? null : duLieuCu.getThuCung().getMaThuCung();
+        List<HopDongLuuTruDAO.ThongTinPhongDat> cacPhong = luuTruDAO.timDatPhong(maPhong);
+        if (cacPhong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy phòng.");
+        HopDongLuuTruDAO.ThongTinPhongDat phong = cacPhong.get(0);
+        if (luuTruDAO.demThuCungDatTrungBoQua(
+                        maThuCung, ngayRaMoi, duLieuCu.getNgayVao(), maHopDong)
+                > 0)
+            throw new IllegalArgumentException(
+                    "Thú cưng đã có hợp đồng lưu trú khác trùng thời gian gia hạn.");
+        long soChoDaDat =
+                luuTruDAO.demPhongDatTrungBoQua(
+                        phong.maPhong, ngayRaMoi, duLieuCu.getNgayVao(), maHopDong);
+        if (soChoDaDat >= phong.sucChua)
+            throw new IllegalArgumentException(
+                    "Phòng đã có lịch đặt kế tiếp trùng thời gian gia hạn ("
+                            + soChoDaDat
+                            + "/"
+                            + phong.sucChua
+                            + ").");
+    }
+
+    public Map<String, String> layTrangThaiTatCaPhong() {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        List<Object[]> dong =
+                ThaoTacSQL.truyVan(
+                        "SELECT ma_phong, trang_thai FROM phong_hotel ORDER BY ma_phong");
+        Map<String, String> kq = new LinkedHashMap<>();
+        for (Object[] r : dong) {
+            kq.put(chuyenThanhChuoi(r[0]), chuyenThanhChuoi(r[1]));
+        }
+        return kq;
     }
 
     public void suaDatPhong(

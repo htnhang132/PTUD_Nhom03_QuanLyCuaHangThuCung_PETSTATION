@@ -3,6 +3,7 @@ package com.petstation.gui.luutru;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
+import com.petstation.gui.chung.NguCanhMoBanGhi;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.model.chung.LoaiNghiepVu;
@@ -23,6 +24,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 // Màn hình: Quản lý lưu trú Hotel (Mã: LUU_TRU_HOTEL)
@@ -33,6 +35,8 @@ import javax.swing.border.EmptyBorder;
 public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
     private final JTabbedPane tabWorkspace = new JTabbedPane();
     private TraCuuPhongHotelPanel khungSoDoPhong;
+    private NutDinhDang btnDonPhong;
+    private String maHopDongChoMoNhatKy;
 
     public LuuTruHotelPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.HOP_DONG_LUU_TRU, banHang, dieuHuong);
@@ -54,13 +58,25 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         NutDinhDang btnQuyetToan = new NutDinhDang("Quyết toán", NutDinhDang.KieuNut.THANH_CONG);
         btnQuyetToan.addActionListener(e -> chayThaoTac(() -> quyetToan("HOTEL")));
         layKhungThaoTac().add(btnQuyetToan);
-        NutDinhDang btnDonPhong = new NutDinhDang("Dọn phòng xong", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnDonPhong = new NutDinhDang("Dọn phòng xong", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnDonPhong.setEnabled(false);
         btnDonPhong.addActionListener(e -> chayThaoTac(() -> moDonPhong(null)));
         layKhungThaoTac().add(btnDonPhong);
         NutDinhDang btnThaoTacKhac = new NutDinhDang("Thao tác khác...", NutDinhDang.KieuNut.PHU);
         btnThaoTacKhac.addActionListener(e -> hienThiMenuThaoTacKhac(btnThaoTacKhac));
         layKhungThaoTac().add(btnThaoTacKhac);
         ganPhimTat(KeyEvent.VK_F6, this::moDatPhongVaTaiLai);
+        capNhatTrangThaiNutDonPhong();
+    }
+
+    private void capNhatTrangThaiNutDonPhong() {
+        if (btnDonPhong == null) return;
+        TacVuNen.chayCoPhien(
+                this,
+                () -> true,
+                luuTruService::layPhongDangDon,
+                ds -> btnDonPhong.setEnabled(ds != null && !ds.isEmpty()),
+                ex -> btnDonPhong.setEnabled(false));
     }
 
     private void nhanPhong() {
@@ -167,10 +183,79 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
 
     @Override
     public void xuLyHienThi() {
+        xuLyDieuHuongTuSoDo();
         if (tabWorkspace.getSelectedIndex() == 1 && khungSoDoPhong != null) {
             khungSoDoPhong.lamMoiSoDo();
         } else {
             super.xuLyHienThi();
+        }
+        capNhatTrangThaiNutDonPhong();
+    }
+
+    private void xuLyDieuHuongTuSoDo() {
+        var yeuCau = NguCanhMoBanGhi.lay();
+        if (yeuCau != null
+                && (yeuCau.manHinh() == MaManHinh.DAT_PHONG_LUU_TRU
+                        || yeuCau.manHinh() == MaManHinh.QUAN_LY_LUU_TRU)) {
+            String maPhong = yeuCau.ma();
+            NguCanhMoBanGhi.xoa();
+            tabWorkspace.setSelectedIndex(0);
+            if (maPhong != null && !maPhong.isBlank()) {
+                layBanHang().getQuyTrinh().chonPhongHotel(maPhong);
+                SwingUtilities.invokeLater(
+                        () -> {
+                            moDatPhongVaTaiLai();
+                            layBanHang().getQuyTrinh().chonPhongHotel("");
+                        });
+            }
+            return;
+        }
+        if (yeuCau != null && yeuCau.manHinh() == MaManHinh.NHAT_KY_CHAM_SOC) {
+            String maHd = yeuCau.ma();
+            NguCanhMoBanGhi.xoa();
+            tabWorkspace.setSelectedIndex(0);
+            if (maHd != null && !maHd.isBlank()) {
+                layBanHang().getQuyTrinh().chonHotel(maHd);
+                maHopDongChoMoNhatKy = maHd;
+            }
+            return;
+        }
+        Object manHinh = getClientProperty("maManHinh");
+        if (MaManHinh.DAT_PHONG_LUU_TRU.equals(manHinh)
+                && !layBanHang().getQuyTrinh().getMaPhongHotel().isBlank()) {
+            tabWorkspace.setSelectedIndex(0);
+            SwingUtilities.invokeLater(
+                    () -> {
+                        moDatPhongVaTaiLai();
+                        layBanHang().getQuyTrinh().chonPhongHotel("");
+                    });
+        } else if (MaManHinh.NHAT_KY_CHAM_SOC.equals(manHinh)
+                && !layBanHang().getQuyTrinh().getHopDongHotel().isBlank()) {
+            tabWorkspace.setSelectedIndex(0);
+            maHopDongChoMoNhatKy = layBanHang().getQuyTrinh().getHopDongHotel();
+        }
+    }
+
+    @Override
+    protected void sauKhiTaiLai() {
+        super.sauKhiTaiLai();
+        capNhatTrangThaiNutDonPhong();
+        String maChon =
+                maHopDongChoMoNhatKy != null
+                        ? maHopDongChoMoNhatKy
+                        : layBanHang().getQuyTrinh().getHopDongHotel();
+        if (maChon != null && !maChon.isBlank()) {
+            chonHopDongTheoMa(maChon);
+        }
+        if (maHopDongChoMoNhatKy != null) {
+            String maMo = maHopDongChoMoNhatKy;
+            maHopDongChoMoNhatKy = null;
+            SwingUtilities.invokeLater(
+                    () -> {
+                        chonHopDongTheoMa(maMo);
+                        NhatKyChamSocDialog.mo(this, "HOTEL", maMo);
+                        taiLaiNen();
+                    });
         }
     }
 
@@ -181,6 +266,7 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         } else {
             super.xuLyLamMoi();
         }
+        capNhatTrangThaiNutDonPhong();
     }
 
     private void chonHopDongTheoMa(String maHopDong) {
@@ -231,6 +317,9 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
                             chayThaoTacVaTaiLai(
                                     () -> NhatKyChamSocDialog.mo(this, "HOTEL", layDongChon())));
             popup.add(itemPhieuCS);
+            JMenuItem itemGiaHan = new JMenuItem("Gia hạn / Đổi ngày trả");
+            itemGiaHan.addActionListener(e -> chayThaoTacVaTaiLai(this::suaDatPhong));
+            popup.add(itemGiaHan);
             JMenuItem itemTraPhong = new JMenuItem("Trả phòng & Quyết toán (POS)");
             itemTraPhong.addActionListener(e -> chayThaoTac(() -> quyetToan("HOTEL")));
             popup.add(itemTraPhong);

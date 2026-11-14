@@ -12,7 +12,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
 import java.awt.event.ContainerAdapter;
@@ -60,6 +59,14 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(
                 false, false, oTimKiemChinh != null, bangChinhBang != null, false, true);
+    }
+
+    public boolean coTheRoiManHinh() {
+        return true;
+    }
+
+    protected void datBangChinh(JTable bang) {
+        this.bangChinhBang = bang;
     }
 
     @Override
@@ -247,7 +254,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         oTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
         oTruongDangXet.setPreferredSize(new Dimension(220, 34));
         oTruongDangXet.putClientProperty("JTextField.placeholderText", goiYNhap);
-        oTruongDangXet.putClientProperty("JTextField.padding", new Insets(4, 10, 4, 10));
+        oTruongDangXet.putClientProperty("JTextField.showClearButton", true);
         oTruongDangXet.getAccessibleContext().setAccessibleName(goiYNhap);
         if (oTimKiemChinh == null) oTimKiemChinh = oTruongDangXet;
         oChuaRangBuocTimKiem = oTruongDangXet;

@@ -1,6 +1,5 @@
 package com.petstation.gui.luutru;
 
-import com.petstation.dto.PhienDangNhap;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
@@ -21,6 +20,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.print.PrinterJob;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,18 +81,28 @@ public final class NhatKyChamSocDialog {
         DefaultListModel<String> model = new DefaultListModel<>();
         JList<String> list = new JList<>(model);
         JEditorPane preview = new JEditorPane("text/html", "");
-        JPanel khungPhai = taoKhungLichSuPhai(dialog, list, preview);
+        NutDinhDang btnIn = new NutDinhDang("In / Xuất phiếu PDF…", NutDinhDang.KieuNut.PHU);
+        btnIn.setEnabled(false);
         final List<NhatKyChamSoc> data = new ArrayList<>();
+        JPanel khungPhai = taoKhungLichSuPhai(dialog, list, preview, data, btnIn);
         Runnable load =
-                () -> taiNhatKy(dialog, chamSocService, loai, ma, data, model, list, preview);
+                () ->
+                        taiNhatKy(
+                                dialog,
+                                chamSocService,
+                                loai,
+                                ma,
+                                data,
+                                model,
+                                list,
+                                preview,
+                                btnIn);
         list.addListSelectionListener(e -> capNhatXemTruoc(list, data, preview));
-        var phien = PhienDangNhapService.macDinh().layPhien();
         btnLuu.addActionListener(
                 e ->
                         luuPhieuChamSoc(
                                 dialog,
                                 chamSocService,
-                                phien,
                                 loai,
                                 ma,
                                 health,
@@ -218,7 +228,11 @@ public final class NhatKyChamSocDialog {
     }
 
     private static JPanel taoKhungLichSuPhai(
-            JDialog dialog, JList<String> list, JEditorPane preview) {
+            JDialog dialog,
+            JList<String> list,
+            JEditorPane preview,
+            List<NhatKyChamSoc> data,
+            NutDinhDang btnIn) {
         JPanel khungPhai = new BoGocPanel(12, Color.WHITE);
         khungPhai.setLayout(new BorderLayout(8, 8));
         khungPhai.setBorder(new EmptyBorder(14, 16, 14, 16));
@@ -242,11 +256,15 @@ public final class NhatKyChamSocDialog {
         khungXemChiTiet.setOpaque(false);
         khungXemChiTiet.add(spList, BorderLayout.NORTH);
         khungXemChiTiet.add(spPreview, BorderLayout.CENTER);
-        NutDinhDang btnIn = new NutDinhDang("In / Xuất phiếu PDF…", NutDinhDang.KieuNut.PHU);
         btnIn.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         btnIn.setPreferredSize(new Dimension(180, 36));
         btnIn.addActionListener(
                 e -> {
+                    if (data.isEmpty() || list.getSelectedIndex() < 0) {
+                        HopThoai.hienThiCanhBao(
+                                dialog, "Chưa có phiếu chăm sóc để in hoặc xuất PDF.");
+                        return;
+                    }
                     try {
                         PrinterJob job = PrinterJob.getPrinterJob();
                         job.setPrintable(preview.getPrintable(null, null));
@@ -278,7 +296,8 @@ public final class NhatKyChamSocDialog {
             List<NhatKyChamSoc> data,
             DefaultListModel<String> model,
             JList<String> list,
-            JEditorPane preview) {
+            JEditorPane preview,
+            NutDinhDang btnIn) {
         TacVuNen.chay(
                 () -> chamSocService.lay(loai, ma),
                 ketQua -> {
@@ -296,6 +315,7 @@ public final class NhatKyChamSocDialog {
                                         : "";
                         model.addElement(tg + " · " + tenNv);
                     }
+                    btnIn.setEnabled(!data.isEmpty());
                     if (!data.isEmpty()) {
                         list.setSelectedIndex(0);
                     } else {
@@ -368,18 +388,24 @@ public final class NhatKyChamSocDialog {
                                     + " style='font-size:11px; font-weight:bold; color:#555;'>")
                     .append(j == 0 ? "Trước khi làm" : "Sau khi làm")
                     .append("</div>");
-            if (anh[j] != null) {
-                Path path = Path.of(anh[j]);
-                if (Files.isRegularFile(path)) {
-                    h.append(
-                                    "<img style='border:1px solid #ccc; border-radius:4px;"
-                                            + " margin-top:4px;' width='200' src='")
-                            .append(path.toUri())
-                            .append("'>");
-                } else {
+            if (anh[j] != null && !anh[j].isBlank()) {
+                try {
+                    Path path = Path.of(anh[j].trim());
+                    if (Files.isRegularFile(path)) {
+                        h.append(
+                                        "<img style='border:1px solid #ccc; border-radius:4px;"
+                                                + " margin-top:4px;' width='200' src='")
+                                .append(path.toUri())
+                                .append("'>");
+                    } else {
+                        h.append(
+                                "<div style='color:#999; font-size:11px; padding:20px; border:1px"
+                                        + " dashed #ccc;'>Không tìm thấy tệp ảnh</div>");
+                    }
+                } catch (InvalidPathException ex) {
                     h.append(
                             "<div style='color:#999; font-size:11px; padding:20px; border:1px"
-                                    + " dashed #ccc;'>Không tìm thấy tệp ảnh</div>");
+                                    + " dashed #ccc;'>Đường dẫn ảnh không hợp lệ</div>");
                 }
             } else {
                 h.append(
@@ -394,7 +420,6 @@ public final class NhatKyChamSocDialog {
     private static void luuPhieuChamSoc(
             JDialog dialog,
             ChamSocService chamSocService,
-            PhienDangNhap phien,
             String loai,
             String ma,
             JTextArea health,
@@ -411,6 +436,11 @@ public final class NhatKyChamSocDialog {
                 d = tasks.getText().trim();
         if (a.isEmpty()) {
             HopThoai.hienThiCanhBao(dialog, "Vui lòng nhập tình trạng sức khỏe tiếp nhận.");
+            return;
+        }
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        if (phien == null) {
+            HopThoai.hienThiCanhBao(dialog, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
             return;
         }
         Path before = images[0], after = images[1];

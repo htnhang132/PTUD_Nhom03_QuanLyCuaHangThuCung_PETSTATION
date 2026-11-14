@@ -92,16 +92,37 @@ public final class GhiExcel {
         }
     }
 
+    private static boolean laCotTienTe(String nhan) {
+        if (nhan.isEmpty()
+                || nhan.contains("%")
+                || nhan.contains("chênh lệch sl")
+                || nhan.contains("số lượng")
+                || nhan.contains("lượt")
+                || nhan.contains("lần")
+                || nhan.startsWith("mã ")) {
+            return false;
+        }
+        boolean coTuKhoaTien =
+                nhan.matches(
+                        ".*(tiền|giá|doanh thu|công nợ|đã trả|phải trả|chênh"
+                                + " lệch|tạm tính|giảm|cọc|chi tiêu|thực đếm|dư"
+                                + " nợ|tổng nhập|thu hóa đơn|thành tiền|chiết"
+                                + " khấu|hoàn trả|lợi nhuận|vốn).*");
+        if (!coTuKhoaTien) return false;
+        if (nhan.contains("tồn") || nhan.contains("điểm") || nhan.matches(".*\\bca\\b.*")) {
+            return nhan.matches(
+                    ".*(tiền|giá|doanh thu|chi tiêu|lợi nhuận|vốn|chiết khấu|hoàn"
+                            + " trả|công nợ|dư nợ|đã trả|phải trả|thu hóa"
+                            + " đơn|thành tiền|tổng nhập).*");
+        }
+        return true;
+    }
+
     private static void ghiGiaTriO(
             Cell o, Object giaTri, String tenCot, CellStyle tien, CellStyle ngay, CellStyle gio) {
         if (giaTri == null) return;
         String nhan = tenCot == null ? "" : tenCot.toLowerCase(Locale.ROOT);
-        boolean laTien =
-                nhan.matches(
-                                ".*(tiền|giá|doanh thu|công nợ|đã trả|phải trả|chênh"
-                                        + " lệch|tạm tính|giảm|cọc|chi tiêu|thực đếm|dư"
-                                        + " nợ|tổng nhập|thu hóa đơn).*")
-                        && !nhan.contains("%");
+        boolean laTien = laCotTienTe(nhan);
         if (giaTri instanceof Date v) {
             o.setCellValue(v);
             o.setCellStyle(giaTri instanceof Timestamp ? gio : ngay);

@@ -58,6 +58,9 @@ public interface DanhMucDAO {
     // Khóa tất cả tài khoản đăng nhập của nhân viên khi chuyển sang trạng thái nghỉ việc
     int khoaCacTaiKhoanCua(String maNhanVien);
 
+    // Mở khóa tài khoản của nhân viên khi chuyển sang trạng thái đang làm việc
+    int moKhoaTaiKhoanNhanVien(String maNhanVien);
+
     // Đặt lại mật khẩu mới (đã băm BCrypt) và mở khóa đăng nhập cho tài khoản
     void datLaiMatKhau(String tenDangNhap, String matKhau);
 
@@ -68,7 +71,10 @@ public interface DanhMucDAO {
     void taoTaiKhoanNhanVien(
             String maNhanVien, String tenDangNhap, String matKhauHash, String vaiTro);
 
-    // 4. NGHIỆP VỤ BỔ TRỢ NHÀ CUNG CẤP (KIỂM TRA TRÙNG & NHẬT KÝ JSON)
+    // 4. NGHIỆP VỤ BỔ TRỢ KHÁCH HÀNG & NHÀ CUNG CẤP
+
+    // Kiểm tra khách hàng có thú cưng hoạt động / phiếu Spa / hợp đồng lưu trú đang mở hay không
+    String kiemTraKhachHangDangGiaoDich(String maKhachHang);
 
     // Kiểm tra tên nhà cung cấp có bị trùng với nhà cung cấp khác hay không
     boolean tonTaiTenNcc(String ten, String maLoaiTru);

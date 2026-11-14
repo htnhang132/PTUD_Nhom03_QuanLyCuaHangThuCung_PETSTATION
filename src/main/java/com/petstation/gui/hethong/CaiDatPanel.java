@@ -7,6 +7,9 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.service.hethong.CaiDatService;
+import com.petstation.util.DinhDang;
+
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -52,9 +55,14 @@ public final class CaiDatPanel extends CoSoPanel {
     private final JComboBox<String> cboMayIn = new JComboBox<>();
     private final boolean coTheSua;
 
+    private static final String MUC_MAC_DINH_KHONG_CO_MAY_IN = "Không có máy in";
+
     private final Map<String, String> giaTriDaNap = new LinkedHashMap<>();
+    private JTabbedPane tabCaiDat;
+    private NutDinhDang btnLuu;
     private Object mayInDaNap;
     private boolean kiemDemMuDaNap;
+    private boolean daNapXong;
     private int luotTai;
 
     public CaiDatPanel(boolean coTheSua) {
@@ -65,7 +73,7 @@ public final class CaiDatPanel extends CoSoPanel {
                         "Cài đặt hệ thống",
                         "Cấu hình thông tin cửa hàng, hóa đơn, kho hàng, nhân sự và bảo trì"),
                 BorderLayout.NORTH);
-        JTabbedPane tabCaiDat = new JTabbedPane();
+        tabCaiDat = new JTabbedPane();
         tabCaiDat.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         tabCaiDat.addTab("Cửa hàng & Hóa đơn", bocCuon(taoTabCuaHangVaHoaDon()));
         tabCaiDat.addTab("Kho & Hàng hóa", bocCuon(taoTabKhoVaHangHoa()));
@@ -121,6 +129,7 @@ public final class CaiDatPanel extends CoSoPanel {
         khungHoaDonVaMayIn.add(Box.createVerticalStrut(6));
         NutDinhDang btnKiemThu =
                 new NutDinhDang("In thử trang mẫu", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnKiemThu.setEnabled(coTheSua);
         btnKiemThu.addActionListener(e -> inThu());
         khungHoaDonVaMayIn.add(btnKiemThu);
         khungHoaDonVaMayIn.add(Box.createVerticalStrut(12));
@@ -238,17 +247,9 @@ public final class CaiDatPanel extends CoSoPanel {
         JPanel khungCacThaoTac = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 10, 8));
         NutDinhDang btnTaiLai = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
         btnTaiLai.setToolTipText("Đọc lại cài đặt đã lưu trong SQL Server");
-        btnTaiLai.addActionListener(
-                suKien -> {
-                    if (coThayDoiChuaLuu()
-                            && !HopThoai.xacNhan(
-                                    this, "Bỏ thay đổi cài đặt chưa lưu và đọc lại dữ liệu?")) {
-                        return;
-                    }
-                    nap();
-                });
+        btnTaiLai.addActionListener(suKien -> xuLyLamMoi());
         khungCacThaoTac.add(btnTaiLai);
-        NutDinhDang btnLuu = new NutDinhDang("Lưu cài đặt", NutDinhDang.KieuNut.CHINH);
+        btnLuu = new NutDinhDang("Lưu cài đặt", NutDinhDang.KieuNut.CHINH);
         btnLuu.setEnabled(coTheSua);
         btnLuu.addActionListener(suKien -> xuLyLuu());
         khungCacThaoTac.add(btnLuu);
@@ -345,44 +346,67 @@ public final class CaiDatPanel extends CoSoPanel {
     }
 
     private void inThu() {
-        TacVuNen.chayCoPhien(
-                this,
-                () -> true,
-                () ->
-                        CaiDatService.macDinh().lay("TEN_CUA_HANG")
-                                + "\n"
-                                + CaiDatService.macDinh().lay("DIA_CHI_CUA_HANG")
-                                + "\n"
-                                + "Hotline: "
-                                + CaiDatService.macDinh().lay("SO_DIEN_THOAI_CUA_HANG")
-                                + "\n"
-                                + "--------------------------------\n"
-                                + "IN THỬ PET STATION POS\n"
-                                + LocalDateTime.now()
-                                + "\n"
-                                + "--------------------------------\n"
-                                + "Cảm ơn quý khách!\n",
-                noiDung -> {
-                    JTextArea oTrang = new JTextArea(noiDung);
-                    try {
-                        PrinterJob congViec = PrinterJob.getPrinterJob();
-                        congViec.setJobName("In thử Pet Station");
-                        congViec.setPrintable(oTrang.getPrintable(null, null));
-                        if (!congViec.printDialog()) return;
-                        TacVuNen.chay(
-                                () -> {
-                                    congViec.print();
-                                    return null;
-                                },
-                                v -> {},
-                                ngoaiLe ->
-                                        HopThoai.hienThiLoi(
-                                                this,
-                                                "Lỗi in thử: " + TacVuNen.thongDiepLoi(ngoaiLe)));
-                    } catch (Exception ngoaiLe) {
-                        HopThoai.hienThiLoi(this, "Lỗi in thử: " + ngoaiLe.getMessage());
-                    }
-                });
+        String tenCuaHang = layGiaTriForm("TEN_CUA_HANG", "Pet Station");
+        String diaChi = layGiaTriForm("DIA_CHI_CUA_HANG", "");
+        String hotline = layGiaTriForm("SO_DIEN_THOAI_CUA_HANG", "");
+        String noiDung =
+                tenCuaHang
+                        + "\n"
+                        + diaChi
+                        + "\nHotline: "
+                        + hotline
+                        + "\n--------------------------------\n"
+                        + "IN THỬ PET STATION POS\n"
+                        + DinhDang.ngayGio(LocalDateTime.now())
+                        + "\n--------------------------------\n"
+                        + "Cảm ơn quý khách!\n";
+        JTextArea oTrang = new JTextArea(noiDung);
+        try {
+            PrinterJob congViec = PrinterJob.getPrinterJob();
+            congViec.setJobName("In thử Pet Station");
+            ganMayInChoJob(congViec);
+            congViec.setPrintable(oTrang.getPrintable(null, null));
+            if (!congViec.printDialog()) return;
+            TacVuNen.chay(
+                    () -> {
+                        congViec.print();
+                        return null;
+                    },
+                    v -> {},
+                    ngoaiLe ->
+                            HopThoai.hienThiLoi(
+                                    this, "Lỗi in thử: " + TacVuNen.thongDiepLoi(ngoaiLe)));
+        } catch (Exception ngoaiLe) {
+            HopThoai.hienThiLoi(this, "Lỗi in thử: " + ngoaiLe.getMessage());
+        }
+    }
+
+    private String layGiaTriForm(String khoa, String macDinh) {
+        JTextField oNhap = cacDauVao.get(khoa);
+        if (oNhap == null) return macDinh;
+        String vanBan = oNhap.getText().trim();
+        return vanBan.isEmpty() ? macDinh : vanBan;
+    }
+
+    private void ganMayInChoJob(PrinterJob congViec) {
+        Object mucChon = cboMayIn.getSelectedItem();
+        if (mucChon == null || MUC_MAC_DINH_KHONG_CO_MAY_IN.equals(mucChon)) return;
+        String tenMayIn = mucChon.toString().trim();
+        if (tenMayIn.isEmpty()) return;
+        for (PrintService dichVu : PrintServiceLookup.lookupPrintServices(null, null)) {
+            if (tenMayIn.equalsIgnoreCase(dichVu.getName())) {
+                try {
+                    congViec.setPrintService(dichVu);
+                } catch (Exception ngoaiLe) {
+                    LoggerFactory.getLogger(CaiDatPanel.class)
+                            .debug(
+                                    "Không chọn được máy in '{}': {}",
+                                    tenMayIn,
+                                    ngoaiLe.getMessage());
+                }
+                break;
+            }
+        }
     }
 
     private void khoiPhucMacDinh() {
@@ -390,24 +414,22 @@ public final class CaiDatPanel extends CoSoPanel {
                 this, "Bạn có chắc muốn đặt lại các thông số cấu hình về giá trị tiêu chuẩn?")) {
             return;
         }
-        if (cacDauVao.containsKey("THUE_VAT_PHAN_TRAM"))
-            cacDauVao.get("THUE_VAT_PHAN_TRAM").setText("8");
-        if (cacDauVao.containsKey("NGUONG_TON_KHO_THAP"))
-            cacDauVao.get("NGUONG_TON_KHO_THAP").setText("10");
-        if (cacDauVao.containsKey("SO_NGAY_CANH_BAO_HET_HAN"))
-            cacDauVao.get("SO_NGAY_CANH_BAO_HET_HAN").setText("30");
-        if (cacDauVao.containsKey("SO_NGAY_TON_DONG"))
-            cacDauVao.get("SO_NGAY_TON_DONG").setText("45");
-        if (cacDauVao.containsKey("HAN_MUC_XUAT_HUY_CAN_DUYET"))
-            cacDauVao.get("HAN_MUC_XUAT_HUY_CAN_DUYET").setText("500000");
-        if (cacDauVao.containsKey("SO_GIO_TOI_DA_MOI_TUAN"))
-            cacDauVao.get("SO_GIO_TOI_DA_MOI_TUAN").setText("40");
-        if (cacDauVao.containsKey("SO_GIO_BAO_TRUOC_DOI_CA"))
-            cacDauVao.get("SO_GIO_BAO_TRUOC_DOI_CA").setText("12");
-        if (cacDauVao.containsKey("PHI_TRA_PHONG_TRE"))
-            cacDauVao.get("PHI_TRA_PHONG_TRE").setText("100000");
-        if (cacDauVao.containsKey("SO_NGAY_DOI_TRA")) cacDauVao.get("SO_NGAY_DOI_TRA").setText("3");
+        datGiaTriNeuCo("THUE_VAT_PHAN_TRAM", "8");
+        datGiaTriNeuCo("NGUONG_TON_KHO_THAP", "10");
+        datGiaTriNeuCo("SO_NGAY_CANH_BAO_HET_HAN", "30");
+        datGiaTriNeuCo("SO_NGAY_TON_DONG", "45");
+        datGiaTriNeuCo("HAN_MUC_XUAT_HUY_CAN_DUYET", "500000");
+        datGiaTriNeuCo("SO_GIO_TOI_DA_MOI_TUAN", "40");
+        datGiaTriNeuCo("SO_GIO_BAO_TRUOC_DOI_CA", "12");
+        datGiaTriNeuCo("PHI_TRA_PHONG_TRE", "100000");
+        datGiaTriNeuCo("SO_NGAY_DOI_TRA", "3");
+        datGiaTriNeuCo("THU_MUC_ANH_CHAM_SOC", "");
         hopChonMacDinhKiemDemMu.setSelected(false);
+    }
+
+    private void datGiaTriNeuCo(String khoa, String giaTri) {
+        JTextField oNhap = cacDauVao.get(khoa);
+        if (oNhap != null) oNhap.setText(giaTri);
     }
 
     private static final class DuLieuCaiDat {
@@ -476,13 +498,17 @@ public final class CaiDatPanel extends CoSoPanel {
     }
 
     private void apDungGiaTriCaiDat(DuLieuCaiDat duLieu) {
+        daNapXong = false;
         Map<String, String> ketQua = duLieu.giaTri();
+        String daChon = ketQua.getOrDefault("MAY_IN", "").trim();
         cboMayIn.removeAllItems();
         if (duLieu.mayIn().isEmpty()) {
-            cboMayIn.addItem("Không có máy in");
+            if (!daChon.isEmpty()) cboMayIn.addItem(daChon);
+            cboMayIn.addItem(MUC_MAC_DINH_KHONG_CO_MAY_IN);
         } else {
-            for (String tenMayIn : duLieu.mayIn()) {
-                cboMayIn.addItem(tenMayIn);
+            for (String tenMayIn : duLieu.mayIn()) cboMayIn.addItem(tenMayIn);
+            if (!daChon.isEmpty() && !duLieu.mayIn().contains(daChon)) {
+                cboMayIn.insertItemAt(daChon, 0);
             }
         }
         cboMayIn.setEnabled(coTheSua);
@@ -491,12 +517,17 @@ public final class CaiDatPanel extends CoSoPanel {
         }
         hopChonMacDinhKiemDemMu.setSelected(
                 Boolean.parseBoolean(ketQua.getOrDefault("MAC_DINH_KIEM_KE_MU", "false")));
-        String daChon = ketQua.getOrDefault("MAY_IN", "");
-        if (!daChon.isBlank()) cboMayIn.setSelectedItem(daChon);
+        if (!daChon.isEmpty()) {
+            cboMayIn.setSelectedItem(daChon);
+        } else if (cboMayIn.getItemCount() > 0) {
+            cboMayIn.setSelectedIndex(0);
+        }
         ghiNhanDaNap();
+        daNapXong = true;
     }
 
     private boolean coThayDoiChuaLuu() {
+        if (!daNapXong) return false;
         if (!Objects.equals(mayInDaNap, cboMayIn.getSelectedItem())) return true;
         if (kiemDemMuDaNap != hopChonMacDinhKiemDemMu.isSelected()) return true;
         return cacDauVao.entrySet().stream()
@@ -513,50 +544,104 @@ public final class CaiDatPanel extends CoSoPanel {
 
     @Override
     public void xuLyLuu() {
-        if (!coTheSua) return;
-        try {
-            int vat = Integer.parseInt(cacDauVao.get("THUE_VAT_PHAN_TRAM").getText().trim());
-            if (vat < 0 || vat > 100)
-                throw new IllegalArgumentException("Thuế VAT phải từ 0% đến 100%.");
-            long lowStock = Long.parseLong(cacDauVao.get("NGUONG_TON_KHO_THAP").getText().trim());
-            if (lowStock < 0) throw new IllegalArgumentException("Ngưỡng tồn thấp không được âm.");
-            long expiryDays =
-                    Long.parseLong(cacDauVao.get("SO_NGAY_CANH_BAO_HET_HAN").getText().trim());
-            if (expiryDays < 0)
-                throw new IllegalArgumentException("Số ngày cảnh báo hạn dùng không được âm.");
-            kiemTraSoKhongAm("SO_NGAY_TON_DONG", "Số ngày tồn đọng không được âm.");
-            kiemTraSoKhongAm(
-                    "HAN_MUC_XUAT_HUY_CAN_DUYET", "Hạn mức xuất hủy cần duyệt không được âm.");
-            long soGioToiDa =
-                    Long.parseLong(cacDauVao.get("SO_GIO_TOI_DA_MOI_TUAN").getText().trim());
-            if (soGioToiDa < 1 || soGioToiDa > 168) {
-                throw new IllegalArgumentException(
-                        "Số giờ tối đa mỗi tuần phải trong khoảng 1 đến 168 giờ.");
-            }
-            kiemTraSoKhongAm("SO_GIO_BAO_TRUOC_DOI_CA", "Số giờ báo trước đổi ca không được âm.");
-            kiemTraSoKhongAm("PHI_TRA_PHONG_TRE", "Phí trả phòng trễ không được âm.");
-            kiemTraSoKhongAm("SO_NGAY_DOI_TRA", "Số ngày đổi trả không được âm.");
-            Map<String, String> giaTri = new LinkedHashMap<>();
-            cacDauVao.forEach((khoa, truong) -> giaTri.put(khoa, truong.getText().trim()));
-            giaTri.put("MAC_DINH_KIEM_KE_MU", String.valueOf(hopChonMacDinhKiemDemMu.isSelected()));
-            String mayIn =
-                    "Không có máy in".equals(cboMayIn.getSelectedItem())
-                            ? ""
-                            : String.valueOf(cboMayIn.getSelectedItem());
-            TacVuNen.chayCoPhien(
-                    this,
-                    () -> true,
-                    () -> CaiDatService.macDinh().luuTatCa(giaTri, mayIn),
-                    () -> {
-                        nap();
-                        HopThoai.hienThiThanhCong(this, "Đã lưu thành công cài đặt hệ thống.");
-                    });
-        } catch (NumberFormatException ex) {
-            HopThoai.hienThiCanhBao(
-                    this, "Vui lòng nhập định dạng số hợp lệ cho các trường tham số.");
-        } catch (RuntimeException ngoaiLe) {
-            HopThoai.hienThiCanhBao(this, ngoaiLe.getMessage());
+        if (!coTheSua || !kiemTraHopLeTruocKhiLuu()) return;
+        Map<String, String> giaTri = new LinkedHashMap<>();
+        cacDauVao.forEach((khoa, truong) -> giaTri.put(khoa, truong.getText().trim()));
+        giaTri.put("MAC_DINH_KIEM_KE_MU", String.valueOf(hopChonMacDinhKiemDemMu.isSelected()));
+        Object mucMayIn = cboMayIn.getSelectedItem();
+        String mayIn =
+                mucMayIn == null || MUC_MAC_DINH_KHONG_CO_MAY_IN.equals(mucMayIn)
+                        ? ""
+                        : mucMayIn.toString().trim();
+        if (btnLuu != null) btnLuu.setEnabled(false);
+        TacVuNen.chayCoPhien(
+                this,
+                () -> true,
+                () -> CaiDatService.macDinh().luuTatCa(giaTri, mayIn),
+                () -> {
+                    if (btnLuu != null) btnLuu.setEnabled(coTheSua);
+                    nap();
+                    HopThoai.hienThiThanhCong(this, "Đã lưu thành công cài đặt hệ thống.");
+                },
+                loi -> {
+                    if (btnLuu != null) btnLuu.setEnabled(coTheSua);
+                    HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(loi));
+                });
+    }
+
+    private boolean kiemTraHopLeTruocKhiLuu() {
+        JTextField tenCuaHang = cacDauVao.get("TEN_CUA_HANG");
+        if (tenCuaHang != null && tenCuaHang.getText().trim().isEmpty()) {
+            baoLoiTruong(0, tenCuaHang, "Vui lòng nhập Tên cửa hàng (Tab Cửa hàng & Hóa đơn).");
+            return false;
         }
+        return kiemTraSoTrongTab("THUE_VAT_PHAN_TRAM", "Thuế VAT (%)", 0, 0, 100)
+                && kiemTraSoTrongTab(
+                        "NGUONG_TON_KHO_THAP", "Ngưỡng tồn thấp cảnh báo", 1, 0, Long.MAX_VALUE)
+                && kiemTraSoTrongTab(
+                        "SO_NGAY_CANH_BAO_HET_HAN",
+                        "Cảnh báo trước hạn dùng (ngày)",
+                        1,
+                        0,
+                        Long.MAX_VALUE)
+                && kiemTraSoTrongTab(
+                        "SO_NGAY_TON_DONG", "Ngưỡng hàng tồn đọng (ngày)", 1, 0, Long.MAX_VALUE)
+                && kiemTraSoTrongTab(
+                        "HAN_MUC_XUAT_HUY_CAN_DUYET",
+                        "Hạn mức xuất hủy cần duyệt",
+                        1,
+                        0,
+                        Long.MAX_VALUE)
+                && kiemTraSoTrongTab("SO_GIO_TOI_DA_MOI_TUAN", "Số giờ tối đa mỗi tuần", 2, 1, 168)
+                && kiemTraSoTrongTab(
+                        "SO_GIO_BAO_TRUOC_DOI_CA",
+                        "Thời gian báo trước đổi ca (giờ)",
+                        2,
+                        0,
+                        Long.MAX_VALUE)
+                && kiemTraSoTrongTab("PHI_TRA_PHONG_TRE", "Phí trả phòng trễ", 2, 0, Long.MAX_VALUE)
+                && kiemTraSoTrongTab(
+                        "SO_NGAY_DOI_TRA",
+                        "Thời hạn đổi trả phụ kiện (ngày)",
+                        2,
+                        0,
+                        Long.MAX_VALUE);
+    }
+
+    private boolean kiemTraSoTrongTab(
+            String khoa, String nhanTruong, int chiSoTab, long min, long max) {
+        JTextField truong = cacDauVao.get(khoa);
+        if (truong == null) return true;
+        String tenTab = tabCaiDat.getTitleAt(chiSoTab);
+        try {
+            long giaTri = Long.parseLong(truong.getText().trim());
+            if (giaTri < min || giaTri > max) {
+                String phamVi =
+                        max == Long.MAX_VALUE
+                                ? "không được nhỏ hơn " + min
+                                : "phải trong khoảng " + min + " đến " + max;
+                baoLoiTruong(chiSoTab, truong, nhanTruong + " (" + tenTab + ") " + phamVi + ".");
+                return false;
+            }
+            return true;
+        } catch (NumberFormatException ex) {
+            baoLoiTruong(
+                    chiSoTab,
+                    truong,
+                    "Vui lòng nhập số nguyên hợp lệ cho mục \""
+                            + nhanTruong
+                            + "\" ("
+                            + tenTab
+                            + ").");
+            return false;
+        }
+    }
+
+    private void baoLoiTruong(int chiSoTab, JTextField truong, String thongBao) {
+        tabCaiDat.setSelectedIndex(chiSoTab);
+        truong.requestFocusInWindow();
+        truong.selectAll();
+        HopThoai.hienThiCanhBao(this, thongBao);
     }
 
     @Override
@@ -564,11 +649,21 @@ public final class CaiDatPanel extends CoSoPanel {
         return new KhaNangThanhCongCu(false, coTheSua, false, false, false, true);
     }
 
-    private void kiemTraSoKhongAm(String khoa, String thongDiepAm) {
-        JTextField truong = cacDauVao.get(khoa);
-        if (truong == null) return;
-        long val = Long.parseLong(truong.getText().trim());
-        if (val < 0) throw new IllegalArgumentException(thongDiepAm);
+    @Override
+    public boolean coTheRoiManHinh() {
+        if (!coTheSua || !coThayDoiChuaLuu()) return true;
+        return HopThoai.xacNhan(
+                this, "Cài đặt hệ thống có thay đổi chưa lưu. Bạn có chắc muốn rời màn hình?");
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        if (coTheSua
+                && coThayDoiChuaLuu()
+                && !HopThoai.xacNhan(this, "Bỏ thay đổi cài đặt chưa lưu và đọc lại dữ liệu?")) {
+            return;
+        }
+        nap();
     }
 
     @Override

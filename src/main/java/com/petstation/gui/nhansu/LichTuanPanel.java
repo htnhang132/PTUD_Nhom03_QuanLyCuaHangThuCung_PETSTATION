@@ -3,15 +3,14 @@ package com.petstation.gui.nhansu;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.ThanhDanhSach;
-import com.petstation.gui.chung.TruongNghiepVu;
-import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgay;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
-import com.petstation.model.chung.LoaiLichLamViec;
+import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.hethong.CaiDatService;
@@ -43,9 +42,9 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -55,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -232,22 +232,22 @@ public class LichTuanPanel extends CoSoPanel {
             btnDongDuLieu.setVerticalAlignment(SwingConstants.CENTER);
             Dimension kichThuoc = btnDongDuLieu.getPreferredSize();
             btnDongDuLieu.setPreferredSize(new Dimension(kichThuoc.width, 34));
-            btnDongDuLieu.addActionListener(suKien -> dungLai());
+            btnDongDuLieu.addActionListener(suKien -> veLuoiTuan());
             nhom.add(btnDongDuLieu);
             nhomCheDo.add(btnDongDuLieu);
         }
         khungThanh.themBoLoc(nhomCheDo);
         if (cheDo != CheDo.CA_NHAN) {
             oLocNhanVien.setPreferredSize(new Dimension(145, 34));
-            oLocNhanVien.setToolTipText("Lọc theo tên, mã NV hoặc chức vụ");
+            oLocNhanVien.setToolTipText("Lọc theo tên, mã NV hoặc chức vụ (Ctrl+F)");
             oLocNhanVien.addActionListener(
                     suKien -> {
-                        if (!dangDatLaiBoLoc) dungLai();
+                        if (!dangDatLaiBoLoc) veLuoiTuan();
                     });
             themBoLangNgheTaiLieu(
                     oLocNhanVien,
                     () -> {
-                        if (!dangDatLaiBoLoc) dungLai();
+                        if (!dangDatLaiBoLoc) veLuoiTuan();
                     });
             khungThanh.themBoLoc("Lọc NV:", oLocNhanVien);
         }
@@ -270,9 +270,9 @@ public class LichTuanPanel extends CoSoPanel {
                 suKien -> {
                     if (dangDatLaiBoLoc) return;
                     LocalDate ngay = oTruongNgay.layNgayDuocChon();
-                    if (ngay == null) return;
-                    LocalDate tuan = LichLamViecService.macDinh().layThuHaiCuaTuan(ngay);
-                    if (!tuan.equals(thuHai)) {
+                    LocalDate mucTieu = ngay != null ? ngay : LocalDate.now();
+                    LocalDate tuan = LichLamViecService.macDinh().layThuHaiCuaTuan(mucTieu);
+                    if (ngay == null || !tuan.equals(thuHai)) {
                         thuHai = tuan;
                         dungLai();
                     }
@@ -341,6 +341,13 @@ public class LichTuanPanel extends CoSoPanel {
         }
         khungThanh.add(
                 taoNutCongCu(
+                        "Xuất Excel",
+                        NutDinhDang.KieuNut.TRONG_SUOT,
+                        100,
+                        "Xuất lịch làm việc tuần ra file Excel",
+                        this::xuatExcelLichTuan));
+        khungThanh.add(
+                taoNutCongCu(
                         "In lịch", NutDinhDang.KieuNut.TRONG_SUOT, 85, null, this::inLichLamViec));
     }
 
@@ -384,7 +391,12 @@ public class LichTuanPanel extends CoSoPanel {
     }
 
     private void dungLai() {
-        oTruongNgay.datNgayDuocChon(thuHai);
+        dangDatLaiBoLoc = true;
+        try {
+            oTruongNgay.datNgayDuocChon(thuHai);
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         if (phien == null) {
             veLuoiTuan();
@@ -580,20 +592,21 @@ public class LichTuanPanel extends CoSoPanel {
         Object[] nhanVien = layNhanVienCua(suKien.layMaNhanVien());
         String ten = nhanVien == null ? suKien.layMaNhanVien() : String.valueOf(nhanVien[1]);
         String dayDuViTri = nhanVien == null ? "" : String.valueOf(nhanVien[4]);
+        String viTriThuong = dayDuViTri.toLowerCase(Locale.ROOT);
         String viTri =
-                dayDuViTri.contains("bán hàng")
+                viTriThuong.contains("bán hàng")
                         ? "Bán hàng"
-                        : dayDuViTri.contains("Spa")
+                        : viTriThuong.contains("spa")
                                 ? "Spa / Hotel"
-                                : dayDuViTri.contains("kho") ? "Kho" : dayDuViTri;
+                                : viTriThuong.contains("kho") ? "Kho" : dayDuViTri;
         Color nen =
                 suKien.kiemTraNghiPhep()
                         ? NGHI_PHEP
-                        : dayDuViTri.contains("Spa")
+                        : viTriThuong.contains("spa")
                                 ? SPA
-                                : dayDuViTri.contains("kho")
+                                : viTriThuong.contains("kho")
                                         ? KHO
-                                        : dayDuViTri.contains("trưởng") ? QUAN_LY : BAN_HANG;
+                                        : viTriThuong.contains("trưởng") ? QUAN_LY : BAN_HANG;
         Color chu = suKien.kiemTraNghiPhep() ? Color.WHITE : MauUngDung.mau(0x1B2A3A);
         JPanel khungThe = new JPanel(new BorderLayout());
         khungThe.setBackground(nen);
@@ -604,9 +617,9 @@ public class LichTuanPanel extends CoSoPanel {
         khungThe.setAlignmentX(Component.LEFT_ALIGNMENT);
         String noiDung =
                 "<html><body style='width:88px'><b>"
-                        + ten
+                        + thoatHtml(ten)
                         + "</b><br>"
-                        + viTri
+                        + thoatHtml(viTri)
                         + "<br>"
                         + (suKien.kiemTraNghiPhep()
                                 ? "<b>Nghỉ phép</b>"
@@ -713,9 +726,13 @@ public class LichTuanPanel extends CoSoPanel {
         dlg.setSize(680, 500);
         HopThoai.chuanHoaCuaSo(dlg, owner);
         List<Muc> hienCo =
-                duLieu.lichTuan.stream()
-                        .filter(m -> m.layNgay().equals(ngay) && m.layCaLamViec() == caLamViec)
-                        .toList();
+                new ArrayList<>(
+                        duLieu.lichTuan.stream()
+                                .filter(
+                                        m ->
+                                                m.layNgay().equals(ngay)
+                                                        && m.layCaLamViec() == caLamViec)
+                                .toList());
         Set<String> maHienCo = new HashSet<>();
         for (Muc m : hienCo) if (!m.kiemTraNghiPhep()) maHienCo.add(m.layMaNhanVien());
         DefaultTableModel model = taoMoHinhPhanCa(ngay, caLamViec, maHienCo, duLieu);
@@ -920,34 +937,64 @@ public class LichTuanPanel extends CoSoPanel {
         TacVuNen.chayCoPhien(
                 phien,
                 dlg::isDisplayable,
-                () -> {
-                    List<String> cacLoi = new ArrayList<>();
-                    for (String ma : toAdd) {
-                        String err = LichLamViecService.macDinh().phanCong(ngay, caLamViec, ma);
-                        if (err != null) cacLoi.add("Lỗi phân ca " + ma + ": " + err);
-                    }
-                    for (String ma : toRemove) {
-                        hienCo.stream()
-                                .filter(x -> x.layMaNhanVien().equals(ma))
-                                .findFirst()
-                                .ifPresent(m -> LichLamViecService.macDinh().xoa(m));
-                    }
-                    NhatKyHeThongService.macDinh()
-                            .ghiNhatKy(
-                                    "Phân lịch",
-                                    "Cập nhật "
-                                            + LichLamViecService.CAC_CA_LAM_VIEC[caLamViec]
-                                            + " ngày "
-                                            + ngay.format(DinhDang.NGAY_CHUAN));
-                    return cacLoi;
-                },
+                () -> capNhatPhanCaNen(ngay, caLamViec, hienCo, toAdd, toRemove),
                 () -> nutLuuThayDoi.setEnabled(true),
-                cacLoi -> {
-                    for (String loi : cacLoi) HopThoai.hienThiCanhBao(dlg, loi);
-                    dlg.dispose();
-                    dungLai();
-                },
+                ketQua -> xuLyKetQuaPhanCa(dlg, ketQua, maHienCo, hienCo),
                 loi -> TacVuNen.baoLoi(dlg, loi));
+    }
+
+    private Object[] capNhatPhanCaNen(
+            LocalDate ngay,
+            int caLamViec,
+            List<Muc> hienCo,
+            List<String> toAdd,
+            List<String> toRemove) {
+        List<String> cacLoi = new ArrayList<>();
+        List<String> daThem = new ArrayList<>();
+        List<String> daXoa = new ArrayList<>();
+        for (String ma : toAdd) {
+            String err = LichLamViecService.macDinh().phanCong(ngay, caLamViec, ma);
+            if (err != null) cacLoi.add("Lỗi phân ca " + ma + ": " + err);
+            else daThem.add(ma);
+        }
+        for (String ma : toRemove) {
+            hienCo.stream()
+                    .filter(x -> x.layMaNhanVien().equals(ma))
+                    .findFirst()
+                    .ifPresent(
+                            m -> {
+                                LichLamViecService.macDinh().xoa(m);
+                                daXoa.add(ma);
+                            });
+        }
+        NhatKyHeThongService.macDinh()
+                .ghiNhatKy(
+                        "Phân lịch",
+                        "Cập nhật "
+                                + LichLamViecService.CAC_CA_LAM_VIEC[caLamViec]
+                                + " ngày "
+                                + ngay.format(DinhDang.NGAY_CHUAN));
+        List<Muc> capNhat =
+                LichLamViecService.macDinh().layO(ngay, caLamViec).stream()
+                        .filter(m -> !m.kiemTraNghiPhep())
+                        .toList();
+        return new Object[] {cacLoi, daThem, daXoa, capNhat};
+    }
+
+    @SuppressWarnings("unchecked")
+    private void xuLyKetQuaPhanCa(
+            JDialog dlg, Object[] ketQua, Set<String> maHienCo, List<Muc> hienCo) {
+        List<String> cacLoi = (List<String>) ketQua[0];
+        List<String> daThem = (List<String>) ketQua[1];
+        List<String> daXoa = (List<String>) ketQua[2];
+        List<Muc> capNhat = (List<Muc>) ketQua[3];
+        maHienCo.addAll(daThem);
+        maHienCo.removeAll(daXoa);
+        hienCo.clear();
+        hienCo.addAll(capNhat);
+        for (String loi : cacLoi) HopThoai.hienThiCanhBao(dlg, loi);
+        dungLai();
+        if (cacLoi.isEmpty()) dlg.dispose();
     }
 
     private void saoChepLichTuan() {
@@ -1148,11 +1195,12 @@ public class LichTuanPanel extends CoSoPanel {
                 phien,
                 this::isDisplayable,
                 () -> {
-                    List<Object[]> dsDongNghiep =
-                            DanhMucService.macDinh().layLuaChonNhanVien().stream()
-                                    .filter(s -> !s.startsWith(hienTaiNguoiDung + " "))
-                                    .map(s -> new Object[] {s.substring(0, s.indexOf(' ')), s})
-                                    .toList();
+                    List<Object[]> dsDongNghiep = new ArrayList<>();
+                    for (String s : DanhMucService.macDinh().layLuaChonNhanVien()) {
+                        int khoangTrang = s.indexOf(' ');
+                        String ma = khoangTrang > 0 ? s.substring(0, khoangTrang) : s;
+                        if (!ma.equals(hienTaiNguoiDung)) dsDongNghiep.add(new Object[] {ma, s});
+                    }
                     int soGioBaoTruoc = docGioSoCauHinh("SO_GIO_BAO_TRUOC_DOI_CA", 12, 0);
                     return new Object[] {dsDongNghiep, soGioBaoTruoc};
                 },
@@ -1164,67 +1212,202 @@ public class LichTuanPanel extends CoSoPanel {
     @SuppressWarnings("unchecked")
     private void moHopThoaiYeuCauDoiCa(List<Muc> caCuaToi, Object[] duLieu) {
         List<Object[]> dsDongNghiep = (List<Object[]>) duLieu[0];
+        if (dsDongNghiep.isEmpty()) {
+            HopThoai.hienThiCanhBao(this, "Không có đồng nghiệp khả dụng để đổi ca.");
+            return;
+        }
         int soGioBaoTruoc = (int) duLieu[1];
-        var giaTri = nhapThongTinYeuCauDoiCa(caCuaToi, dsDongNghiep);
-        if (giaTri == null) return;
-        if (!kiemTraThoiGianBaoTruocDoiCa(giaTri.get("my_shift"), soGioBaoTruoc)) return;
+        String[] luaChon = nhapThongTinYeuCauDoiCa(caCuaToi, dsDongNghiep, soGioBaoTruoc);
+        if (luaChon == null) return;
+        String[] p1 = luaChon[0].split("\\|");
+        LocalDate ngay1 = LocalDate.parse(p1[0], DinhDang.NGAY_CHUAN);
+        int ca1 = Integer.parseInt(p1[1]);
+        String maDongNghiep = luaChon[1];
+        LocalDate ngay2 = null;
+        Integer ca2 = null;
+        if (!luaChon[2].isEmpty()) {
+            String[] p2 = luaChon[2].split("\\|");
+            ngay2 = LocalDate.parse(p2[0], DinhDang.NGAY_CHUAN);
+            ca2 = Integer.parseInt(p2[1]);
+        }
+        LocalDate ngay2Final = ngay2;
+        Integer ca2Final = ca2;
         var phien = PhienDangNhapService.macDinh().yeuCauHienTai();
         String maNhanVien = phien.getNhanVien() != null ? phien.getNhanVien().getMaNhanVien() : "";
         TacVuNen.chayCoPhien(
                 phien,
                 this::isDisplayable,
-                () -> {
-                    new PheDuyetService()
-                            .guiThaoTac(
-                                    PheDuyetService.Loai.NGHI_PHEP,
-                                    giaTri.get("reason"),
-                                    "Đổi " + giaTri.get("my_shift"),
-                                    "Đổi với " + giaTri.get("target_staff"),
-                                    LoaiLichLamViec.NGHI_PHEP.maDB(),
-                                    maNhanVien,
-                                    giaTri.get("target_staff"));
-                    return null;
-                },
+                () ->
+                        new PheDuyetService()
+                                .guiYeuCauDoiCa(
+                                        maNhanVien,
+                                        ngay1,
+                                        ca1,
+                                        maDongNghiep,
+                                        ngay2Final,
+                                        ca2Final,
+                                        luaChon[3],
+                                        luaChon[4],
+                                        luaChon[5]),
                 null,
                 v -> HopThoai.hienThiThanhCong(this, "Đã gửi yêu cầu đổi ca đến Cửa hàng trưởng."),
                 ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
     }
 
-    private Map<String, String> nhapThongTinYeuCauDoiCa(
-            List<Muc> caCuaToi, List<Object[]> dsDongNghiep) {
-        List<Object[]> dsCaCuaToi =
-                caCuaToi.stream()
-                        .map(
-                                m ->
-                                        new Object[] {
-                                            m.layNgay().format(DinhDang.NGAY_CHUAN)
-                                                    + "|"
-                                                    + m.layCaLamViec(),
-                                            m.layNgay().format(DinhDang.NGAY_CHUAN)
-                                                    + " - "
-                                                    + LichLamViecService.CAC_CA_LAM_VIEC[
-                                                            m.layCaLamViec()]
-                                        })
-                        .toList();
-        return BieuMauTruong.layYeuCauNhap(
-                this,
-                "Yêu cầu đổi ca làm việc",
-                TruongNghiepVu.taoLuaChon("my_shift", "Ca của bạn muốn đổi", dsCaCuaToi),
-                TruongNghiepVu.taoLuaChon(
-                        "target_staff", "Đồng nghiệp muốn đổi cùng", dsDongNghiep),
-                TruongNghiepVu.layTruongVanBan("reason", "Lý do đổi ca", ""));
+    private String[] nhapThongTinYeuCauDoiCa(
+            List<Muc> caCuaToi, List<Object[]> dsDongNghiep, int soGioBaoTruoc) {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg =
+                new JDialog(
+                        owner, "Yêu cầu đổi ca làm việc", Dialog.ModalityType.APPLICATION_MODAL);
+        JComboBox<String> cboCaToi = new JComboBox<>();
+        for (Muc m : caCuaToi) {
+            cboCaToi.addItem(
+                    m.layNgay().format(DinhDang.NGAY_CHUAN)
+                            + "|"
+                            + m.layCaLamViec()
+                            + " - "
+                            + LichLamViecService.CAC_CA_LAM_VIEC[m.layCaLamViec()]);
+        }
+        JComboBox<String> cboDongNghiep = new JComboBox<>();
+        for (Object[] dn : dsDongNghiep) cboDongNghiep.addItem(String.valueOf(dn[1]));
+        JComboBox<String> cboCaDongNghiep = new JComboBox<>();
+        Runnable napCaDn = () -> napCaDongNghiep(cboDongNghiep, dsDongNghiep, cboCaDongNghiep);
+        cboDongNghiep.addActionListener(e -> napCaDn.run());
+        napCaDn.run();
+        JTextField oLyDo = new JTextField(24);
+        String[][] ketQua = {null};
+        JPanel form = taoKhungFormDoiCaCaNhan(cboCaToi, cboDongNghiep, cboCaDongNghiep, oLyDo);
+        JPanel chan =
+                taoChanFormDoiCaCaNhan(
+                        dlg,
+                        cboCaToi,
+                        cboDongNghiep,
+                        dsDongNghiep,
+                        cboCaDongNghiep,
+                        oLyDo,
+                        soGioBaoTruoc,
+                        ketQua);
+        dlg.setLayout(new BorderLayout(8, 8));
+        dlg.add(form, BorderLayout.CENTER);
+        dlg.add(chan, BorderLayout.SOUTH);
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+        return ketQua[0];
     }
 
-    private boolean kiemTraThoiGianBaoTruocDoiCa(String caChon, int soGioBaoTruoc) {
+    private void napCaDongNghiep(
+            JComboBox<String> cboDongNghiep,
+            List<Object[]> dsDongNghiep,
+            JComboBox<String> cboCaDongNghiep) {
+        cboCaDongNghiep.removeAllItems();
+        int idx = cboDongNghiep.getSelectedIndex();
+        if (idx < 0 || idx >= dsDongNghiep.size()) return;
+        String maDn = String.valueOf(dsDongNghiep.get(idx)[0]);
+        for (Muc m : lichTuanHienTai) {
+            if (maDn.equals(m.layMaNhanVien()) && !m.kiemTraNghiPhep()) {
+                cboCaDongNghiep.addItem(
+                        m.layNgay().format(DinhDang.NGAY_CHUAN)
+                                + "|"
+                                + m.layCaLamViec()
+                                + " - "
+                                + LichLamViecService.CAC_CA_LAM_VIEC[m.layCaLamViec()]);
+            }
+        }
+        cboCaDongNghiep.addItem("NHUONG_CA|Nhường ca (không đổi lại ca)");
+    }
+
+    private JPanel taoKhungFormDoiCaCaNhan(
+            JComboBox<String> cboCaToi,
+            JComboBox<String> cboDongNghiep,
+            JComboBox<String> cboCaDongNghiep,
+            JTextField oLyDo) {
+        JPanel khung = new JPanel(new GridBagLayout());
+        khung.setBorder(new EmptyBorder(14, 16, 6, 16));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.anchor = GridBagConstraints.WEST;
+        themHangFormDoiCa(khung, gbc, 0, "Ca của bạn:", cboCaToi);
+        themHangFormDoiCa(khung, gbc, 1, "Đồng nghiệp:", cboDongNghiep);
+        themHangFormDoiCa(khung, gbc, 2, "Ca đồng nghiệp:", cboCaDongNghiep);
+        themHangFormDoiCa(khung, gbc, 3, "Lý do đổi ca:", oLyDo);
+        return khung;
+    }
+
+    private static void themHangFormDoiCa(
+            JPanel khung, GridBagConstraints gbc, int dong, String nhan, Component thanhPhan) {
+        gbc.gridx = 0;
+        gbc.gridy = dong;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        khung.add(new JLabel(nhan), gbc);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        khung.add(thanhPhan, gbc);
+    }
+
+    private JPanel taoChanFormDoiCaCaNhan(
+            JDialog dlg,
+            JComboBox<String> cboCaToi,
+            JComboBox<String> cboDongNghiep,
+            List<Object[]> dsDongNghiep,
+            JComboBox<String> cboCaDongNghiep,
+            JTextField oLyDo,
+            int soGioBaoTruoc,
+            String[][] ketQua) {
+        NutDinhDang nutGui = new NutDinhDang("Gửi yêu cầu", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        nutGui.addActionListener(
+                e -> {
+                    String ca1Nhan = String.valueOf(cboCaToi.getSelectedItem());
+                    String khoa1 = ca1Nhan.substring(0, ca1Nhan.indexOf(" - "));
+                    if (!kiemTraThoiGianBaoTruocDoiCa(dlg, khoa1, soGioBaoTruoc)) return;
+                    if (oLyDo.getText() == null || oLyDo.getText().isBlank()) {
+                        HopThoai.hienThiCanhBao(dlg, "Vui lòng nhập lý do đổi ca.");
+                        oLyDo.requestFocusInWindow();
+                        return;
+                    }
+                    int idxDn = cboDongNghiep.getSelectedIndex();
+                    String maDn = String.valueOf(dsDongNghiep.get(idxDn)[0]);
+                    String tenDn = String.valueOf(dsDongNghiep.get(idxDn)[1]);
+                    String ca2Nhan = String.valueOf(cboCaDongNghiep.getSelectedItem());
+                    String khoa2 =
+                            ca2Nhan.startsWith("NHUONG_CA|")
+                                    ? ""
+                                    : ca2Nhan.substring(0, ca2Nhan.indexOf(" - "));
+                    String moTaSau =
+                            khoa2.isEmpty()
+                                    ? "Nhường ca cho " + tenDn
+                                    : "Đổi với " + tenDn + " (" + ca2Nhan + ")";
+                    ketQua[0] =
+                            new String[] {
+                                khoa1,
+                                maDn,
+                                khoa2,
+                                oLyDo.getText().trim(),
+                                "Đổi " + ca1Nhan,
+                                moTaSau
+                            };
+                    dlg.dispose();
+                });
+        nutHuy.addActionListener(e -> dlg.dispose());
+        JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        chan.add(nutHuy);
+        chan.add(nutGui);
+        return chan;
+    }
+
+    private boolean kiemTraThoiGianBaoTruocDoiCa(Component cha, String caChon, int soGioBaoTruoc) {
         String[] phan = caChon.split("\\|");
         if (phan.length == 2) {
             LocalDate ngayCa = LocalDate.parse(phan[0], DinhDang.NGAY_CHUAN);
-            LocalTime gioBatDau =
-                    Integer.parseInt(phan[1]) == 0 ? LocalTime.of(7, 30) : LocalTime.of(14, 30);
+            LocalTime gioBatDau = LichLamViecService.layGioBatDauCa(Integer.parseInt(phan[1]));
             if (Duration.between(LocalDateTime.now(), LocalDateTime.of(ngayCa, gioBatDau)).toHours()
                     < soGioBaoTruoc) {
                 HopThoai.hienThiCanhBao(
-                        this,
+                        cha,
                         "Yêu cầu đổi ca phải được gửi trước ít nhất "
                                 + soGioBaoTruoc
                                 + " giờ so với giờ bắt đầu ca.");
@@ -1259,7 +1442,7 @@ public class LichTuanPanel extends CoSoPanel {
             nhanTomTat.setText(
                     tuan
                             + " · Tổng giờ làm trong tháng "
-                            + thuHai.getMonthValue()
+                            + thuHai.plusDays(3).getMonthValue()
                             + ": "
                             + gioLamTrongThangCaNhan
                             + " giờ · Nghỉ phép tuần này: "
@@ -1294,29 +1477,23 @@ public class LichTuanPanel extends CoSoPanel {
     }
 
     private void inLichLamViec() {
+        int rong = Math.max(khungLuoiVungChu.getWidth(), khungLuoiVungChu.getPreferredSize().width);
+        int cao =
+                Math.max(khungLuoiVungChu.getHeight(), khungLuoiVungChu.getPreferredSize().height);
+        if (rong <= 0 || cao <= 0) {
+            HopThoai.hienThiCanhBao(this, "Chưa có nội dung lịch tuần để in.");
+            return;
+        }
+        BufferedImage anhChup = new BufferedImage(rong, cao, BufferedImage.TYPE_INT_RGB);
+        Graphics2D gAnh = anhChup.createGraphics();
+        gAnh.setColor(Color.WHITE);
+        gAnh.fillRect(0, 0, rong, cao);
+        khungLuoiVungChu.printAll(gAnh);
+        gAnh.dispose();
+
         PrinterJob congViec = PrinterJob.getPrinterJob();
         congViec.setJobName("Lịch làm việc " + thuHai.format(DinhDang.NGAY_CHUAN));
-        congViec.setPrintable(
-                new Printable() {
-                    @Override
-                    public int print(Graphics doHoa, PageFormat dinhDangTrang, int trang)
-                            throws PrinterException {
-                        if (trang > 0) return NO_SUCH_PAGE;
-                        Component dich = khungLuoiVungChu;
-                        if (dich.getWidth() <= 0 || dich.getHeight() <= 0) {
-                            return NO_SUCH_PAGE;
-                        }
-                        Graphics2D doHoa2 = (Graphics2D) doHoa;
-                        doHoa2.translate(
-                                dinhDangTrang.getImageableX(), dinhDangTrang.getImageableY());
-                        double gocNgang = dinhDangTrang.getImageableWidth() / dich.getWidth();
-                        double gocDoc = dinhDangTrang.getImageableHeight() / dich.getHeight();
-                        double chuoi = Math.min(1, Math.min(gocNgang, gocDoc));
-                        doHoa2.scale(chuoi, chuoi);
-                        dich.printAll(doHoa2);
-                        return PAGE_EXISTS;
-                    }
-                });
+        congViec.setPrintable(taoPrintableLich(anhChup));
         try {
             if (congViec.printDialog()) {
                 LocalDate tuanIn = thuHai;
@@ -1340,6 +1517,103 @@ public class LichTuanPanel extends CoSoPanel {
         } catch (HeadlessException ngoaiLe) {
             HopThoai.hienThiLoi(this, "Không tìm thấy máy in.");
         }
+    }
+
+    private static Printable taoPrintableLich(BufferedImage anhChup) {
+        return (Graphics doHoa, PageFormat dinhDangTrang, int trang) -> {
+            double vungRong = dinhDangTrang.getImageableWidth();
+            double vungCao = dinhDangTrang.getImageableHeight();
+            double tyLe = Math.min(1.0, vungRong / anhChup.getWidth());
+            double chieuCaoNguonMoiTrang = vungCao / tyLe;
+            int soTrang = Math.max(1, (int) Math.ceil(anhChup.getHeight() / chieuCaoNguonMoiTrang));
+            if (trang >= soTrang) return Printable.NO_SUCH_PAGE;
+
+            int yNguonDau = (int) Math.floor(trang * chieuCaoNguonMoiTrang);
+            int yNguonCuoi =
+                    Math.min(
+                            anhChup.getHeight(),
+                            (int) Math.ceil((trang + 1) * chieuCaoNguonMoiTrang));
+            int hDich = (int) Math.round((yNguonCuoi - yNguonDau) * tyLe);
+            int wDich = (int) Math.round(anhChup.getWidth() * tyLe);
+            Graphics2D doHoa2 = (Graphics2D) doHoa;
+            doHoa2.translate(dinhDangTrang.getImageableX(), dinhDangTrang.getImageableY());
+            doHoa2.drawImage(
+                    anhChup,
+                    0,
+                    0,
+                    wDich,
+                    hDich,
+                    0,
+                    yNguonDau,
+                    anhChup.getWidth(),
+                    yNguonCuoi,
+                    null);
+            return Printable.PAGE_EXISTS;
+        };
+    }
+
+    private void xuatExcelLichTuan() {
+        String[] cot = new String[8];
+        cot[0] = "Ca làm";
+        for (int i = 0; i < 7; i++) {
+            cot[i + 1] = THU[i] + " (" + thuHai.plusDays(i).format(DinhDang.NGAY_CHUAN) + ")";
+        }
+        DefaultTableModel moHinh = new DefaultTableModel(cot, 0);
+        for (int ca = 0; ca < LichLamViecService.CAC_CA_LAM_VIEC.length; ca++) {
+            Object[] dong = new Object[8];
+            dong[0] =
+                    LichLamViecService.CAC_CA_LAM_VIEC[ca]
+                            + " ("
+                            + LichLamViecService.CA_LAM_VIEC_CAC_THOI_GIAN[ca]
+                            + ")";
+            for (int ngayIdx = 0; ngayIdx < 7; ngayIdx++) {
+                dong[ngayIdx + 1] = tomTatOExcel(thuHai.plusDays(ngayIdx), ca);
+            }
+            moHinh.addRow(dong);
+        }
+        JTable bangTam = new JTable(moHinh);
+        XuatExcelDialog.xuatBang(
+                this, bangTam, "Lich_Lam_Viec_" + thuHai.format(DinhDang.NGAY_ISO));
+    }
+
+    private String tomTatOExcel(LocalDate ngay, int caLamViec) {
+        List<String> ds = new ArrayList<>();
+        for (Muc muc : lichTuanHienTai) {
+            if (!muc.layNgay().equals(ngay)
+                    || muc.layCaLamViec() != caLamViec
+                    || !kiemTraHienThi(muc)) continue;
+            Object[] nv = layNhanVienCua(muc.layMaNhanVien());
+            String ten = nv == null ? muc.layMaNhanVien() : String.valueOf(nv[1]);
+            ds.add(muc.kiemTraNghiPhep() ? ten + " (Nghỉ phép)" : ten);
+        }
+        return String.join("\n", ds);
+    }
+
+    private static String thoatHtml(String giaTri) {
+        if (giaTri == null) return "";
+        return giaTri.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    @Override
+    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        return new KhaNangThanhCongCu(false, false, cheDo != CheDo.CA_NHAN, true, false, true);
+    }
+
+    @Override
+    public void xuLyTimKiem() {
+        if (cheDo != CheDo.CA_NHAN) {
+            oLocNhanVien.requestFocusInWindow();
+            oLocNhanVien.selectAll();
+        }
+    }
+
+    @Override
+    public void xuLyIn() {
+        inLichLamViec();
     }
 
     @Override

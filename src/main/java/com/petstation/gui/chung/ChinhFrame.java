@@ -179,6 +179,7 @@ public final class ChinhFrame extends JFrame {
         }
         DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(id);
         if (dinhNghia == null) return;
+        if (hienTai != null && hienTai != id && !kiemTraCoTheRoiManHinhHienTai()) return;
         try {
             if (dinhNghia.quyen() != null) {
                 PhienDangNhapService.macDinh().yeuCau(dinhNghia.quyen());
@@ -235,6 +236,7 @@ public final class ChinhFrame extends JFrame {
             }
         }
         hienTai = id;
+        boolean moiTao = !manHinhBoNhoDem.containsKey(id);
         JPanel khungManHinh =
                 manHinhBoNhoDem.computeIfAbsent(
                         id,
@@ -250,7 +252,7 @@ public final class ChinhFrame extends JFrame {
         } else if (id == MaManHinh.QUAN_LY_SPA && khungManHinh instanceof TiepNhanSpaPanel spa) {
             spa.chonTab(0);
         }
-        if (khungManHinh instanceof HoTroThanhCongCu hoTro) hoTro.xuLyHienThi();
+        if (!moiTao && khungManHinh instanceof HoTroThanhCongCu hoTro) hoTro.xuLyHienThi();
         if (yeuCau != null && yeuCau.manHinh() == id) NguCanhMoBanGhi.apDung(khungManHinh);
         khungThanhCongCu.datHoatDongVungHienThi(khungManHinh);
         khungThanhCongCu.datCoTheDiQuayLai(!lichSu.isEmpty());
@@ -281,7 +283,25 @@ public final class ChinhFrame extends JFrame {
         }
     }
 
+    public void capNhatThanhCongCu() {
+        if (hienTai == null) return;
+        JPanel khungManHinh = manHinhBoNhoDem.get(hienTai);
+        if (khungManHinh != null) {
+            khungThanhCongCu.datHoatDongVungHienThi(khungManHinh);
+        }
+    }
+
+    private boolean kiemTraCoTheRoiManHinhHienTai() {
+        if (hienTai == null) return true;
+        JPanel khungManHinh = manHinhBoNhoDem.get(hienTai);
+        if (khungManHinh instanceof CoSoPanel coSo) {
+            return coSo.coTheRoiManHinh();
+        }
+        return true;
+    }
+
     private void diQuayLai() {
+        if (!kiemTraCoTheRoiManHinhHienTai()) return;
         while (!lichSu.isEmpty()) {
             MaManHinh truocDo = lichSu.pop();
             DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(truocDo);
@@ -411,6 +431,7 @@ public final class ChinhFrame extends JFrame {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
             return;
         }
+        if (!kiemTraCoTheRoiManHinhHienTai()) return;
         if (HopThoai.xacNhanDongY(this, "Bạn có chắc muốn đăng xuất?", "Xác nhận đăng xuất")) {
             var phien = PhienDangNhapService.macDinh().layPhienHienTai();
             TacVuNen.chayCoPhien(
@@ -436,10 +457,32 @@ public final class ChinhFrame extends JFrame {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
             return;
         }
-        if (HopThoai.xacNhanDongY(this, "Bạn có chắc muốn thoát Pet Station?", "Xác nhận thoát")) {
+        if (!kiemTraCoTheRoiManHinhHienTai()) return;
+        if (!HopThoai.xacNhanDongY(this, "Bạn có chắc muốn thoát Pet Station?", "Xác nhận thoát")) {
+            return;
+        }
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        if (phien == null) {
             dispose();
             System.exit(0);
+            return;
         }
+        TacVuNen.chayCoPhien(
+                phien,
+                () -> true,
+                () -> {
+                    NhatKyHeThongService.macDinh().ghiNhatKy("Đăng xuất", "Hệ thống");
+                    return null;
+                },
+                null,
+                v -> hoanTatThoat(),
+                loi -> hoanTatThoat());
+    }
+
+    private void hoanTatThoat() {
+        PhienDangNhapService.macDinh().datPhienDangNhap(null);
+        dispose();
+        System.exit(0);
     }
 
     @Override

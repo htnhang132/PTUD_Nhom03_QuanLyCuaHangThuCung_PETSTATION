@@ -28,10 +28,25 @@ import com.petstation.service.luutru.LuuTruService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class BanHangService {
+    private static final Map<String, ThongTinTreoTam> THONG_TIN_TREO_TAM =
+            new ConcurrentHashMap<>();
+
+    private static final class ThongTinTreoTam {
+        private final String maVoucher;
+        private final String ghiChu;
+
+        private ThongTinTreoTam(String maVoucher, String ghiChu) {
+            this.maVoucher = maVoucher == null ? "" : maVoucher.trim();
+            this.ghiChu = ghiChu == null ? "" : ghiChu.trim();
+        }
+    }
+
     private final HoaDonDAO banHangDAO;
     private final PhieuDoiTraDAO doiHangDAO;
     private final DoiTraService doiTraService;
@@ -385,6 +400,7 @@ public final class BanHangService {
                                         dong.getTen(),
                                         dong.getDonGia(),
                                         dong.getSoLuong());
+                            luuThongTinTreoTam(maHoaDonTreo, banHang);
                             return maHoaDonTreo;
                         });
     }
@@ -403,34 +419,57 @@ public final class BanHangService {
                                 throw new IllegalArgumentException(
                                         "Hãy mở đơn đổi tại màn Đơn đang treo để tiếp tục chọn phụ"
                                                 + " kiện.");
-                            List<GioHang.DongHang> cacDong = new ArrayList<>();
-                            for (ChiTietHoaDon dongDuLieu : banHangDAO.timMoLai(maHoaDon))
-                                cacDong.add(
-                                        new GioHang.DongHang(
-                                                chuyenThanhChuoi(
-                                                        dongDuLieu.getSanPham().getMaSanPham()),
-                                                chuyenThanhChuoi(
-                                                        dongDuLieu.getSanPham().getTenSanPham()),
-                                                dongDuLieu.getSanPham().getGia(),
-                                                dongDuLieu.getSoLuong()));
-                            if (cacDong.size() != banHangDAO.demMoLai(maHoaDon))
-                                throw new IllegalArgumentException(
-                                        "Đơn treo có sản phẩm đã ngừng bán.");
-                            banHang.xoa();
-                            banHang.setCacDong(cacDong);
-                            banHangDAO
-                                    .layKhachCuaGioTreo(maHoaDon)
-                                    .ifPresent(
-                                            kh ->
-                                                    banHang.setKhachHang(
-                                                            chuyenThanhChuoi(kh.getMaKhachHang()),
-                                                            chuyenThanhChuoi(kh.getHoTen()),
-                                                            kh.getDiemTichLuy() == null
-                                                                    ? 0L
-                                                                    : kh.getDiemTichLuy()));
+                            List<GioHang.DongHang> cacDong = docCacDongMoLai(maHoaDon);
+                            Optional<KhachHang> khachHangOpt =
+                                    banHangDAO.layKhachCuaGioTreo(maHoaDon);
+                            ThongTinTreoTam thongTinTam = THONG_TIN_TREO_TAM.get(maHoaDon);
                             xoaTreo(maHoaDon);
+                            khoiPhucGioTreo(banHang, cacDong, khachHangOpt, thongTinTam);
                             return null;
                         });
+    }
+
+    private List<GioHang.DongHang> docCacDongMoLai(String maHoaDon) {
+        List<GioHang.DongHang> cacDong = new ArrayList<>();
+        for (ChiTietHoaDon dongDuLieu : banHangDAO.timMoLai(maHoaDon))
+            cacDong.add(
+                    new GioHang.DongHang(
+                            chuyenThanhChuoi(dongDuLieu.getSanPham().getMaSanPham()),
+                            chuyenThanhChuoi(dongDuLieu.getSanPham().getTenSanPham()),
+                            dongDuLieu.getSanPham().getGia(),
+                            dongDuLieu.getSoLuong()));
+        if (cacDong.size() != banHangDAO.demMoLai(maHoaDon))
+            throw new IllegalArgumentException("Đơn treo có sản phẩm đã ngừng bán.");
+        return cacDong;
+    }
+
+    private void khoiPhucGioTreo(
+            GioHang banHang,
+            List<GioHang.DongHang> cacDong,
+            Optional<KhachHang> khachHangOpt,
+            ThongTinTreoTam thongTinTam) {
+        banHang.xoa();
+        banHang.setCacDong(cacDong);
+        khachHangOpt.ifPresent(
+                kh ->
+                        banHang.setKhachHang(
+                                chuyenThanhChuoi(kh.getMaKhachHang()),
+                                chuyenThanhChuoi(kh.getHoTen()),
+                                kh.getDiemTichLuy() == null ? 0L : kh.getDiemTichLuy()));
+        if (thongTinTam != null) {
+            if (!thongTinTam.ghiChu.isBlank()) banHang.setGhiChu(thongTinTam.ghiChu);
+            if (!thongTinTam.maVoucher.isBlank()) banHang.apDungVoucher(thongTinTam.maVoucher);
+        }
+    }
+
+    private static void luuThongTinTreoTam(String maHoaDonTreo, GioHang banHang) {
+        String maVoucher = banHang.getMaVoucher();
+        String ghiChu = banHang.getGhiChu();
+        if ((maVoucher != null && !maVoucher.isBlank()) || (ghiChu != null && !ghiChu.isBlank())) {
+            THONG_TIN_TREO_TAM.put(maHoaDonTreo, new ThongTinTreoTam(maVoucher, ghiChu));
+        } else {
+            THONG_TIN_TREO_TAM.remove(maHoaDonTreo);
+        }
     }
 
     public void xoaTreo(String maHoaDon) {
@@ -443,6 +482,7 @@ public final class BanHangService {
                                 throw new IllegalArgumentException("Không tìm thấy đơn treo.");
                             banHangDAO.capNhatXoaTreo(maHoaDon);
                             banHangDAO.xoaGioHangTreo(maHoaDon, maNhanVien);
+                            THONG_TIN_TREO_TAM.remove(maHoaDon);
                             return null;
                         });
     }

@@ -43,7 +43,6 @@ import com.petstation.gui.thongke.ThongKeNhanVienPanel;
 import com.petstation.gui.thongke.ThongKeSpaPanel;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.Quyen;
-import com.petstation.model.chung.VaiTro;
 import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.banhang.GioHangService;
 
@@ -383,8 +382,8 @@ public final class DangKyManHinh {
             case TAI_KHOAN_PHAN_QUYEN -> new TaiKhoanPhanQuyenPanel();
             case CAI_DAT ->
                     new CaiDatPanel(
-                            phienDangNhap == null
-                                    || phienDangNhap.docVaiTro() == VaiTro.QUAN_LY_CUA_HANG);
+                            phienDangNhap != null
+                                    && phienDangNhap.kiemTraCo(Quyen.QUAN_LY_TAI_KHOAN));
             case NHAT_KY_HE_THONG -> new NhatKyHeThongPanel();
             case DANH_MUC_KHACH_HANG,
                             DANH_MUC_THU_CUNG,

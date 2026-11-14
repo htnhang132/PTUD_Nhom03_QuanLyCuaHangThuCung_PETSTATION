@@ -5,6 +5,7 @@ import com.petstation.util.DinhDang;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,17 +51,19 @@ public final class TongHopBieuDo {
         String nhom = muc == null ? "Ngày" : muc;
         Map<String, Double> tong = new LinkedHashMap<>();
         Map<String, List<Integer>> cacDong = new LinkedHashMap<>();
-        if (ngay)
+        if (ngay) {
             for (LocalDate d = ky.getTuNgay(); !d.isAfter(ky.getDenNgay()); d = d.plusDays(1)) {
                 String khoaNgay = khoa(d, nhom);
                 tong.putIfAbsent(khoaNgay, 0d);
                 cacDong.putIfAbsent(khoaNgay, new ArrayList<>());
             }
-        for (int i = 0; i < cacNhan.length; i++) {
-            String khoaMuc =
-                    ngay ? khoa(LocalDate.parse(cacNhan[i].substring(0, 10)), nhom) : cacNhan[i];
-            tong.merge(khoaMuc, cacGiaTri[i], Double::sum);
-            cacDong.computeIfAbsent(khoaMuc, k -> new ArrayList<>()).add(i);
+            for (int i = 0; i < cacNhan.length; i++) {
+                String khoaMuc = khoa(LocalDate.parse(cacNhan[i].substring(0, 10)), nhom);
+                tong.merge(khoaMuc, cacGiaTri[i], Double::sum);
+                cacDong.computeIfAbsent(khoaMuc, k -> new ArrayList<>()).add(i);
+            }
+        } else {
+            ganTheoTungDongKhongTrungTen(cacNhan, cacGiaTri, tong, cacDong);
         }
         return new KetQua(
                 tong.keySet().toArray(String[]::new),
@@ -68,6 +71,26 @@ public final class TongHopBieuDo {
                 cacDong.values().stream()
                         .map(dong -> dong.stream().mapToInt(Integer::intValue).toArray())
                         .toList());
+    }
+
+    private static void ganTheoTungDongKhongTrungTen(
+            String[] cacNhan,
+            double[] cacGiaTri,
+            Map<String, Double> tong,
+            Map<String, List<Integer>> cacDong) {
+        Map<String, Integer> tongSoLan = new HashMap<>();
+        for (String nhan : cacNhan) {
+            String ten = nhan == null || nhan.isBlank() ? "Khác" : nhan;
+            tongSoLan.merge(ten, 1, Integer::sum);
+        }
+        Map<String, Integer> demHienTai = new HashMap<>();
+        for (int i = 0; i < cacNhan.length; i++) {
+            String tenGoc = cacNhan[i] == null || cacNhan[i].isBlank() ? "Khác" : cacNhan[i];
+            int stt = demHienTai.merge(tenGoc, 1, Integer::sum);
+            String khoaMuc = tongSoLan.get(tenGoc) > 1 ? tenGoc + " (#" + stt + ")" : tenGoc;
+            tong.put(khoaMuc, cacGiaTri[i]);
+            cacDong.put(khoaMuc, List.of(i));
+        }
     }
 
     private static String khoa(LocalDate d, String muc) {

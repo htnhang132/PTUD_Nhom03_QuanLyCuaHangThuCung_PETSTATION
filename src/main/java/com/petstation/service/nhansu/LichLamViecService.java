@@ -9,8 +9,11 @@ import com.petstation.model.nhansu.LichLamViec;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.hethong.PhienDangNhapService;
 
+import org.slf4j.LoggerFactory;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -30,6 +33,25 @@ public final class LichLamViecService {
     public static final String[] CAC_CA_LAM_VIEC = {"Ca sáng", "Ca chiều"};
 
     public static final String[] CA_LAM_VIEC_CAC_THOI_GIAN = {"07:30 – 14:30", "14:30 – 21:30"};
+
+    public static LocalTime layGioBatDauCa(int caLamViec) {
+        if (caLamViec >= 0 && caLamViec < CA_LAM_VIEC_CAC_THOI_GIAN.length) {
+            String khoang = CA_LAM_VIEC_CAC_THOI_GIAN[caLamViec];
+            String[] phan = khoang.split("[–-]");
+            if (phan.length > 0) {
+                try {
+                    return LocalTime.parse(phan[0].trim());
+                } catch (RuntimeException ngoaiLe) {
+                    LoggerFactory.getLogger(LichLamViecService.class)
+                            .debug(
+                                    "Không phân tích được giờ ca '{}': {}",
+                                    phan[0],
+                                    ngoaiLe.getMessage());
+                }
+            }
+        }
+        return caLamViec == 0 ? LocalTime.of(7, 30) : LocalTime.of(14, 30);
+    }
 
     public static final int[] NHO_NHAT_NHAN_VIEN = {2, 2};
 
@@ -129,6 +151,10 @@ public final class LichLamViecService {
 
     public String phanCong(LocalDate ngay, int caLamViec, String ma) {
         phienService.yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
+        return ganCaTrongGiaoDich(ngay, caLamViec, ma);
+    }
+
+    private String ganCaTrongGiaoDich(LocalDate ngay, int caLamViec, String ma) {
         if (caLamViec < 0 || caLamViec >= CAC_MA.length) return "Ca không hợp lệ.";
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
@@ -210,23 +236,86 @@ public final class LichLamViecService {
     public String hoanDoiCa(
             LocalDate ngay1, int ca1, String ma1, LocalDate ngay2, int ca2, String ma2) {
         phienService.yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
-        if (ma1.equals(ma2)) return "Không thể hoán đổi ca với chính mình.";
+        return thucThiHoanDoiCa(ngay1, ca1, ma1, ngay2, ca2, ma2);
+    }
+
+    public void apDungDoiCaDaDuyet(
+            LocalDate ngay1, int ca1, String ma1, LocalDate ngay2, int ca2, String ma2) {
+        phienService.yeuCau(Quyen.XU_LY_PHE_DUYET);
+        String loi = thucThiHoanDoiCa(ngay1, ca1, ma1, ngay2, ca2, ma2);
+        if (loi != null) throw new IllegalArgumentException(loi);
+    }
+
+    public void chuyenCaDaDuyet(LocalDate ngay, int ca, String tuMa, String sangMa) {
+        phienService.yeuCau(Quyen.XU_LY_PHE_DUYET);
+        if (ngay == null || ca < 0 || ca >= CAC_MA.length)
+            throw new IllegalArgumentException("Thông tin ca cần chuyển không hợp lệ.");
+        if (tuMa == null || sangMa == null || tuMa.equals(sangMa))
+            throw new IllegalArgumentException("Không thể chuyển ca cho chính mình.");
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            if (!coCaDiLam(ngay, ca, tuMa))
+                                throw new IllegalArgumentException(
+                                        "Nhân viên " + tuMa + " không còn ca đã đăng ký để đổi.");
+                            lichLamViecDAO.capNhatXoa(tuMa, ngay, CAC_MA[ca]);
+                            String loi = ganCaTrongGiaoDich(ngay, ca, sangMa);
+                            if (loi != null)
+                                throw new IllegalArgumentException(
+                                        "Không thể giao ca cho " + sangMa + ": " + loi);
+                            thongBao("HOAN_DOI_CA");
+                            return null;
+                        });
+    }
+
+    private String thucThiHoanDoiCa(
+            LocalDate ngay1, int ca1, String ma1, LocalDate ngay2, int ca2, String ma2) {
+        if (ngay1 == null
+                || ngay2 == null
+                || ca1 < 0
+                || ca1 >= CAC_MA.length
+                || ca2 < 0
+                || ca2 >= CAC_MA.length) {
+            return "Thông tin ca hoán đổi không hợp lệ.";
+        }
+        if (ma1 == null || ma2 == null || ma1.equals(ma2)) {
+            return "Không thể hoán đổi ca với chính mình.";
+        }
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
+                            if (!coCaDiLam(ngay1, ca1, ma1)) {
+                                return "Nhân viên " + ma1 + " không còn lịch làm ở ca cần đổi.";
+                            }
+                            if (!coCaDiLam(ngay2, ca2, ma2)) {
+                                return "Nhân viên " + ma2 + " không còn lịch làm ở ca cần đổi.";
+                            }
                             lichLamViecDAO.capNhatXoa(ma1, ngay1, CAC_MA[ca1]);
                             lichLamViecDAO.capNhatXoa(ma2, ngay2, CAC_MA[ca2]);
-                            String err1 = phanCong(ngay1, ca1, ma2);
+                            String err1 = ganCaTrongGiaoDich(ngay1, ca1, ma2);
                             if (err1 != null)
                                 throw new IllegalArgumentException(
                                         "Không thể gán " + ma2 + ": " + err1);
-                            String err2 = phanCong(ngay2, ca2, ma1);
+                            String err2 = ganCaTrongGiaoDich(ngay2, ca2, ma1);
                             if (err2 != null)
                                 throw new IllegalArgumentException(
                                         "Không thể gán " + ma1 + ": " + err2);
                             thongBao("HOAN_DOI_CA");
                             return null;
                         });
+    }
+
+    private boolean coCaDiLam(LocalDate ngay, int ca, String maNhanVien) {
+        for (LichLamViec muc : lichLamViecDAO.timKhoang(ngay, ngay.plusDays(1))) {
+            String maCa = muc.getCaLamViec() != null ? muc.getCaLamViec().getMaCa() : "";
+            String maNv = muc.getNhanVien() != null ? muc.getNhanVien().getMaNhanVien() : "";
+            if (maNhanVien.equals(maNv)
+                    && anhXaMaCa(maCa) == ca
+                    && !LoaiLichLamViec.NGHI_PHEP.maDB().equals(muc.getLoai())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void khoaLichTuan(LocalDate thuHai) {

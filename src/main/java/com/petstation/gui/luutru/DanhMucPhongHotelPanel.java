@@ -4,6 +4,7 @@ import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.model.chung.LoaiDanhMuc;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
+import com.petstation.util.DinhDang;
 
 import java.util.List;
 
@@ -32,6 +33,16 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                         .themBoLoc("Loại phòng", d -> String.valueOf(d[1]))
                         .timKiem("Tìm theo mã phòng, loại phòng...")
                         .datTrangThai(5, "Trống", "Ngừng hoạt động")
+                        .datBoKiemTra(
+                                dong -> {
+                                    if (DinhDang.doc(String.valueOf(dong[2])) <= 0) {
+                                        return "Sức chứa phải lớn hơn 0.";
+                                    }
+                                    if (DinhDang.doc(String.valueOf(dong[3])) <= 0) {
+                                        return "Giá phòng theo ngày phải lớn hơn 0 đồng.";
+                                    }
+                                    return null;
+                                })
                         .datDieuKienXoa(
                                 dongDuLieu -> {
                                     String trangThai = String.valueOf(dongDuLieu[5]);
@@ -49,7 +60,10 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
-                TruongDuLieu.tao("Mã phòng", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
+                TruongDuLieu.tao("Mã phòng", Kieu.VAN_BAN)
+                        .batBuoc()
+                        .kiemTraDuyNhat()
+                        .chiDocKhiSua(),
                 TruongDuLieu.tao("Loại phòng", Kieu.HOP_CHON)
                         .batBuoc()
                         .datLuaChon("Tiêu chuẩn", "VIP", "Penthouse", "Mèo"),

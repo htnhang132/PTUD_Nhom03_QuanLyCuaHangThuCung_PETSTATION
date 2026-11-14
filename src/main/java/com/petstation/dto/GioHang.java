@@ -412,6 +412,8 @@ public final class GioHang {
 
     private String maNguon = "";
 
+    private String ghiChu = "";
+
     public static class YeuCauDoiHang implements Serializable {
         private static final long serialVersionUID = 1L;
         private String dongGoc;
@@ -519,6 +521,14 @@ public final class GioHang {
     public void setNguon(String kieu, String maNguon) {
         this.kieuNguon = kieu;
         this.maNguon = maNguon == null ? "" : maNguon;
+    }
+
+    public String getGhiChu() {
+        return ghiChu;
+    }
+
+    public void setGhiChu(String ghiChu) {
+        this.ghiChu = ghiChu == null ? "" : ghiChu.trim();
     }
 
     public String getMaKhachHang() {
@@ -729,6 +739,7 @@ public final class GioHang {
         maHoaDonDuKien = null;
         kieuNguon = "";
         maNguon = "";
+        ghiChu = "";
         doiHang = null;
         xacNhanNhanTien = "";
         cacDong.clear();

@@ -79,11 +79,21 @@ public final class DoiPhuKienDialog extends JDialog {
     private List<Object[]> hoaDons = List.of(), dongs = List.of(), hangs = List.of();
     private boolean dangChay;
     private boolean dangKhoiPhuc;
+    private boolean xuLyXong;
+    private boolean treoDonFlag;
     private boolean dongBoSoLuongMoi = true;
     private final String maDonTreo;
 
     private long phien;
     private long giaTriCu = -1;
+
+    public boolean daXuLyXong() {
+        return xuLyXong;
+    }
+
+    public boolean daTreoDon() {
+        return treoDonFlag;
+    }
 
     public DoiPhuKienDialog(Component cha, GioHang gio, Consumer<MaManHinh> dieuHuong) {
         this(cha, gio, dieuHuong, "", null);
@@ -237,7 +247,7 @@ public final class DoiPhuKienDialog extends JDialog {
         dongBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
-                            if (!e.getValueIsAdjusting()) {
+                            if (!e.getValueIsAdjusting() && !dangKhoiPhuc) {
                                 tem.setSelected(false);
                                 chuaDung.setSelected(false);
                                 voHieuGia();
@@ -313,6 +323,8 @@ public final class DoiPhuKienDialog extends JDialog {
             chayNen(
                     () -> donDoiTreoService.treo(maDonTreo, nhap),
                     id -> {
+                        xuLyXong = true;
+                        treoDonFlag = true;
                         dispose();
                         dieuHuong.accept(MaManHinh.LAP_HOA_DON);
                         HopThoai.hienThiThanhCong(
@@ -563,6 +575,7 @@ public final class DoiPhuKienDialog extends JDialog {
                         return true;
                     },
                     ok -> {
+                        xuLyXong = true;
                         dispose();
                         dieuHuong.accept(MaManHinh.THANH_TOAN);
                     });

@@ -119,6 +119,7 @@ public class BoChonKhoangNgay extends JPanel {
             case "Năm nay":
                 tu = homNay.withDayOfYear(1);
                 den = homNay;
+                khungTuyChinhNgayVungHienThi.setVisible(true);
                 break;
             case "Tùy chọn...":
                 khungTuyChinhNgayVungHienThi.setVisible(true);

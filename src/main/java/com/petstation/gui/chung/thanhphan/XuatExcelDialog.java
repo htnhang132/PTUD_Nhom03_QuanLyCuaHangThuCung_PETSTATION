@@ -26,6 +26,10 @@ public final class XuatExcelDialog {
             HopThoai.hienThiCanhBao(cha, "Bảng chưa có dữ liệu hoặc cấu trúc cột để xuất Excel.");
             return;
         }
+        if (bang.getRowCount() == 0) {
+            HopThoai.hienThiCanhBao(cha, "Bảng hiện không có dữ liệu để xuất.");
+            return;
+        }
         JFileChooser chon = new JFileChooser();
         chon.setDialogTitle("Xuất Excel (.xlsx)");
         chon.setFileFilter(new FileNameExtensionFilter("Excel Workbook (*.xlsx)", "xlsx"));
@@ -49,7 +53,7 @@ public final class XuatExcelDialog {
         for (int c = 0; c < cot.length; c++) {
             cot[c] = bang.getColumnName(c);
             for (int r = 0; r < dong.length; r++) {
-                dong[r][c] = bang.getValueAt(r, c);
+                dong[r][c] = DinhDangBang.giaTriXuatExcel(bang, r, c);
             }
         }
         final File dich = tep;

@@ -30,7 +30,7 @@ public final class ThongKeHotelPanel extends BaoCaoPanel {
                                 new String[] {
                                     "Trạng thái",
                                     "Số hợp đồng",
-                                    "Đơn giá phòng cộng gộp",
+                                    "Tổng đơn giá phòng/đêm",
                                     "Cọc đã nhận"
                                 },
                                 0,

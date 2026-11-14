@@ -53,6 +53,7 @@ public final class BieuDoTron extends JPanel {
     private double tong;
     private boolean tienTe;
     private boolean hopLe;
+    private boolean coGiaTriAm;
     private int latDangHover = -1;
     private Consumer<int[]> chon = indices -> {};
 
@@ -72,9 +73,9 @@ public final class BieuDoTron extends JPanel {
                     if (!hopLe || giaTri.length == 0) {
                         g.setColor(MauUngDung.XAM_PHU);
                         String thongBao =
-                                tong == 0
-                                        ? "Chưa có dữ liệu tỷ trọng"
-                                        : "Dữ liệu âm: xem biểu đồ cột";
+                                coGiaTriAm
+                                        ? "Dữ liệu âm: xem biểu đồ cột"
+                                        : "Chưa có dữ liệu tỷ trọng";
                         FontMetrics fm = g.getFontMetrics();
                         g.drawString(
                                 thongBao,
@@ -211,12 +212,14 @@ public final class BieuDoTron extends JPanel {
         latDangHover = -1;
         tienTe = money;
         tong = 0.0;
+        coGiaTriAm = false;
     }
 
     private boolean kiemTraDuLieuBieuDo(String[] ten, double[] soGoc) {
         hopLe = soGoc.length > 0 && ten.length >= soGoc.length;
         for (double value : soGoc) {
             if (!Double.isFinite(value) || value < 0) {
+                if (Double.isFinite(value) && value < 0) coGiaTriAm = true;
                 hopLe = false;
                 return false;
             }

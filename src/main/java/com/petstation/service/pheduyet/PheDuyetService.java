@@ -21,6 +21,7 @@ import com.petstation.util.DinhDang;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class PheDuyetService {
+    public static final String TIEN_TO_DOI_CA = "DOI_CA|";
     private final YeuCauPheDuyetDAO pheDuyetDAO;
 
     public PheDuyetService() {
@@ -337,10 +339,8 @@ public final class PheDuyetService {
                                         new KiemKeService().apDungKiemKe(maDich);
                                 case "DOI_TRA", "PHIEU_DOI_TRA" ->
                                         new DoiTraService().apDungDoiTra(maDich);
-                                case "NGHI_PHEP", "LICH_LAM_VIEC" ->
-                                        LichLamViecService.macDinh()
-                                                .danhDauNghiPhepDaDuyet(
-                                                        maDich, LocalDate.parse(noiDungXuLy));
+                                case "NGHI_PHEP", "LICH_LAM_VIEC", "DOI_CA" ->
+                                        apDungLichLamViecDaDuyet(maDich, noiDungXuLy);
                                 case "GHI_CHU_HOA_DON", "HOA_DON" -> {
                                     if (pheDuyetDAO.demApDungPheDuyet(maDich) == 0)
                                         throw new IllegalArgumentException(
@@ -358,6 +358,78 @@ public final class PheDuyetService {
                             }
                             return null;
                         });
+    }
+
+    public YeuCau guiYeuCauDoiCa(
+            String maNguoiGui,
+            LocalDate ngay1,
+            int ca1,
+            String maDongNghiep,
+            LocalDate ngay2,
+            Integer ca2,
+            String lyDo,
+            String moTaTruoc,
+            String moTaSau) {
+        if (ngay1 == null || maNguoiGui == null || maDongNghiep == null || maDongNghiep.isBlank()) {
+            throw new IllegalArgumentException("Thiếu thông tin đổi ca.");
+        }
+        String payload =
+                ngay2 != null && ca2 != null
+                        ? TIEN_TO_DOI_CA
+                                + ngay1
+                                + "|"
+                                + ca1
+                                + "|"
+                                + maNguoiGui
+                                + "|"
+                                + ngay2
+                                + "|"
+                                + ca2
+                                + "|"
+                                + maDongNghiep
+                        : TIEN_TO_DOI_CA
+                                + ngay1
+                                + "|"
+                                + ca1
+                                + "|"
+                                + maNguoiGui
+                                + "|||"
+                                + maDongNghiep;
+        return guiThaoTac(
+                Loai.NGHI_PHEP, lyDo, moTaTruoc, moTaSau, "NGHI_PHEP", maNguoiGui, payload);
+    }
+
+    private void apDungLichLamViecDaDuyet(String maDich, String noiDungXuLy) {
+        if (noiDungXuLy != null && noiDungXuLy.startsWith(TIEN_TO_DOI_CA)) {
+            String[] p = noiDungXuLy.split("\\|", -1);
+            if (p.length < 7) {
+                throw new IllegalArgumentException("Dữ liệu đổi ca không hợp lệ.");
+            }
+            try {
+                LocalDate ngay1 = LocalDate.parse(p[1]);
+                int ca1 = Integer.parseInt(p[2]);
+                String ma1 = p[3];
+                String ma2 = p[6];
+                if (p[4].isBlank() || p[5].isBlank()) {
+                    LichLamViecService.macDinh().chuyenCaDaDuyet(ngay1, ca1, ma1, ma2);
+                } else {
+                    LocalDate ngay2 = LocalDate.parse(p[4]);
+                    int ca2 = Integer.parseInt(p[5]);
+                    LichLamViecService.macDinh()
+                            .apDungDoiCaDaDuyet(ngay1, ca1, ma1, ngay2, ca2, ma2);
+                }
+            } catch (DateTimeParseException | NumberFormatException ex) {
+                throw new IllegalArgumentException("Dữ liệu đổi ca không đúng định dạng.", ex);
+            }
+            return;
+        }
+        try {
+            LichLamViecService.macDinh()
+                    .danhDauNghiPhepDaDuyet(maDich, LocalDate.parse(noiDungXuLy));
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException(
+                    "Dữ liệu ngày nghỉ phép không hợp lệ: " + noiDungXuLy, ex);
+        }
     }
 
     public static void xoaBoLangNghe() {

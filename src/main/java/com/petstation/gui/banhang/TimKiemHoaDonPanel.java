@@ -15,6 +15,7 @@ import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.pheduyet.PheDuyetService;
+import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -23,15 +24,21 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,6 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -66,6 +74,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private final JComboBox<String> cboTrangThai;
 
     private GioHang.BienLai bienLaiDangChon = null;
+    private ChiTietBienLai chiTietDangChon = null;
     private int luotXemTruoc = 0;
 
     private boolean dangDatLaiBoLoc;
@@ -141,10 +150,10 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                 taoNutXemTruocHoaDon(
                         "In lại hóa đơn (K80 / A5)",
                         NutDinhDang.KieuNut.CHINH,
-                        e -> xuLyInHoaDon());
+                        e -> inHoaDonDangChon());
         btnXuatHtml =
                 taoNutXemTruocHoaDon(
-                        "Xuất file HTML / PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
+                        "Xuất file HTML", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
         btnYeuCauPheDuyet =
                 taoNutXemTruocHoaDon(
                         "Yêu cầu hủy / sửa HĐ",
@@ -184,8 +193,31 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                 .getSelectionModel()
                 .addListSelectionListener(
                         e -> {
-                            if (!e.getValueIsAdjusting() && layBangDuLieu().getSelectedRow() >= 0) {
+                            if (!e.getValueIsAdjusting()) {
                                 capNhatXemTruocHoaDon();
+                            }
+                        });
+        layBangDuLieu()
+                .addMouseListener(
+                        new MouseAdapter() {
+                            @Override
+                            public void mouseClicked(MouseEvent e) {
+                                if (e.getClickCount() == 2
+                                        && layBangDuLieu().getSelectedRow() >= 0
+                                        && chiTietDangChon != null) {
+                                    inHoaDonDangChon();
+                                }
+                            }
+                        });
+        layOTimKiem()
+                .addActionListener(
+                        e -> {
+                            if (!dangDatLaiBoLoc) {
+                                apDungBoLocNangCao();
+                                if (layBangDuLieu().getSelectedRow() < 0
+                                        && layBangDuLieu().getRowCount() > 0) {
+                                    layBangDuLieu().setRowSelectionInterval(0, 0);
+                                }
                             }
                         });
         oTuNgay.addPropertyChangeListener(
@@ -241,27 +273,36 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         if (oTuNgay != null) apDungBoLocNangCao();
         if (layBangDuLieu().getSelectedRow() < 0 && layBangDuLieu().getRowCount() > 0) {
             layBangDuLieu().setRowSelectionInterval(0, 0);
+        } else if (layBangDuLieu().getSelectedRow() < 0) {
+            xoaXemTruoc();
         }
+    }
+
+    private void xoaXemTruoc() {
+        ++luotXemTruoc;
+        bienLaiDangChon = null;
+        chiTietDangChon = null;
+        khungHoaDon.datDuLieu(null);
+        btnInLai.setEnabled(false);
+        btnXuatHtml.setEnabled(false);
+        btnYeuCauPheDuyet.setEnabled(false);
+        nhanTrangThaiHoaDon.setText("");
     }
 
     private void capNhatXemTruocHoaDon() {
         int row = layBangDuLieu().getSelectedRow();
         if (row < 0) {
-            ++luotXemTruoc;
-            bienLaiDangChon = null;
-            khungHoaDon.datDuLieu(null);
-            btnInLai.setEnabled(false);
-            btnXuatHtml.setEnabled(false);
-            btnYeuCauPheDuyet.setEnabled(false);
-            nhanTrangThaiHoaDon.setText("Chưa chọn hóa đơn");
+            xoaXemTruoc();
             return;
         }
-        String soHoaDon = layBangDuLieu().getValueAt(row, 0).toString();
-        String trangThai =
-                layBangDuLieu().getValueAt(row, 6) == null
-                        ? ""
-                        : layBangDuLieu().getValueAt(row, 6).toString();
+        int dongMoHinh = layBangDuLieu().convertRowIndexToModel(row);
+        String soHoaDon = String.valueOf(layMoHinh().getValueAt(dongMoHinh, 0));
+        Object trangThaiObj = layMoHinh().getValueAt(dongMoHinh, 7);
+        String trangThai = trangThaiObj == null ? "" : trangThaiObj.toString();
         int luot = ++luotXemTruoc;
+        bienLaiDangChon = null;
+        chiTietDangChon = null;
+        khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
         btnXuatHtml.setEnabled(false);
         btnYeuCauPheDuyet.setEnabled(false);
@@ -277,18 +318,26 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                 },
                 duLieu -> {
                     bienLaiDangChon = duLieu.bienLai;
+                    chiTietDangChon = duLieu.chiTiet;
                     khungHoaDon.datDuLieu(duLieu.chiTiet);
+                    String trangThaiHienThi = DinhDangBang.tenTrangThai(trangThai);
                     nhanTrangThaiHoaDon.setText(
-                            "Hóa đơn: "
-                                    + soHoaDon
-                                    + " ("
-                                    + DinhDangBang.tenTrangThai(trangThai)
-                                    + ")");
-                    btnInLai.setEnabled(true);
-                    btnXuatHtml.setEnabled(true);
-                    btnYeuCauPheDuyet.setEnabled(true);
+                            "Hóa đơn: " + soHoaDon + " (" + trangThaiHienThi + ")");
+                    btnInLai.setEnabled(duLieu.chiTiet != null);
+                    btnXuatHtml.setEnabled(duLieu.bienLai != null);
+                    btnYeuCauPheDuyet.setEnabled(!daKhoaPheDuyet(trangThai, trangThaiHienThi));
                 },
                 ex -> nhanTrangThaiHoaDon.setText("Lỗi nạp hóa đơn: " + ex.getMessage()));
+    }
+
+    private static boolean daKhoaPheDuyet(String trangThai, String trangThaiHienThi) {
+        return "DA_HUY".equalsIgnoreCase(trangThai)
+                || "Đã hủy".equalsIgnoreCase(trangThai)
+                || "Đã hủy".equalsIgnoreCase(trangThaiHienThi)
+                || "DA_HOAN".equalsIgnoreCase(trangThai)
+                || "Đã hoàn".equalsIgnoreCase(trangThai)
+                || "Đã hoàn".equalsIgnoreCase(trangThaiHienThi)
+                || "Trả hàng".equalsIgnoreCase(trangThaiHienThi);
     }
 
     private void xuLyYeuCauHuySua() {
@@ -340,7 +389,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         List<RowFilter<DefaultTableModel, Object>> cacBoLoc = new ArrayList<>();
         String tuKhoa = layOTimKiem().getText().trim();
         if (!tuKhoa.isEmpty() && !"Tìm trong danh sách...".equals(tuKhoa)) {
-            cacBoLoc.add(RowFilter.regexFilter("(?iu)" + Pattern.quote(tuKhoa)));
+            cacBoLoc.add(taoBoLocTuKhoa(tuKhoa));
         }
         String phuongThuc = (String) cboPhuongThuc.getSelectedItem();
         if (phuongThuc != null && !"TẤT CẢ".equals(phuongThuc)) {
@@ -364,48 +413,103 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
             cacBoLoc.add(RowFilter.regexFilter("(?iu)^(" + maTt + ")$", 7));
         }
         LocalDate tuNgay = oTuNgay.layNgayDuocChon();
-        String tuNgayStr = tuNgay == null ? "" : tuNgay.toString();
         LocalDate denNgay = oDenNgay.layNgayDuocChon();
-        String denNgayStr = denNgay == null ? "" : denNgay.toString();
-        if (!tuNgayStr.isEmpty() || !denNgayStr.isEmpty()) {
-            cacBoLoc.add(
-                    new RowFilter<DefaultTableModel, Object>() {
-                        @Override
-                        public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
-                            Object val = entry.getValue(4);
-                            if (val == null) return false;
-                            String s =
-                                    val.toString()
-                                            .substring(0, Math.min(10, val.toString().length()));
-                            try {
-                                LocalDate d = LocalDate.parse(s);
-                                if (!tuNgayStr.isEmpty()) {
-                                    LocalDate tu = LocalDate.parse(tuNgayStr);
-                                    if (d.isBefore(tu)) return false;
-                                }
-                                if (!denNgayStr.isEmpty()) {
-                                    LocalDate den = LocalDate.parse(denNgayStr);
-                                    if (d.isAfter(den)) return false;
-                                }
-                                return true;
-                            } catch (Exception ex) {
-                                return true;
-                            }
-                        }
-                    });
+        if (tuNgay != null || denNgay != null) {
+            cacBoLoc.add(taoBoLocNgay(tuNgay, denNgay));
         }
-        if (cacBoLoc.isEmpty()) {
-            sorter.setRowFilter(null);
-        } else {
-            sorter.setRowFilter(RowFilter.andFilter(cacBoLoc));
+        sorter.setRowFilter(cacBoLoc.isEmpty() ? null : RowFilter.andFilter(cacBoLoc));
+        if (layBangDuLieu().getSelectedRow() < 0) {
+            xoaXemTruoc();
         }
     }
 
-    private void xuLyInHoaDon() {
-        if (bienLaiDangChon == null) return;
+    private static RowFilter<DefaultTableModel, Object> taoBoLocTuKhoa(String tuKhoa) {
+        String tuKhoaThuong = tuKhoa.toLowerCase(Locale.ROOT);
+        return new RowFilter<DefaultTableModel, Object>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
+                for (int col = 1; col < entry.getValueCount(); col++) {
+                    Object val = entry.getValue(col);
+                    if (val == null) continue;
+                    String text = dinhDangGiaTriTimKiem(col, val).toLowerCase(Locale.ROOT);
+                    if (text.contains(tuKhoaThuong)
+                            || val.toString().toLowerCase(Locale.ROOT).contains(tuKhoaThuong)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    private static String dinhDangGiaTriTimKiem(int col, Object val) {
+        if (col == 4) {
+            if (val instanceof LocalDateTime ldt) return DinhDang.ngayGio(ldt);
+            if (val instanceof LocalDate ld) return DinhDang.ngay(ld);
+            if (val instanceof Date d) {
+                return DinhDang.ngayGio(
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(d.getTime()), ZoneId.systemDefault()));
+            }
+        }
+        if (col == 7) return DinhDangBang.tenTrangThai(val.toString());
+        return val.toString();
+    }
+
+    private static RowFilter<DefaultTableModel, Object> taoBoLocNgay(
+            LocalDate tuNgay, LocalDate denNgay) {
+        return new RowFilter<DefaultTableModel, Object>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
+                LocalDate ngay = docNgay(entry.getValue(4));
+                if (ngay == null) return false;
+                if (tuNgay != null && ngay.isBefore(tuNgay)) return false;
+                return denNgay == null || !ngay.isAfter(denNgay);
+            }
+        };
+    }
+
+    private static LocalDate docNgay(Object val) {
+        if (val == null) return null;
+        if (val instanceof LocalDate d) return d;
+        if (val instanceof LocalDateTime dt) return dt.toLocalDate();
+        if (val instanceof Date d) {
+            return Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+        String chuoi = val.toString().trim();
+        if (chuoi.isEmpty()) return null;
+        try {
+            if (chuoi.length() >= 10 && chuoi.charAt(4) == '-') {
+                return LocalDate.parse(chuoi.substring(0, 10));
+            }
+            if (chuoi.length() >= 16 && chuoi.charAt(2) == '/') {
+                return LocalDateTime.parse(chuoi.substring(0, 16), DinhDang.NGAY_GIO).toLocalDate();
+            }
+            if (chuoi.length() >= 10 && chuoi.charAt(2) == '/') {
+                return LocalDate.parse(chuoi.substring(0, 10), DinhDang.NGAY);
+            }
+        } catch (RuntimeException loi) {
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public void xuLyIn() {
+        if (chiTietDangChon != null && bienLaiDangChon != null) {
+            inHoaDonDangChon();
+            return;
+        }
+        super.xuLyIn();
+    }
+
+    private void inHoaDonDangChon() {
+        if (bienLaiDangChon == null || chiTietDangChon == null) return;
         String soHoaDon = bienLaiDangChon.getSoHoaDon();
+        HoaDonDocPanel banIn = new HoaDonDocPanel();
+        banIn.datDuLieu(chiTietDangChon);
         PrinterJob job = PrinterJob.getPrinterJob();
-        job.setPrintable(khungHoaDon);
+        job.setPrintable(banIn);
         if (job.printDialog()) {
             TacVuNen.chay(
                     () -> {
@@ -422,27 +526,36 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private void xuLyXuatHoaDon() {
         if (bienLaiDangChon == null) return;
         JFileChooser chooser = new JFileChooser();
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new FileNameExtensionFilter("Tệp HTML (*.html)", "html"));
         chooser.setSelectedFile(new File("HoaDon_" + bienLaiDangChon.getSoHoaDon() + ".html"));
-        int res = chooser.showSaveDialog(this);
-        if (res == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            GioHang.BienLai bienLaiXuat = bienLaiDangChon;
-            TacVuNen.chayCoPhien(
-                    this,
-                    () -> true,
-                    () -> {
-                        try (FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8)) {
-                            String html = InHoaDonPanel.hienThiHTML(bienLaiXuat);
-                            writer.write(html);
-                            return file.getAbsolutePath();
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex.getMessage(), ex);
-                        }
-                    },
-                    duongDan ->
-                            HopThoai.hienThiThanhCong(
-                                    this, "Đã xuất hóa đơn ra file:\n" + duongDan),
-                    ex -> HopThoai.hienThiLoi(this, "Lỗi khi ghi file: " + ex.getMessage()));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        File chon = chooser.getSelectedFile();
+        File file =
+                chon.getName().toLowerCase(Locale.ROOT).endsWith(".html")
+                        ? chon
+                        : new File(chon.getParentFile(), chon.getName() + ".html");
+        if (file.exists()
+                && !HopThoai.xacNhanDongY(
+                        this,
+                        "Tệp \"" + file.getName() + "\" đã tồn tại. Bạn có muốn ghi đè không?",
+                        "Xác nhận ghi đè")) {
+            return;
         }
+        GioHang.BienLai bienLaiXuat = bienLaiDangChon;
+        TacVuNen.chayCoPhien(
+                this,
+                () -> true,
+                () -> {
+                    try (FileWriter writer = new FileWriter(file, StandardCharsets.UTF_8)) {
+                        writer.write(InHoaDonPanel.hienThiHTML(bienLaiXuat));
+                        return file.getAbsolutePath();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex.getMessage(), ex);
+                    }
+                },
+                duongDan ->
+                        HopThoai.hienThiThanhCong(this, "Đã xuất hóa đơn ra file:\n" + duongDan),
+                ex -> HopThoai.hienThiLoi(this, "Lỗi khi ghi file: " + ex.getMessage()));
     }
 }

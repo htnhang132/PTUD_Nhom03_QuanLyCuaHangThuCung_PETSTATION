@@ -23,16 +23,20 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.print.PrinterJob;
 import java.net.URL;
 import java.util.function.Consumer;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -118,7 +122,31 @@ public final class InHoaDonPanel extends CoSoPanel {
                         btnDi),
                 "empty");
         add(khungGoc, BorderLayout.CENTER);
+        dangKyPhimTat(boDieuHuong);
         lamMoi();
+    }
+
+    private void dangKyPhimTat(Consumer<MaManHinh> boDieuHuong) {
+        var inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        var actionMap = getActionMap();
+        inputMap.put(KeyStroke.getKeyStroke("F2"), "lapHoaDonMoi");
+        actionMap.put(
+                "lapHoaDonMoi",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        boDieuHuong.accept(MaManHinh.LAP_HOA_DON);
+                    }
+                });
+        inputMap.put(KeyStroke.getKeyStroke("control P"), "inHoaDon");
+        actionMap.put(
+                "inHoaDon",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (banHang.getBienLaiCuoi() != null) xuLyIn();
+                    }
+                });
     }
 
     private void lamMoi() {
@@ -176,10 +204,11 @@ public final class InHoaDonPanel extends CoSoPanel {
         boGhepChuoi.append(layGiua(CaiDatService.macDinh().lay("STORE_NAME"))).append('\n');
         boGhepChuoi.append(layGiua(CaiDatService.macDinh().lay("STORE_ADDRESS"))).append('\n');
         boGhepChuoi.append(layGiua(CaiDatService.macDinh().lay("STORE_PHONE"))).append('\n');
+        boolean laLuuTru = "LUU_TRU".equals(nguon.loai()) || "HOTEL".equals(nguon.loai());
         String tieuDe =
                 nguon.loai().equals(LoaiPhieuDoiTra.DOI_HANG.maDB())
                         ? "Đổi hàng — thu chênh lệch"
-                        : nguon.loai().equals("LUU_TRU") ? "Quyết toán Hotel" : "Hóa đơn bán hàng";
+                        : laLuuTru ? "Quyết toán Hotel" : "Hóa đơn bán hàng";
         boGhepChuoi.append(layGiua(tieuDe)).append('\n');
         boGhepChuoi.append("-".repeat(CHIEU_RONG)).append('\n');
         boGhepChuoi.append("Số HĐ : ").append(dongDuLieu.getSoHoaDon()).append('\n');
@@ -192,7 +221,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         if (!nguon.ma().isBlank()) boGhepChuoi.append("Nguồn : ").append(nguon.ma()).append('\n');
         if (!nguon.hoaDonGoc().isBlank())
             boGhepChuoi.append("HĐ gốc: ").append(nguon.hoaDonGoc()).append('\n');
-        if (nguon.loai().equals("LUU_TRU"))
+        if (laLuuTru)
             boGhepChuoi
                     .append(layCap("Tiền cọc đã trừ", DinhDang.dinhDang(nguon.daCanTru())))
                     .append('\n');
@@ -295,7 +324,8 @@ public final class InHoaDonPanel extends CoSoPanel {
                             ? "Giá trị hàng được đổi"
                             : "Giảm giá " + bienLai.getVoucher(),
                     -bienLai.getGiamGia());
-        if (nguon.loai().equals("LUU_TRU")) themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
+        if ("LUU_TRU".equals(nguon.loai()) || "HOTEL".equals(nguon.loai()))
+            themTong(html, "Tiền cọc đã trừ", nguon.daCanTru());
         themTong(html, "TỔNG THANH TOÁN", bienLai.getTong());
         if (bienLai.getVatPhanTram() > 0)
             themTong(

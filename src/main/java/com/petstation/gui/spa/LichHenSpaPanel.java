@@ -1,26 +1,17 @@
 package com.petstation.gui.spa;
 
-import static com.petstation.gui.chung.TruongNghiepVu.docThoiGian;
-import static com.petstation.gui.chung.TruongNghiepVu.taoLuaChonMuc;
-
 import com.petstation.dto.GioHang;
-import com.petstation.dto.MucLuaChon;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NguCanhMoBanGhi;
 import com.petstation.gui.chung.NutDinhDang;
-import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.ThanhDanhSach;
-import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgay;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.TrangThaiLichHen;
 import com.petstation.model.chung.TrangThaiPhieuSpa;
-import com.petstation.model.spa.LichHen;
-import com.petstation.service.hethong.PhienDangNhapService;
-import com.petstation.service.spa.SpaService;
 import com.petstation.util.DinhDang;
 
 import org.slf4j.LoggerFactory;
@@ -31,6 +22,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,6 +49,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -81,6 +76,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();
     private final JPanel content = new JPanel(new CardLayout());
+    private JButton theDangChon;
     private boolean dangNap;
 
     private Consumer<String> khiKhachDen;
@@ -287,6 +283,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     }
 
     private void dungLichTuanNgay(String mode, LocalDate start, LocalDate end) {
+        theDangChon = null;
         lich.removeAll();
         lich.setLayout(new GridLayout(1, mode.equals("Tuần") ? 7 : 1, 8, 0));
         lich.setBackground(MauUngDung.NEN_KEM);
@@ -350,94 +347,59 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         card.setToolTipText(text);
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 135));
         card.setPreferredSize(new Dimension(mode.equals("Tuần") ? 145 : 400, 125));
-        card.addActionListener(
-                e -> {
-                    int view = layBangDuLieu().convertRowIndexToView(r);
-                    if (view >= 0) layBangDuLieu().setRowSelectionInterval(view, view);
-                    card.setBorder(BorderFactory.createLineBorder(MauUngDung.DO_THUONG_HIEU, 2));
+        card.putClientProperty("vienMacDinh", card.getBorder());
+        card.addActionListener(e -> chonTheLichHen(card, r));
+        card.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                            chonTheLichHen(card, r);
+                            xuLyDupChuotTheLich(r);
+                        }
+                    }
                 });
         return card;
+    }
+
+    private void chonTheLichHen(JButton card, int r) {
+        int view = layBangDuLieu().convertRowIndexToView(r);
+        if (view >= 0) layBangDuLieu().setRowSelectionInterval(view, view);
+        if (theDangChon != null && theDangChon != card) {
+            Object vienCu = theDangChon.getClientProperty("vienMacDinh");
+            if (vienCu instanceof Border border) {
+                theDangChon.setBorder(border);
+            }
+        }
+        theDangChon = card;
+        card.setBorder(BorderFactory.createLineBorder(MauUngDung.DO_THUONG_HIEU, 2));
+    }
+
+    private void xuLyDupChuotTheLich(int r) {
+        String trangThaiDong = String.valueOf(layMoHinh().getValueAt(r, 8));
+        if (!TrangThaiLichHen.DA_XAC_NHAN.maDB().equals(trangThaiDong)) {
+            HopThoai.hienThiCanhBao(
+                    this, "Chỉ lịch hẹn đang chờ xác nhận mới có thể tiếp nhận hoặc sửa.");
+            return;
+        }
+        String ma = String.valueOf(layMoHinh().getValueAt(r, 1));
+        int chon =
+                HopThoai.tuyChon(
+                        this,
+                        "Chọn thao tác nhanh cho lịch hẹn #" + ma,
+                        "Thao tác lịch hẹn",
+                        new String[] {"Tiếp nhận Spa", "Sửa lịch hẹn"},
+                        true);
+        if (chon == 0) tiepNhan();
+        else if (chon == 1) suaLich();
     }
 
     private static String esc(Object o) {
         return String.valueOf(o).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    private static BieuMauTruong.TruongDuLieu macDinh(BieuMauTruong.TruongDuLieu f, Object value) {
-        return new BieuMauTruong.TruongDuLieu(
-                f.khoa(), f.nhan(), value == null ? "" : value.toString(), f.cacLuaChon());
-    }
-
-    @SuppressWarnings("unchecked")
     private void suaLich() {
         String maLichHen = layDongChon();
-        SpaService service = new SpaService();
-        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
-        TacVuNen.chayCoPhien(
-                phien,
-                () -> true,
-                () ->
-                        new Object[] {
-                            service.layChiTietLichHen(maLichHen),
-                            layNghiepVuService().layLuaChonThuCung(),
-                            layNghiepVuService().layLuaChonGoiDichVu(),
-                            layNghiepVuService().layLuaChonNhanVien()
-                        },
-                null,
-                duLieu -> {
-                    LichHen old = (LichHen) duLieu[0];
-                    var values =
-                            BieuMauTruong.layYeuCauNhap(
-                                    this,
-                                    "Sửa lịch Spa",
-                                    macDinh(
-                                            taoLuaChonMuc(
-                                                    "pet",
-                                                    "Thú cưng",
-                                                    (List<MucLuaChon>) duLieu[1]),
-                                            old.getThuCung() != null
-                                                    ? old.getThuCung().getMaThuCung()
-                                                    : ""),
-                                    macDinh(
-                                            taoLuaChonMuc(
-                                                    "package",
-                                                    "Dịch vụ",
-                                                    (List<MucLuaChon>) duLieu[2]),
-                                            old.getDichVu() != null
-                                                    ? old.getDichVu().getMaGoi()
-                                                    : ""),
-                                    macDinh(
-                                            taoLuaChonMuc(
-                                                    "staff",
-                                                    "Nhân viên",
-                                                    (List<MucLuaChon>) duLieu[3]),
-                                            old.getNhanVien() != null
-                                                    ? old.getNhanVien().getMaNhanVien()
-                                                    : ""),
-                                    BieuMauTruong.TruongDuLieu.chuyenThanhChuoi(
-                                            "start",
-                                            "Bắt đầu (yyyy-MM-dd HH:mm)",
-                                            old.getBatDau() == null
-                                                    ? ""
-                                                    : old.getBatDau()
-                                                            .format(DinhDang.NGAY_GIO_ISO)));
-                    if (values == null) return;
-                    TacVuNen.chayCoPhien(
-                            phien,
-                            () -> true,
-                            () -> {
-                                service.suaLichHen(
-                                        maLichHen,
-                                        values.get("pet"),
-                                        values.get("package"),
-                                        values.get("staff"),
-                                        docThoiGian(values, "start"));
-                                return null;
-                            },
-                            null,
-                            v -> lamMoi(),
-                            ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
-                },
-                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+        DatLichSpaDialog.moSua(this, maLichHen, this::lamMoi);
     }
 }
