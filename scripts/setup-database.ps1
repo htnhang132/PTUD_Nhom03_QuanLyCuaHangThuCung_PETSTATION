@@ -1,6 +1,6 @@
 param(
     [string]$Server = 'localhost,1433',
-    [string]$Database = 'PetStationDemo2',
+    [string]$Database = 'PetStationDemo1',
     [string]$SqlUser = '',
     [switch]$Reset
 )
@@ -26,11 +26,9 @@ if ([int]$major -lt 15) { throw 'SQL Server 2019 or newer is required. The SSMS 
 Invoke-Query "IF DB_ID(N'$Database') IS NULL CREATE DATABASE [$Database] COLLATE Vietnamese_CI_AS;" | Out-Null
 $tableCount = ((Invoke-Query "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0 AND name<>'sysdiagrams';" $Database | Out-String).Trim())
 if ([int]$tableCount -gt 0 -and -not $Reset) {
-    $ready = ((Invoke-Query "SET NOCOUNT ON; IF OBJECT_ID('dbo.cai_dat') IS NOT NULL SELECT COUNT(*) FROM dbo.cai_dat WHERE khoa='APP_SCHEMA_VERSION' AND gia_tri='20261026'; ELSE SELECT 0;" $Database | Out-String).Trim())
+    $ready = ((Invoke-Query "SET NOCOUNT ON; IF OBJECT_ID('dbo.cai_dat') IS NOT NULL AND COL_LENGTH('dbo.cai_dat','ma_cai_dat') IS NOT NULL SELECT COUNT(*) FROM dbo.cai_dat WHERE ma_cai_dat='PHIEN_BAN_CSDL' AND gia_tri='20261106'; ELSE SELECT 0;" $Database | Out-String).Trim())
     if ($ready -eq '1') {
-        & sqlcmd @sqlArgs -d $Database -i (Join-Path $projectRoot 'database/003_hotel_management_improvements.sql')
-        if ($LASTEXITCODE -ne 0) { throw 'Hotel migration failed.' }
-        Write-Output "$Database is initialized and hotel migration is applied."
+        Write-Output "$Database is already initialized and up to date."
         exit 0
     }
     throw 'An older database exists. Use -Reset only after reviewing the reset and backup instructions in SETUP.md.'
@@ -76,8 +74,24 @@ COMMIT;
 "@ $Database | Out-Null
 }
 
-foreach ($file in @('001_schema.sql', '002_sample_data.sql', '003_hotel_management_improvements.sql')) {
-    & sqlcmd @sqlArgs -d $Database -i (Join-Path $projectRoot "database/$file")
-    if ($LASTEXITCODE -ne 0) { throw "Setup failed at $file. If this was a reset, the verified backup is listed under target/database-backups." }
+foreach ($file in @('001_schema.sql', '002_sample_data.sql')) {
+    $sourcePath = Join-Path $projectRoot "database/$file"
+    $targetPath = $sourcePath
+    $tempPath = $null
+    if ($Database -ne 'PetStationDemo1') {
+        $tempPath = Join-Path ([IO.Path]::GetTempPath()) ("petstation-$Database-$file")
+        $content = [IO.File]::ReadAllText($sourcePath, [System.Text.Encoding]::UTF8)
+        $content = $content.Replace('[PetStationDemo1]', "[$Database]").Replace("N'PetStationDemo1'", "N'$Database'")
+        [IO.File]::WriteAllText($tempPath, $content, (New-Object System.Text.UTF8Encoding($false)))
+        $targetPath = $tempPath
+    }
+    try {
+        & sqlcmd @sqlArgs -d $Database -i $targetPath
+        if ($LASTEXITCODE -ne 0) { throw "Setup failed at $file. If this was a reset, the verified backup is listed under target/database-backups." }
+    } finally {
+        if ($tempPath -and (Test-Path -LiteralPath $tempPath)) {
+            Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 Write-Output "$Database is ready. Demo application password: PetStation@123 (change it after signing in)."

@@ -8,6 +8,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 
 public final class TaoMaVietQR {
@@ -16,7 +17,7 @@ public final class TaoMaVietQR {
     private static String truong(String ma, String giaTri) {
         int doDai = giaTri.getBytes(StandardCharsets.UTF_8).length;
         if (doDai > 99) throw new IllegalArgumentException("Trường QR quá dài.");
-        return ma + String.format(java.util.Locale.ROOT, "%02d", doDai) + giaTri;
+        return ma + String.format(Locale.ROOT, "%02d", doDai) + giaTri;
     }
 
     public static void kiemTraTaiKhoan(String bin, String taiKhoan, String chuTaiKhoan) {
@@ -50,7 +51,7 @@ public final class TaoMaVietQR {
                         + truong("58", "VN")
                         + truong("62", truong("08", thamChieu))
                         + "6304";
-        return noiDung + String.format(java.util.Locale.ROOT, "%04X", tinhCRC(noiDung));
+        return noiDung + String.format(Locale.ROOT, "%04X", tinhCRC(noiDung));
     }
 
     public static int tinhCRC(String noiDung) {

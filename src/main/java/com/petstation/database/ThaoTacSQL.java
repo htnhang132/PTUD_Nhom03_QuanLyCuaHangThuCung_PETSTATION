@@ -1,11 +1,20 @@
 package com.petstation.database;
 
-import com.petstation.util.DuLieu;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 public final class ThaoTacSQL {
     @FunctionalInterface
@@ -55,7 +64,7 @@ public final class ThaoTacSQL {
                 throw taoLoi(loi);
             }
         }
-        if (csdl == null) throw new IllegalStateException("Chưa cấu hình kết nối SQL Server.");
+        if (csdl == null) throw new IllegalArgumentException("Chưa cấu hình kết nối SQL Server.");
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
             HIEN_TAI.set(ketNoi);
@@ -76,8 +85,9 @@ public final class ThaoTacSQL {
 
     private static RuntimeException taoLoi(Exception loi) {
         return loi instanceof RuntimeException loi2
-            ? loi2
-            : new TruyCapDuLieuException("Không thể truy cập SQL Server: " + loi.getMessage(), loi);
+                ? loi2
+                : new IllegalStateException(
+                        "Không thể truy cập SQL Server: " + loi.getMessage(), loi);
     }
 
     private static <KieuDuLieu> KieuDuLieu dungKetNoi(CongViec<KieuDuLieu> lamViec) {
@@ -90,17 +100,92 @@ public final class ThaoTacSQL {
         }
     }
 
+    public static int demSoThamSo(String sql) {
+        if (sql == null) return 0;
+        int dem = 0;
+        boolean trongChuoi = false;
+        boolean trongCommentDon = false;
+        boolean trongCommentKhoi = false;
+        for (int i = 0; i < sql.length(); i++) {
+            char c = sql.charAt(i);
+            if (trongChuoi) {
+                if (c == '\'') {
+                    if (i + 1 < sql.length() && sql.charAt(i + 1) == '\'') {
+                        i++;
+                    } else {
+                        trongChuoi = false;
+                    }
+                }
+            } else if (trongCommentDon) {
+                if (c == '\n' || c == '\r') {
+                    trongCommentDon = false;
+                }
+            } else if (trongCommentKhoi) {
+                if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
+                    trongCommentKhoi = false;
+                    i++;
+                }
+            } else {
+                if (c == '\'') {
+                    trongChuoi = true;
+                } else if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
+                    trongCommentDon = true;
+                    i++;
+                } else if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
+                    trongCommentKhoi = true;
+                    i++;
+                } else if (c == '?') {
+                    dem++;
+                }
+            }
+        }
+        return dem;
+    }
+
+    private static Object[] chuanHoaCacDoiSo(Object... cacDoiSo) {
+        if (cacDoiSo == null) return new Object[0];
+        if (cacDoiSo.length == 1 && cacDoiSo[0] != null) {
+            if (cacDoiSo[0] instanceof Object[] mang) {
+                return mang;
+            }
+            if (cacDoiSo[0] instanceof Collection<?> boSuuTap) {
+                return boSuuTap.toArray();
+            }
+        }
+        return cacDoiSo;
+    }
+
+    private static void ganThamSo(PreparedStatement cauLenh, int viTri, Object giaTri)
+            throws SQLException {
+        if (giaTri == null) {
+            cauLenh.setObject(viTri, null);
+        } else if (giaTri instanceof LocalDate ngay) {
+            cauLenh.setDate(viTri, Date.valueOf(ngay));
+        } else if (giaTri instanceof LocalDateTime thoiGian) {
+            cauLenh.setTimestamp(viTri, Timestamp.valueOf(thoiGian));
+        } else if (giaTri instanceof String chuoi) {
+            cauLenh.setNString(viTri, chuoi);
+        } else {
+            cauLenh.setObject(viTri, giaTri);
+        }
+    }
+
     private static PreparedStatement chuanBi(Connection ketNoi, String sql, Object... cacDoiSo)
             throws SQLException {
+        Object[] doiSoChuanHoa = chuanHoaCacDoiSo(cacDoiSo);
+        int soThamSoYeuCau = demSoThamSo(sql);
         PreparedStatement cauLenh = ketNoi.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-        for (int chiSo = 0; chiSo < cacDoiSo.length; chiSo++) {
-            Object giaTri = cacDoiSo[chiSo];
-            if (giaTri instanceof LocalDate ngay)
-                cauLenh.setDate(chiSo + 1, java.sql.Date.valueOf(ngay));
-            else if (giaTri instanceof LocalDateTime thoiGian)
-                cauLenh.setTimestamp(chiSo + 1, Timestamp.valueOf(thoiGian));
-            else if (giaTri instanceof String chuoi) cauLenh.setNString(chiSo + 1, chuoi);
-            else cauLenh.setObject(chiSo + 1, giaTri);
+        int soLuong =
+                soThamSoYeuCau > 0
+                        ? Math.min(doiSoChuanHoa.length, soThamSoYeuCau)
+                        : doiSoChuanHoa.length;
+        for (int chiSo = 0; chiSo < soLuong; chiSo++) {
+            ganThamSo(cauLenh, chiSo + 1, doiSoChuanHoa[chiSo]);
+        }
+        if (soThamSoYeuCau > doiSoChuanHoa.length) {
+            for (int chiSo = doiSoChuanHoa.length; chiSo < soThamSoYeuCau; chiSo++) {
+                cauLenh.setObject(chiSo + 1, null);
+            }
         }
         return cauLenh;
     }
@@ -123,6 +208,16 @@ public final class ThaoTacSQL {
                 });
     }
 
+    public static <Kieu> List<Kieu> truyVanDanhSach(
+            String sql, Function<Object[], Kieu> anhXa, Object... cacDoiSo) {
+        List<Object[]> ketQua = truyVan(sql, cacDoiSo);
+        List<Kieu> ds = new ArrayList<>(ketQua.size());
+        for (Object[] dong : ketQua) {
+            ds.add(anhXa.apply(dong));
+        }
+        return ds;
+    }
+
     public static int capNhat(String sql, Object... cacDoiSo) {
         return dungKetNoi(
                 ketNoi -> {
@@ -143,8 +238,6 @@ public final class ThaoTacSQL {
                             }
                         }
                         if (cacDoiSo != null && cacDoiSo.length > 0 && cacDoiSo[0] != null) {
-                            long id = DuLieu.layIdCauNoi(null, String.valueOf(cacDoiSo[0]));
-                            if (id > 0) return id;
                             long hash = Math.abs((long) cacDoiSo[0].hashCode());
                             return hash == 0 ? 1L : hash;
                         }

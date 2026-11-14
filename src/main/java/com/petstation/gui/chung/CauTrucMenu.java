@@ -1,0 +1,140 @@
+package com.petstation.gui.chung;
+
+import com.petstation.model.chung.MaManHinh;
+
+import java.util.List;
+
+public final class CauTrucMenu {
+    public static final class Muc {
+        private final String nhan;
+        private final MaManHinh manHinh;
+        private final String phimTat;
+
+        public Muc(String nhan, MaManHinh manHinh, String phimTat) {
+            this.nhan = nhan;
+            this.manHinh = manHinh;
+            this.phimTat = phimTat;
+        }
+
+        public String nhan() {
+            return nhan;
+        }
+
+        public MaManHinh manHinh() {
+            return manHinh;
+        }
+
+        public String phimTat() {
+            return phimTat;
+        }
+
+        public boolean kiemTraPhanCach() {
+            return manHinh == null;
+        }
+    }
+
+    public static final class Nhom {
+        private final char phimTruyCap;
+        private final String nhan;
+        private final List<Muc> cacMuc;
+
+        public Nhom(char phimTruyCap, String nhan, List<Muc> cacMuc) {
+            this.phimTruyCap = phimTruyCap;
+            this.nhan = nhan;
+            this.cacMuc = cacMuc;
+        }
+
+        public char phimTruyCap() {
+            return phimTruyCap;
+        }
+
+        public String nhan() {
+            return nhan;
+        }
+
+        public List<Muc> cacMuc() {
+            return cacMuc;
+        }
+    }
+
+    private static final Muc PHAN_CACH = new Muc(null, null, null);
+
+    private static Muc layMuc(String nhan, MaManHinh manHinh) {
+        return new Muc(nhan, manHinh, null);
+    }
+
+    private static Muc layMuc(String nhan, MaManHinh manHinh, String khoa) {
+        return new Muc(nhan, manHinh, khoa);
+    }
+
+    private static final List<Nhom> CAC_NHOM =
+            List.of(
+                    new Nhom(
+                            'H',
+                            "Hệ thống",
+                            List.of(
+                                    layMuc("Đổi mật khẩu", MaManHinh.DOI_MAT_KHAU),
+                                    layMuc(
+                                            "Tài khoản & phân quyền",
+                                            MaManHinh.TAI_KHOAN_PHAN_QUYEN),
+                                    layMuc("Cài đặt", MaManHinh.CAI_DAT),
+                                    layMuc("Nhật ký hệ thống", MaManHinh.NHAT_KY_HE_THONG))),
+                    new Nhom(
+                            'D',
+                            "Danh mục",
+                            List.of(
+                                    layMuc("Khách hàng", MaManHinh.DANH_MUC_KHACH_HANG),
+                                    layMuc("Hồ sơ thú cưng", MaManHinh.DANH_MUC_THU_CUNG),
+                                    layMuc("Nhân viên", MaManHinh.DANH_MUC_NHAN_VIEN),
+                                    layMuc("Sản phẩm", MaManHinh.DANH_MUC_SAN_PHAM),
+                                    layMuc("Dịch vụ Spa", MaManHinh.DANH_MUC_DICH_VU_SPA),
+                                    layMuc("Phòng lưu trú", MaManHinh.DANH_MUC_PHONG_LUU_TRU),
+                                    layMuc("Nhà cung cấp", MaManHinh.DANH_MUC_NHA_CUNG_CAP),
+                                    layMuc("Khuyến mãi", MaManHinh.DANH_MUC_KHUYEN_MAI),
+                                    layMuc("Điểm thưởng và voucher", MaManHinh.TICH_DIEM_VOUCHER))),
+                    new Nhom(
+                            'T',
+                            "Tìm kiếm",
+                            List.of(
+                                    layMuc("Hóa đơn", MaManHinh.TIM_KIEM_HOA_DON, "F3"),
+                                    layMuc("Lịch sử khách hàng", MaManHinh.TRA_CUU_KHACH_HANG),
+                                    layMuc("Tồn kho theo lô", MaManHinh.TRA_CUU_LO_HANG),
+                                    layMuc("Phiếu Spa", MaManHinh.TRA_CUU_LICH_SPA),
+                                    layMuc("Sơ đồ phòng lưu trú", MaManHinh.SO_DO_PHONG_LUU_TRU),
+                                    PHAN_CACH,
+                                    layMuc("Lịch làm việc", MaManHinh.TRA_CUU_LICH_LAM_VIEC),
+                                    layMuc("Lịch làm việc cá nhân", MaManHinh.LICH_CA_NHAN))),
+                    new Nhom(
+                            'X',
+                            "Xử lý",
+                            List.of(
+                                    layMuc("Lập hóa đơn", MaManHinh.LAP_HOA_DON, "F2"),
+                                    layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA, "F7"),
+                                    layMuc("Lập phiếu Spa", MaManHinh.QUAN_LY_SPA, "F4"),
+                                    layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU, "F6"),
+                                    PHAN_CACH,
+                                    layMuc("Lập phiếu nhập kho", MaManHinh.NHAP_KHO),
+                                    layMuc("Xuất hủy hàng hóa", MaManHinh.XUAT_HUY_KHO),
+                                    layMuc("Kiểm kê tồn kho", MaManHinh.KIEM_KE_TON_KHO),
+                                    PHAN_CACH,
+                                    layMuc("Ca thu ngân", MaManHinh.CA_THU_NGAN),
+                                    layMuc("Phân lịch nhân viên", MaManHinh.PHAN_LICH_NHAN_VIEN),
+                                    layMuc("Phê duyệt yêu cầu", MaManHinh.PHE_DUYET_YEU_CAU))),
+                    new Nhom(
+                            'K',
+                            "Thống kê",
+                            List.of(
+                                    layMuc("Doanh thu", MaManHinh.THONG_KE_DOANH_THU),
+                                    layMuc("Hàng hóa", MaManHinh.THONG_KE_HANG_HOA),
+                                    layMuc("Dịch vụ Spa", MaManHinh.THONG_KE_SPA),
+                                    layMuc("Lưu trú", MaManHinh.THONG_KE_LUU_TRU),
+                                    layMuc("Khách hàng", MaManHinh.THONG_KE_KHACH_HANG),
+                                    layMuc("Công nợ nhà cung cấp", MaManHinh.THONG_KE_CONG_NO_NCC),
+                                    layMuc("Nhân viên", MaManHinh.THONG_KE_NHAN_VIEN))));
+
+    private CauTrucMenu() {}
+
+    public static List<Nhom> layCacNhom() {
+        return CAC_NHOM;
+    }
+}

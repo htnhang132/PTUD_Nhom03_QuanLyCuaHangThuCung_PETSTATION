@@ -10,5 +10,9 @@ $javaFiles = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src') -Recurs
 $formatterArgs = @('-jar', $formatterPath, '--aosp')
 if ($Mode -eq 'apply') { $formatterArgs += '--replace' }
 else { $formatterArgs += @('--dry-run', '--set-exit-if-changed') }
-& java @formatterArgs @javaFiles
-if ($LASTEXITCODE -ne 0) { throw 'Java formatting check failed. Use -Mode apply to format sources.' }
+$batchSize = 30
+for ($i = 0; $i -lt $javaFiles.Count; $i += $batchSize) {
+    $batch = $javaFiles[$i..[Math]::Min($i + $batchSize - 1, $javaFiles.Count - 1)]
+    & java @formatterArgs @batch
+    if ($LASTEXITCODE -ne 0) { throw 'Java formatting check failed. Use -Mode apply to format sources.' }
+}

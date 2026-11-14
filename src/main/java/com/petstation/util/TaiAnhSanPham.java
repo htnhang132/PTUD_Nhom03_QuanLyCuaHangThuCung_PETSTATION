@@ -3,7 +3,8 @@ package com.petstation.util;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
@@ -21,14 +22,13 @@ public final class TaiAnhSanPham {
                                     .getLocation()
                                     .toURI());
             Path thuMuc = nguon.getParent();
-
             if (thuMuc != null
                     && "target".equals(thuMuc.getFileName().toString())
                     && Files.isRegularFile(thuMuc.getParent().resolve("pom.xml")))
                 return thuMuc.getParent();
             return thuMuc;
         } catch (Exception e) {
-            throw new IllegalStateException("Không xác định được thư mục ảnh ứng dụng.", e);
+            throw new IllegalArgumentException("Không xác định được thư mục ảnh ứng dụng.", e);
         }
     }
 
@@ -39,9 +39,12 @@ public final class TaiAnhSanPham {
 
     public static BufferedImage doc(String duongDan) throws IOException {
         if (!kiemTraDuongDan(duongDan)) return null;
-        Path tep = layThuMucNgoai().resolve(duongDan);
+        Path thuMucGoc = layThuMucNgoai();
+        Path tepMoi = thuMucGoc.resolve("data").resolve(duongDan);
+        Path tepCu = thuMucGoc.resolve(duongDan);
         BufferedImage anh;
-        if (Files.isRegularFile(tep)) anh = ImageIO.read(tep.toFile());
+        if (Files.isRegularFile(tepMoi)) anh = ImageIO.read(tepMoi.toFile());
+        else if (Files.isRegularFile(tepCu)) anh = ImageIO.read(tepCu.toFile());
         else
             try (var in = TaiAnhSanPham.class.getResourceAsStream("/" + duongDan)) {
                 anh = in == null ? null : ImageIO.read(in);
@@ -83,7 +86,7 @@ public final class TaiAnhSanPham {
         BufferedImage anh = ImageIO.read(nguon.toFile());
         if (anh == null) throw new IOException("Không đọc được ảnh.");
         String duongDan = "images/products/TUY-CHON-" + UUID.randomUUID() + ".png";
-        Path dich = layThuMucNgoai().resolve(duongDan);
+        Path dich = layThuMucNgoai().resolve("data").resolve(duongDan);
         Files.createDirectories(dich.getParent());
         if (!ImageIO.write(anh, "png", dich.toFile()))
             throw new IOException("Không ghi được ảnh PNG.");

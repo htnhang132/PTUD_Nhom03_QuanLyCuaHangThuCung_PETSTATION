@@ -9,15 +9,24 @@ public final class QuanLyGiaoDich {
         KieuDuLieu thucThi(Connection ketNoi) throws Exception;
     }
 
+    private static final QuanLyGiaoDich MAC_DINH = new QuanLyGiaoDich(null);
+
     private final KetNoiCSDL csdl;
 
     public QuanLyGiaoDich(KetNoiCSDL csdl) {
         this.csdl = csdl;
     }
 
+    public static QuanLyGiaoDich macDinh() {
+        return MAC_DINH;
+    }
+
+    public static boolean dangTrongGiaoDich() {
+        return ThaoTacSQL.dangTrongGiaoDich();
+    }
+
     public <KieuDuLieu> KieuDuLieu thucThi(CongViecGiaoDich<KieuDuLieu> lamViec) {
-        Connection dangCo = ThaoTacSQL.layKetNoiHienTai();
-        if (dangCo != null) {
+        if (csdl == null || ThaoTacSQL.layKetNoiHienTai() != null) {
             return ThaoTacSQL.thucHienGiaoDich(lamViec::thucThi);
         }
         try (Connection ketNoi = csdl.mo()) {
@@ -32,13 +41,13 @@ public final class QuanLyGiaoDich {
                 throw ngoaiLe;
             } catch (Exception ngoaiLe) {
                 ketNoi.rollback();
-                throw new TruyCapDuLieuException("Giao dịch đã bị hoàn tác.", ngoaiLe);
+                throw new IllegalStateException("Giao dịch đã bị hoàn tác.", ngoaiLe);
             } finally {
                 ThaoTacSQL.ganKetNoiHienTai(null);
                 ketNoi.setAutoCommit(true);
             }
         } catch (SQLException ngoaiLe) {
-            throw new TruyCapDuLieuException("Không thể kết nối SQL Server.", ngoaiLe);
+            throw new IllegalStateException("Không thể kết nối SQL Server.", ngoaiLe);
         }
     }
 }

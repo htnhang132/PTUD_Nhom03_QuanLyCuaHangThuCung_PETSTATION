@@ -8,8 +8,35 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Properties;
 
-public record CauHinhCSDL(
-        String url, String nguoiDung, String matKhau, int thoiGianChoDangNhapGiay) {
+public final class CauHinhCSDL {
+    private final String url;
+    private final String nguoiDung;
+    private final String matKhau;
+    private final int thoiGianChoDangNhapGiay;
+
+    public CauHinhCSDL(String url, String nguoiDung, String matKhau, int thoiGianChoDangNhapGiay) {
+        this.url = url;
+        this.nguoiDung = nguoiDung;
+        this.matKhau = matKhau;
+        this.thoiGianChoDangNhapGiay = thoiGianChoDangNhapGiay;
+    }
+
+    public String url() {
+        return url;
+    }
+
+    public String nguoiDung() {
+        return nguoiDung;
+    }
+
+    public String matKhau() {
+        return matKhau;
+    }
+
+    public int thoiGianChoDangNhapGiay() {
+        return thoiGianChoDangNhapGiay;
+    }
+
     public static CauHinhCSDL nap() {
         return nap(System.getenv(), Path.of("."));
     }
@@ -32,16 +59,12 @@ public record CauHinhCSDL(
                     cacThuocTinh.load(dauVao);
                 }
         } catch (IOException ngoaiLe) {
-            throw new IllegalStateException("Không thể đọc cấu hình cơ sở dữ liệu.", ngoaiLe);
+            throw new IllegalArgumentException("Không thể đọc cấu hình cơ sở dữ liệu.", ngoaiLe);
         }
-
         String url = layGiaTri(moiTruong, "PETSTATION_DB_URL", cacThuocTinh, "db.url", "");
-
         String nguoiDung = layGiaTri(moiTruong, "PETSTATION_DB_USER", cacThuocTinh, "db.user", "");
-
         String matKhau =
                 layGiaTri(moiTruong, "PETSTATION_DB_PASSWORD", cacThuocTinh, "db.password", "");
-
         int thoiGianCho =
                 Integer.parseInt(
                         layGiaTri(
@@ -50,9 +73,8 @@ public record CauHinhCSDL(
                                 cacThuocTinh,
                                 "db.loginTimeoutSeconds",
                                 "10"));
-
         if (url.isBlank() || nguoiDung.isBlank()) {
-            throw new IllegalStateException(
+            throw new IllegalArgumentException(
                     "Chưa cấu hình SQL Server. Hãy đặt PETSTATION_DB_URL, PETSTATION_DB_USER, "
                             + "PETSTATION_DB_PASSWORD hoặc tạo config/db.properties cục bộ.");
         }
