@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienTai;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
@@ -32,6 +33,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 false,
+                                chiSo("Số nhóm khách", "Tổng số khách", "TB/nhóm"),
                                 thongKeService::layLuotKhach),
                         taoKieuHienThi(
                                 "Lượt dùng voucher trong kỳ",
@@ -39,6 +41,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 0,
                                 2,
                                 false,
+                                chiSo("Số voucher áp dụng", "Tổng lượt dùng", "TB/mã"),
                                 thongKeService::laySuDungVoucher),
                         taoKieuHienThi(
                                 "Chi tiêu theo kỳ",
@@ -46,6 +49,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 1,
                                 4,
                                 true,
+                                chiSo("Số khách hàng", "Tổng chi tiêu", "TB/khách hàng"),
                                 thongKeService::layKhachHang),
                         taoKieuHienTai(
                                 "Sử dụng voucher",
@@ -55,6 +59,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 0,
                                 2,
                                 false,
+                                chiSo("Số mã voucher", "Tổng lượt đã dùng"),
                                 ngayDangXet -> thongKeService.layVoucher())));
     }
 }

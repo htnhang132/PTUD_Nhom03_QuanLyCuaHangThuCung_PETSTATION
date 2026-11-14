@@ -122,13 +122,6 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         loc.themBoLoc(
                 taoNutThanhSoDo(
                         "Xóa bộ lọc", 95, NutDinhDang.KieuNut.TRONG_SUOT, null, e -> xoaBoLoc()));
-        loc.add(
-                taoNutThanhSoDo(
-                        "Làm mới",
-                        90,
-                        NutDinhDang.KieuNut.TRONG_SUOT,
-                        "Đọc lại trạng thái phòng từ SQL Server",
-                        e -> nap()));
         loc.add(taoNutThanhSoDo("In sơ đồ", 90, NutDinhDang.KieuNut.PHU, null, e -> inSoDo()));
         loc.add(
                 taoNutThanhSoDo(

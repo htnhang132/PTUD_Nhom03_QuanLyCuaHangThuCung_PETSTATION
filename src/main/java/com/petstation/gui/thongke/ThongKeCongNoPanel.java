@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienTai;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
@@ -36,6 +37,7 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         1,
                                         4,
                                         true,
+                                        chiSo("Số nhà cung cấp", "Tổng dư nợ"),
                                         thongKeService::layDuNoHienTai)
                                 .chiQuanLy(),
                         taoKieuHienThi(
@@ -50,6 +52,7 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         1,
                                         4,
                                         true,
+                                        chiSo("Số nhà cung cấp", "Tổng dư nợ", "Dư nợ TB/NCC"),
                                         thongKeService::layCongNoNhaCungCap)
                                 .chiQuanLy()),
                 false,
@@ -63,9 +66,9 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
 
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chọn kiểu báo cáo rồi bấm Xem thống kê. Dư nợ hiện tại tổng hợp các phiếu "
-                + "nhập đã ghi nhận. Báo cáo theo kỳ chỉ lọc theo ngày nhập; cột đã trả và "
-                + "dư nợ vẫn là số hiện tại. Nhấp vào cột để xem chứng từ; Xuất Excel xuất "
-                + "toàn bộ bảng đang hiển thị.";
+        return "Chọn kiểu báo cáo hoặc khoảng kỳ để xem số liệu. Dư nợ hiện tại tổng hợp các phiếu"
+                + " nhập đã ghi nhận. Báo cáo theo kỳ chỉ lọc theo ngày nhập; cột đã trả và dư nợ"
+                + " vẫn là số hiện tại. Nhấp vào cột để xem chứng từ; Xuất Excel xuất toàn bộ"
+                + " bảng đang hiển thị.";
     }
 }

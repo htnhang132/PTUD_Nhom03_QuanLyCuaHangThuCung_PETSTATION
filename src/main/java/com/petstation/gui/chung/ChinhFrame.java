@@ -84,7 +84,10 @@ public final class ChinhFrame extends JFrame {
                 GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds());
         setLocationRelativeTo(null);
         khungThanhCongCu =
-                new ThanhCongCuChinh(() -> dieuHuong(MaManHinh.TONG_QUAN), this::diQuayLai);
+                new ThanhCongCuChinh(
+                        () -> dieuHuong(MaManHinh.TONG_QUAN),
+                        this::diQuayLai,
+                        this::lamMoiManHinhHienTai);
         khungThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
         khungThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         khungThanhMenu =
@@ -270,6 +273,14 @@ public final class ChinhFrame extends JFrame {
         setTitle("Pet Station – " + dinhNghia.tieuDe());
     }
 
+    private void lamMoiManHinhHienTai() {
+        if (hienTai == null) return;
+        JPanel khungManHinh = manHinhBoNhoDem.get(hienTai);
+        if (khungManHinh instanceof HoTroThanhCongCu hoTro) {
+            hoTro.xuLyHienThi();
+        }
+    }
+
     private void diQuayLai() {
         while (!lichSu.isEmpty()) {
             MaManHinh truocDo = lichSu.pop();
@@ -284,6 +295,16 @@ public final class ChinhFrame extends JFrame {
 
     private void dangKyCuaSoCacPhimTat() {
         JRootPane goc = getRootPane();
+        dangKyPhimTatDieuHuong(goc);
+        dangKyPhimTatThaoTac(goc);
+        lienKetMenu(goc, KeyEvent.VK_H, 'H');
+        lienKetMenu(goc, KeyEvent.VK_D, 'D');
+        lienKetMenu(goc, KeyEvent.VK_T, 'T');
+        lienKetMenu(goc, KeyEvent.VK_X, 'X');
+        lienKetMenu(goc, KeyEvent.VK_K, 'K');
+    }
+
+    private void dangKyPhimTatDieuHuong(JRootPane goc) {
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_HOME, KeyEvent.ALT_DOWN_MASK),
@@ -324,6 +345,9 @@ public final class ChinhFrame extends JFrame {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
                 "pay",
                 () -> dieuHuong(MaManHinh.THANH_TOAN));
+    }
+
+    private void dangKyPhimTatThaoTac(JRootPane goc) {
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK),
@@ -354,11 +378,11 @@ public final class ChinhFrame extends JFrame {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
                 "help",
                 () -> khungThanhCongCu.kichHoat(ThanhCongCuChinh.ThaoTac.TRO_GIUP));
-        lienKetMenu(goc, KeyEvent.VK_H, 'H');
-        lienKetMenu(goc, KeyEvent.VK_D, 'D');
-        lienKetMenu(goc, KeyEvent.VK_T, 'T');
-        lienKetMenu(goc, KeyEvent.VK_X, 'X');
-        lienKetMenu(goc, KeyEvent.VK_K, 'K');
+        lienKet(
+                goc,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0),
+                "refresh",
+                this::lamMoiManHinhHienTai);
     }
 
     private void lienKetMenu(JRootPane goc, int maKhoa, char phimTruyCap) {

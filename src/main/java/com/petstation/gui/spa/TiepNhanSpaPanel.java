@@ -178,6 +178,11 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         add(tabWorkspace, BorderLayout.CENTER);
     }
 
+    @Override
+    public void xuLyHienThi() {
+        khiChuyenTabSpa();
+    }
+
     private void khiChuyenTabSpa() {
         int idx = tabWorkspace.getSelectedIndex();
         if (idx == 0) lamMoi();
@@ -218,11 +223,8 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         btnMoLai.addActionListener(e -> moLaiPhieuTreoChon());
         NutDinhDang btnXoa = new NutDinhDang("Xóa phiếu treo", NutDinhDang.KieuNut.NGUY_HIEM);
         btnXoa.addActionListener(e -> xoaPhieuTreoChon());
-        NutDinhDang btnLamMoiTreo = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnLamMoiTreo.addActionListener(e -> taiDanhSachPhieuTreo());
         khungThaoTacTreo.add(btnMoLai);
         khungThaoTacTreo.add(btnXoa);
-        khungThaoTacTreo.add(btnLamMoiTreo);
         khungTam.add(khungThaoTacTreo, BorderLayout.NORTH);
         khungTam.add(scr, BorderLayout.CENTER);
         return khungTam;

@@ -93,18 +93,18 @@ public final class ThanhDanhSach extends JPanel {
     private static void chuanHoaKichThuocCon(Component c) {
         if (c instanceof JComboBox<?> cbo) {
             FontMetrics fm = cbo.getFontMetrics(cbo.getFont());
-            int maxW = 96;
+            int maxW = 110;
             for (int i = 0; i < cbo.getItemCount(); i++) {
                 Object item = cbo.getItemAt(i);
                 if (item != null) {
-                    maxW = Math.max(maxW, fm.stringWidth(item.toString()) + 38);
+                    maxW = Math.max(maxW, fm.stringWidth(item.toString()) + 60);
                 }
             }
             Object sel = cbo.getSelectedItem();
             if (sel != null) {
-                maxW = Math.max(maxW, fm.stringWidth(sel.toString()) + 38);
+                maxW = Math.max(maxW, fm.stringWidth(sel.toString()) + 60);
             }
-            int w = Math.min(215, Math.max(96, maxW));
+            int w = Math.min(280, Math.max(110, maxW));
             Dimension cur = cbo.getPreferredSize();
             if (cur == null || cur.width != w || cur.height != CAO_HANG) {
                 cbo.setPreferredSize(new Dimension(w, CAO_HANG));

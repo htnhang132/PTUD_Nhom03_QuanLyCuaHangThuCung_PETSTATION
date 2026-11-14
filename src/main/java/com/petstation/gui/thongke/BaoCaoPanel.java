@@ -150,19 +150,7 @@ public class BaoCaoPanel extends CoSoPanel {
         tools.themBoLoc(cboKy);
         tools.themBoLoc("Xem theo:", cboHienThiHop);
         if (hienBoGop) tools.themBoLoc("Gộp:", cboTongHop);
-        JButton xem = new NutDinhDang("Xem thống kê", NutDinhDang.KieuNut.CHINH);
-        tools.add(xem);
         tools.add(xuat);
-        xem.addActionListener(
-                e -> {
-                    try {
-                        khoangDaApDung =
-                                new KhoangNgay(cboKy.layNgayBatDau(), cboKy.layNgayKetThuc());
-                        dungLai();
-                    } catch (RuntimeException ex) {
-                        HopThoai.hienThiCanhBao(this, ex.getMessage());
-                    }
-                });
         xuat.addActionListener(
                 e ->
                         XuatExcelDialog.xuatBang(
@@ -171,8 +159,7 @@ public class BaoCaoPanel extends CoSoPanel {
                 "dateRange",
                 e -> {
                     try {
-                        apDungKhoangNgayNeuHopLe();
-                        if (khoangDaApDung != null) dungLai();
+                        if (apDungKhoangNgayNeuHopLe()) dungLai();
                     } catch (RuntimeException ex) {
                         LoggerFactory.getLogger(BaoCaoPanel.class)
                                 .debug(
@@ -190,12 +177,16 @@ public class BaoCaoPanel extends CoSoPanel {
         return tools;
     }
 
-    private void apDungKhoangNgayNeuHopLe() {
-        if (cboKy.layNgayBatDau() != null
-                && cboKy.layNgayKetThuc() != null
-                && !cboKy.layNgayBatDau().isAfter(cboKy.layNgayKetThuc())) {
-            khoangDaApDung = new KhoangNgay(cboKy.layNgayBatDau(), cboKy.layNgayKetThuc());
+    private boolean apDungKhoangNgayNeuHopLe() {
+        var tu = cboKy.layNgayBatDau();
+        var den = cboKy.layNgayKetThuc();
+        if (tu == null || den == null) return false;
+        if (tu.isAfter(den)) {
+            nhanKhoang.setText("Khoảng ngày chưa hợp lệ: Từ ngày đang lớn hơn Đến ngày");
+            return false;
         }
+        khoangDaApDung = new KhoangNgay(tu, den);
+        return true;
     }
 
     private JPanel taoPhanDauBaoCao(String tieuDe, String phu, ThanhDanhSach tools) {
@@ -234,8 +225,8 @@ public class BaoCaoPanel extends CoSoPanel {
         JPanel khungTron = taoTheCoVien(new BorderLayout(0, 8));
         khungTron.add(tron, BorderLayout.CENTER);
         JPanel khuVucBieuDo = taoVungTrongSuot(new GridBagLayout());
-        khuVucBieuDo.setMinimumSize(new Dimension(300, 250));
-        khuVucBieuDo.setPreferredSize(new Dimension(760, 270));
+        khuVucBieuDo.setMinimumSize(new Dimension(300, 220));
+        khuVucBieuDo.setPreferredSize(new Dimension(760, 235));
         themCotBieuDo(khuVucBieuDo, khungCot, 0, 0.58, new Insets(0, 0, 0, 5));
         themCotBieuDo(khuVucBieuDo, khungTron, 1, 0.42, new Insets(0, 5, 0, 0));
         return khuVucBieuDo;
@@ -243,10 +234,7 @@ public class BaoCaoPanel extends CoSoPanel {
 
     private JPanel taoTheCoVien(BorderLayout layout) {
         JPanel khungTam = layThe(layout);
-        khungTam.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE),
-                        BorderFactory.createEmptyBorder(10, 12, 10, 12)));
+        khungTam.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
         return khungTam;
     }
 
@@ -262,10 +250,10 @@ public class BaoCaoPanel extends CoSoPanel {
     }
 
     private JScrollPane taoKhungBangDuLieu() {
-        int chieuCao5Dong = bangBang.getRowHeight() * 5;
+        int chieuCao6Dong = bangBang.getRowHeight() * 6;
         int chieuCaoBangToiThieu =
-                chieuCao5Dong + bangBang.getTableHeader().getPreferredSize().height + 6;
-        bangBang.setPreferredScrollableViewportSize(new Dimension(760, chieuCao5Dong));
+                chieuCao6Dong + bangBang.getTableHeader().getPreferredSize().height + 6;
+        bangBang.setPreferredScrollableViewportSize(new Dimension(760, chieuCao6Dong));
         bangBang.getTableHeader().setOpaque(true);
         JScrollPane scrBang =
                 new JScrollPane(
@@ -278,7 +266,7 @@ public class BaoCaoPanel extends CoSoPanel {
         if (scrBang.getColumnHeader() != null)
             scrBang.getColumnHeader().setBackground(MauUngDung.KEM_NEN_NHAN);
         scrBang.setMinimumSize(new Dimension(300, chieuCaoBangToiThieu));
-        scrBang.setPreferredSize(new Dimension(760, chieuCaoBangToiThieu));
+        scrBang.setPreferredSize(new Dimension(760, Math.max(220, chieuCaoBangToiThieu)));
         return scrBang;
     }
 
@@ -396,7 +384,7 @@ public class BaoCaoPanel extends CoSoPanel {
                     if (phienBan != phienTai
                             || PhienDangNhapService.macDinh().layPhienHienTai() != phienDangNhap)
                         return;
-                    nhanKhoang.setText("Không tải được báo cáo; bấm Xem thống kê để thử lại");
+                    nhanKhoang.setText("Không tải được báo cáo; nhấn Làm mới (F5) để thử lại");
                     HopThoai.hienThiCanhBao(BaoCaoPanel.this, TacVuNen.thongDiepLoi(ex));
                 });
     }
@@ -609,7 +597,8 @@ public class BaoCaoPanel extends CoSoPanel {
 
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chọn kỳ rồi bấm Xem thống kê. Gộp ngày/tuần/tháng chỉ thay đổi biểu đồ. Bấm cột"
-                + " hoặc chú giải để xem chi tiết. Xuất Excel giữ đủ bảng đang hiển thị.";
+        return "Chọn kỳ hoặc kiểu xem để tự động tải báo cáo (hoặc nhấn Làm mới / F5). Gộp"
+                + " ngày/tuần/tháng chỉ thay đổi biểu đồ. Bấm cột hoặc chú giải để xem chi tiết."
+                + " Xuất Excel giữ đủ bảng đang hiển thị.";
     }
 }

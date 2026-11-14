@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienTai;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
@@ -35,6 +36,7 @@ public final class ThongKeHotelPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 false,
+                                chiSo("Số trạng thái", "Tổng hợp đồng", "TB/trạng thái"),
                                 thongKeService::layHopDongTrongKy),
                         taoKieuHienThi(
                                 "Cọc nhận trong kỳ",
@@ -42,6 +44,7 @@ public final class ThongKeHotelPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Số ngày nhận cọc", "Tổng tiền cọc", "TB/ngày"),
                                 thongKeService::layCocTrongKy),
                         taoKieuHienTai(
                                 "Trạng thái phòng hiện tại",
@@ -49,6 +52,7 @@ public final class ThongKeHotelPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 false,
+                                chiSo("Số trạng thái", "Tổng số phòng"),
                                 ngayDangXet -> thongKeService.layTrangThaiPhong()),
                         taoKieuHienThi(
                                 "Lưu trú đã quyết toán",
@@ -61,6 +65,7 @@ public final class ThongKeHotelPanel extends BaoCaoPanel {
                                 0,
                                 3,
                                 true,
+                                chiSo("Số loại phòng", "Tổng doanh thu", "TB/loại phòng"),
                                 thongKeService::layDuLieuHotel)));
     }
 }

@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
 import com.petstation.service.thongke.ThongKeService;
@@ -45,6 +46,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Số ngày có thu", "Tổng tiền thu", "TB/ngày"),
                                 thongKeService::layDoanhThuTheoNgay),
                         taoKieuHienThi(
                                 "Theo thanh toán",
@@ -52,6 +54,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "method")),
                         taoKieuHienThi(
                                 "Theo thu ngân",
@@ -59,6 +62,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "staff")),
                         taoKieuHienThi(
                                 "Theo nguồn",
@@ -66,6 +70,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "source")),
                         taoKieuHienThi(
                                 "Theo ca",
@@ -73,6 +78,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng tiền thu", "Giá trị TB/đơn"),
                                 ngayDangXet -> thongKeService.layDoanhThu(ngayDangXet, "shift")),
                         taoKieuHienThi(
                                 "Theo khung giờ",
@@ -80,6 +86,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng doanh thu", "Giá trị TB/đơn"),
                                 thongKeService::layDoanhThuTheoGio),
                         taoKieuHienThi(
                                 "Theo thứ trong tuần",
@@ -87,6 +94,7 @@ public final class ThongKeDoanhThuPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 true,
+                                chiSo("Tổng số đơn", "Tổng doanh thu", "Giá trị TB/đơn"),
                                 thongKeService::layDoanhThuTheoThu)));
     }
 }

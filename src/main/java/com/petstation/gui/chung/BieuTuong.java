@@ -54,6 +54,7 @@ public final class BieuTuong {
             BANH_RANG,
             DONG_HO,
             QUAY_LAI,
+            LAM_MOI,
             CHUONG,
             KHIEN,
             QUA_TANG,
@@ -284,7 +285,7 @@ public final class BieuTuong {
 
         private void veKyHieuHeThong(Graphics2D doHoa) {
             switch (kieu) {
-                case KHOA, TEP, GIOT_NUOC, BANH_RANG, DONG_HO, QUAY_LAI ->
+                case KHOA, TEP, GIOT_NUOC, BANH_RANG, DONG_HO, QUAY_LAI, LAM_MOI ->
                         veKyHieuHeThongCoBan(doHoa);
                 case CHUONG, KHIEN, QUA_TANG, THUNG_RAC, BO_NHO_TAM, KHOA2 ->
                         veKyHieuHeThongBoSung(doHoa);
@@ -335,6 +336,10 @@ public final class BieuTuong {
                     doHoa.draw(layDuongDan(12, 7, 12, 12, 16, 14));
                 }
                 case QUAY_LAI -> doHoa.draw(layDuongDan(15, 5, 8, 12, 15, 19));
+                case LAM_MOI -> {
+                    doHoa.draw(new Arc2D.Double(4.5, 4.5, 15, 15, 30, 285, Arc2D.OPEN));
+                    doHoa.draw(layDuongDan(18.5, 4.3, 18.5, 8.25, 14.6, 7.6));
+                }
                 default -> {}
             }
         }

@@ -1,8 +1,10 @@
 package com.petstation.gui.chung.thanhphan;
 
-import java.awt.BorderLayout;
+import com.petstation.gui.chung.MauUngDung;
+
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.time.LocalDate;
 
 import javax.swing.JComboBox;
@@ -21,7 +23,7 @@ public class BoChonKhoangNgay extends JPanel {
     private JPanel khungTuyChinhNgayVungHienThi;
 
     public BoChonKhoangNgay() {
-        setLayout(new BorderLayout(0, 4));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 6, 0));
         setOpaque(false);
         String[] cacGiaTriCoSan = {
             "Hôm nay",
@@ -36,29 +38,35 @@ public class BoChonKhoangNgay extends JPanel {
             "Tùy chọn..."
         };
         cboGiaTriCoSanHopChon = new JComboBox<>(cacGiaTriCoSan);
-        cboGiaTriCoSanHopChon.setPreferredSize(new Dimension(140, 34));
+        cboGiaTriCoSanHopChon.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        cboGiaTriCoSanHopChon.setPreferredSize(new Dimension(150, 34));
         cboGiaTriCoSanHopChon.addActionListener(suKien -> xuLyGiaTriCoSanThayDoi());
+        JLabel nhanKhoang = taoNhan("Khoảng thời gian:");
+        add(nhanKhoang);
+        add(cboGiaTriCoSanHopChon);
         khungTuyChinhNgayVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         khungTuyChinhNgayVungHienThi.setOpaque(false);
-        khungTuyChinhNgayVungHienThi.add(new JLabel("Từ ngày:"));
+        khungTuyChinhNgayVungHienThi.add(taoNhan("Từ ngày:"));
         khungNgayBatDauBoChon = new BoChonNgay();
-        khungNgayBatDauBoChon.setPreferredSize(new Dimension(135, 34));
+        khungNgayBatDauBoChon.setPreferredSize(new Dimension(136, 34));
         khungTuyChinhNgayVungHienThi.add(khungNgayBatDauBoChon);
-        khungTuyChinhNgayVungHienThi.add(new JLabel("Đến ngày:"));
+        khungTuyChinhNgayVungHienThi.add(taoNhan("Đến ngày:"));
         khungNgayKetThucBoChon = new BoChonNgay();
-        khungNgayKetThucBoChon.setPreferredSize(new Dimension(135, 34));
+        khungNgayKetThucBoChon.setPreferredSize(new Dimension(136, 34));
         khungTuyChinhNgayVungHienThi.add(khungNgayKetThucBoChon);
         khungTuyChinhNgayVungHienThi.setVisible(true);
-        JPanel khungTrenVungHienThi = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        khungTrenVungHienThi.setOpaque(false);
-        khungTrenVungHienThi.add(new JLabel("Khoảng thời gian:"));
-        khungTrenVungHienThi.add(cboGiaTriCoSanHopChon);
-        add(khungTrenVungHienThi, BorderLayout.NORTH);
-        add(khungTuyChinhNgayVungHienThi, BorderLayout.CENTER);
+        add(khungTuyChinhNgayVungHienThi);
         khungNgayBatDauBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
         khungNgayKetThucBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
         cboGiaTriCoSanHopChon.setSelectedIndex(0);
         xuLyGiaTriCoSanThayDoi();
+    }
+
+    private static JLabel taoNhan(String vanBan) {
+        JLabel nhan = new JLabel(vanBan);
+        nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        nhan.setForeground(MauUngDung.VAN_BAN_TOI);
+        return nhan;
     }
 
     private void xuLyGiaTriCoSanThayDoi() {

@@ -15,7 +15,6 @@ import com.petstation.service.hethong.PhienDangNhapService;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -137,22 +136,8 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         khungCacThaoTac = new ThanhDanhSach();
         oTimKiem = taoOTimKiem("Tìm trong danh sách...");
         khungCacThaoTac.add(oTimKiem);
-        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới (F5)", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnLamMoi.setToolTipText("Đọc lại dữ liệu mới từ SQL Server (Phím F5)");
-        btnLamMoi.addActionListener(e -> lamMoiBangAnToan());
-        ((ThanhDanhSach) khungCacThaoTac).themBoLoc(btnLamMoi);
-        ganPhimTat(KeyEvent.VK_F5, this::lamMoiBangAnToan);
         khungTren.add(khungCacThaoTac, BorderLayout.CENTER);
         return khungTren;
-    }
-
-    private void lamMoiBangAnToan() {
-        try {
-            datLaiBoLoc();
-            taiLaiNen();
-        } catch (RuntimeException loi) {
-            HopThoai.hienThiCanhBao(this, loi.getMessage());
-        }
     }
 
     private void dangKyChonDongNghiepVu() {

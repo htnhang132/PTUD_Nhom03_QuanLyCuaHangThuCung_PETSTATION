@@ -74,11 +74,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         nhanBoDem.setForeground(MauUngDung.CAM);
         btnDangChoChi.setOpaque(false);
         btnDangChoChi.addActionListener(suKien -> taiLai());
-        NutDinhDang btnLamMoi = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnLamMoi.addActionListener(suKien -> taiLai());
         khungPhai.add(nhanBoDem);
         khungPhai.add(btnDangChoChi);
-        khungPhai.add(btnLamMoi);
         khungTren.add(khungPhai, BorderLayout.EAST);
         add(khungTren, BorderLayout.NORTH);
         JScrollPane scrCuon = taoBangDinhDang(moHinh);

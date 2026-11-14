@@ -125,9 +125,10 @@ public final class CaThuNganPanel extends CoSoPanel {
         dau.add(nhanDangChoBieuNgu, BorderLayout.SOUTH);
         the.add(dau, BorderLayout.NORTH);
 
-        // Bố cục 2 cột ngang: Trái = Thông tin & Mở ca, Phải = Bảng đếm mệnh giá
-        JPanel noiDung = taoVungTrongSuot(new GridLayout(1, 2, 20, 0));
-        JPanel cotTrai = taoVungTrongSuot(new BorderLayout(0, 12));
+        // Bố cục 2 cột ngang: Trái = Kiểm đếm tiền mặt trong két, Phải = Thông tin & Mở ca
+        JPanel noiDung = taoVungTrongSuot(new BorderLayout(20, 0));
+        JPanel cotPhaiMoCa = taoVungTrongSuot(new BorderLayout(0, 12));
+        cotPhaiMoCa.setPreferredSize(new Dimension(350, 0));
         JPanel form = taoVungTrongSuot(new GridBagLayout());
         GridBagConstraints viTri = new GridBagConstraints();
         viTri.insets = new Insets(6, 4, 6, 4);
@@ -136,26 +137,26 @@ public final class CaThuNganPanel extends CoSoPanel {
         viTri.gridy = 0;
         form.add(new JLabel("Ca làm việc"), viTri);
         viTri.gridx = 1;
-        cboTenCaLamViec.setPreferredSize(new Dimension(240, 36));
+        cboTenCaLamViec.setPreferredSize(new Dimension(220, 36));
         form.add(cboTenCaLamViec, viTri);
         viTri.gridx = 0;
         viTri.gridy = 1;
         form.add(new JLabel("Tiền mặt đầu ca (đ)"), viTri);
         viTri.gridx = 1;
-        oTienDauCa.setPreferredSize(new Dimension(240, 36));
+        oTienDauCa.setPreferredSize(new Dimension(220, 36));
         form.add(oTienDauCa, viTri);
-        cotTrai.add(form, BorderLayout.NORTH);
+        cotPhaiMoCa.add(form, BorderLayout.NORTH);
         JPanel duoi = taoVungTrongSuot(new BorderLayout(0, 8));
         duoi.add(nhanCuoiCungBanGiao, BorderLayout.NORTH);
         duoi.add(nhanMoLoi, BorderLayout.CENTER);
         btnNutMo.setPreferredSize(new Dimension(0, 42));
         btnNutMo.addActionListener(e -> moCaLamViec());
         duoi.add(btnNutMo, BorderLayout.SOUTH);
-        cotTrai.add(duoi, BorderLayout.SOUTH);
-        JPanel cotPhai = taoVungTrongSuot(new BorderLayout(0, 6));
-        cotPhai.add(taoKiemDemTuyChon(khungMoBoDem), BorderLayout.CENTER);
-        noiDung.add(cotTrai);
-        noiDung.add(cotPhai);
+        cotPhaiMoCa.add(duoi, BorderLayout.SOUTH);
+        JPanel cotTraiKiemDem = taoVungTrongSuot(new BorderLayout(0, 6));
+        cotTraiKiemDem.add(taoKiemDemTuyChon(khungMoBoDem), BorderLayout.CENTER);
+        noiDung.add(cotTraiKiemDem, BorderLayout.CENTER);
+        noiDung.add(cotPhaiMoCa, BorderLayout.EAST);
         khungMoBoDem.layKhiThayDoi(
                 () -> oTienDauCa.setText(String.valueOf(khungMoBoDem.tinhTong())));
         khungMoBoDem.layKhiHoanTat(this::moCaLamViec);
@@ -177,8 +178,8 @@ public final class CaThuNganPanel extends CoSoPanel {
         khungCacChiSo.setOpaque(false);
         khungVungDangXet.add(khungCacChiSo, BorderLayout.NORTH);
         JPanel khungGiua = taoVungTrongSuot(new BorderLayout(14, 0));
-        khungGiua.add(taoTheThongTinKetCa(), BorderLayout.WEST);
         khungGiua.add(taoTheKiemDemMenhGia(), BorderLayout.CENTER);
+        khungGiua.add(taoTheThongTinKetCa(), BorderLayout.EAST);
         khungVungDangXet.add(khungGiua, BorderLayout.CENTER);
         return khungVungDangXet;
     }

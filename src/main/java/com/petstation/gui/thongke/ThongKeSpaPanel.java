@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
 import com.petstation.service.thongke.ThongKeService;
@@ -29,6 +30,7 @@ public final class ThongKeSpaPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 false,
+                                chiSo("Số trạng thái", "Tổng số phiếu", "TB/trạng thái"),
                                 thongKeService::layPhieuSpaTheoTrangThai),
                         taoKieuHienThi(
                                 "Dịch vụ đã thanh toán",
@@ -36,6 +38,7 @@ public final class ThongKeSpaPanel extends BaoCaoPanel {
                                 1,
                                 3,
                                 true,
+                                chiSo("Số dịch vụ", "Tổng doanh thu DV", "TB/dịch vụ"),
                                 thongKeService::layDuLieuSpa),
                         taoKieuHienThi(
                                 "Trạng thái lịch hẹn",
@@ -43,6 +46,7 @@ public final class ThongKeSpaPanel extends BaoCaoPanel {
                                 0,
                                 1,
                                 false,
+                                chiSo("Số trạng thái", "Tổng lịch hẹn", "TB/trạng thái"),
                                 thongKeService::layLichHen)));
     }
 }

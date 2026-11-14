@@ -96,12 +96,10 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
 
     private void cauHinhThanhBoLocHoaDon() {
         if (!(layKhungThaoTac() instanceof ThanhDanhSach thanh)) return;
-        Component btnLamMoi = null;
         Component btnXuat = null;
         for (Component c : thanh.getComponents()) {
-            if (c instanceof JButton b) {
-                if (b.getText().startsWith("Làm mới")) btnLamMoi = b;
-                else if ("Xuất Excel".equals(b.getText())) btnXuat = b;
+            if (c instanceof JButton b && "Xuất Excel".equals(b.getText())) {
+                btnXuat = b;
             }
         }
         thanh.removeAll();
@@ -113,7 +111,6 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         thanh.themBoLoc("Đến ngày:", oDenNgay);
         thanh.themBoLoc("Phương thức:", cboPhuongThuc);
         thanh.themBoLoc("Trạng thái:", cboTrangThai);
-        if (btnLamMoi != null) thanh.add(btnLamMoi);
         if (btnXuat != null) thanh.add(btnXuat);
     }
 

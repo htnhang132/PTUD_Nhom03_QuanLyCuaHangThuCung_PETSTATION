@@ -15,6 +15,38 @@ import java.util.function.Function;
 public final class DuLieuBaoCaoService {
     private DuLieuBaoCaoService() {}
 
+    public static final class NhanChiSo {
+        private final String nhanDem;
+        private final String nhanTong;
+        private final String nhanTrungBinh;
+
+        public NhanChiSo(String nhanDem, String nhanTong, String nhanTrungBinh) {
+            this.nhanDem = nhanDem;
+            this.nhanTong = nhanTong;
+            this.nhanTrungBinh = nhanTrungBinh;
+        }
+
+        public String nhanDem() {
+            return nhanDem;
+        }
+
+        public String nhanTong() {
+            return nhanTong;
+        }
+
+        public String nhanTrungBinh() {
+            return nhanTrungBinh;
+        }
+    }
+
+    public static NhanChiSo chiSo(String nhanDem, String nhanTong) {
+        return new NhanChiSo(nhanDem, nhanTong, null);
+    }
+
+    public static NhanChiSo chiSo(String nhanDem, String nhanTong, String nhanTrungBinh) {
+        return new NhanChiSo(nhanDem, nhanTong, nhanTrungBinh);
+    }
+
     // 1. KHỞI TẠO CHẾ ĐỘ XEM THEO KỲ (CÓ LỌC KHOẢNG NGÀY)
 
     public static <T extends HangBaoCao> KieuHienThi taoKieuHienThi(
@@ -24,28 +56,39 @@ public final class DuLieuBaoCaoService {
             int chiSo,
             boolean tienTe,
             Function<KhoangNgay, List<T>> truyVan) {
-        boolean baoCaoCongNo = laBaoCaoCongNo(tieuDe);
-        return new KieuHienThi(
-                tieuDe,
-                khoang ->
-                        xayDungDuLieuBaoCao(
-                                tieuDe,
-                                cacCot,
-                                nhan,
-                                chiSo,
-                                tienTe,
-                                baoCaoCongNo,
-                                truyVan.apply(khoang),
-                                khoang));
+        return taoKieuHienThi(tieuDe, cacCot, nhan, chiSo, tienTe, null, truyVan);
     }
 
-    private static <T extends HangBaoCao> DuLieu xayDungDuLieuBaoCao(
+    public static <T extends HangBaoCao> KieuHienThi taoKieuHienThi(
             String tieuDe,
             String[] cacCot,
             int nhan,
             int chiSo,
             boolean tienTe,
+            NhanChiSo nhanChiSo,
+            Function<KhoangNgay, List<T>> truyVan) {
+        boolean baoCaoCongNo = laBaoCaoCongNo(tieuDe);
+        return new KieuHienThi(
+                tieuDe,
+                khoang ->
+                        xayDungDuLieuBaoCao(
+                                cacCot,
+                                nhan,
+                                chiSo,
+                                tienTe,
+                                baoCaoCongNo,
+                                nhanChiSo,
+                                truyVan.apply(khoang),
+                                khoang));
+    }
+
+    private static <T extends HangBaoCao> DuLieu xayDungDuLieuBaoCao(
+            String[] cacCot,
+            int nhan,
+            int chiSo,
+            boolean tienTe,
             boolean baoCaoCongNo,
+            NhanChiSo nhanChiSo,
             List<T> cacHang,
             KhoangNgay khoang) {
         Object[][] cacDong = new Object[cacHang.size()][];
@@ -79,6 +122,7 @@ public final class DuLieuBaoCaoService {
                 cacCot,
                 cacDong,
                 baoCaoCongNo,
+                nhanChiSo,
                 cotSoDon,
                 tong,
                 tongDon,
@@ -130,12 +174,31 @@ public final class DuLieuBaoCaoService {
             String[] cacCot,
             Object[][] cacDong,
             boolean baoCaoCongNo,
+            NhanChiSo nhanChiSo,
             int cotSoDon,
             double tong,
             long tongDon,
-            int soBanGhi,
+            int soMuc,
             KhoangNgay khoang) {
         double trungBinh = tongDon > 0 ? tong / tongDon : 0;
+        String nhanThe1 =
+                nhanChiSo != null && nhanChiSo.nhanDem() != null
+                        ? nhanChiSo.nhanDem()
+                        : cotSoDon >= 0
+                                ? "Tổng số đơn"
+                                : baoCaoCongNo ? "Số nhà cung cấp" : "Số mục";
+        String nhanThe2 =
+                nhanChiSo != null && nhanChiSo.nhanTong() != null
+                        ? nhanChiSo.nhanTong()
+                        : baoCaoCongNo ? "Tổng dư nợ" : "Tổng giá trị";
+        String nhanThe3 =
+                nhanChiSo != null && nhanChiSo.nhanTrungBinh() != null
+                        ? nhanChiSo.nhanTrungBinh()
+                        : baoCaoCongNo
+                                ? "Dư nợ TB/NCC"
+                                : cotSoDon >= 0
+                                        ? "Giá trị TB/đơn"
+                                        : tienTe ? "Giá trị TB" : "Trung bình";
         return new DuLieu(
                 cacNhan,
                 cacGiaTri,
@@ -143,14 +206,9 @@ public final class DuLieuBaoCaoService {
                 "",
                 cacCot,
                 cacDong,
+                new String[] {nhanThe1, nhanThe2, nhanThe3, "Kỳ báo cáo"},
                 new String[] {
-                    cotSoDon >= 0 ? "Tổng số đơn" : baoCaoCongNo ? "Số nhà cung cấp" : "Số bản ghi",
-                    baoCaoCongNo ? "Tổng dư nợ" : "Tổng giá trị",
-                    baoCaoCongNo ? "Dư nợ TB/NCC" : tienTe ? "Giá trị TB" : "Trung bình",
-                    "Kỳ báo cáo"
-                },
-                new String[] {
-                    "" + (cotSoDon >= 0 ? tongDon : soBanGhi),
+                    "" + (cotSoDon >= 0 ? tongDon : soMuc),
                     tienTe
                             ? DinhDang.dinhDang(Math.round(tong))
                             : String.format(Locale.ROOT, "%.0f", tong),
@@ -170,8 +228,27 @@ public final class DuLieuBaoCaoService {
             int chiSo,
             boolean tienTe,
             Function<KhoangNgay, List<T>> truyVan) {
-        KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, truyVan);
+        return taoKieuHienTai(ten, cot, nhan, chiSo, tienTe, null, truyVan);
+    }
+
+    public static <T extends HangBaoCao> KieuHienThi taoKieuHienTai(
+            String ten,
+            String[] cot,
+            int nhan,
+            int chiSo,
+            boolean tienTe,
+            NhanChiSo nhanChiSo,
+            Function<KhoangNgay, List<T>> truyVan) {
+        KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, nhanChiSo, truyVan);
         boolean baoCaoCongNo = laBaoCaoCongNo(ten);
+        String nhanThe1 =
+                nhanChiSo != null && nhanChiSo.nhanDem() != null
+                        ? nhanChiSo.nhanDem()
+                        : baoCaoCongNo ? "Số nhà cung cấp" : "Số mục";
+        String nhanThe2 =
+                nhanChiSo != null && nhanChiSo.nhanTong() != null
+                        ? nhanChiSo.nhanTong()
+                        : baoCaoCongNo ? "Tổng dư nợ" : "Tổng";
         return new KieuHienThi(
                 ten,
                 khoang -> {
@@ -183,12 +260,7 @@ public final class DuLieuBaoCaoService {
                             d.donVi(),
                             d.cacCot(),
                             d.cacDong(),
-                            new String[] {
-                                baoCaoCongNo ? "Số nhà cung cấp" : "Số bản ghi",
-                                baoCaoCongNo ? "Tổng dư nợ" : "Tổng",
-                                "Phạm vi",
-                                "Thời điểm"
-                            },
+                            new String[] {nhanThe1, nhanThe2, "Phạm vi", "Thời điểm"},
                             new String[] {
                                 d.theCacGiaTri()[0],
                                 d.theCacGiaTri()[1],

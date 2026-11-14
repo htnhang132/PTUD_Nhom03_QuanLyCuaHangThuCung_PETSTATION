@@ -1,5 +1,6 @@
 package com.petstation.gui.thongke;
 
+import static com.petstation.service.thongke.DuLieuBaoCaoService.chiSo;
 import static com.petstation.service.thongke.DuLieuBaoCaoService.taoKieuHienThi;
 
 import com.petstation.service.thongke.ThongKeService;
@@ -40,6 +41,7 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                 0,
                                 5,
                                 true,
+                                chiSo("Số ca thu ngân", "Tổng thu hóa đơn", "TB/ca"),
                                 thongKeService::layTongHopCa),
 
                         // 2. CHẾ ĐỘ XEM: LỊCH LÀM VIỆC & SỐ GIỜ CÔNG NHÂN VIÊN
@@ -49,6 +51,7 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                 1,
                                 4,
                                 false,
+                                chiSo("Số nhân viên", "Tổng số giờ", "TB/nhân viên"),
                                 thongKeService::layNhanVien)));
     }
 }

@@ -86,7 +86,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
                 });
 
         layKhungThaoTac().add(khoangNgay);
-        layKhungThaoTac().add(cboTrangThai);
+        ((ThanhDanhSach) layKhungThaoTac()).themBoLoc("Trạng thái:", cboTrangThai);
 
         ghiNhanBoLoc();
 
