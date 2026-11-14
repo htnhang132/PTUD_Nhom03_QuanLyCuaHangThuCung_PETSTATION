@@ -83,7 +83,7 @@ public class BaoCaoPanel extends CoSoPanel {
     private final BoChonKhoangNgay cboKy = new BoChonKhoangNgay();
     private final JComboBox<String> cboHienThiHop = new JComboBox<>();
     private final JComboBox<String> cboTongHop =
-            new JComboBox<>(new String[] {"Tự động", "Ngày", "Tuần", "Tháng"});
+            new JComboBox<>(new String[] {"Ngày", "Tuần", "Tháng"});
     private final JPanel khungCacThe = new JPanel(new GridLayout(1, 4, 8, 0));
     private final BieuDoCot bieuDo = new BieuDoCot();
     private final BieuDoTron tron = new BieuDoTron();
@@ -149,7 +149,10 @@ public class BaoCaoPanel extends CoSoPanel {
         ThanhDanhSach tools = new ThanhDanhSach();
         tools.themBoLoc(cboKy);
         tools.themBoLoc("Xem theo:", cboHienThiHop);
-        if (hienBoGop) tools.themBoLoc("Gộp:", cboTongHop);
+        if (hienBoGop) {
+            tools.themBoLoc("Biểu đồ:", cboTongHop);
+            if (cboTongHop.getParent() != null) cboTongHop.getParent().setVisible(false);
+        }
         tools.add(xuat);
         xuat.addActionListener(
                 e ->
@@ -394,7 +397,16 @@ public class BaoCaoPanel extends CoSoPanel {
         boolean temporal =
                 duLieu.bieuDoCacNhan().length > 0
                         && duLieu.bieuDoCacNhan()[0].matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*");
-        cboTongHop.setEnabled(temporal);
+        Container nhomTongHop = cboTongHop.getParent();
+        if (nhomTongHop != null) {
+            boolean doiTrangThai = nhomTongHop.isVisible() != temporal;
+            nhomTongHop.setVisible(temporal);
+            cboTongHop.setEnabled(temporal);
+            if (doiTrangThai && nhomTongHop.getParent() != null) {
+                nhomTongHop.getParent().revalidate();
+                nhomTongHop.getParent().repaint();
+            }
+        }
         tongHop =
                 TongHopBieuDo.tao(
                         duLieu.bieuDoCacNhan(),
@@ -597,8 +609,8 @@ public class BaoCaoPanel extends CoSoPanel {
 
     @Override
     protected String layNoiDungTroGiup() {
-        return "Chọn kỳ hoặc kiểu xem để tự động tải báo cáo (hoặc nhấn Làm mới / F5). Gộp"
-                + " ngày/tuần/tháng chỉ thay đổi biểu đồ. Bấm cột hoặc chú giải để xem chi tiết."
-                + " Xuất Excel giữ đủ bảng đang hiển thị.";
+        return "Chọn kỳ hoặc kiểu xem để tự động tải báo cáo (hoặc nhấn Làm mới / F5). Mục Biểu"
+                + " đồ (Ngày/Tuần/Tháng) chỉ hiện khi xem theo thời gian để đổi độ chia cột. Bấm"
+                + " cột hoặc chú giải để xem chi tiết. Xuất Excel giữ đủ bảng đang hiển thị.";
     }
 }

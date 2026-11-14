@@ -47,10 +47,7 @@ public final class TongHopBieuDo {
                 ngay = false;
                 break;
             }
-        String nhom =
-                "Tự động".equals(muc)
-                        ? (ky.demSoNgay() <= 31 ? "Ngày" : ky.demSoNgay() <= 180 ? "Tuần" : "Tháng")
-                        : muc;
+        String nhom = muc == null ? "Ngày" : muc;
         Map<String, Double> tong = new LinkedHashMap<>();
         Map<String, List<Integer>> cacDong = new LinkedHashMap<>();
         if (ngay)
