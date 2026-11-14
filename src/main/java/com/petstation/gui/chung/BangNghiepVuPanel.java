@@ -351,8 +351,15 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         lamMoi();
     }
 
+    @Override
+    public void xuLyLamMoi() {
+        datLaiBoLoc();
+        if (oTimKiem != null && !oTimKiem.getText().isEmpty()) oTimKiem.setText("");
+        lamMoi();
+    }
+
     protected String layNoiDungTroGiup() {
-        return "Chọn dòng trước khi xử lý. Các thay đổi được lưu vào SQL Server; nút Làm mới lấy dữ"
-                + " liệu mới nhất.";
+        return "Chọn dòng trước khi xử lý. Các thay đổi được lưu vào SQL Server; nút Làm mới"
+                + " (F5) đặt lại bộ lọc và tải dữ liệu mới nhất.";
     }
 }

@@ -132,6 +132,8 @@ public class LichTuanPanel extends CoSoPanel {
 
     private int gioLamTrongThangCaNhan;
 
+    private boolean dangDatLaiBoLoc;
+
     private static final class DuLieuTuan {
         final List<Muc> lichTuan;
         final Map<String, Object[]> mapNv;
@@ -237,8 +239,15 @@ public class LichTuanPanel extends CoSoPanel {
             khungTrai.add(nhanLocNV);
             oLocNhanVien.setPreferredSize(new Dimension(160, 34));
             oLocNhanVien.setToolTipText("Lọc theo tên, mã NV hoặc chức vụ");
-            oLocNhanVien.addActionListener(suKien -> dungLai());
-            themBoLangNgheTaiLieu(oLocNhanVien, this::dungLai);
+            oLocNhanVien.addActionListener(
+                    suKien -> {
+                        if (!dangDatLaiBoLoc) dungLai();
+                    });
+            themBoLangNgheTaiLieu(
+                    oLocNhanVien,
+                    () -> {
+                        if (!dangDatLaiBoLoc) dungLai();
+                    });
             khungTrai.add(oLocNhanVien);
         }
         return khungTrai;
@@ -261,6 +270,7 @@ public class LichTuanPanel extends CoSoPanel {
         oTruongNgay.addPropertyChangeListener(
                 "date",
                 suKien -> {
+                    if (dangDatLaiBoLoc) return;
                     LocalDate ngay = oTruongNgay.layNgayDuocChon();
                     if (ngay == null) return;
                     LocalDate tuan = LichLamViecService.macDinh().layThuHaiCuaTuan(ngay);
@@ -1340,6 +1350,21 @@ public class LichTuanPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        dungLai();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        dangDatLaiBoLoc = true;
+        try {
+            btnTatCa.setSelected(true);
+            if (!oLocNhanVien.getText().isEmpty()) oLocNhanVien.setText("");
+            LocalDate homNay = LocalDate.now();
+            thuHai = LichLamViecService.macDinh().layThuHaiCuaTuan(homNay);
+            oTruongNgay.datNgayDuocChon(homNay);
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         dungLai();
     }
 

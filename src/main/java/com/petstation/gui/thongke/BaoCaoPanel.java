@@ -104,6 +104,7 @@ public class BaoCaoPanel extends CoSoPanel {
     private KhoangNgay kyDuLieu = khoangDaApDung;
     private List<int[]> pieDocs;
     private final JButton xuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
+    private boolean dangDatLaiBoLoc;
 
     // 2. KHỞI TẠO BỐ CỤC MÀN HÌNH & GẮN SỰ KIỆN BỘ LỌC
 
@@ -161,6 +162,7 @@ public class BaoCaoPanel extends CoSoPanel {
         cboKy.addPropertyChangeListener(
                 "dateRange",
                 e -> {
+                    if (dangDatLaiBoLoc) return;
                     try {
                         if (apDungKhoangNgayNeuHopLe()) dungLai();
                     } catch (RuntimeException ex) {
@@ -173,10 +175,14 @@ public class BaoCaoPanel extends CoSoPanel {
                 });
         cboHienThiHop.addActionListener(
                 e -> {
+                    if (dangDatLaiBoLoc) return;
                     apDungKhoangNgayNeuHopLe();
                     dungLai();
                 });
-        cboTongHop.addActionListener(e -> veBieuDo());
+        cboTongHop.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) veBieuDo();
+                });
         return tools;
     }
 
@@ -599,6 +605,20 @@ public class BaoCaoPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        dungLai();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        dangDatLaiBoLoc = true;
+        try {
+            cboKy.chonKy("30 ngày qua");
+            if (cboHienThiHop.getItemCount() > 0) cboHienThiHop.setSelectedIndex(0);
+            if (cboTongHop.getItemCount() > 0) cboTongHop.setSelectedIndex(0);
+            apDungKhoangNgayNeuHopLe();
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         dungLai();
     }
 

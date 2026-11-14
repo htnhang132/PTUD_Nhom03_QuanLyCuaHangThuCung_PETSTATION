@@ -48,6 +48,8 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
 
     private DefaultTableModel moHinh;
 
+    private JTextField oTimKiem;
+
     private int luotTai;
 
     private void taiLaiCacKhachHangNen() {
@@ -86,7 +88,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private JPanel taoVungChonKhachHang() {
         JPanel khungChon = new JPanel(new BorderLayout(0, 12));
         khungChon.setOpaque(false);
-        JTextField oTimKiem = taoOTimKiem("Nhập tên, SĐT hoặc mã khách...");
+        oTimKiem = taoOTimKiem("Nhập tên, SĐT hoặc mã khách...");
         btnHienThi.setEnabled(false);
         JPanel khungPhai = new ThanhDanhSach();
         khungPhai.setOpaque(false);
@@ -199,6 +201,12 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         taiLaiCacKhachHangNen();
         cacThe.show(khungGoc, CHON);
         bangBang.clearSelection();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        if (oTimKiem != null && !oTimKiem.getText().isEmpty()) oTimKiem.setText("");
+        xuLyHienThi();
     }
 
     @Override

@@ -186,6 +186,20 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         if (nhanVien != null && cheDo != null) napNhanVien();
     }
 
+    @Override
+    protected void datLaiBoLoc() {
+        dangNap = true;
+        try {
+            layOTimKiem().setText("");
+            if (cheDo.getItemCount() > 0) cheDo.setSelectedIndex(0);
+            ngay.datNgayDuocChon(LocalDate.now());
+            if (nhanVien.getItemCount() > 0) nhanVien.setSelectedIndex(0);
+            if (trangThai.getItemCount() > 0) trangThai.setSelectedIndex(0);
+        } finally {
+            dangNap = false;
+        }
+    }
+
     private void napNhanVien() {
         dangNap = true;
         Object selected = nhanVien.getSelectedItem();

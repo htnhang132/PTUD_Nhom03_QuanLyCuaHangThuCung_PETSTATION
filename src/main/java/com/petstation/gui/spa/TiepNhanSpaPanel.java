@@ -183,6 +183,15 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         khiChuyenTabSpa();
     }
 
+    @Override
+    public void xuLyLamMoi() {
+        int idx = tabWorkspace.getSelectedIndex();
+        if (idx == 0) super.xuLyLamMoi();
+        else if (idx == 1) khungLapPhieu.xuLyLamMoi();
+        else if (idx == 2) khungLichHen.xuLyLamMoi();
+        else if (idx == 3) taiDanhSachPhieuTreo();
+    }
+
     private void khiChuyenTabSpa() {
         int idx = tabWorkspace.getSelectedIndex();
         if (idx == 0) lamMoi();

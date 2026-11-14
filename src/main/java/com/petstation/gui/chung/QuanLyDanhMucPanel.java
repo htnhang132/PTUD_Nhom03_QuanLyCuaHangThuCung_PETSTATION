@@ -1577,6 +1577,13 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     @Override
+    public void xuLyLamMoi() {
+        if (cheDo != CheDo.HIEN_THI) return;
+        datLaiTatCaBoLoc();
+        xuLyHienThi();
+    }
+
+    @Override
     protected String layTieuDeTroGiup() {
         return cauHinh.tieuDe;
     }
@@ -1655,20 +1662,17 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                         if (!dangNapBoLoc) taiLai(hienTai);
                     });
         }
-        NutDinhDang xoa = new NutDinhDang("Xóa lọc", NutDinhDang.KieuNut.TRONG_SUOT);
-        xoa.addActionListener(
-                e -> {
-                    dangNapBoLoc = true;
-                    try {
-                        for (var c : cboCacBoLoc) c.setSelectedIndex(0);
-                        if (cboTrangThai.getItemCount() > 0) cboTrangThai.setSelectedIndex(0);
-                        oTimKiemChung.setText("");
-                    } finally {
-                        dangNapBoLoc = false;
-                    }
-                    taiLai(hienTai);
-                });
-        thanh.themBoLoc(xoa);
+    }
+
+    private void datLaiTatCaBoLoc() {
+        dangNapBoLoc = true;
+        try {
+            for (var c : cboCacBoLoc) if (c.getItemCount() > 0) c.setSelectedIndex(0);
+            if (cboTrangThai.getItemCount() > 0) cboTrangThai.setSelectedIndex(0);
+            oTimKiemChung.setText("");
+        } finally {
+            dangNapBoLoc = false;
+        }
     }
 
     private boolean khopBoLoc(Object[] d) {

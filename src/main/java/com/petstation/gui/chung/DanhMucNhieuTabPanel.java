@@ -67,6 +67,12 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
     }
 
     @Override
+    public void xuLyLamMoi() {
+        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam)
+            giaTriTam.xuLyLamMoi();
+    }
+
+    @Override
     protected String layTieuDeTroGiup() {
         return "Danh mục";
     }

@@ -277,7 +277,7 @@ public final class ChinhFrame extends JFrame {
         if (hienTai == null) return;
         JPanel khungManHinh = manHinhBoNhoDem.get(hienTai);
         if (khungManHinh instanceof HoTroThanhCongCu hoTro) {
-            hoTro.xuLyHienThi();
+            hoTro.xuLyLamMoi();
         }
     }
 

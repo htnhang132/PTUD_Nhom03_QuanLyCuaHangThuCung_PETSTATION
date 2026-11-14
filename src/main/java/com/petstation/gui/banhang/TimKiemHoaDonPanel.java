@@ -68,6 +68,8 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private GioHang.BienLai bienLaiDangChon = null;
     private int luotXemTruoc = 0;
 
+    private boolean dangDatLaiBoLoc;
+
     private static final class DuLieuXemTruoc {
         final GioHang.BienLai bienLai;
         final ChiTietBienLai chiTiet;
@@ -186,10 +188,24 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                                 capNhatXemTruocHoaDon();
                             }
                         });
-        oTuNgay.addPropertyChangeListener("date", e -> apDungBoLocNangCao());
-        oDenNgay.addPropertyChangeListener("date", e -> apDungBoLocNangCao());
-        cboPhuongThuc.addActionListener(e -> apDungBoLocNangCao());
-        cboTrangThai.addActionListener(e -> apDungBoLocNangCao());
+        oTuNgay.addPropertyChangeListener(
+                "date",
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocNangCao();
+                });
+        oDenNgay.addPropertyChangeListener(
+                "date",
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocNangCao();
+                });
+        cboPhuongThuc.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocNangCao();
+                });
+        cboTrangThai.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocNangCao();
+                });
         lienKetBoLoc(layOTimKiem(), layBangDuLieu());
         apDungBoLocNangCao();
     }
@@ -198,16 +214,25 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     protected void lienKetBoLoc(JTextField timKiem, JTable bang) {
         if (Boolean.TRUE.equals(timKiem.getClientProperty("locHoaDon"))) return;
         timKiem.putClientProperty("locHoaDon", true);
-        themBoLangNgheTaiLieu(timKiem, this::apDungBoLocNangCao);
+        themBoLangNgheTaiLieu(
+                timKiem,
+                () -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocNangCao();
+                });
     }
 
     @Override
     protected void datLaiBoLoc() {
-        oTuNgay.datNgayDuocChon(LocalDate.now().minusDays(60));
-        oDenNgay.datNgayDuocChon(LocalDate.now());
-        cboPhuongThuc.setSelectedIndex(0);
-        cboTrangThai.setSelectedIndex(0);
-        layOTimKiem().setText("");
+        dangDatLaiBoLoc = true;
+        try {
+            oTuNgay.datNgayDuocChon(LocalDate.now().minusDays(60));
+            oDenNgay.datNgayDuocChon(LocalDate.now());
+            cboPhuongThuc.setSelectedIndex(0);
+            cboTrangThai.setSelectedIndex(0);
+            layOTimKiem().setText("");
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         apDungBoLocNangCao();
     }
 

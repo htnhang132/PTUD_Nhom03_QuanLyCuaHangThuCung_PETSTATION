@@ -174,6 +174,15 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         }
     }
 
+    @Override
+    public void xuLyLamMoi() {
+        if (tabWorkspace.getSelectedIndex() == 1 && khungSoDoPhong != null) {
+            khungSoDoPhong.xuLyLamMoi();
+        } else {
+            super.xuLyLamMoi();
+        }
+    }
+
     private void chonHopDongTheoMa(String maHopDong) {
         if (maHopDong == null || maHopDong.isBlank()) return;
         for (int i = 0; i < layMoHinh().getRowCount(); i++) {

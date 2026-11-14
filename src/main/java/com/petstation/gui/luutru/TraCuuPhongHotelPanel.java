@@ -119,9 +119,6 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         loc.add(oLoc);
         loc.themBoLoc("Loại:", cboLoai);
         loc.themBoLoc("Trạng thái:", cboTrangThai);
-        loc.themBoLoc(
-                taoNutThanhSoDo(
-                        "Xóa bộ lọc", 95, NutDinhDang.KieuNut.TRONG_SUOT, null, e -> xoaBoLoc()));
         loc.add(taoNutThanhSoDo("In sơ đồ", 90, NutDinhDang.KieuNut.PHU, null, e -> inSoDo()));
         loc.add(
                 taoNutThanhSoDo(
@@ -146,11 +143,15 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         return nut;
     }
 
-    private void xoaBoLoc() {
-        oLoc.setText("");
-        cboLoai.setSelectedIndex(0);
-        cboTrangThai.setSelectedIndex(0);
-        loc();
+    private void datLaiBoLoc() {
+        dangNap = true;
+        try {
+            oLoc.setText("");
+            if (cboLoai.getItemCount() > 0) cboLoai.setSelectedIndex(0);
+            if (cboTrangThai.getItemCount() > 0) cboTrangThai.setSelectedIndex(0);
+        } finally {
+            dangNap = false;
+        }
     }
 
     private JScrollPane taoVungCuonSoDo() {
@@ -181,7 +182,10 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                 e -> {
                     if (!dangNap) loc();
                 });
-        cboTrangThai.addActionListener(e -> loc());
+        cboTrangThai.addActionListener(
+                e -> {
+                    if (!dangNap) loc();
+                });
         cuon.getViewport()
                 .addComponentListener(
                         new ComponentAdapter() {
@@ -231,6 +235,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     }
 
     private void loc() {
+        if (dangNap) return;
         anChiTiet();
         khungPhong.removeAll();
         String tu = oLoc.getText().trim().toLowerCase(Locale.ROOT);
@@ -255,6 +260,12 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        nap();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        datLaiBoLoc();
         nap();
     }
 

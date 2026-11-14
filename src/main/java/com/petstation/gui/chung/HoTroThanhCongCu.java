@@ -18,4 +18,8 @@ public interface HoTroThanhCongCu {
     default void xuLyTroGiup() {}
 
     default void xuLyHienThi() {}
+
+    default void xuLyLamMoi() {
+        xuLyHienThi();
+    }
 }

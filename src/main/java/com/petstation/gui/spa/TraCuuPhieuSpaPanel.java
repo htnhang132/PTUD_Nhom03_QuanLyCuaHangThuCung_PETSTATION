@@ -65,6 +65,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     }
 
     private volatile BoLoc boLoc;
+    private boolean dangDatLaiBoLoc;
 
     public TraCuuPhieuSpaPanel(GioHang gio, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.PHIEU_SPA, gio, dieuHuong);
@@ -75,12 +76,14 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
         khoangNgay.addPropertyChangeListener(
                 "dateRange",
                 e -> {
+                    if (dangDatLaiBoLoc) return;
                     ghiNhanBoLoc();
                     taiLaiNen();
                 });
 
         cboTrangThai.addActionListener(
                 e -> {
+                    if (dangDatLaiBoLoc) return;
                     ghiNhanBoLoc();
                     taiLaiNen();
                 });
@@ -203,12 +206,14 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
 
     @Override
     protected void datLaiBoLoc() {
-        layOTimKiem().setText("");
-        khoangNgay.chonKy("30 ngày qua");
-        cboTrangThai.setSelectedIndex(0);
-        ghiNhanBoLoc();
-        taiLaiNen();
-        revalidate();
-        repaint();
+        dangDatLaiBoLoc = true;
+        try {
+            layOTimKiem().setText("");
+            khoangNgay.chonKy("30 ngày qua");
+            cboTrangThai.setSelectedIndex(0);
+            ghiNhanBoLoc();
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
     }
 }

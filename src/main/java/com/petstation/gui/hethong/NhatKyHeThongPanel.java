@@ -227,8 +227,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     private JPanel taoCumNutLoc() {
         JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         khungTam.setOpaque(false);
-        khungTam.add(
-                taoNutLoc("Xóa bộ lọc", 95, NutDinhDang.KieuNut.TRONG_SUOT, e -> xoaCacBoLoc()));
         khungTam.add(taoNutLoc("Áp dụng", 90, NutDinhDang.KieuNut.CHINH, e -> apDungCacBoLoc()));
         return khungTam;
     }
@@ -446,6 +444,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     @Override
     public void xuLyHienThi() {
         taiLai();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        xoaCacBoLoc();
     }
 
     @Override
