@@ -13,7 +13,7 @@ import com.petstation.service.khachhang.LichSuKhachHangService;
 import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
-import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -240,8 +240,20 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                     btnIn.addActionListener(
                             suKien -> {
                                 try {
-                                    oVanBan.print();
-                                } catch (PrinterException ngoaiLe) {
+                                    PrinterJob job = PrinterJob.getPrinterJob();
+                                    job.setJobName("Hóa đơn " + maHoaDon);
+                                    job.setPrintable(oVanBan.getPrintable(null, null));
+                                    if (!job.printDialog()) return;
+                                    TacVuNen.chay(
+                                            () -> {
+                                                job.print();
+                                                return null;
+                                            },
+                                            v -> {},
+                                            ngoaiLe ->
+                                                    HopThoai.hienThiLoi(
+                                                            this, TacVuNen.thongDiepLoi(ngoaiLe)));
+                                } catch (Exception ngoaiLe) {
                                     HopThoai.hienThiLoi(this, ngoaiLe.getMessage());
                                 }
                             });

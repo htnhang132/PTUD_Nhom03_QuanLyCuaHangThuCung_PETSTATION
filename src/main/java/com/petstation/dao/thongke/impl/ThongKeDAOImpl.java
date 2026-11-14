@@ -599,12 +599,12 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     @Override
     public List<SuDungVoucher> laySuDungVoucher(LocalDate tu, LocalDate denNgay) {
         return truyVanDanhSach(
-                "SELECT v.ma_voucher,k.ho_ten,COUNT(h.ma_hoa_don),SUM(h.giam_gia) FROM"
-                        + " voucher v JOIN khach_hang k ON k.ma_khach_hang=v.ma_khach_hang JOIN"
-                        + " hoa_don h ON h.ma_voucher=v.ma_voucher WHERE"
-                        + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
-                        + " h.thanh_toan_luc<? GROUP BY v.ma_voucher,k.ho_ten ORDER BY"
-                        + " v.ma_voucher",
+                "SELECT v.ma_voucher,COALESCE(k.ho_ten,N'Khách lẻ'),COUNT(h.ma_hoa_don),"
+                        + "SUM(h.giam_gia) FROM voucher v LEFT JOIN khach_hang k ON"
+                        + " k.ma_khach_hang=v.ma_khach_hang JOIN hoa_don h ON"
+                        + " h.ma_voucher=v.ma_voucher WHERE h.trang_thai='DA_THANH_TOAN' AND"
+                        + " h.thanh_toan_luc>=? AND h.thanh_toan_luc<? GROUP BY"
+                        + " v.ma_voucher,COALESCE(k.ho_ten,N'Khách lẻ') ORDER BY v.ma_voucher",
                 r ->
                         new SuDungVoucher(
                                 DuLieu.chuyenThanhChuoi(r[0]),
@@ -678,9 +678,12 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     public List<LichLamViecNhanVien> timNhanVien(LocalDate tu, LocalDate denNgay) {
         return truyVanDanhSach(
                 "SELECT"
-                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu,COALESCE(COUNT(l.ma_ca),0),COALESCE(SUM(DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc)),0)/60.0"
-                    + " FROM nhan_vien n LEFT JOIN lich_lam_viec l ON l.ma_nhan_vien=n.ma_nhan_vien"
-                    + " AND l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY' AND l.ngay_lam>=? AND"
+                    + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu,COALESCE(COUNT(l.ma_ca),0),COALESCE(SUM(CASE"
+                    + " WHEN c.gio_ket_thuc >= c.gio_bat_dau THEN"
+                    + " DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc) ELSE"
+                    + " DATEDIFF(minute,c.gio_bat_dau,c.gio_ket_thuc) + 1440 END),0)/60.0 FROM"
+                    + " nhan_vien n LEFT JOIN lich_lam_viec l ON l.ma_nhan_vien=n.ma_nhan_vien AND"
+                    + " l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY' AND l.ngay_lam>=? AND"
                     + " l.ngay_lam<? LEFT JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca GROUP BY"
                     + " n.ma_nhan_vien,n.ho_ten,n.chuc_vu ORDER BY n.ma_nhan_vien",
                 r ->
@@ -867,9 +870,8 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                                     sqlLo
                                             + " WHERE l.so_luong_ton>0 AND"
                                             + " l.han_su_dung<=DATEADD(day,COALESCE((SELECT"
-                                            + " TRY_CAST(gia_tri AS INT) FROM cai_dat_he_thong"
-                                            + " WHERE"
-                                            + " khoa='SO_NGAY_CANH_BAO_HET_HAN'),30),CAST(GETDATE()"
+                                            + " TRY_CAST(gia_tri AS INT) FROM cai_dat WHERE"
+                                            + " ma_cai_dat='SO_NGAY_CANH_BAO_HET_HAN'),30),CAST(GETDATE()"
                                             + " AS date))")
                             : truyVan(sqlLo),
                     1);

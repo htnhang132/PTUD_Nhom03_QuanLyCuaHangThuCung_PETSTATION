@@ -5,16 +5,27 @@ import static com.petstation.gui.chung.TruongDanhMuc.layTenCacVaiTro;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.model.chung.LoaiDanhMuc;
 import com.petstation.service.chung.DanhMucService;
+import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.SwingUtilities;
+
 public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
     public DanhSachTaiKhoanPanel() {
-        super(taoCauHinh(), taoCacTruong(), DanhMucService.macDinh().layTaiKhoan());
+        super(
+                taoCauHinh(),
+                taoCacTruong(),
+                DanhMucService.macDinh()
+                        .chuanBi(
+                                LoaiDanhMuc.TAI_KHOAN,
+                                !SwingUtilities.isEventDispatchThread()
+                                        || !DieuKienTaiDuLieu.coTheTachLuong()));
     }
 
     private static CauHinh taoCauHinh() {
@@ -38,15 +49,6 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                                         throw new SecurityException(
                                                 "Không thể tự khóa tài khoản đang đăng nhập.");
                                     dongDuLieu[3] = daKhoa ? "Hoạt động" : "Đã khóa";
-                                    TacVuNen.chayCoPhien(
-                                            null,
-                                            () -> true,
-                                            () ->
-                                                    NhatKyHeThongService.macDinh()
-                                                            .ghiNhatKy(
-                                                                    daKhoa ? "Mở khóa" : "Khóa",
-                                                                    "Tài khoản " + tenTk),
-                                            null);
                                     return (daKhoa ? "Đã mở khóa " : "Đã khóa ") + tenTk + ".";
                                 })
                         .themThaoTacBoSung(

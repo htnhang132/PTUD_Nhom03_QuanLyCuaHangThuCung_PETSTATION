@@ -107,8 +107,7 @@ public final class MauUngDung {
                 "đang làm",
                 "đã xác nhận",
                 "đã ghi",
-                "đã áp dụng",
-                "đang làm")) return XANH_LA;
+                "đã áp dụng")) return XANH_LA;
         return VAN_BAN_TOI;
     }
 

@@ -31,7 +31,7 @@ public class NutDinhDang extends JButton {
 
     private Color mauVien;
 
-    private final int banKinh = 8;
+    private final int banKinh = 10;
 
     public NutDinhDang(String vanBan, KieuNut kieu) {
         super(vanBan);
@@ -121,6 +121,6 @@ public class NutDinhDang extends JButton {
     @Override
     public Dimension getPreferredSize() {
         Dimension ngayDangXet = super.getPreferredSize();
-        return new Dimension(ngayDangXet.width + 12, Math.max(ngayDangXet.height, 32));
+        return new Dimension(ngayDangXet.width + 12, Math.max(ngayDangXet.height, 34));
     }
 }

@@ -262,7 +262,7 @@ class ServiceDoiTuongHoaTest {
         List<DongNghiepVu> dong = service.layCacDong(LoaiNghiepVu.GIO_HANG_TREO);
         assertThat(dong).hasSize(1);
         assertThat(dong.get(0).layMa()).isEqualTo("7");
-        assertThat(taiKhoanTruyenVao.get()).isEqualTo("tester");
+        assertThat(taiKhoanTruyenVao.get()).isEqualTo("NV0001");
         assertThat(service.layLuaChonThuCung()).hasSize(1);
     }
 
@@ -337,7 +337,8 @@ class ServiceDoiTuongHoaTest {
                 new NhatKyHeThongService(trong(NhatKyHeThongDAO.class), phienService);
 
         DanhMucService danhMucService = new DanhMucService(danhMucDAO, phienService, nhatKyService);
-        ThuCungService thuCungService = new ThuCungService(thuCungDAO, danhMucService);
+        ThuCungService thuCungService =
+                new ThuCungService(thuCungDAO, danhMucService, phienService);
 
         assertThat(danhMucService.layLuaChonKhachHang()).containsExactly("KH01 - Nguyễn An");
         assertThat(thuCungService.layThuCungHoatDong("TC01").getLoai()).isEqualTo("Chó");

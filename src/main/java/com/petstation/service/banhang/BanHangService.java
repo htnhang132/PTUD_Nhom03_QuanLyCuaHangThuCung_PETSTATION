@@ -484,37 +484,55 @@ public final class BanHangService {
     }
 
     public void huyHoaDon(String maHoaDon) {
-        HoaDon chieuCao =
-                banHangDAO
-                        .timHuyHoaDon(maHoaDon)
-                        .orElseThrow(() -> new IllegalStateException("Hóa đơn đã hủy."));
-        if (doiHangDAO.laHoaDonThayThe(maHoaDon))
-            throw new IllegalArgumentException(
-                    "Không thể hủy hóa đơn gắn với phiếu đổi hàng đã hoàn thành.");
-        if (banHangDAO.demPhieuDoiTraGanHoaDon(maHoaDon) > 0)
-            throw new IllegalArgumentException(
-                    "Hóa đơn có phiếu trả hàng, cần xử lý đổi trả thay vì hủy.");
-        if (banHangDAO.demHuyHoaDon(maHoaDon) > 0 || banHangDAO.demHopDongGanHoaDon(maHoaDon) > 0)
-            throw new IllegalArgumentException(
-                    "Hóa đơn dịch vụ đã hoàn thành không thể hủy trực tiếp.");
-        for (LoHang loHang : banHangDAO.layPhanBoCanHoanTon(chieuCao.getMaHoaDon()))
-            banHangDAO.capNhatHuyHoaDon(loHang.getSoLuongTon(), loHang.getMaLo());
-        String maKhach =
-                chieuCao.getKhachHang() == null ? null : chieuCao.getKhachHang().getMaKhachHang();
-        if (maKhach != null && !maKhach.isBlank()) {
-            long cu = banHangDAO.khoaDiemKhachHang(maKhach),
-                    tiepTheo =
-                            Math.max(
-                                    0,
-                                    cu - chieuCao.getDiemCongSnapshot() + chieuCao.getDiemDung());
-            banHangDAO.hoanDiemKhachHang(tiepTheo, maKhach);
-        }
-        String maVoucher = chuyenThanhChuoi(chieuCao.getMaVoucher());
-        if (!maVoucher.isBlank()) banHangDAO.hoanLuotVoucher(maVoucher);
-        banHangDAO.danhDauHuyHoaDon(maHoaDon);
-        banHangDAO.danhDauHuyDonHang(chieuCao.getMaHoaDon());
-        if (maKhach != null && !maKhach.isBlank()) capNhatHang(maKhach);
-        NhatKyHeThongService.macDinh().ghiNhatKy("Hủy hóa đơn", maHoaDon);
+        PhienDangNhapService.macDinh().yeuCau(Quyen.XU_LY_PHE_DUYET);
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            HoaDon chieuCao =
+                                    banHangDAO
+                                            .timHuyHoaDon(maHoaDon)
+                                            .orElseThrow(
+                                                    () ->
+                                                            new IllegalStateException(
+                                                                    "Hóa đơn đã hủy."));
+                            if (doiHangDAO.laHoaDonThayThe(maHoaDon))
+                                throw new IllegalArgumentException(
+                                        "Không thể hủy hóa đơn gắn với phiếu đổi hàng đã hoàn"
+                                                + " thành.");
+                            if (banHangDAO.demPhieuDoiTraGanHoaDon(maHoaDon) > 0)
+                                throw new IllegalArgumentException(
+                                        "Hóa đơn có phiếu trả hàng, cần xử lý đổi trả thay vì"
+                                                + " hủy.");
+                            if (banHangDAO.demHuyHoaDon(maHoaDon) > 0
+                                    || banHangDAO.demHopDongGanHoaDon(maHoaDon) > 0)
+                                throw new IllegalArgumentException(
+                                        "Hóa đơn dịch vụ đã hoàn thành không thể hủy trực tiếp.");
+                            for (LoHang loHang :
+                                    banHangDAO.layPhanBoCanHoanTon(chieuCao.getMaHoaDon()))
+                                banHangDAO.capNhatHuyHoaDon(
+                                        loHang.getSoLuongTon(), loHang.getMaLo());
+                            String maKhach =
+                                    chieuCao.getKhachHang() == null
+                                            ? null
+                                            : chieuCao.getKhachHang().getMaKhachHang();
+                            if (maKhach != null && !maKhach.isBlank()) {
+                                long cu = banHangDAO.khoaDiemKhachHang(maKhach),
+                                        tiepTheo =
+                                                Math.max(
+                                                        0,
+                                                        cu
+                                                                - chieuCao.getDiemCongSnapshot()
+                                                                + chieuCao.getDiemDung());
+                                banHangDAO.hoanDiemKhachHang(tiepTheo, maKhach);
+                            }
+                            String maVoucher = chuyenThanhChuoi(chieuCao.getMaVoucher());
+                            if (!maVoucher.isBlank()) banHangDAO.hoanLuotVoucher(maVoucher);
+                            banHangDAO.danhDauHuyHoaDon(maHoaDon);
+                            banHangDAO.danhDauHuyDonHang(chieuCao.getMaHoaDon());
+                            if (maKhach != null && !maKhach.isBlank()) capNhatHang(maKhach);
+                            NhatKyHeThongService.macDinh().ghiNhatKy("Hủy hóa đơn", maHoaDon);
+                            return null;
+                        });
     }
 
     public List<Object[]> layCoTheBanCacSanPham() {

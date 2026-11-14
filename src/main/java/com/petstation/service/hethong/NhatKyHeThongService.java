@@ -2,6 +2,7 @@ package com.petstation.service.hethong;
 
 import com.petstation.dao.hethong.NhatKyHeThongDAO;
 import com.petstation.dao.hethong.impl.NhatKyHeThongDAOImpl;
+import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.dto.DongNhatKyHeThong;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.hethong.NhatKyHeThong;
@@ -10,6 +11,7 @@ import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.util.DuLieu;
 
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,9 +86,12 @@ public final class NhatKyHeThongService {
                 doiTuong,
                 kieu,
                 ketQua);
-        for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
-            boLangNghe.khiThayDoi(thaoTac);
-        }
+        QuanLyGiaoDich.sauKhiCommit(
+                () -> {
+                    for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
+                        boLangNghe.khiThayDoi(thaoTac);
+                    }
+                });
     }
 
     private String layKieuCua(String thaoTac) {
@@ -114,9 +119,13 @@ public final class NhatKyHeThongService {
     }
 
     public List<DongNhatKyHeThong> layCacMuc() {
+        return layCacMuc(null, null);
+    }
+
+    public List<DongNhatKyHeThong> layCacMuc(LocalDate tuNgay, LocalDate denNgay) {
         phienService.yeuCau(Quyen.XEM_NHAT_KY);
         List<DongNhatKyHeThong> ketQua = new ArrayList<>();
-        for (DongNhatKyHeThong dongDuLieu : nhatKyHeThongDAO.timCacMuc()) {
+        for (DongNhatKyHeThong dongDuLieu : nhatKyHeThongDAO.timCacMuc(tuNgay, denNgay)) {
             String kieuRaw = dongDuLieu.kieu();
             String kieuChuan =
                     switch (kieuRaw.toUpperCase(Locale.ROOT)) {

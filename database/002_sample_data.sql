@@ -559,14 +559,7 @@ VALUES
     (N'SO_TAI_KHOAN_NGAN_HANG', N'1029384756', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'TEN_CHU_TAI_KHOAN', N'HUYNH TAN NHANG', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'TEN_NGAN_HANG', N'Vietcombank', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'BANK_BIN', N'970436', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'BANK_ACCOUNT', N'1029384756', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'BANK_ACCOUNT_NAME', N'HUYNH TAN NHANG', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'STORE_NAME', N'Pet Station - Hệ thống Chăm sóc Thú cưng Toàn diện', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'STORE_ADDRESS', N'123 Phan Văn Trị, Phường 10, Quận Gò Vấp, TP.HCM', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'STORE_PHONE', N'02838256789', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'SO_NGAY_DOI_TRA', N'3', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'RETURN_WINDOW_DAYS', N'3', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'DIA_CHI_CUA_HANG', N'123 Phan Văn Trị, Phường 10, Quận Gò Vấp, TP.HCM', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'EMAIL_CUA_HANG', N'contact@petstation.vn', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'TEN_CUA_HANG', N'Pet Station - Hệ thống Chăm sóc Thú cưng Toàn diện', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
@@ -669,7 +662,7 @@ INSERT INTO dbo.[yeu_cau_phe_duyet] ([ma_yeu_cau], [loai], [ma_nhan_vien_gui], [
 VALUES
     (N'YC00000001', N'GIA_BAN', N'NV0003', N'DOI_GIA', N'SP000009', N'Đề xuất tăng giá bán vòng cổ da bò do nhà cung cấp tăng giá nhập', N'DA_DUYET', N'NV0001', N'Đồng ý phê duyệt áp dụng giá mới từ tuần tới', DATEADD(day,-5,CAST(@homNay AS datetime2)), DATEADD(day,-4,CAST(@homNay AS datetime2)), N'75,000 đ', N'80,000 đ', N'80000'),
     (N'YC00000002', N'XUAT_HUY', N'NV0003', N'XUAT_HUY', N'PXK00000002', N'Xuất hủy gói thức ăn rách mép trong lúc dỡ hàng pallet', N'DA_DUYET', N'NV0001', N'Đã xác minh hiện trạng hàng lỗi, đồng ý xuất hủy hạch toán chi phí', DATEADD(day,-8,CAST(@homNay AS datetime2)), DATEADD(day,-8,CAST(@homNay AS datetime2)), N'Tồn kho 86 gói', N'Xuất hủy 1 gói (91,000 đ)', N'PXK00000002'),
-    (N'YC00000003', N'DOI_TRA', N'NV0004', N'DOI_TRA', N'DT00000001', N'Khách muốn đổi kích thước vòng cổ Hand in Hand từ S sang M', N'DA_DUYET', N'NV0002', N'Đã kiểm tra hàng còn nguyên tem mác, cho phép đổi phụ kiện', DATEADD(day,-2,CAST(@homNay AS datetime2)), DATEADD(day,-2,CAST(@homNay AS datetime2)), N'HD2610190001 - SP000001', N'Đổi sang SP000002 (+10,000 đ)', N'DT00000001'),
+    (N'YC00000003', N'DOI_TRA', N'NV0004', N'DOI_TRA', N'DT00000001', N'Khách muốn đổi kích thước vòng cổ Hand in Hand từ S sang M', N'DA_DUYET', N'NV0002', N'Đã kiểm tra hàng còn nguyên tem mác, cho phép đổi phụ kiện', DATEADD(day,-2,CAST(@homNay AS datetime2)), DATEADD(day,-2,CAST(@homNay AS datetime2)), N'HD2610190009 - SP000009', N'Đổi sang SP000010 (+10,000 đ)', N'DT00000001'),
     (N'YC00000004', N'SUA_HOA_DON', N'NV0004', N'HUY_HOA_DON', N'HD2610190010', N'Khách báo nhầm số lượng sau khi in hóa đơn', N'TU_CHOI', N'NV0001', N'Khách đã nhận hàng rời quầy, hướng dẫn làm phiếu đổi trả theo quy định', DATEADD(day,-3,CAST(@homNay AS datetime2)), DATEADD(day,-3,CAST(@homNay AS datetime2)), N'HD2610190010 (250,000 đ)', N'Hủy hóa đơn', N''),
     (N'YC00000005', N'GIA_BAN', N'NV0003', N'DOI_GIA', N'SP000042', N'Điều chỉnh giá bán bóng thừng BOBO theo bảng giá mới của nhà cung cấp', N'CHO_DUYET', NULL, NULL, DATEADD(hour,-6,CAST(@homNay AS datetime2)), NULL, N'30,000 đ', N'35,000 đ', N'35000'),
     (N'YC00000006', N'GIA_BAN', N'NV0010', N'DOI_GIA', N'SP000041', N'Đề xuất điều chỉnh giá bóng nhựa gai cao su phát tiếng kêu cho chó', N'CHO_DUYET', NULL, NULL, DATEADD(hour,-5,CAST(@homNay AS datetime2)), NULL, N'25,000 đ', N'30,000 đ', N'30000'),
@@ -807,7 +800,7 @@ VALUES
 -- 30. PHIẾU ĐỔI TRẢ
 INSERT INTO dbo.[phieu_doi_tra] ([ma_phieu], [ma_hoa_don], [ma_nhan_vien], [chenh_lech], [trang_thai], [tao_luc], [ly_do], [loai_phieu], [ma_hoa_don_thay_the], [gia_tri_duoc_doi], [khoa_thao_tac])
 VALUES
-    (N'DT00000001', N'HD2610190001', N'NV0004', 10000.00, N'HOAN_TAT', DATEADD(day,-2,CAST(@homNay AS datetime2)), N'Khách đổi cỡ vòng cổ lớn hơn cho cún cưng', N'DOI_HANG', N'HD2610190002', 75000.00, N'KHOA-DT01');
+    (N'DT00000001', N'HD2610190009', N'NV0004', 10000.00, N'HOAN_TAT', DATEADD(day,-2,CAST(@homNay AS datetime2)), N'Khách đổi cỡ vòng cổ lớn hơn cho cún cưng', N'DOI_HANG', N'HD2610190010', 240000.00, N'KHOA-DT01');
 
 -- 23. HỢP ĐỒNG LƯU TRÚ
 INSERT INTO dbo.[hop_dong_luu_tru] ([ma_hop_dong], [ma_khach_hang], [ma_thu_cung], [ma_phong], [ngay_vao], [ngay_ra_du_kien], [ngay_ra_thuc_te], [tien_coc], [phuong_thuc_coc], [khoa_thu_coc], [trang_thai], [gia_dem], [ghi_chu], [ma_hoa_don], [da_nhan_coc], [nhan_coc_luc], [nhan_coc_boi], [ma_phien_nhan_coc], [coc_yeu_cau], [ly_do_doi_coc])
@@ -840,7 +833,7 @@ VALUES
 -- 31. CHI TIẾT ĐỔI TRẢ
 INSERT INTO dbo.[chi_tiet_doi_tra] ([ma_phieu], [ma_hoa_don], [ma_san_pham], [ma_lo], [so_luong], [tien_hoan])
 VALUES
-    (N'DT00000001', N'HD2610190001', N'SP000001', N'LO00000001', 1, 75000.00);
+    (N'DT00000001', N'HD2610190009', N'SP000009', N'LO00000009', 1, 240000.00);
 
 -- 24. LỊCH SỬ THU CỌC HOTEL
 INSERT INTO dbo.[lich_su_thu_coc_hotel] ([ma_hop_dong], [khoa_thu_coc], [phuong_thuc], [so_tien], [khach_dua], [tien_thua], [ma_phien], [ma_nhan_vien_thu], [tao_luc])

@@ -69,7 +69,7 @@ public final class SanPhamService {
             try {
                 num = Long.parseLong(digits);
             } catch (NumberFormatException ignored) {
-                num = Math.abs(maSp.hashCode() % 1000000000L);
+                num = (maSp.hashCode() & 0x7fffffffL) % 1000000000L;
             }
         }
         String base12 = "893" + String.format(Locale.ROOT, "%09d", num % 1000000000L);

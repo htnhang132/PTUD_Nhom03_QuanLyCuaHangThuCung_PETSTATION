@@ -210,7 +210,19 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                         layTruongVanBan("weight", "Cân nặng thực tế (kg)", ""),
                         layTruongVanBan("note", "Tình trạng / Lưu ý", ""));
         if (giaTri == null) return;
-        double canNang = Double.parseDouble(giaTri.get("weight").replace(',', '.'));
+        double canNang;
+        try {
+            canNang = Double.parseDouble(giaTri.get("weight").trim().replace(',', '.'));
+            if (!Double.isFinite(canNang) || canNang <= 0) {
+                throw new IllegalArgumentException("Cân nặng thực tế phải lớn hơn 0.");
+            }
+        } catch (NumberFormatException ex) {
+            HopThoai.hienThiCanhBao(this, "Cân nặng thực tế phải là số hợp lệ.");
+            return;
+        } catch (RuntimeException ex) {
+            HopThoai.hienThiCanhBao(this, ex.getMessage());
+            return;
+        }
         TacVuNen.chayCoPhien(
                 phien,
                 () -> true,

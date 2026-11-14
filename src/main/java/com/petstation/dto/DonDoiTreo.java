@@ -11,6 +11,7 @@ public final class DonDoiTreo implements Serializable {
     private final String maThayThe;
     private final String timHang;
     private final int soLuong;
+    private final int soLuongMoi;
     private final String lyDo;
     private final boolean nguyenTem;
     private final boolean chuaDung;
@@ -24,17 +25,32 @@ public final class DonDoiTreo implements Serializable {
             String lyDo,
             boolean nguyenTem,
             boolean chuaDung) {
+        this(timHoaDon, dongGoc, maThayThe, timHang, soLuong, soLuong, lyDo, nguyenTem, chuaDung);
+    }
+
+    public DonDoiTreo(
+            String timHoaDon,
+            String dongGoc,
+            String maThayThe,
+            String timHang,
+            int soLuong,
+            int soLuongMoi,
+            String lyDo,
+            boolean nguyenTem,
+            boolean chuaDung) {
         this.timHoaDon = timHoaDon == null ? "" : timHoaDon.trim();
         this.dongGoc = dongGoc == null ? "" : dongGoc.trim();
         this.maThayThe = maThayThe == null ? "" : maThayThe.trim();
         this.timHang = timHang == null ? "" : timHang.trim();
         this.soLuong = soLuong;
+        this.soLuongMoi = soLuongMoi;
         this.lyDo = lyDo == null ? "" : lyDo.trim();
         this.nguyenTem = nguyenTem;
         this.chuaDung = chuaDung;
         if (this.timHoaDon.isBlank())
             throw new IllegalArgumentException("Nhập mã hóa đơn hoặc SĐT trước khi treo đơn đổi.");
-        if (soLuong <= 0) throw new IllegalArgumentException("Thông tin đơn đổi không hợp lệ.");
+        if (soLuong <= 0 || soLuongMoi <= 0)
+            throw new IllegalArgumentException("Thông tin đơn đổi không hợp lệ.");
     }
 
     public String timHoaDon() {
@@ -57,6 +73,10 @@ public final class DonDoiTreo implements Serializable {
         return soLuong;
     }
 
+    public int soLuongMoi() {
+        return soLuongMoi;
+    }
+
     public String lyDo() {
         return lyDo;
     }
@@ -74,6 +94,7 @@ public final class DonDoiTreo implements Serializable {
         if (this == o) return true;
         if (!(o instanceof DonDoiTreo that)) return false;
         return soLuong == that.soLuong
+                && soLuongMoi == that.soLuongMoi
                 && nguyenTem == that.nguyenTem
                 && chuaDung == that.chuaDung
                 && Objects.equals(timHoaDon, that.timHoaDon)
@@ -86,6 +107,14 @@ public final class DonDoiTreo implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(
-                timHoaDon, dongGoc, maThayThe, timHang, soLuong, lyDo, nguyenTem, chuaDung);
+                timHoaDon,
+                dongGoc,
+                maThayThe,
+                timHang,
+                soLuong,
+                soLuongMoi,
+                lyDo,
+                nguyenTem,
+                chuaDung);
     }
 }

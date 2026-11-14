@@ -17,6 +17,12 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class CaThuNganService {
+    private static final CaThuNganService MAC_DINH = new CaThuNganService();
+
+    public static CaThuNganService macDinh() {
+        return MAC_DINH;
+    }
+
     private final PhienLamViecDAO caThuNganDAO;
 
     public CaThuNganService() {

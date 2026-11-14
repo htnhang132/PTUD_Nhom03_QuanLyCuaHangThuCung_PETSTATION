@@ -128,7 +128,13 @@ public final class KiemKeDAOImpl implements KiemKeDAO {
         List<ChiTietKiemKe> ketQua = new ArrayList<>();
         for (Object[] r : rows) {
             ChiTietKiemKe ct = new ChiTietKiemKe();
-            ct.setMaLo(r[0] != null ? r[0].toString() : null);
+            String maLo = r[0] != null ? r[0].toString() : null;
+            if (maLo != null) {
+                LoHang lo = new LoHang();
+                lo.setMaLo(maLo);
+                ct.setLoHang(lo);
+            }
+            ct.setMaLo(maLo);
             ct.setTonHeThong(r[1] != null ? ((Number) r[1]).intValue() : 0);
             ct.setTonThucTe(r[2] != null ? ((Number) r[2]).intValue() : 0);
             ketQua.add(ct);
@@ -139,7 +145,11 @@ public final class KiemKeDAOImpl implements KiemKeDAO {
     @Override
     public int capNhatApDungKiemKe(int tonThucTe, String maLo, int tonHeThong) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton=? WHERE ma_lo = ? AND so_luong_ton=?",
+                "UPDATE lo_hang SET so_luong_ton=?,"
+                        + " trang_thai = CASE WHEN ? <= 0 THEN 'HET_HANG' WHEN"
+                        + " trang_thai='HET_HANG' THEN 'SAN_SANG' ELSE trang_thai END"
+                        + " WHERE ma_lo = ? AND so_luong_ton=?",
+                tonThucTe,
                 tonThucTe,
                 maLo,
                 tonHeThong);

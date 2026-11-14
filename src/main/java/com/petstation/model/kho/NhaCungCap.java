@@ -1,5 +1,7 @@
 package com.petstation.model.kho;
 
+import com.petstation.model.chung.TrangThaiNhaCungCap;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -18,7 +20,7 @@ public class NhaCungCap implements Serializable {
     private String dieuKhoan;
 
     public NhaCungCap() {
-        this.trangThai = "Đang hợp tác";
+        this.trangThai = TrangThaiNhaCungCap.DANG_HOP_TAC.maDB();
     }
 
     public NhaCungCap(String maNhaCungCap) {

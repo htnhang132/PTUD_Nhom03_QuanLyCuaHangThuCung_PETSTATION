@@ -281,7 +281,7 @@ CREATE TABLE dbo.[bien_ban_kiem_ke] (
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
     [ky_kiem_ke] NVARCHAR(150) NOT NULL,
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DANG_KIEM'),
-    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     CONSTRAINT [PK_bien_ban_kiem_ke] PRIMARY KEY CLUSTERED ([ma_bien_ban]),
     CONSTRAINT [CK_bien_ban_kiem_ke_trang_thai] CHECK ([trang_thai] IN ('DANG_KIEM', 'CHO_DUYET', 'DA_DUYET', 'TU_CHOI'))
 );
@@ -314,7 +314,7 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     [loai_doi_tuong] NVARCHAR(60) NULL,
     [ma_doi_tuong] VARCHAR(60) NULL,
     [ghi_chu] NVARCHAR(1000) NULL,
-    [thoi_gian] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [thoi_gian] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [loai_su_kien] VARCHAR(30) NULL,
     [ket_qua] NVARCHAR(100) NULL,
     CONSTRAINT [PK_nhat_ky_he_thong] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
@@ -325,7 +325,7 @@ CREATE TABLE dbo.[phien_lam_viec] (
     [ma_phien] VARCHAR(30) NOT NULL,
     [ma_ca] VARCHAR(20) NULL,
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
-    [mo_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [mo_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [dong_luc] DATETIME2(7) NULL,
     [tien_dau_ca] DECIMAL(18,2) NOT NULL,
     [tien_thuc_te] DECIMAL(18,2) NULL,
@@ -354,7 +354,7 @@ CREATE TABLE dbo.[hoa_don] (
     [diem_cong] INT NOT NULL DEFAULT ((0)),
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('DA_THANH_TOAN'),
     [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
-    [thanh_toan_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [thanh_toan_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [idempotency_key] VARCHAR(80) NULL,
     [tam_tinh] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
     [giam_gia] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
@@ -391,7 +391,7 @@ CREATE TABLE dbo.[phieu_doi_tra] (
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
     [chenh_lech] DECIMAL(18,2) NOT NULL,
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_XU_LY'),
-    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [ly_do] NVARCHAR(1000) NULL,
     [loai_phieu] VARCHAR(20) NOT NULL DEFAULT ('TRA_HANG_CU'),
     [ma_hoa_don_thay_the] VARCHAR(40) NULL,
@@ -452,7 +452,7 @@ CREATE TABLE dbo.[phieu_xuat_kho] (
     [ly_do] NVARCHAR(1000) NOT NULL,
     [tong_gia_tri] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_XUAT'),
-    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     CONSTRAINT [PK_phieu_xuat_kho] PRIMARY KEY CLUSTERED ([ma_phieu_xuat]),
     CONSTRAINT [CK_phieu_xuat_kho_loai] CHECK ([loai_xuat] IN ('XUAT_HUY', 'THANH_LY', 'TRA_NHA_CUNG_CAP', 'SU_DUNG_NOI_BO')),
     CONSTRAINT [CK_phieu_xuat_kho_trang_thai] CHECK ([trang_thai] IN ('CHO_XUAT', 'DA_XUAT', 'TU_CHOI', 'DA_HUY'))
@@ -486,11 +486,22 @@ CREATE TABLE dbo.[thu_cung] (
     [ngay_sinh] DATE NULL,
     [tinh_cach] NVARCHAR(500) NOT NULL DEFAULT (N''),
     [tiem_chung] NVARCHAR(1000) NOT NULL DEFAULT (N''),
-    [so_mui_tiem] INT NOT NULL DEFAULT ((2)),
+    [so_mui_tiem] INT NOT NULL DEFAULT ((0)),
     [ngay_tiem_gan_nhat] DATE NULL,
     CONSTRAINT [PK_thu_cung] PRIMARY KEY CLUSTERED ([ma_thu_cung]),
     CONSTRAINT [CK_thu_cung_1] CHECK ([can_nang]>(0)),
     CONSTRAINT [CK_thu_cung_2] CHECK ([loai] IN (N'Chó', N'Mèo'))
+);
+
+-- 25b. Bảng lịch sử tiêm phòng thú cưng
+CREATE TABLE dbo.[lich_su_tiem_phong] (
+    [ma_tiem_phong] BIGINT IDENTITY(1,1) NOT NULL,
+    [ma_thu_cung] VARCHAR(20) NOT NULL,
+    [ten_vaccine] NVARCHAR(200) NOT NULL,
+    [ngay_tiem] DATE NOT NULL,
+    [ngay_het_han] DATE NULL,
+    [ghi_chu] NVARCHAR(500) NOT NULL DEFAULT (N''),
+    CONSTRAINT [PK_lich_su_tiem_phong] PRIMARY KEY CLUSTERED ([ma_tiem_phong])
 );
 
 -- 26. Bảng hợp đồng lưu trú
@@ -541,7 +552,7 @@ CREATE TABLE dbo.[nhat_ky_cham_soc] (
     [ma_hop_dong] VARCHAR(30) NULL,
     [ma_phieu_spa] VARCHAR(30) NULL,
     [ma_nhan_vien] VARCHAR(20) NOT NULL,
-    [thoi_gian] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [thoi_gian] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [an_uong] NVARCHAR(1000) NULL,
     [tinh_trang] NVARCHAR(1000) NOT NULL,
     [huong_dan_thuoc] NVARCHAR(1000) NULL,
@@ -563,7 +574,7 @@ CREATE TABLE dbo.[phieu_tiep_nhan_spa] (
     [can_nang_thuc_te] DECIMAL(8,2) NOT NULL,
     [tong_tien] DECIMAL(18,2) NOT NULL DEFAULT ((0)),
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('TIEP_NHAN'),
-    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [tao_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [ma_nhan_vien] VARCHAR(20) NULL,
     [ghi_chu] NVARCHAR(1000) NOT NULL DEFAULT (N''),
     [anh] NVARCHAR(500) NULL,
@@ -604,7 +615,7 @@ CREATE TABLE dbo.[yeu_cau_phe_duyet] (
     [trang_thai] VARCHAR(30) NOT NULL DEFAULT ('CHO_DUYET'),
     [ma_nhan_vien_xu_ly] VARCHAR(20) NULL,
     [phan_hoi] NVARCHAR(1000) NULL,
-    [gui_luc] DATETIME2(7) NOT NULL DEFAULT (sysutcdatetime()),
+    [gui_luc] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
     [xu_ly_luc] DATETIME2(7) NULL,
     [noi_dung_truoc] NVARCHAR(MAX) NULL,
     [noi_dung_sau] NVARCHAR(MAX) NULL,
@@ -707,6 +718,7 @@ ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_phi
 ALTER TABLE dbo.[chi_tiet_phieu_xuat] ADD CONSTRAINT [FK_chi_tiet_phieu_xuat_lo_hang] FOREIGN KEY ([ma_lo]) REFERENCES dbo.[lo_hang] ([ma_lo]);
 
 ALTER TABLE dbo.[thu_cung] ADD CONSTRAINT [FK_thu_cung_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
+ALTER TABLE dbo.[lich_su_tiem_phong] ADD CONSTRAINT [FK_lich_su_tiem_phong_thu_cung] FOREIGN KEY ([ma_thu_cung]) REFERENCES dbo.[thu_cung] ([ma_thu_cung]);
 
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_khach_hang] FOREIGN KEY ([ma_khach_hang]) REFERENCES dbo.[khach_hang] ([ma_khach_hang]);
 ALTER TABLE dbo.[hop_dong_luu_tru] ADD CONSTRAINT [FK_hop_dong_luu_tru_thu_cung] FOREIGN KEY ([ma_thu_cung]) REFERENCES dbo.[thu_cung] ([ma_thu_cung]);
@@ -759,6 +771,7 @@ CREATE INDEX [IX_tai_khoan_username_status] ON dbo.[tai_khoan] ([ten_dang_nhap],
 CREATE UNIQUE INDEX [UX_voucher_doi_diem] ON dbo.[voucher] ([khoa_doi_diem]) WHERE ([khoa_doi_diem] IS NOT NULL);
 CREATE INDEX [IX_approval_status] ON dbo.[yeu_cau_phe_duyet] ([trang_thai], [gui_luc]);
 CREATE INDEX [IX_lich_su_thu_coc_hotel_hop_dong] ON dbo.[lich_su_thu_coc_hotel] ([ma_hop_dong], [tao_luc] DESC);
+CREATE INDEX [IX_lich_su_tiem_phong_thu_cung] ON dbo.[lich_su_tiem_phong] ([ma_thu_cung], [ngay_tiem] DESC);
 
 COMMIT TRANSACTION;
 END TRY

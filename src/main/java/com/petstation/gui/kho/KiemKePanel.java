@@ -1,6 +1,7 @@
 package com.petstation.gui.kho;
 
 import com.petstation.dto.GioHang;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
@@ -17,6 +18,7 @@ import com.petstation.service.kho.KiemKeService;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -47,7 +49,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -444,19 +445,16 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         hopChonKiemDemMu.setToolTipText(
                 "Ẩn cột Tồn hệ thống và Chênh lệch để nhân viên đếm khách" + " quan");
         khungHang1.add(hopChonKiemDemMu);
-        JPanel khungHang2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
-        khungHang2.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_TRUNG),
-                        "Quét Barcode sản phẩm nhanh",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Segoe UI", Font.BOLD, 12),
-                        MauUngDung.XAM_TIEU_DE));
+        BoGocPanel khungHang2 = new BoGocPanel(10, Color.WHITE, true);
+        khungHang2.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 6));
+        khungHang2.setBorder(new EmptyBorder(4, 10, 4, 10));
+        JLabel nhanQuetNhanh = new JLabel("Quét Barcode:");
+        nhanQuetNhanh.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanQuetNhanh.setForeground(MauUngDung.NAU);
         oMaVach.setFont(new Font("Consolas", Font.PLAIN, 14));
-        nhanTrangThaiQuetMa.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        nhanTrangThaiQuetMa.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 12));
         nhanTrangThaiQuetMa.setForeground(MauUngDung.XAM_PHU);
-        khungHang2.add(new JLabel("Mã Barcode:"));
+        khungHang2.add(nhanQuetNhanh);
         khungHang2.add(oMaVach);
         khungHang2.add(nhanTrangThaiQuetMa);
         khungDauTrangChinh.add(khungHang1);
@@ -487,9 +485,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
 
     private JTable taoBangKiemKe(DefaultTableModel moHinhWs) {
         JTable bangLamViec = new JTable(moHinhWs);
-        bangLamViec.setRowHeight(28);
-        bangLamViec.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        bangLamViec.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        bangLamViec.setRowHeight(30);
+        bangLamViec.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        bangLamViec.getTableHeader().setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         bangLamViec.getTableHeader().setBackground(MauUngDung.XAM_NEN_NHAT);
         bangLamViec.removeColumn(bangLamViec.getColumnModel().getColumn(0));
         JComboBox<String> cboLyDo =
@@ -552,10 +550,13 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     private JPanel taoChanTrangKiemKe(
             JDialog dlg, JLabel nhanThongKeKhongGian, NutDinhDang btnLuu) {
         JPanel khungChanHopThoai = new JPanel(new BorderLayout(12, 0));
+        khungChanHopThoai.setBackground(MauUngDung.NEN_KEM);
         khungChanHopThoai.setBorder(new EmptyBorder(10, 14, 14, 14));
-        nhanThongKeKhongGian.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        nhanThongKeKhongGian.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        nhanThongKeKhongGian.setForeground(MauUngDung.NAU);
         khungChanHopThoai.add(nhanThongKeKhongGian, BorderLayout.WEST);
         JPanel khungNutChanTrang = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        khungNutChanTrang.setOpaque(false);
         NutDinhDang btnHuy = new NutDinhDang("Hủy bỏ", NutDinhDang.KieuNut.TRONG_SUOT);
         btnHuy.addActionListener(e -> dlg.dispose());
         khungNutChanTrang.add(btnHuy);

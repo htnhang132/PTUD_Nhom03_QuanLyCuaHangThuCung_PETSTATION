@@ -9,6 +9,7 @@ import com.petstation.model.nhansu.NhanVien;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class HopDongLuuTru implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -198,5 +199,23 @@ public class HopDongLuuTru implements Serializable {
 
     public void setTrangThai(TrangThaiHopDong trangThai) {
         this.trangThai = trangThai;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HopDongLuuTru that = (HopDongLuuTru) o;
+        return Objects.equals(maHopDong, that.maHopDong);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maHopDong);
+    }
+
+    @Override
+    public String toString() {
+        return maHopDong != null ? maHopDong : "";
     }
 }

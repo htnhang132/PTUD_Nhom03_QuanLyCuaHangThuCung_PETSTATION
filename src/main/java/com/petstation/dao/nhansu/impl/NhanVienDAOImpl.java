@@ -4,6 +4,7 @@ import com.petstation.dao.nhansu.NhanVienDAO;
 import com.petstation.model.nhansu.NhanVien;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Optional;
@@ -24,13 +25,14 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
                 if (!ketQua.next()) {
                     return Optional.empty();
                 }
+                Date ngayVao = ketQua.getDate("ngay_vao_lam");
                 return Optional.of(
                         new NhanVien(
                                 ketQua.getString("ma_nhan_vien"),
                                 ketQua.getString("ho_ten"),
                                 ketQua.getString("so_dien_thoai"),
                                 ketQua.getString("chuc_vu"),
-                                ketQua.getDate("ngay_vao_lam").toLocalDate(),
+                                ngayVao != null ? ngayVao.toLocalDate() : null,
                                 ketQua.getBoolean("dang_lam_viec"),
                                 ketQua.getString("cccd")));
             }
@@ -52,13 +54,14 @@ public final class NhanVienDAOImpl implements NhanVienDAO {
                 if (!ketQua.next()) {
                     return Optional.empty();
                 }
+                Date ngayVao = ketQua.getDate("ngay_vao_lam");
                 return Optional.of(
                         new NhanVien(
                                 ketQua.getString("ma_nhan_vien"),
                                 ketQua.getString("ho_ten"),
                                 ketQua.getString("so_dien_thoai"),
                                 ketQua.getString("chuc_vu"),
-                                ketQua.getDate("ngay_vao_lam").toLocalDate(),
+                                ngayVao != null ? ngayVao.toLocalDate() : null,
                                 ketQua.getBoolean("dang_lam_viec"),
                                 ketQua.getString("cccd")));
             }

@@ -94,9 +94,7 @@ public final class CaThuNganPanel extends CoSoPanel {
     public CaThuNganPanel(CaThuNganService caLamViec) {
         this.caLamViec = caLamViec;
         setLayout(new BorderLayout(0, 14));
-        JLabel nhanTieuDe = taoTieuDeMuc("Ca thu ngân");
-        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
-        add(nhanTieuDe, BorderLayout.NORTH);
+        add(taoTieuDeManHinh("Ca thu ngân"), BorderLayout.NORTH);
         khungGoc.setOpaque(false);
         khungGoc.add(taoMo(), "MO_CA");
         khungGoc.add(taoDangChay(), "DANG_CHAY");
@@ -104,7 +102,6 @@ public final class CaThuNganPanel extends CoSoPanel {
         scrNoiDung.setBorder(BorderFactory.createEmptyBorder());
         scrNoiDung.getViewport().setBackground(MauUngDung.NEN_KEM);
         add(scrNoiDung, BorderLayout.CENTER);
-        caLamViec.themBoLangNghe(boLangNgheCa);
         lamMoi();
     }
 

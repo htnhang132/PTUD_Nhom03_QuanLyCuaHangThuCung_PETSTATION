@@ -255,7 +255,7 @@ public final class BieuDoTron extends JPanel {
             final int index = i;
             String tenDayDu = nhanHienThi.get(i);
             JButton muc = new JButton(rutGon(tenDayDu));
-            muc.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+            muc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 10));
             muc.setForeground(MauUngDung.mau(0x475569));
             muc.setIcon(new OVuongMau(MAU[i % MAU.length]));
             muc.setHorizontalAlignment(SwingConstants.LEFT);

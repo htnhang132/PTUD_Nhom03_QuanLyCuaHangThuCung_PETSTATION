@@ -316,7 +316,7 @@ public final class DanhMucService {
                 if (String.valueOf(giaTri[chiSo[i]]).length() > gioiHan[i])
                     throw new IllegalArgumentException("Thông tin chi tiết sản phẩm quá dài.");
         }
-        if (phienDangNhapService.layPhien().docVaiTro() == VaiTro.QUAN_LY_CUA_HANG) {
+        if (phienDangNhapService.layPhien().kiemTraCo(Quyen.DUYET_GIA)) {
             phienDangNhapService.yeuCau(Quyen.DUYET_GIA);
         } else {
             Optional<Long> gia = danhMucDAO.layGiaBanSanPham(String.valueOf(giaTri[0]));

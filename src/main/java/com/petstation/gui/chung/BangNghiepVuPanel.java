@@ -132,7 +132,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
     private JPanel taoThanhDauBangNghiepVu(NghiepVuService.DinhNghia hienThi) {
         JPanel khungTren = taoVungTrongSuot(new BorderLayout());
         khungTren.add(
-                ThanhDanhSach.tieuDe(taoTieuDeMuc(hienThi.tieuDe()), nhanSoLuong),
+                ThanhDanhSach.tieuDe(taoTieuDeManHinh(hienThi.tieuDe()), nhanSoLuong),
                 BorderLayout.NORTH);
         khungCacThaoTac = new ThanhDanhSach();
         oTimKiem = taoOTimKiem("Tìm trong danh sách...");

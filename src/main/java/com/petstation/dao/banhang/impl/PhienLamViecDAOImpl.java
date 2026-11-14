@@ -114,7 +114,7 @@ public class PhienLamViecDAOImpl implements PhienLamViecDAO {
         long tong = 0;
         for (Object[] hd : cacHoaDon) {
             if (PhuongThuc.docTuCSDL(String.valueOf(hd[0])) == phuongThucCanTim) {
-                tong += ((Number) hd[1]).longValue();
+                tong += hd[1] != null ? ((Number) hd[1]).longValue() : 0L;
             }
         }
         return tong;

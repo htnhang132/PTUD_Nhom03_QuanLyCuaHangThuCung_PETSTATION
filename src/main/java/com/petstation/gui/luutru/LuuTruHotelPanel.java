@@ -23,6 +23,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.border.EmptyBorder;
 
 // Màn hình: Quản lý lưu trú Hotel (Mã: LUU_TRU_HOTEL)
 // Luồng xử lý: GUI -> LuuTruService, ChamSocService -> HopDongLuuTruDAOImpl -> SQL
@@ -146,8 +147,10 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
         removeAll();
         JPanel khungDanhSach = new JPanel(new BorderLayout(0, 12));
         khungDanhSach.setOpaque(false);
+        khungDanhSach.setBorder(new EmptyBorder(12, 0, 0, 0));
         if (compNorth != null) khungDanhSach.add(compNorth, BorderLayout.NORTH);
         if (compCenter != null) khungDanhSach.add(compCenter, BorderLayout.CENTER);
+        khungSoDoPhong.setBorder(new EmptyBorder(12, 0, 0, 0));
         tabWorkspace.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         tabWorkspace.addTab("Danh sách hợp đồng lưu trú", khungDanhSach);
         tabWorkspace.addTab("Sơ đồ phòng lưu trú", khungSoDoPhong);

@@ -567,7 +567,9 @@ public final class GioHang {
         KhuyenMai totNhat = null;
         long tamTinh = tinhTamTinh();
         for (MucKhuyenMai muc : chinhSach.layKhuyenMai()) {
-            if ("Ngừng áp dụng".equals(muc.getTrangThai())
+            String tt = muc.getTrangThai();
+            if ("Ngừng áp dụng".equalsIgnoreCase(tt)
+                    || "NGUNG_HOAT_DONG".equalsIgnoreCase(tt)
                     || !kiemTraTrongKhoangNgay(muc.getTuNgay(), muc.getDenNgay())) continue;
             if (tamTinh < muc.getDonToiThieu()) continue;
             long coSo = 0;
@@ -577,15 +579,19 @@ public final class GioHang {
                         "SPA".equals(kieuNguon)
                                 || "HOTEL".equals(kieuNguon)
                                 || "LUU_TRU".equals(kieuNguon);
-                if (phamVi.equals("Cả đơn")
-                        || (phamVi.equals("Sản phẩm") && !laDichVu)
-                        || (phamVi.equals("Dịch vụ") && laDichVu)) coSo += dongDangXet.docSoTien();
+                if ("Cả đơn".equals(phamVi)
+                        || "ALL".equalsIgnoreCase(phamVi)
+                        || (("Sản phẩm".equals(phamVi) || "PRODUCT".equalsIgnoreCase(phamVi))
+                                && !laDichVu)
+                        || (("Dịch vụ".equals(phamVi) || "SERVICE".equalsIgnoreCase(phamVi))
+                                && laDichVu)) coSo += dongDangXet.docSoTien();
             }
             long giaTri = muc.getGiaTri();
+            String loai = muc.getLoai() == null ? "" : muc.getLoai();
             long soTien =
-                    switch (muc.getLoai()) {
-                        case "Giảm %" -> tinhPhanTram(coSo, giaTri);
-                        case "Giảm tiền" -> coSo > 0 ? Math.min(giaTri, coSo) : 0;
+                    switch (loai) {
+                        case "Giảm %", "PHAN_TRAM" -> tinhPhanTram(coSo, giaTri);
+                        case "Giảm tiền", "SO_TIEN" -> coSo > 0 ? Math.min(giaTri, coSo) : 0;
                         default -> 0;
                     };
             if (soTien > 0 && (totNhat == null || soTien > totNhat.getSoTien()))
@@ -597,11 +603,21 @@ public final class GioHang {
     private static boolean kiemTraTrongKhoangNgay(String tu, String den) {
         LocalDate homNay = LocalDate.now();
         try {
-            if (LocalDate.parse(String.valueOf(tu), DinhDang.NGAY_CHUAN).isAfter(homNay))
-                return false;
-            return !LocalDate.parse(String.valueOf(den), DinhDang.NGAY_CHUAN).isBefore(homNay);
+            LocalDate ngayTu = parseNgayKhuyenMai(tu);
+            LocalDate ngayDen = parseNgayKhuyenMai(den);
+            if (ngayTu.isAfter(homNay)) return false;
+            return !ngayDen.isBefore(homNay);
         } catch (DateTimeParseException loi) {
             return false;
+        }
+    }
+
+    private static LocalDate parseNgayKhuyenMai(String giaTri) {
+        String text = String.valueOf(giaTri).trim();
+        try {
+            return LocalDate.parse(text, DinhDang.NGAY_CHUAN);
+        } catch (DateTimeParseException ex) {
+            return LocalDate.parse(text, DinhDang.NGAY_ISO);
         }
     }
 

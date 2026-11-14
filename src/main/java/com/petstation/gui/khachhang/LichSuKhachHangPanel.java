@@ -92,9 +92,13 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         khungPhai.setOpaque(false);
         khungPhai.add(oTimKiem);
         khungPhai.add(btnHienThi);
-        JPanel khungThanh = new JPanel(new BorderLayout(10, 0));
+        JPanel khungThanh = new JPanel(new BorderLayout(10, 8));
         khungThanh.setOpaque(false);
-        khungThanh.add(taoTieuDeMuc("Chọn khách hàng cần xem lịch sử"), BorderLayout.NORTH);
+        khungThanh.add(
+                taoTieuDeManHinh(
+                        "Lịch sử khách hàng",
+                        "Chọn khách hàng để xem thú cưng, hóa đơn, spa, lưu trú và voucher"),
+                BorderLayout.NORTH);
         khungThanh.add(khungPhai, BorderLayout.CENTER);
         khungChon.add(khungThanh, BorderLayout.NORTH);
         JScrollPane scrCuon = taoBangKhachHang(oTimKiem);

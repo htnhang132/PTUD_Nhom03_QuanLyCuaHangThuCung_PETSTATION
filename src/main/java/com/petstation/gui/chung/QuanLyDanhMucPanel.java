@@ -365,7 +365,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         JPanel khungTieuDe = new JPanel(new BorderLayout(12, 0));
         khungTieuDe.setOpaque(false);
         khungTieuDe.add(
-                ThanhDanhSach.tieuDe(taoTieuDeMuc(cauHinh.tieuDe), nhanSoKetQua),
+                ThanhDanhSach.tieuDe(taoTieuDeManHinh(cauHinh.tieuDe), nhanSoKetQua),
                 BorderLayout.NORTH);
         khungTieuDe.add(khungCacThaoTac, BorderLayout.CENTER);
         JPanel khungTren = taoVungTrongSuot(new BorderLayout(0, 8));
@@ -401,7 +401,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         lienKetBoLoc(oTimKiem, bangBang);
         oTimKiemChung = oTimKiem;
         oTimKiem.setName("timKiemDanhMuc");
-        oTimKiem.setPreferredSize(new Dimension(205, 32));
+        oTimKiem.setPreferredSize(new Dimension(205, 34));
         bangBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
         NutDinhDang btnThem = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.CHINH);
         btnThem.setEnabled(coTheChinhSua());
@@ -429,6 +429,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     private JSplitPane taoSplitDanhMuc(JScrollPane scrCuon) {
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, taoBieuMau());
         tach.setResizeWeight(1.0);
+        tach.setDividerSize(8);
         tach.setBorder(null);
         tach.setOpaque(false);
         tach.setContinuousLayout(true);
@@ -511,9 +512,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                         khungBieuMau,
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
+        scrKhungCuon.setBorder(BorderFactory.createEmptyBorder());
         scrKhungCuon.getVerticalScrollBar().setUnitIncrement(16);
-        JPanel khungVungChua = new JPanel(new BorderLayout());
+        BoGocPanel khungVungChua = new BoGocPanel(12, Color.WHITE, true);
+        khungVungChua.setLayout(new BorderLayout());
+        khungVungChua.setBorder(new EmptyBorder(4, 4, 4, 4));
         khungVungChua.setPreferredSize(new Dimension(380, 0));
         khungVungChua.setMinimumSize(new Dimension(320, 0));
         khungVungChua.add(scrKhungCuon, BorderLayout.CENTER);
@@ -797,6 +800,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     protected boolean coTheSuaBanGhi(Object[] dong) {
         return true;
+    }
+
+    protected final void capNhatTrangThaiNut() {
+        if (cheDo == CheDo.HIEN_THI) datCheDo(CheDo.HIEN_THI);
     }
 
     private void datCheDo(CheDo moHinhDangXet) {

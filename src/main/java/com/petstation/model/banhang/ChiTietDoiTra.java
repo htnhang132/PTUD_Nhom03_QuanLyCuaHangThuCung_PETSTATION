@@ -28,7 +28,7 @@ public class ChiTietDoiTra implements Serializable {
         setChiTietHoaDon(chiTietHoaDon);
         setLoHang(loHang);
         setSoLuong(soLuong);
-        this.tienHoan = Math.max(0L, tienHoan);
+        setTienHoan(tienHoan);
     }
 
     public PhieuDoiTra getPhieuDoiTra() {
@@ -66,6 +66,11 @@ public class ChiTietDoiTra implements Serializable {
 
     public long getTienHoan() {
         return this.tienHoan;
+    }
+
+    public void setTienHoan(long tienHoan) {
+        if (tienHoan < 0) throw new IllegalArgumentException("Tiền hoàn không được âm.");
+        this.tienHoan = tienHoan;
     }
 
     public long tinhTienHoan() {

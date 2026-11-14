@@ -34,6 +34,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -101,19 +102,24 @@ public final class DatLichSpaDialog {
                         Dialog.ModalityType.APPLICATION_MODAL);
         oTimKhach = new JTextField(12);
         oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
-        oTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oTimKhach.setPreferredSize(new Dimension(140, 32));
+        oTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oTimKhach.setPreferredSize(new Dimension(140, 34));
         cboKhachHang = new JComboBox<>();
+        cboKhachHang.setPreferredSize(new Dimension(220, 34));
         cboThuCung = new JComboBox<>();
+        cboThuCung.setPreferredSize(new Dimension(220, 34));
         cboGoiDichVu = new JComboBox<>();
+        cboGoiDichVu.setPreferredSize(new Dimension(220, 34));
         cboNhanVien = new JComboBox<>();
+        cboNhanVien.setPreferredSize(new Dimension(220, 34));
         oGhiChu = new JTextField();
+        oGhiChu.setPreferredSize(new Dimension(220, 34));
         btnThemKhach = new NutDinhDang("+ Thêm khách", NutDinhDang.KieuNut.PHU);
         btnThemKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        btnThemKhach.setPreferredSize(new Dimension(110, 32));
+        btnThemKhach.setPreferredSize(new Dimension(115, 34));
         btnThemThuCung = new NutDinhDang("+ Thêm thú cưng", NutDinhDang.KieuNut.PHU);
         btnThemThuCung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        btnThemThuCung.setPreferredSize(new Dimension(125, 32));
+        btnThemThuCung.setPreferredSize(new Dimension(130, 34));
         spThoiGian =
                 new BoChonNgayGio(LocalDateTime.now().plusMinutes(30).withSecond(0).withNano(0));
         btnLuu = new NutDinhDang("Đặt lịch hẹn", NutDinhDang.KieuNut.CHINH);
@@ -201,12 +207,17 @@ public final class DatLichSpaDialog {
         JPanel root = new JPanel(new BorderLayout(0, 16));
         root.setBorder(new EmptyBorder(18, 22, 18, 22));
         root.setBackground(MauUngDung.NEN_KEM);
+        JScrollPane scrBieuMau = new JScrollPane(taoBieuMauDatLich());
+        scrBieuMau.setBorder(null);
+        scrBieuMau.setOpaque(false);
+        scrBieuMau.getViewport().setOpaque(false);
+        scrBieuMau.getVerticalScrollBar().setUnitIncrement(16);
         root.add(taoPhanDauHopThoai(), BorderLayout.NORTH);
-        root.add(taoBieuMauDatLich(), BorderLayout.CENTER);
+        root.add(scrBieuMau, BorderLayout.CENTER);
         root.add(taoChanHopThoai(), BorderLayout.SOUTH);
         hopThoai.setContentPane(root);
         hopThoai.pack();
-        hopThoai.setSize(Math.max(hopThoai.getWidth(), 680), 460);
+        hopThoai.setSize(Math.max(hopThoai.getWidth(), 700), 490);
         HopThoai.chuanHoaCuaSo(hopThoai, parent);
     }
 

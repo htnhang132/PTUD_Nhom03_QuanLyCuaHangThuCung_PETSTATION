@@ -492,6 +492,7 @@ public final class LuuTruService {
     }
 
     public long tinhTienLuuTruConLai(String maHopDong) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
         List<HopDongLuuTruDAO.ThongTinThanhToanHotel> cacDong =
                 luuTruDAO.timHotelConPhaiThu(maHopDong);
         if (cacDong.isEmpty())
@@ -499,13 +500,17 @@ public final class LuuTruService {
         HopDongLuuTruDAO.ThongTinThanhToanHotel dongDuLieu = cacDong.get(0);
         LocalDateTime batDau = dongDuLieu.ngayVao;
         LocalDateTime ketThuc = dongDuLieu.ngayRaDuKien;
+        LocalDateTime hienTai = LocalDateTime.now();
+        long ngayO =
+                hienTai.isAfter(ketThuc)
+                        ? tinhSoNgay(batDau, hienTai)
+                        : tinhSoNgay(batDau, ketThuc);
         long tre =
-                LocalDateTime.now().isAfter(ketThuc)
-                        ? tinhSoNgay(ketThuc, LocalDateTime.now())
+                hienTai.isAfter(ketThuc)
+                        ? tinhSoNgay(ketThuc, hienTai)
                                 * CaiDatService.macDinh().layPhiTraPhongTreMoiNgay()
                         : 0;
-        return Math.max(
-                0, tinhSoNgay(batDau, ketThuc) * dongDuLieu.giaDem + tre - dongDuLieu.tienCocDaThu);
+        return Math.max(0, ngayO * dongDuLieu.giaDem + tre - dongDuLieu.tienCocDaThu);
     }
 
     public void hoanTatDonPhong(String maPhong) {

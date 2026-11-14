@@ -580,8 +580,10 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             boolean coGoi = false;
             for (int i = 0; i < cboDichVu.getItemCount(); i++)
                 if (maGoi.equals(cboDichVu.getItemAt(i).giaTri())) coGoi = true;
-            if (!coGoi)
-                throw new IllegalStateException("Dịch vụ của phiếu treo không còn hoạt động.");
+            if (!coGoi) {
+                HopThoai.hienThiCanhBao(this, "Dịch vụ của phiếu treo không còn hoạt động.");
+                return;
+            }
         }
         datLaiForm();
         chonKhach(khach, dsThu, maThu);
@@ -673,8 +675,10 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         String maGoi = chiTiet.getDichVu() != null ? chiTiet.getDichVu().getMaGoi() : "";
         for (int i = 0; i < cboDichVu.getItemCount(); i++)
             if (cboDichVu.getItemAt(i).giaTri().equals(maGoi)) cboDichVu.setSelectedIndex(i);
-        if (cboDichVu.getSelectedItem() == null)
-            throw new IllegalStateException("Dịch vụ của lịch hẹn không còn hoạt động.");
+        if (cboDichVu.getSelectedItem() == null) {
+            HopThoai.hienThiCanhBao(this, "Dịch vụ của lịch hẹn không còn hoạt động.");
+            return;
+        }
         maHen = maHenMoi;
         nhanNguon.setText("Từ lịch hẹn: " + maHen + " — vẫn cần kiểm tra và cân lại tại quầy");
         cboThuCung.setEnabled(false);

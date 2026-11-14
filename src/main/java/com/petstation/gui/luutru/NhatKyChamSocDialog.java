@@ -19,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.print.PrinterJob;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -247,7 +248,16 @@ public final class NhatKyChamSocDialog {
         btnIn.addActionListener(
                 e -> {
                     try {
-                        preview.print();
+                        PrinterJob job = PrinterJob.getPrinterJob();
+                        job.setPrintable(preview.getPrintable(null, null));
+                        if (!job.printDialog()) return;
+                        TacVuNen.chay(
+                                () -> {
+                                    job.print();
+                                    return null;
+                                },
+                                v -> {},
+                                ex -> HopThoai.hienThiCanhBao(dialog, TacVuNen.thongDiepLoi(ex)));
                     } catch (Exception ex) {
                         HopThoai.hienThiCanhBao(dialog, ex.getMessage());
                     }

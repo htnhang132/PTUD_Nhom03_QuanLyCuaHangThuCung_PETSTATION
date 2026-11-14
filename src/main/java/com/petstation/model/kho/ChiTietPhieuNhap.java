@@ -1,6 +1,7 @@
 package com.petstation.model.kho;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class ChiTietPhieuNhap implements Serializable {
@@ -11,6 +12,7 @@ public class ChiTietPhieuNhap implements Serializable {
     private LoHang loHang;
     private int soLuong;
     private long giaNhap;
+    private LocalDate hanSuDung;
 
     public ChiTietPhieuNhap() {
         this.soLuong = 1;
@@ -65,6 +67,14 @@ public class ChiTietPhieuNhap implements Serializable {
     public void setGiaNhap(long giaNhap) {
         if (giaNhap < 0) throw new IllegalArgumentException("Giá nhập không được âm.");
         this.giaNhap = giaNhap;
+    }
+
+    public LocalDate getHanSuDung() {
+        return this.hanSuDung;
+    }
+
+    public void setHanSuDung(LocalDate hanSuDung) {
+        this.hanSuDung = hanSuDung;
     }
 
     public long tinhThanhTien() {

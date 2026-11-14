@@ -126,7 +126,7 @@ public final class ThanhCongCuChinh extends JPanel {
                 };
         btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnNut.setForeground(MauUngDung.VAN_BAN_TOI);
-        btnNut.setToolTipText(nhan + "(" + phimTat + ")");
+        btnNut.setToolTipText(nhan + " (" + phimTat + ")");
         btnNut.setBorder(new EmptyBorder(5, 8, 5, 8));
         btnNut.setFocusPainted(false);
         btnNut.setRolloverEnabled(true);
@@ -151,6 +151,6 @@ public final class ThanhCongCuChinh extends JPanel {
         btnNut.setToolTipText(
                 duocBat
                         ? cacGoiYKhiReChuot.get(thaoTac)
-                        : btnNut.getText() + "– Chức năng chưa khả dụng trên màn hình này");
+                        : btnNut.getText() + " – Chức năng chưa khả dụng trên màn hình này");
     }
 }

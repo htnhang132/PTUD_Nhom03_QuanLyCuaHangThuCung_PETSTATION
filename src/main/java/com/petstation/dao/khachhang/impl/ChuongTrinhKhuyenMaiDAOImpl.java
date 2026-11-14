@@ -16,9 +16,9 @@ public final class ChuongTrinhKhuyenMaiDAOImpl implements ChuongTrinhKhuyenMaiDA
     @Override
     public List<ChuongTrinhKhuyenMai> layTatCa() {
         return truyVanDanhSach(
-                "SELECT ma_khuyen_mai, ten, loai_giam_gia, gia_tri_giam, gia_tri_toi_thieu,"
-                        + " bat_dau_luc, ket_thuc_luc, trang_thai, mo_ta FROM"
-                        + " chuong_trinh_khuyen_mai ORDER BY ma_khuyen_mai ASC",
+                "SELECT ma_chuong_trinh, ten, loai_giam, gia_tri, don_toi_thieu,"
+                        + " bat_dau, ket_thuc, trang_thai, nguon FROM"
+                        + " chuong_trinh_khuyen_mai ORDER BY ma_chuong_trinh ASC",
                 r -> chuyenDong(r));
     }
 
@@ -26,9 +26,9 @@ public final class ChuongTrinhKhuyenMaiDAOImpl implements ChuongTrinhKhuyenMaiDA
     public ChuongTrinhKhuyenMai timTheoMa(String maKhuyenMai) {
         List<Object[]> rows =
                 truyVan(
-                        "SELECT ma_khuyen_mai, ten, loai_giam_gia, gia_tri_giam, gia_tri_toi_thieu,"
-                                + " bat_dau_luc, ket_thuc_luc, trang_thai, mo_ta FROM"
-                                + " chuong_trinh_khuyen_mai WHERE ma_khuyen_mai = ?",
+                        "SELECT ma_chuong_trinh, ten, loai_giam, gia_tri, don_toi_thieu,"
+                                + " bat_dau, ket_thuc, trang_thai, nguon FROM"
+                                + " chuong_trinh_khuyen_mai WHERE ma_chuong_trinh = ?",
                         maKhuyenMai);
         if (rows.isEmpty()) return null;
         return chuyenDong(rows.get(0));
@@ -38,9 +38,9 @@ public final class ChuongTrinhKhuyenMaiDAOImpl implements ChuongTrinhKhuyenMaiDA
     public List<ChuongTrinhKhuyenMai> layDanhSachKhuyenMai() {
         List<Object[]> rows =
                 truyVan(
-                        "SELECT ma_khuyen_mai, ten, loai_giam_gia, gia_tri_giam, bat_dau_luc,"
-                                + " ket_thuc_luc, trang_thai FROM chuong_trinh_khuyen_mai ORDER BY"
-                                + " ma_khuyen_mai ASC");
+                        "SELECT ma_chuong_trinh, ten, loai_giam, gia_tri, bat_dau,"
+                                + " ket_thuc, trang_thai FROM chuong_trinh_khuyen_mai ORDER BY"
+                                + " ma_chuong_trinh ASC");
         List<ChuongTrinhKhuyenMai> ketQua = new ArrayList<>();
         for (Object[] r : rows) {
             ChuongTrinhKhuyenMai k = new ChuongTrinhKhuyenMai();

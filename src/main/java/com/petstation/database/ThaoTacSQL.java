@@ -1,5 +1,6 @@
 package com.petstation.database;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -24,9 +25,37 @@ public final class ThaoTacSQL {
 
     private static KetNoiCSDL csdl;
     private static final ThreadLocal<Connection> HIEN_TAI = new ThreadLocal<>();
+    private static final ThreadLocal<List<Runnable>> SAU_COMMIT = new ThreadLocal<>();
 
     public static boolean dangTrongGiaoDich() {
         return HIEN_TAI.get() != null;
+    }
+
+    static void dangKySauCommit(Runnable tacVu) {
+        if (tacVu == null) return;
+        if (HIEN_TAI.get() == null) {
+            tacVu.run();
+            return;
+        }
+        List<Runnable> ds = SAU_COMMIT.get();
+        if (ds == null) {
+            ds = new ArrayList<>();
+            SAU_COMMIT.set(ds);
+        }
+        ds.add(tacVu);
+    }
+
+    static List<Runnable> layVaXoaSauCommit() {
+        List<Runnable> ds = SAU_COMMIT.get();
+        SAU_COMMIT.remove();
+        return ds;
+    }
+
+    static void chaySauCommit(List<Runnable> ds) {
+        if (ds == null || ds.isEmpty()) return;
+        for (Runnable r : ds) {
+            r.run();
+        }
     }
 
     static Connection layKetNoiHienTai() {
@@ -65,21 +94,26 @@ public final class ThaoTacSQL {
             }
         }
         if (csdl == null) throw new IllegalArgumentException("Chưa cấu hình kết nối SQL Server.");
+        List<Runnable> sauCommit = null;
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
             HIEN_TAI.set(ketNoi);
             try {
                 KieuDuLieu ketQua = lamViec.chay(ketNoi);
                 ketNoi.commit();
+                sauCommit = layVaXoaSauCommit();
                 return ketQua;
             } catch (Exception loi) {
                 ketNoi.rollback();
                 throw taoLoi(loi);
             } finally {
+                SAU_COMMIT.remove();
                 HIEN_TAI.remove();
             }
         } catch (SQLException loi) {
             throw taoLoi(loi);
+        } finally {
+            chaySauCommit(sauCommit);
         }
     }
 
@@ -95,6 +129,24 @@ public final class ThaoTacSQL {
         if (hienTai == null) return thucHienGiaoDich(lamViec);
         try {
             return lamViec.chay(hienTai);
+        } catch (Exception loi) {
+            throw taoLoi(loi);
+        }
+    }
+
+    private static <KieuDuLieu> KieuDuLieu dungKetNoiDoc(CongViec<KieuDuLieu> lamViec) {
+        Connection hienTai = HIEN_TAI.get();
+        if (hienTai != null) {
+            try {
+                return lamViec.chay(hienTai);
+            } catch (Exception loi) {
+                throw taoLoi(loi);
+            }
+        }
+        if (csdl == null) throw new IllegalArgumentException("Chưa cấu hình kết nối SQL Server.");
+        try (Connection ketNoi = csdl.mo()) {
+            ketNoi.setAutoCommit(true);
+            return lamViec.chay(ketNoi);
         } catch (Exception loi) {
             throw taoLoi(loi);
         }
@@ -174,6 +226,13 @@ public final class ThaoTacSQL {
             throws SQLException {
         Object[] doiSoChuanHoa = chuanHoaCacDoiSo(cacDoiSo);
         int soThamSoYeuCau = demSoThamSo(sql);
+        if (doiSoChuanHoa.length < soThamSoYeuCau) {
+            throw new IllegalArgumentException(
+                    "Thiếu tham số SQL: cần "
+                            + soThamSoYeuCau
+                            + " nhưng chỉ truyền "
+                            + doiSoChuanHoa.length);
+        }
         PreparedStatement cauLenh = ketNoi.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         int soLuong =
                 soThamSoYeuCau > 0
@@ -182,16 +241,11 @@ public final class ThaoTacSQL {
         for (int chiSo = 0; chiSo < soLuong; chiSo++) {
             ganThamSo(cauLenh, chiSo + 1, doiSoChuanHoa[chiSo]);
         }
-        if (soThamSoYeuCau > doiSoChuanHoa.length) {
-            for (int chiSo = doiSoChuanHoa.length; chiSo < soThamSoYeuCau; chiSo++) {
-                cauLenh.setObject(chiSo + 1, null);
-            }
-        }
         return cauLenh;
     }
 
     public static List<Object[]> truyVan(String sql, Object... cacDoiSo) {
-        return dungKetNoi(
+        return dungKetNoiDoc(
                 ketNoi -> {
                     try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, cacDoiSo);
                             ResultSet tapKetQua = cauLenh.executeQuery()) {
@@ -231,17 +285,16 @@ public final class ThaoTacSQL {
         return dungKetNoi(
                 ketNoi -> {
                     try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, cacDoiSo)) {
-                        cauLenh.executeUpdate();
+                        int dong = cauLenh.executeUpdate();
                         try (ResultSet cacKhoa = cauLenh.getGeneratedKeys()) {
                             if (cacKhoa.next()) {
-                                return cacKhoa.getLong(1);
+                                BigDecimal khoa = cacKhoa.getBigDecimal(1);
+                                if (khoa != null) {
+                                    return khoa.longValue();
+                                }
                             }
                         }
-                        if (cacDoiSo != null && cacDoiSo.length > 0 && cacDoiSo[0] != null) {
-                            long hash = Math.abs((long) cacDoiSo[0].hashCode());
-                            return hash == 0 ? 1L : hash;
-                        }
-                        return 1L;
+                        return (long) dong;
                     }
                 });
     }

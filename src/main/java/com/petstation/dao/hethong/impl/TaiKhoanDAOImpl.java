@@ -97,23 +97,6 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
                 themQuyenAnToan(cacQuyen, vt.name(), maQuyen);
             }
         }
-        if (cacQuyen.isEmpty()) {
-            String sqlFallback =
-                    """
-                    SELECT vtq.ma_quyen
-                    FROM tai_khoan tk
-                    JOIN quyen_vai_tro vtq ON vtq.vai_tro = tk.vai_tro
-                    WHERE tk.ten_dang_nhap = ?
-                    """;
-            try (PreparedStatement cauLenhFallback = ketNoi.prepareStatement(sqlFallback)) {
-                cauLenhFallback.setString(1, tenDangNhap);
-                try (ResultSet rs = cauLenhFallback.executeQuery()) {
-                    while (rs.next()) {
-                        themQuyenAnToan(cacQuyen, tenDangNhap, rs.getString("ma_quyen"));
-                    }
-                }
-            }
-        }
         return cacQuyen;
     }
 

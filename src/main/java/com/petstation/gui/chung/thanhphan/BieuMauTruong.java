@@ -1,8 +1,11 @@
 package com.petstation.gui.chung.thanhphan;
 
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.MauUngDung;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,6 +18,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 public final class BieuMauTruong {
     public static final class LuaChon {
@@ -93,8 +97,10 @@ public final class BieuMauTruong {
     public static Map<String, String> layYeuCauNhap(
             Component cha, String tieuDe, TruongDuLieu... cacTruong) {
         JPanel khungBieuMau = new JPanel(new GridBagLayout());
+        khungBieuMau.setBackground(MauUngDung.NEN_KEM);
+        khungBieuMau.setBorder(new EmptyBorder(6, 6, 6, 6));
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
-        giaTriDangXet.insets = new Insets(5, 5, 5, 5);
+        giaTriDangXet.insets = new Insets(6, 6, 6, 6);
         giaTriDangXet.fill = GridBagConstraints.HORIZONTAL;
         Map<String, JComponent> cacDauVao = new LinkedHashMap<>();
         for (int chiSo = 0; chiSo < cacTruong.length; chiSo++) {
@@ -102,7 +108,10 @@ public final class BieuMauTruong {
             giaTriDangXet.gridy = chiSo;
             giaTriDangXet.gridx = 0;
             giaTriDangXet.weightx = 0;
-            khungBieuMau.add(new JLabel(truongDangXet.nhan()), giaTriDangXet);
+            JLabel nhan = new JLabel(truongDangXet.nhan());
+            nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+            nhan.setForeground(MauUngDung.NAU);
+            khungBieuMau.add(nhan, giaTriDangXet);
             JComponent dauVao;
             if (truongDangXet.cacLuaChon() == null)
                 dauVao = new JTextField(truongDangXet.banDau(), 28);
@@ -117,6 +126,8 @@ public final class BieuMauTruong {
                 }
                 dauVao = new JComboBox<>(truongDangXet.cacLuaChon().toArray(LuaChon[]::new));
             }
+            dauVao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+            dauVao.setPreferredSize(new Dimension(280, 34));
             if (dauVao instanceof JComboBox<?> cbo && truongDangXet.banDau() != null) {
                 for (int i = 0; i < cbo.getItemCount(); i++)
                     if (cbo.getItemAt(i) instanceof LuaChon chon
@@ -134,11 +145,14 @@ public final class BieuMauTruong {
         Map<String, String> cacGiaTri = new LinkedHashMap<>();
         for (TruongDuLieu truongDangXet : cacTruong) {
             JComponent dauVao = cacDauVao.get(truongDangXet.khoa());
-            cacGiaTri.put(
-                    truongDangXet.khoa(),
-                    dauVao instanceof JTextField oGiaTriTam
-                            ? oGiaTriTam.getText().trim()
-                            : ((LuaChon) ((JComboBox<?>) dauVao).getSelectedItem()).giaTri());
+            String giaTri = "";
+            if (dauVao instanceof JTextField oGiaTriTam) {
+                giaTri = oGiaTriTam.getText().trim();
+            } else if (dauVao instanceof JComboBox<?> cbo
+                    && cbo.getSelectedItem() instanceof LuaChon chon) {
+                giaTri = chon.giaTri();
+            }
+            cacGiaTri.put(truongDangXet.khoa(), giaTri);
         }
         return cacGiaTri;
     }

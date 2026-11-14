@@ -23,7 +23,7 @@ public class PhieuNhapKho implements Serializable {
 
     public PhieuNhapKho() {
         this.ngayNhap = LocalDateTime.now();
-        this.trangThai = TrangThaiPhieuNhap.DA_NHAP.maDB();
+        this.trangThai = TrangThaiPhieuNhap.CHO_NHAP.maDB();
     }
 
     public PhieuNhapKho(String maPhieuNhap) {
@@ -113,6 +113,11 @@ public class PhieuNhapKho implements Serializable {
 
     public long getTongTien() {
         return this.tongTien;
+    }
+
+    public void setTongTien(long tongTien) {
+        if (tongTien < 0) throw new IllegalArgumentException("Tổng tiền nhập kho không được âm.");
+        this.tongTien = tongTien;
     }
 
     public long tinhTongTien() {

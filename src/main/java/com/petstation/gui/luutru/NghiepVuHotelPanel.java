@@ -263,7 +263,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 + "):",
                         String.valueOf(thieu));
         if (input == null) return;
-        long so = phanTichSoTienCoc(input, thieu);
+        long so;
+        try {
+            so = phanTichSoTienCoc(input, thieu);
+        } catch (RuntimeException ex) {
+            HopThoai.hienThiCanhBao(this, ex.getMessage());
+            return;
+        }
         String khoa = "COC" + UUID.randomUUID().toString().replace("-", "").substring(0, 22);
         var thu = ThuTienDialog.nhap(this, so, maHopDong);
         if (thu == null) return;

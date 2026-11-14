@@ -18,6 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import javax.swing.SwingUtilities;
+
 public final class BarcodeUsbServer implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(BarcodeUsbServer.class);
     public static final int DEFAULT_PORT = 8765;
@@ -110,7 +112,7 @@ public final class BarcodeUsbServer implements AutoCloseable {
                         "{\"ok\":false,\"message\":\"Barcode must be a valid EAN-13\"}");
                 return;
             }
-            onBarcode.accept(barcode);
+            SwingUtilities.invokeLater(() -> onBarcode.accept(barcode));
             send(exchange, 202, "{\"ok\":true,\"barcode\":\"" + barcode + "\"}");
         } catch (RuntimeException exception) {
             LOG.warn("Lỗi xử lý mã vạch từ máy quét USB.", exception);

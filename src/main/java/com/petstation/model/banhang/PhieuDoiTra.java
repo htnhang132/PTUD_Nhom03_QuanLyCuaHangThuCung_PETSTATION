@@ -23,7 +23,7 @@ public class PhieuDoiTra implements Serializable {
     private long chenhLech;
 
     public PhieuDoiTra() {
-        this.trangThai = TrangThaiPhieuDoiTra.HOAN_TAT.maDB();
+        this.trangThai = TrangThaiPhieuDoiTra.CHO_XU_LY.maDB();
         this.taoLuc = LocalDateTime.now();
     }
 

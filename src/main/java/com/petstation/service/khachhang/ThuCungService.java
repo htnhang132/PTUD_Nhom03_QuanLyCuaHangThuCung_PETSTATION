@@ -21,19 +21,28 @@ public final class ThuCungService {
 
     private final ThuCungDAO thuCungDAO;
     private final DanhMucService danhMucService;
+    private final PhienDangNhapService phienService;
 
     public ThuCungService() {
-        this(new ThuCungDAOImpl(), DanhMucService.macDinh());
+        this(new ThuCungDAOImpl(), DanhMucService.macDinh(), PhienDangNhapService.macDinh());
     }
 
     public ThuCungService(ThuCungDAO thuCungDAO) {
-        this(thuCungDAO, DanhMucService.macDinh());
+        this(thuCungDAO, DanhMucService.macDinh(), PhienDangNhapService.macDinh());
     }
 
     public ThuCungService(ThuCungDAO thuCungDAO, DanhMucService danhMucService) {
+        this(thuCungDAO, danhMucService, PhienDangNhapService.macDinh());
+    }
+
+    public ThuCungService(
+            ThuCungDAO thuCungDAO,
+            DanhMucService danhMucService,
+            PhienDangNhapService phienService) {
         this.thuCungDAO = Objects.requireNonNull(thuCungDAO, "thuCungDAO không được null");
         this.danhMucService =
                 Objects.requireNonNull(danhMucService, "danhMucService không được null");
+        this.phienService = Objects.requireNonNull(phienService, "phienService không được null");
     }
 
     public CacDong chuanBi(boolean docNgay) {
@@ -45,11 +54,12 @@ public final class ThuCungService {
     }
 
     public List<ThuCung> layDanhSachThuCung() {
-        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_THU_CUNG);
+        phienService.yeuCau(Quyen.QUAN_LY_THU_CUNG);
         return thuCungDAO.layDanhSachThuCung();
     }
 
     public ThuCung layThuCungHoatDong(String ma) {
+        phienService.yeuCauHienTai();
         ThuCung thu = thuCungDAO.timThuCungHoatDong(ma);
         if (thu == null) {
             throw new IllegalStateException("Thú cưng hoặc chủ nuôi không còn hoạt động.");

@@ -35,7 +35,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.List;
 import java.util.Locale;
@@ -107,7 +106,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
     private JPanel taoPhanDauSoDo() {
         JPanel dau = taoVungTrongSuot(new BorderLayout(0, 12));
         dau.add(
-                ThanhDanhSach.tieuDe(taoTieuDeMuc("Sơ đồ phòng lưu trú"), nhanKetQua),
+                ThanhDanhSach.tieuDe(taoTieuDeManHinh("Sơ đồ phòng lưu trú"), nhanKetQua),
                 BorderLayout.NORTH);
         ThanhDanhSach loc = new ThanhDanhSach();
         oLoc.setName("timPhong");
@@ -568,11 +567,14 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                     g2.dispose();
                     return Printable.PAGE_EXISTS;
                 });
-        if (congViec.printDialog())
-            try {
-                congViec.print();
-            } catch (PrinterException loi) {
-                HopThoai.hienThiLoi(this, loi.getMessage());
-            }
+        if (congViec.printDialog()) {
+            TacVuNen.chay(
+                    () -> {
+                        congViec.print();
+                        return null;
+                    },
+                    v -> {},
+                    loi -> HopThoai.hienThiLoi(this, TacVuNen.thongDiepLoi(loi)));
+        }
     }
 }

@@ -1,9 +1,13 @@
 package com.petstation.gui.chung;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -36,6 +40,37 @@ public final class HopThoai {
         UIManager.put("OptionPane.yesButtonText", "Có");
         UIManager.put("OptionPane.noButtonText", "Không");
         UIManager.put("OptionPane.titleText", TIEU_DE_THONG_TIN);
+        UIManager.put("OptionPane.background", MauUngDung.NEN_KEM);
+        UIManager.put("Panel.background", MauUngDung.NEN_KEM);
+        UIManager.put("defaultFont", MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        UIManager.put("Button.arc", 10);
+        UIManager.put("Component.arc", 10);
+        UIManager.put("TextComponent.arc", 10);
+        UIManager.put("CheckBox.arc", 6);
+        UIManager.put("Component.focusWidth", 1);
+        UIManager.put("Component.innerFocusWidth", 0);
+        UIManager.put("Component.borderColor", MauUngDung.VIEN);
+        UIManager.put("Component.focusedBorderColor", MauUngDung.NAU);
+        UIManager.put("Component.focusColor", MauUngDung.DO_NHAT);
+        UIManager.put("ComboBox.padding", new Insets(4, 8, 4, 8));
+        UIManager.put("ComboBox.selectionBackground", MauUngDung.DO_NHAT);
+        UIManager.put("ComboBox.selectionForeground", MauUngDung.NAU);
+        UIManager.put("TabbedPane.tabHeight", 36);
+        UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
+        UIManager.put("TabbedPane.selectedForeground", MauUngDung.DO_THUONG_HIEU);
+        UIManager.put("TabbedPane.foreground", MauUngDung.NAU);
+        UIManager.put("TabbedPane.underlineColor", MauUngDung.DO_THUONG_HIEU);
+        UIManager.put("TabbedPane.hoverColor", MauUngDung.KEM_NEN_NHAN);
+        UIManager.put("TabbedPane.focusColor", MauUngDung.DO_NHAT);
+        UIManager.put("ScrollBar.width", 10);
+        UIManager.put("ScrollBar.thumbArc", 999);
+        UIManager.put("ScrollBar.thumbInsets", new Insets(2, 2, 2, 2));
+        UIManager.put("ScrollBar.track", MauUngDung.NEN_KEM);
+        UIManager.put("ScrollBar.thumb", MauUngDung.KEM_VIEN);
+        UIManager.put("ScrollBar.hoverThumbColor", MauUngDung.NAU_MO);
+        UIManager.put("ToolTip.background", MauUngDung.NAU);
+        UIManager.put("ToolTip.foreground", Color.WHITE);
+        UIManager.put("ToolTip.border", BorderFactory.createEmptyBorder(5, 8, 5, 8));
     }
 
     public static void hienThiThongTin(Component cha, String thongBao) {

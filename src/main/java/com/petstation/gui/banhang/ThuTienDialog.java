@@ -1,7 +1,9 @@
 package com.petstation.gui.banhang;
 
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.service.hethong.CaiDatService;
@@ -9,6 +11,7 @@ import com.petstation.util.DinhDang;
 import com.petstation.util.TaoMaVietQR;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -26,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 public final class ThuTienDialog {
     public static final class KetQuaThu {
@@ -132,18 +136,29 @@ public final class ThuTienDialog {
     }
 
     private static JPanel taoKhungHuongDanThu(JLabel nhanQr, JTextArea oHuongDan) {
-        JPanel khungHuongDan = new JPanel(new BorderLayout(8, 8));
-        khungHuongDan.setBorder(BorderFactory.createTitledBorder("Thông tin thanh toán"));
-        khungHuongDan.add(nhanQr, BorderLayout.NORTH);
-        khungHuongDan.add(oHuongDan, BorderLayout.CENTER);
+        BoGocPanel khungHuongDan = new BoGocPanel(12, Color.WHITE, true);
+        khungHuongDan.setLayout(new BorderLayout(8, 8));
+        khungHuongDan.setBorder(new EmptyBorder(12, 14, 12, 14));
+        JLabel nhanTieuDe = new JLabel("Thông tin thanh toán");
+        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        nhanTieuDe.setForeground(MauUngDung.NAU);
+        JPanel khungGiua = new JPanel(new BorderLayout(8, 8));
+        khungGiua.setOpaque(false);
+        khungGiua.add(nhanQr, BorderLayout.NORTH);
+        khungGiua.add(oHuongDan, BorderLayout.CENTER);
+        khungHuongDan.add(nhanTieuDe, BorderLayout.NORTH);
+        khungHuongDan.add(khungGiua, BorderLayout.CENTER);
         khungHuongDan.setPreferredSize(new Dimension(410, 360));
         return khungHuongDan;
     }
 
     private static JPanel taoKhungChinhThu(
             JPanel khungNhap, JPanel khungHuongDan, JCheckBox chkDaNhanTien) {
-        JPanel khungChinh = new JPanel(new BorderLayout(8, 8));
-        khungChinh.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        JPanel khungChinh = new JPanel(new BorderLayout(8, 12));
+        khungChinh.setBackground(MauUngDung.NEN_KEM);
+        khungChinh.setBorder(new EmptyBorder(12, 14, 12, 14));
+        chkDaNhanTien.setOpaque(false);
+        chkDaNhanTien.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         khungChinh.add(khungNhap, BorderLayout.NORTH);
         khungChinh.add(khungHuongDan, BorderLayout.CENTER);
         khungChinh.add(chkDaNhanTien, BorderLayout.SOUTH);
@@ -184,6 +199,8 @@ public final class ThuTienDialog {
         oNhapLieu.setLineWrap(true);
         oNhapLieu.setWrapStyleWord(true);
         oNhapLieu.setOpaque(false);
+        oNhapLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oNhapLieu.setForeground(MauUngDung.VAN_BAN_XAM);
         return oNhapLieu;
     }
 
@@ -194,16 +211,34 @@ public final class ThuTienDialog {
             JTextField oKhachDua,
             JLabel nhanNhanTienThua,
             JLabel nhanTienThua) {
-        JPanel khungNhap = new JPanel(new GridLayout(0, 2, 8, 8));
-        khungNhap.add(new JLabel("Số tiền cần thu:"));
+        JPanel khungNhap = new JPanel(new GridLayout(0, 2, 10, 8));
+        khungNhap.setOpaque(false);
+        JLabel nhanSoTienCanThu = new JLabel("Số tiền cần thu:");
+        nhanSoTienCanThu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanSoTienCanThu.setForeground(MauUngDung.NAU);
+        khungNhap.add(nhanSoTienCanThu);
         JLabel nhanCanThu = new JLabel(DinhDang.dinhDang(canThu));
-        nhanCanThu.setFont(nhanCanThu.getFont().deriveFont(Font.BOLD));
+        nhanCanThu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
+        nhanCanThu.setForeground(MauUngDung.DO_THUONG_HIEU);
         khungNhap.add(nhanCanThu);
-        khungNhap.add(new JLabel("Phương thức:"));
+        JLabel nhanPhuongThuc = new JLabel("Phương thức:");
+        nhanPhuongThuc.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanPhuongThuc.setForeground(MauUngDung.NAU);
+        khungNhap.add(nhanPhuongThuc);
+        cboPhuongThuc.setPreferredSize(new Dimension(180, 34));
+        cboPhuongThuc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         khungNhap.add(cboPhuongThuc);
+        nhanNhanKhachDua.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanNhanKhachDua.setForeground(MauUngDung.NAU);
         khungNhap.add(nhanNhanKhachDua);
+        oKhachDua.setPreferredSize(new Dimension(180, 34));
+        oKhachDua.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         khungNhap.add(oKhachDua);
+        nhanNhanTienThua.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanNhanTienThua.setForeground(MauUngDung.NAU);
         khungNhap.add(nhanNhanTienThua);
+        nhanTienThua.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
+        nhanTienThua.setForeground(MauUngDung.NAU);
         khungNhap.add(nhanTienThua);
         return khungNhap;
     }
@@ -279,7 +314,7 @@ public final class ThuTienDialog {
                     String ten = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT_NAME");
                     TaoMaVietQR.kiemTraTaiKhoan(bin, tk, ten);
                     String maThamChieu = taoThamChieuQR(thamChieu);
-                    String noiDungQr = TaoMaVietQR.taoNoiDung(bin, tk, canThu, maThamChieu);
+                    String noiDungQr = TaoMaVietQR.taoNoiDung(bin, tk, ten, canThu, maThamChieu);
                     ImageIcon icon = new ImageIcon(TaoMaVietQR.taoAnh(noiDungQr, 220));
                     String huongDan =
                             "Ngân hàng nhận: BIN "

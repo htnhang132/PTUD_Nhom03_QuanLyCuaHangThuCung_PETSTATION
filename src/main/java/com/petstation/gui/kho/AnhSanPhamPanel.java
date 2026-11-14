@@ -3,7 +3,9 @@ package com.petstation.gui.kho;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.util.TaiAnhSanPham;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -86,13 +88,20 @@ public final class AnhSanPhamPanel extends JPanel {
         super.paintComponent(goc);
         Graphics2D g = (Graphics2D) goc.create();
         try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (anh == null) {
-                g.setColor(MauUngDung.mau(0x7D7D7D));
+                g.setColor(MauUngDung.NEN_KEM);
+                g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                g.setColor(MauUngDung.XAM_VIEN_TRUNG);
+                g.setStroke(new BasicStroke(1f));
+                g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                g.setColor(MauUngDung.VAN_BAN_XAM);
+                g.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
                 FontMetrics fm = g.getFontMetrics();
                 g.drawString(
                         thongBao,
                         Math.max(4, (getWidth() - fm.stringWidth(thongBao)) / 2),
-                        getHeight() / 2);
+                        (getHeight() + fm.getAscent()) / 2 - 2);
                 return;
             }
             double tyLe =

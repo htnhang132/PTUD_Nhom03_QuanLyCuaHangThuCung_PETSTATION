@@ -33,10 +33,15 @@ public final class TaoMaVietQR {
     }
 
     public static String taoNoiDung(String bin, String taiKhoan, long soTien, String thamChieu) {
-        kiemTraTaiKhoan(bin, taiKhoan, "CHU TAI KHOAN");
+        return taoNoiDung(bin, taiKhoan, "CHU TAI KHOAN", soTien, thamChieu);
+    }
+
+    public static String taoNoiDung(
+            String bin, String taiKhoan, String chuTaiKhoan, long soTien, String thamChieu) {
+        kiemTraTaiKhoan(bin, taiKhoan, chuTaiKhoan);
         if (soTien <= 0 || soTien > 9_999_999_999_999L)
             throw new IllegalArgumentException("Số tiền QR phải dương, tối đa 13 chữ số.");
-        if (thamChieu == null || !thamChieu.matches("[A-Za-z0-9 ]{1,25}"))
+        if (thamChieu == null || !thamChieu.matches("[A-Za-z0-9 _-]{1,25}"))
             throw new IllegalArgumentException(
                     "Nội dung chuyển khoản tối đa 25 ký tự chữ/số không dấu.");
         String nguoiNhan = truong("00", bin) + truong("01", taiKhoan);
@@ -49,6 +54,7 @@ public final class TaoMaVietQR {
                         + truong("53", "704")
                         + truong("54", Long.toString(soTien))
                         + truong("58", "VN")
+                        + truong("59", chuTaiKhoan)
                         + truong("62", truong("08", thamChieu))
                         + "6304";
         return noiDung + String.format(Locale.ROOT, "%04X", tinhCRC(noiDung));

@@ -116,10 +116,12 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
     @Override
     public long demThangSoGio(String maNhanVien, LocalDate tu, LocalDate den) {
         return ThaoTacSQL.laySo(
-                "SELECT COALESCE(SUM(DATEDIFF(minute, c.gio_bat_dau, c.gio_ket_thuc)),0)/60 FROM"
-                        + " lich_lam_viec l JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca WHERE"
-                        + " l.ma_nhan_vien = ? AND l.ngay_lam>=? AND l.ngay_lam<? AND"
-                        + " l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY'",
+                "SELECT COALESCE(SUM(CASE WHEN c.gio_ket_thuc >= c.gio_bat_dau THEN"
+                        + " DATEDIFF(minute, c.gio_bat_dau, c.gio_ket_thuc) ELSE DATEDIFF(minute,"
+                        + " c.gio_bat_dau, c.gio_ket_thuc) + 1440 END),0)/60 FROM lich_lam_viec l"
+                        + " JOIN ca_lam_viec c ON c.ma_ca=l.ma_ca WHERE l.ma_nhan_vien = ? AND"
+                        + " l.ngay_lam>=? AND l.ngay_lam<? AND l.loai='DI_LAM' AND"
+                        + " l.trang_thai<>'DA_HUY'",
                 maNhanVien,
                 tu,
                 den);
@@ -130,8 +132,10 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
         Map<String, Integer> ketQua = new HashMap<>();
         for (Object[] dong :
                 ThaoTacSQL.truyVan(
-                        "SELECT l.ma_nhan_vien, COALESCE(SUM(DATEDIFF(minute, c.gio_bat_dau,"
-                            + " c.gio_ket_thuc)),0)/60 FROM lich_lam_viec l JOIN ca_lam_viec c ON"
+                        "SELECT l.ma_nhan_vien, COALESCE(SUM(CASE WHEN c.gio_ket_thuc >="
+                            + " c.gio_bat_dau THEN DATEDIFF(minute, c.gio_bat_dau, c.gio_ket_thuc)"
+                            + " ELSE DATEDIFF(minute, c.gio_bat_dau, c.gio_ket_thuc) + 1440"
+                            + " END),0)/60 FROM lich_lam_viec l JOIN ca_lam_viec c ON"
                             + " c.ma_ca=l.ma_ca WHERE l.ngay_lam>=? AND l.ngay_lam<? AND"
                             + " l.loai='DI_LAM' AND l.trang_thai<>'DA_HUY' GROUP BY l.ma_nhan_vien",
                         tu,

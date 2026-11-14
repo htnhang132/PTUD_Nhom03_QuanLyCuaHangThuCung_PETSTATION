@@ -55,10 +55,11 @@ class KiemTraThamSoSQLTest {
     private void kiemTraTep(String tenTep, String noiDung, List<String> cacLoi) {
         Pattern pattern =
                 Pattern.compile(
-                        "(?:ThaoTacSQL\\s*\\.\\s*|(?:this|super)\\s*\\.\\s*|\\b)(truyVan|capNhat|laySo|layGiaTriDon|thucThi|themVaLayKhoa)\\s*\\(");
+                        "(?:ThaoTacSQL\\s*\\.\\s*|(?:this|super)\\s*\\.\\s*|\\b)(truyVan|truyVanDanhSach|capNhat|laySo|layGiaTriDon|thucThi|them)\\s*\\(");
         Matcher matcher = pattern.matcher(noiDung);
 
         while (matcher.find()) {
+            String tenHam = matcher.group(1);
             int argsStart = matcher.end();
             int pDepth = 1;
             int curr = argsStart;
@@ -98,11 +99,11 @@ class KiemTraThamSoSQLTest {
             if (pDepth != 0) continue;
 
             String callArgs = noiDung.substring(argsStart, curr - 1).trim();
-            kiemTraLoiGoi(tenTep, callArgs, cacLoi);
+            kiemTraLoiGoi(tenTep, tenHam, callArgs, cacLoi);
         }
     }
 
-    private void kiemTraLoiGoi(String tenTep, String callArgs, List<String> cacLoi) {
+    private void kiemTraLoiGoi(String tenTep, String tenHam, String callArgs, List<String> cacLoi) {
         // Tách đối số đầu tiên (câu lệnh SQL)
         int pD = 0;
         int bD = 0;
@@ -198,6 +199,10 @@ class KiemTraThamSoSQLTest {
             if (start < restArgs.length()) {
                 parsedArgs.add(restArgs.substring(start).trim());
             }
+        }
+
+        if ("truyVanDanhSach".equals(tenHam) && !parsedArgs.isEmpty()) {
+            parsedArgs = new ArrayList<>(parsedArgs.subList(1, parsedArgs.size()));
         }
 
         // Bỏ qua nếu truyền mảng biến động (varargs chuyển tiếp)

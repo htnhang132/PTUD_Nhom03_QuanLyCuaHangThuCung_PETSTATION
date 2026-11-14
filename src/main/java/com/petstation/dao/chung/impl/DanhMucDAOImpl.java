@@ -432,7 +432,20 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                     "Không thể tự khóa hoặc đổi vai trò tài khoản đang đăng nhập.");
         }
         String maVaiTro = docVaiTro(giaTri2[2]);
-        String dsQuyen = TaiKhoanDAOImpl.macDinhTheoVaiTro(VaiTro.docTuCSDL(maVaiTro));
+        String truocVaiTro = truoc == null ? null : docVaiTro(truoc.layChuoi(2));
+        String dsQuyen;
+        if (truoc != null && maVaiTro.equals(truocVaiTro)) {
+            String quyenHienTai =
+                    chuyenThanhChuoi(
+                            layGiaTriDon(
+                                    "SELECT quyen FROM tai_khoan WHERE ten_dang_nhap=?", khoa));
+            dsQuyen =
+                    quyenHienTai.isBlank()
+                            ? TaiKhoanDAOImpl.macDinhTheoVaiTro(VaiTro.docTuCSDL(maVaiTro))
+                            : quyenHienTai;
+        } else {
+            dsQuyen = TaiKhoanDAOImpl.macDinhTheoVaiTro(VaiTro.docTuCSDL(maVaiTro));
+        }
         String trangThaiDb =
                 "Hoạt động".equals(giaTri2[3])
                         ? TrangThaiTaiKhoan.HOAT_DONG.maDB()

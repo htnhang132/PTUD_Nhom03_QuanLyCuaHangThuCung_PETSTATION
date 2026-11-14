@@ -299,13 +299,17 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                         + " '$.loai')='DOI_PHU_KIEN' THEN N'Đổi phụ kiện' ELSE N'Bán hàng'"
                         + " END FROM hoa_don g LEFT JOIN nhan_vien n ON n.ma_nhan_vien ="
                         + " g.ma_nhan_vien LEFT JOIN khach_hang k ON k.ma_khach_hang ="
-                        + " g.ma_khach_hang WHERE g.trang_thai = 'GIO_TREO' ORDER BY"
-                        + " g.ma_hoa_don DESC");
+                        + " g.ma_khach_hang WHERE g.trang_thai = 'GIO_TREO' AND (? = '' OR"
+                        + " g.ma_nhan_vien = ?) ORDER BY g.ma_hoa_don DESC");
     }
 
     @Override
-    public List<DongNghiepVu> layCacDong(LoaiNghiepVu cheDo, String tenDangNhap) {
-        List<Object[]> cacDong = truyVan(taoKieuHienThi(cheDo).sql);
+    public List<DongNghiepVu> layCacDong(LoaiNghiepVu cheDo, String maNhanVien) {
+        String maNv = maNhanVien == null ? "" : maNhanVien.trim();
+        List<Object[]> cacDong =
+                cheDo == LoaiNghiepVu.GIO_HANG_TREO
+                        ? truyVan(taoKieuHienThi(cheDo).sql, maNv, maNv)
+                        : truyVan(taoKieuHienThi(cheDo).sql);
         return cacDong.stream()
                 .map(
                         dong -> {

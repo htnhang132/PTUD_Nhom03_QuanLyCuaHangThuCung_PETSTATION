@@ -493,14 +493,19 @@ public final class DinhDangBang {
 
     public static void capNhatHoacThemDong(
             JTable bang, DefaultTableModel moHinh, boolean laSua, int dong, Object[] duLieu) {
+        int dongMoHinh;
         if (laSua) {
             for (int c = 0; c < duLieu.length; c++) moHinh.setValueAt(duLieu[c], dong, c);
-            bang.setRowSelectionInterval(dong, dong);
+            dongMoHinh = dong;
         } else {
             moHinh.addRow(duLieu);
-            int moi = moHinh.getRowCount() - 1;
-            bang.setRowSelectionInterval(moi, moi);
-            bang.scrollRectToVisible(bang.getCellRect(moi, 0, true));
+            dongMoHinh = moHinh.getRowCount() - 1;
+        }
+        int dongHienThi =
+                bang.getRowSorter() != null ? bang.convertRowIndexToView(dongMoHinh) : dongMoHinh;
+        if (dongHienThi >= 0 && dongHienThi < bang.getRowCount()) {
+            bang.setRowSelectionInterval(dongHienThi, dongHienThi);
+            bang.scrollRectToVisible(bang.getCellRect(dongHienThi, 0, true));
         }
     }
 

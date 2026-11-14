@@ -6,7 +6,9 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -30,12 +32,16 @@ public class TruongMatKhauAnHien extends JPanel {
     }
 
     public TruongMatKhauAnHien(int cacCot) {
+        setOpaque(false);
         setLayout(new BorderLayout(5, 0));
         oTruongMatKhau = new JPasswordField(cacCot);
+        oTruongMatKhau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oTruongMatKhau.setPreferredSize(new Dimension(220, 36));
         btnNutBatTat = new JToggleButton();
         btnNutBatTat.setIcon(taoBieuTuongMat(false));
         btnNutBatTat.setSelectedIcon(taoBieuTuongMat(true));
         btnNutBatTat.setPreferredSize(new Dimension(34, 28));
+        btnNutBatTat.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnNutBatTat.setBorderPainted(false);
         btnNutBatTat.setContentAreaFilled(false);
         btnNutBatTat.getAccessibleContext().setAccessibleName("Hiển thị hoặc ẩn mật khẩu");

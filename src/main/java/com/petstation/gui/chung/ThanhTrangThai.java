@@ -55,7 +55,6 @@ public final class ThanhTrangThai extends JPanel {
                         SwingUtilities.invokeLater(capNhat);
                     }
                 };
-        caLamViec.themBoLangNghe(boLangNgheCa);
         add(layPhanCach());
         add(nhanDongHo);
         add(layPhanCach());

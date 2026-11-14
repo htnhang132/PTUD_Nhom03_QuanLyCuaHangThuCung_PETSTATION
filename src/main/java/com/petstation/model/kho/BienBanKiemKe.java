@@ -20,7 +20,7 @@ public class BienBanKiemKe implements Serializable {
     private LocalDateTime taoLuc;
 
     public BienBanKiemKe() {
-        this.trangThai = TrangThaiBienBanKiemKe.DA_DUYET.maDB();
+        this.trangThai = TrangThaiBienBanKiemKe.DANG_KIEM.maDB();
         this.taoLuc = LocalDateTime.now();
     }
 

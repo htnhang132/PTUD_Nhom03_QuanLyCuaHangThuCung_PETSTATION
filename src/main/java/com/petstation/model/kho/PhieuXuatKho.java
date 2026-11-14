@@ -22,7 +22,7 @@ public class PhieuXuatKho implements Serializable {
     private long tongGiaTri;
 
     public PhieuXuatKho() {
-        this.trangThai = TrangThaiPhieuXuat.DA_XUAT.maDB();
+        this.trangThai = TrangThaiPhieuXuat.CHO_XUAT.maDB();
         this.taoLuc = LocalDateTime.now();
     }
 

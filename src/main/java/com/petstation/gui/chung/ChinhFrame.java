@@ -133,7 +133,14 @@ public final class ChinhFrame extends JFrame {
                     }
                 };
         manHinhBoDangKy.layCaLamViec().themBoLangNghe(boLangNgheCaLamViec);
-        NhatKyHeThongService.macDinh().ghiNhatKy("Đăng nhập", "Hệ thống");
+        TacVuNen.chayCoPhien(
+                this,
+                this::isDisplayable,
+                () -> {
+                    NhatKyHeThongService.macDinh().ghiNhatKy("Đăng nhập", "Hệ thống");
+                    return null;
+                },
+                v -> {});
         dieuHuong(MaManHinh.TONG_QUAN);
     }
 
@@ -381,7 +388,17 @@ public final class ChinhFrame extends JFrame {
             return;
         }
         if (HopThoai.xacNhanDongY(this, "Bạn có chắc muốn đăng xuất?", "Xác nhận đăng xuất")) {
-            NhatKyHeThongService.macDinh().ghiNhatKy("Đăng xuất", "Hệ thống");
+            var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+            TacVuNen.chayCoPhien(
+                    phien,
+                    () -> true,
+                    () -> {
+                        NhatKyHeThongService.macDinh().ghiNhatKy("Đăng xuất", "Hệ thống");
+                        return null;
+                    },
+                    null,
+                    v -> {},
+                    loi -> {});
             manHinhBoDangKy.layGioHang().xoa();
             manHinhBoDangKy.layGioHang().getQuyTrinh().xoa();
             PhienDangNhapService.macDinh().datPhienDangNhap(null);

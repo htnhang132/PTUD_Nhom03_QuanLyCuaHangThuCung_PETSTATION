@@ -4,7 +4,6 @@ import com.petstation.dao.pheduyet.DeXuatGiaDAO;
 import com.petstation.dao.pheduyet.impl.DeXuatGiaDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.model.chung.Quyen;
-import com.petstation.model.chung.VaiTro;
 import com.petstation.model.pheduyet.DeXuatGia;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
@@ -83,8 +82,6 @@ public final class DeXuatGiaService {
 
     public void apDung(String maDoiTuongHoacYeuCau) {
         phienService.yeuCau(Quyen.DUYET_GIA);
-        if (phienService.layPhien().docVaiTro() != VaiTro.QUAN_LY_CUA_HANG)
-            throw new SecurityException("Chỉ cửa hàng trưởng được áp dụng giá bán.");
         DeXuatGiaDAO.ThongTinDeXuat d =
                 deXuatGiaDAO
                         .timChoDuyet(maDoiTuongHoacYeuCau)

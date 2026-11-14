@@ -138,20 +138,11 @@ public class TaiKhoan implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TaiKhoan that = (TaiKhoan) o;
-        if (this.nhanVien != null
-                && that.nhanVien != null
-                && this.nhanVien.getMaNhanVien() != null
-                && that.nhanVien.getMaNhanVien() != null) {
-            return Objects.equals(this.nhanVien.getMaNhanVien(), that.nhanVien.getMaNhanVien());
-        }
         return Objects.equals(this.tenDangNhap, that.tenDangNhap);
     }
 
     @Override
     public int hashCode() {
-        if (nhanVien != null && nhanVien.getMaNhanVien() != null) {
-            return Objects.hash(nhanVien.getMaNhanVien());
-        }
         return Objects.hash(tenDangNhap);
     }
 

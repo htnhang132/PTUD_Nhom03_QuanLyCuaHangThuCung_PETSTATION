@@ -115,6 +115,14 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
     // hàng
     @Override
     public String taoVoucher(String maKhachHang, String khoa) {
+        int capNhatDiem =
+                capNhat(
+                        "UPDATE khach_hang SET diem_tich_luy=diem_tich_luy-200"
+                                + " WHERE ma_khach_hang = ? AND diem_tich_luy>=200",
+                        maKhachHang);
+        if (capNhatDiem != 1) {
+            throw new IllegalStateException("Cần đủ 200 điểm để đổi voucher Spa 150.000đ.");
+        }
         String ma = taoMa("VOUCHER");
         capNhat(
                 "INSERT voucher(ma_voucher, ma_khach_hang, menh_gia, hieu_luc_den, chi_ap_dung_spa,"
@@ -123,10 +131,6 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
                 ma,
                 maKhachHang,
                 khoa);
-        capNhat(
-                "UPDATE khach_hang SET diem_tich_luy=diem_tich_luy-200"
-                        + " WHERE ma_khach_hang = ? AND diem_tich_luy>=200",
-                maKhachHang);
         return ma;
     }
 }

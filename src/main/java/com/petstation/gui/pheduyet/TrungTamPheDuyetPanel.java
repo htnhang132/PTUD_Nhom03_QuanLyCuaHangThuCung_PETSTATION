@@ -1,6 +1,7 @@
 package com.petstation.gui.pheduyet;
 
 import com.petstation.gui.chung.BieuMauDialog;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
@@ -22,7 +23,6 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,7 +58,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     private final JCheckBox btnDangChoChi = new JCheckBox("Chỉ hiện yêu cầu chờ duyệt", true);
 
-    private final JPanel khungChiTiet = new JPanel(new BorderLayout(0, 8));
+    private final JPanel khungChiTiet = new BoGocPanel(12, Color.WHITE, true);
 
     private final JLabel nhanBoDem = new JLabel();
 
@@ -67,7 +67,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
     public TrungTamPheDuyetPanel() {
         setLayout(new BorderLayout(0, 10));
         JPanel khungTren = taoVungTrongSuot(new BorderLayout(10, 0));
-        khungTren.add(taoTieuDeMuc("Danh sách yêu cầu"), BorderLayout.WEST);
+        khungTren.add(taoTieuDeManHinh("Trung tâm phê duyệt"), BorderLayout.WEST);
         JPanel khungPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         khungPhai.setOpaque(false);
         nhanBoDem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
@@ -95,20 +95,18 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                                                     bangBang.convertRowIndexToModel(dongDuLieu));
                             hienThiChiTiet();
                         });
-        khungChiTiet.setBackground(Color.WHITE);
-        khungChiTiet.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN),
-                        new EmptyBorder(14, 16, 14, 16)));
+        khungChiTiet.setLayout(new BorderLayout(0, 8));
+        khungChiTiet.setBorder(new EmptyBorder(16, 18, 16, 18));
         JPanel khungVungChua = new JPanel(new BorderLayout());
+        khungVungChua.setOpaque(false);
         khungVungChua.setPreferredSize(new Dimension(420, 0));
         khungVungChua.add(khungChiTiet);
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, khungVungChua);
         tach.setResizeWeight(1.0);
+        tach.setDividerSize(8);
         tach.setBorder(null);
         tach.setOpaque(false);
         add(tach, BorderLayout.CENTER);
-        PheDuyetService.themBoLangNghe(boLangNghePheDuyet);
         taiLai();
     }
 

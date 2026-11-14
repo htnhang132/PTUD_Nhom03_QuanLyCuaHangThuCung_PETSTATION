@@ -1,5 +1,6 @@
 package com.petstation.gui.nhansu;
 
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
@@ -171,7 +172,7 @@ public class LichTuanPanel extends CoSoPanel {
                     case CA_NHAN -> "Lịch làm việc cá nhân theo tuần";
                     case SUA -> "Phân lịch nhân viên theo tuần";
                 };
-        JLabel nhanTieuDe = taoTieuDeMuc(tieuDe);
+        JLabel nhanTieuDe = taoTieuDeManHinh(tieuDe);
         JPanel khungTren = taoVungTrongSuot(new BorderLayout(0, 8));
         khungTren.add(ThanhDanhSach.tieuDe(nhanTieuDe, nhanTomTat), BorderLayout.NORTH);
         khungTren.add(taoThanhCongCu(), BorderLayout.CENTER);
@@ -185,7 +186,6 @@ public class LichTuanPanel extends CoSoPanel {
         scrCuon.getViewport().setBackground(Color.WHITE);
         add(scrCuon, BorderLayout.CENTER);
         add(taoChuGiai(), BorderLayout.SOUTH);
-        LichLamViecService.macDinh().themBoLangNghe(boLangNgheLich);
         dungLai();
     }
 
@@ -977,18 +977,22 @@ public class LichTuanPanel extends CoSoPanel {
                         "Hoán đổi ca làm việc giữa 2 nhân viên",
                         Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setLayout(new BorderLayout(0, 12));
-        dlg.setSize(520, 320);
+        dlg.getContentPane().setBackground(MauUngDung.NEN_KEM);
+        dlg.setSize(660, 380);
         HopThoai.chuanHoaCuaSo(dlg, owner);
         JComboBox<String> cboDay1 = new JComboBox<>(), cboDay2 = new JComboBox<>();
         JComboBox<String> cboShift1 = new JComboBox<>(LichLamViecService.CAC_CA_LAM_VIEC);
         JComboBox<String> cboShift2 = new JComboBox<>(LichLamViecService.CAC_CA_LAM_VIEC);
         JComboBox<String> cboStaff1 = new JComboBox<>(), cboStaff2 = new JComboBox<>();
-        JPanel khungTrungTam = new JPanel(new GridLayout(2, 1, 0, 10));
-        khungTrungTam.setBorder(new EmptyBorder(12, 16, 12, 16));
+        JPanel khungTrungTam = new JPanel(new GridLayout(2, 1, 0, 12));
+        khungTrungTam.setOpaque(false);
+        khungTrungTam.setBorder(new EmptyBorder(16, 18, 8, 18));
         khungTrungTam.add(taoKhungChonCaHoanDoi("Ca thứ nhất", cboDay1, cboShift1, cboStaff1));
         khungTrungTam.add(
                 taoKhungChonCaHoanDoi("Ca thứ hai (hoán đổi cùng)", cboDay2, cboShift2, cboStaff2));
-        JPanel khungCacNutNho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        JPanel khungCacNutNho = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        khungCacNutNho.setOpaque(false);
+        khungCacNutNho.setBorder(new EmptyBorder(0, 18, 14, 18));
         NutDinhDang nutXacNhanDongY =
                 new NutDinhDang("Xác nhận hoán đổi", NutDinhDang.KieuNut.CHINH);
         NutDinhDang nutDongHopThoai = new NutDinhDang("Đóng", NutDinhDang.KieuNut.TRONG_SUOT);
@@ -1016,8 +1020,19 @@ public class LichTuanPanel extends CoSoPanel {
             JComboBox<String> cboDay,
             JComboBox<String> cboShift,
             JComboBox<String> cboStaff) {
-        JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        khungTam.setBorder(BorderFactory.createTitledBorder(tieuDe));
+        BoGocPanel theCa = new BoGocPanel(12, Color.WHITE, true);
+        theCa.setLayout(new BorderLayout(0, 8));
+        theCa.setBorder(new EmptyBorder(10, 14, 12, 14));
+        JLabel nhanTieuDe = new JLabel(tieuDe);
+        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        nhanTieuDe.setForeground(MauUngDung.NAU);
+        theCa.add(nhanTieuDe, BorderLayout.NORTH);
+        JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        khungTam.setOpaque(false);
+        cboDay.setPreferredSize(new Dimension(135, 32));
+        cboShift.setPreferredSize(new Dimension(110, 32));
+        cboStaff.setPreferredSize(new Dimension(180, 32));
+        theCa.add(khungTam, BorderLayout.CENTER);
         for (int i = 0; i < 7; i++)
             cboDay.addItem(THU[i] + " (" + thuHai.plusDays(i).format(DinhDang.NGAY_CHUAN) + ")");
         Runnable napNv =
@@ -1046,7 +1061,7 @@ public class LichTuanPanel extends CoSoPanel {
         khungTam.add(cboShift);
         khungTam.add(new JLabel("Nhân viên:"));
         khungTam.add(cboStaff);
-        return khungTam;
+        return theCa;
     }
 
     private void thucHienHoanDoiCa(
@@ -1284,6 +1299,9 @@ public class LichTuanPanel extends CoSoPanel {
                             throws PrinterException {
                         if (trang > 0) return NO_SUCH_PAGE;
                         Component dich = khungLuoiVungChu;
+                        if (dich.getWidth() <= 0 || dich.getHeight() <= 0) {
+                            return NO_SUCH_PAGE;
+                        }
                         Graphics2D doHoa2 = (Graphics2D) doHoa;
                         doHoa2.translate(
                                 dinhDangTrang.getImageableX(), dinhDangTrang.getImageableY());
@@ -1297,14 +1315,24 @@ public class LichTuanPanel extends CoSoPanel {
                 });
         try {
             if (congViec.printDialog()) {
-                congViec.print();
-                NhatKyHeThongService.macDinh()
-                        .ghiNhatKy(
-                                "In lịch",
-                                "Lịch làm việc tuần " + thuHai.format(DinhDang.NGAY_CHUAN));
+                LocalDate tuanIn = thuHai;
+                TacVuNen.chayCoPhien(
+                        this,
+                        this::isDisplayable,
+                        () -> {
+                            congViec.print();
+                            NhatKyHeThongService.macDinh()
+                                    .ghiNhatKy(
+                                            "In lịch",
+                                            "Lịch làm việc tuần "
+                                                    + tuanIn.format(DinhDang.NGAY_CHUAN));
+                            return null;
+                        },
+                        v -> {},
+                        ngoaiLe ->
+                                HopThoai.hienThiLoi(
+                                        this, "Không in được: " + TacVuNen.thongDiepLoi(ngoaiLe)));
             }
-        } catch (PrinterException ngoaiLe) {
-            HopThoai.hienThiLoi(this, "Không in được: " + ngoaiLe.getMessage());
         } catch (HeadlessException ngoaiLe) {
             HopThoai.hienThiLoi(this, "Không tìm thấy máy in.");
         }

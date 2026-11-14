@@ -60,6 +60,7 @@ public final class DoiPhuKienDialog extends JDialog {
     private final JTextField timHang = new JTextField(24);
     private final JTextField lyDo = new JTextField(30);
     private final JSpinner soLuong = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
+    private final JSpinner soLuongMoi = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
     private final JCheckBox tem = new JCheckBox("Nguyên tem mác và bao bì");
     private final JCheckBox chuaDung = new JCheckBox("Chưa qua sử dụng, không rách bẩn");
     private final JLabel trangThai = new JLabel("Nhập mã hóa đơn hoặc SĐT để bắt đầu.");
@@ -78,6 +79,7 @@ public final class DoiPhuKienDialog extends JDialog {
     private List<Object[]> hoaDons = List.of(), dongs = List.of(), hangs = List.of();
     private boolean dangChay;
     private boolean dangKhoiPhuc;
+    private boolean dongBoSoLuongMoi = true;
     private final String maDonTreo;
 
     private long phien;
@@ -136,6 +138,7 @@ public final class DoiPhuKienDialog extends JDialog {
             o.setPreferredSize(new Dimension(200, 34));
         }
         soLuong.setPreferredSize(new Dimension(90, 34));
+        soLuongMoi.setPreferredSize(new Dimension(90, 34));
         tem.setOpaque(false);
         chuaDung.setOpaque(false);
         trangThai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
@@ -175,7 +178,8 @@ public final class DoiPhuKienDialog extends JDialog {
                         "3. Chọn phụ kiện thay thế",
                         thanhTim(timHang, nut("Tìm phụ kiện", this::timPhuKien)),
                         cuon(hangBang, 150),
-                        goiY("Số lượng hàng thay thế bằng số lượng hàng cần đổi.")));
+                        hang(new JLabel("Số lượng thay thế"), soLuongMoi),
+                        goiY("Tổng tiền hàng thay thế phải bằng hoặc lớn hơn hàng trả.")));
         JScrollPane cuon = new JScrollPane(noiDung);
         cuon.setBorder(BorderFactory.createEmptyBorder());
         cuon.getViewport().setBackground(MauUngDung.NEN_KEM);
@@ -240,7 +244,22 @@ public final class DoiPhuKienDialog extends JDialog {
                             }
                         });
         hangBang.getSelectionModel().addListSelectionListener(e -> voHieuGia());
-        soLuong.addChangeListener(e -> voHieuGia());
+        soLuong.addChangeListener(
+                e -> {
+                    if (!dangKhoiPhuc && dongBoSoLuongMoi) {
+                        soLuongMoi.setValue(soLuong.getValue());
+                    }
+                    voHieuGia();
+                });
+        soLuongMoi.addChangeListener(
+                e -> {
+                    if (!dangKhoiPhuc) {
+                        dongBoSoLuongMoi =
+                                Integer.valueOf((Integer) soLuong.getValue())
+                                        .equals(soLuongMoi.getValue());
+                    }
+                    voHieuGia();
+                });
         tem.addActionListener(e -> voHieuGia());
         chuaDung.addActionListener(e -> voHieuGia());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -271,6 +290,7 @@ public final class DoiPhuKienDialog extends JDialog {
 
     private DonDoiTreo chupNhap() throws ParseException {
         soLuong.commitEdit();
+        soLuongMoi.commitEdit();
         int h = hoaDonBang.getSelectedRow(),
                 d = dongBang.getSelectedRow(),
                 m = hangBang.getSelectedRow();
@@ -280,6 +300,7 @@ public final class DoiPhuKienDialog extends JDialog {
                 m < 0 ? "" : hangs.get(m)[0].toString(),
                 timHang.getText(),
                 (Integer) soLuong.getValue(),
+                (Integer) soLuongMoi.getValue(),
                 lyDo.getText(),
                 tem.isSelected(),
                 chuaDung.isSelected());
@@ -319,12 +340,19 @@ public final class DoiPhuKienDialog extends JDialog {
     }
 
     private void khoiPhuc(DonDoiTreo nhap) {
-        timHoaDon.setText(nhap.timHoaDon());
-        timHang.setText(nhap.timHang());
-        lyDo.setText(nhap.lyDo());
-        soLuong.setValue(nhap.soLuong());
-        tem.setSelected(nhap.nguyenTem());
-        chuaDung.setSelected(nhap.chuaDung());
+        dangKhoiPhuc = true;
+        try {
+            timHoaDon.setText(nhap.timHoaDon());
+            timHang.setText(nhap.timHang());
+            lyDo.setText(nhap.lyDo());
+            soLuong.setValue(nhap.soLuong());
+            soLuongMoi.setValue(nhap.soLuongMoi());
+            dongBoSoLuongMoi = nhap.soLuongMoi() == nhap.soLuong();
+            tem.setSelected(nhap.nguyenTem());
+            chuaDung.setSelected(nhap.chuaDung());
+        } finally {
+            dangKhoiPhuc = false;
+        }
         chayNen(
                 () -> {
                     var hd = doiTraService.timHoaDon(nhap.timHoaDon());
@@ -455,13 +483,16 @@ public final class DoiPhuKienDialog extends JDialog {
         if (dangChay) return;
         try {
             soLuong.commitEdit();
+            soLuongMoi.commitEdit();
             Object[] cu = dongChon();
             Object[] moi = hangChon();
             int sl = (Integer) soLuong.getValue();
+            int slMoi = (Integer) soLuongMoi.getValue();
             kiemTraTinhTrang();
             if (sl > so(cu[3]) - so(cu[4]))
                 throw new IllegalArgumentException("Số lượng vượt phần chưa đổi.");
-            if (sl > so(moi[3])) throw new IllegalStateException("Phụ kiện thay thế không đủ tồn.");
+            if (slMoi > so(moi[3]))
+                throw new IllegalStateException("Phụ kiện thay thế không đủ tồn.");
             String maDong = String.valueOf(cu[0]);
             long giaMoi = so(moi[2]);
             long luot = ++phien;
@@ -469,10 +500,13 @@ public final class DoiPhuKienDialog extends JDialog {
                     () -> doiTraService.layGiaTriDuocDoi(maDong, sl),
                     cuTien -> {
                         if (luot != phien) return;
-                        long moiTien = Math.multiplyExact(giaMoi, sl);
-                        if (moiTien < cuTien)
-                            throw new IllegalArgumentException(
-                                    "Hàng thay thế phải bằng hoặc cao giá hơn hàng cũ.");
+                        long moiTien = Math.multiplyExact(giaMoi, slMoi);
+                        if (moiTien < cuTien) {
+                            baoLoi(
+                                    new IllegalArgumentException(
+                                            "Hàng thay thế phải bằng hoặc cao giá hơn hàng cũ."));
+                            return;
+                        }
                         giaTriCu = cuTien;
                         long chenhlech = moiTien - cuTien;
                         tongKet.setText(
@@ -495,6 +529,8 @@ public final class DoiPhuKienDialog extends JDialog {
     private void chuyenThanhToan() {
         if (dangChay || giaTriCu < 0) return;
         try {
+            soLuong.commitEdit();
+            soLuongMoi.commitEdit();
             kiemTraTinhTrang();
             if (lyDo.getText().isBlank())
                 throw new IllegalArgumentException("Vui lòng nhập lý do đổi.");
@@ -513,6 +549,7 @@ public final class DoiPhuKienDialog extends JDialog {
             String dong = String.valueOf(dongChon()[0]);
             String ma = hangChon()[0].toString();
             int sl = (Integer) soLuong.getValue();
+            int slMoi = (Integer) soLuongMoi.getValue();
             String xacNhan =
                     " | Đã kiểm tra: nguyên tem mác, bao bì; chưa sử dụng, không rách bẩn.";
             String ghiChu =
@@ -521,7 +558,8 @@ public final class DoiPhuKienDialog extends JDialog {
                             : lyDo.getText().trim() + xacNhan;
             chayNen(
                     () -> {
-                        donDoiTreoService.chuyenThanhToan(maDonTreo, gio, dong, sl, ma, ghiChu);
+                        donDoiTreoService.chuyenThanhToan(
+                                maDonTreo, gio, dong, sl, slMoi, ma, ghiChu);
                         return true;
                     },
                     ok -> {

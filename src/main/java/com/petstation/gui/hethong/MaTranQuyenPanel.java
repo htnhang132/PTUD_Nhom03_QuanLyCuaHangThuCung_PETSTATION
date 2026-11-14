@@ -64,7 +64,11 @@ public final class MaTranQuyenPanel extends CoSoPanel {
         nhanGiua.setHorizontalAlignment(JLabel.CENTER);
         for (int chiSo = 1; chiSo < cacCot.length; chiSo++)
             bangBang.getColumnModel().getColumn(chiSo).setCellRenderer(nhanGiua);
-        add(taoTieuDeMuc("Ma trận quyền theo vai trò (4 vai trò)"), BorderLayout.NORTH);
+        add(
+                taoTieuDeManHinh(
+                        "Ma trận quyền theo vai trò (4 vai trò)",
+                        "Tổng hợp các quyền chức năng mặc định của từng vai trò nhân sự"),
+                BorderLayout.NORTH);
         add(scrCuon, BorderLayout.CENTER);
     }
 

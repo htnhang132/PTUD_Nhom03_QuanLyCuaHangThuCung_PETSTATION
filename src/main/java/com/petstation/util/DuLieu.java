@@ -2,6 +2,7 @@ package com.petstation.util;
 
 import com.petstation.database.ThaoTacSQL;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,7 +74,7 @@ public final class DuLieu {
             case "VOUCHER" -> new QuyTacMa("seq_voucher", "VOUCHER", 6);
             case "TREO" -> new QuyTacMa("seq_hoa_don_treo", "TREO", 6);
             case "SPA" -> new QuyTacMa("seq_phieu_tiep_nhan_spa", "SPA", 8);
-            case "DV", "GOISPA" -> new QuyTacMa("seq_goi_dich_vu_spa", "SPA", 8);
+            case "DV", "GOISPA" -> new QuyTacMa("seq_goi_dich_vu_spa", "GSP", 8);
             case "LH" -> new QuyTacMa("seq_lich_hen", "LH", 8);
             case "LO" -> new QuyTacMa("seq_lo_hang", "LO", 8);
             case "PNK" -> new QuyTacMa("seq_phieu_nhap_kho", "PNK", 8);
@@ -99,10 +100,11 @@ public final class DuLieu {
         if (!(giaTri instanceof Number so)) {
             throw new IllegalStateException("Không cấp được số hóa đơn cho ngày " + ngay + ".");
         }
-        if (so.longValue() > 9999) {
-            throw new IllegalArgumentException("Đã vượt 9999 hóa đơn trong ngày " + ngay + ".");
+        long stt = so.longValue();
+        if (stt <= 0) {
+            throw new IllegalArgumentException("Số thứ tự hóa đơn không hợp lệ: " + stt);
         }
-        return "HD" + ngay + String.format("%04d", so.longValue());
+        return stt <= 9999 ? "HD" + ngay + String.format("%04d", stt) : "HD" + ngay + stt;
     }
 
     public static LocalDate chuyenLocalDate(Object giaTri) {
@@ -132,8 +134,9 @@ public final class DuLieu {
         if (giaTri instanceof Number n) return n.longValue();
         if (giaTri == null) return 0L;
         String s = String.valueOf(giaTri).trim();
+        if (s.isEmpty()) return 0L;
         try {
-            return Long.parseLong(s);
+            return new BigDecimal(s).longValue();
         } catch (NumberFormatException ignored) {
             return 0L;
         }

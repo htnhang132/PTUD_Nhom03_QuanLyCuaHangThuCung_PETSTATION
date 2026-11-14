@@ -95,6 +95,7 @@ public final class LichLamViecService {
     }
 
     public List<Muc> layKhoang(LocalDate tu, LocalDate den) {
+        phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
         List<Muc> ketQua = new ArrayList<>();
         for (LichLamViec dongDuLieu : lichLamViecDAO.timKhoang(tu, den)) {
             String maCa =
@@ -167,15 +168,18 @@ public final class LichLamViecService {
     }
 
     public int tinhGioTrongThang(String ma, LocalDate ngay) {
+        phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
         LocalDate dauTien = ngay.withDayOfMonth(1);
         return (int) lichLamViecDAO.demThangSoGio(ma, dauTien, dauTien.plusMonths(1));
     }
 
     public int tinhGioTrongTuan(String ma, LocalDate thuHai) {
+        phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
         return (int) lichLamViecDAO.demThangSoGio(ma, thuHai, thuHai.plusDays(7));
     }
 
     public Map<String, Integer> tinhGioTatCaTrongTuan(LocalDate thuHai) {
+        phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
         return lichLamViecDAO.layGioTheoNhanVienKhoang(thuHai, thuHai.plusDays(7));
     }
 
@@ -242,9 +246,12 @@ public final class LichLamViecService {
     }
 
     private void thongBao(String suKien) {
-        for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
-            boLangNghe.khiThayDoi(suKien);
-        }
+        QuanLyGiaoDich.sauKhiCommit(
+                () -> {
+                    for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
+                        boLangNghe.khiThayDoi(suKien);
+                    }
+                });
     }
 
     public void xoaBoLangNghe() {

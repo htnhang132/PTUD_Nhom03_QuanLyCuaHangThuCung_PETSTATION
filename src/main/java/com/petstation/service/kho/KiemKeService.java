@@ -257,6 +257,7 @@ public final class KiemKeService {
     }
 
     public void apDungKiemKe(String maBienBan) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.XU_LY_PHE_DUYET);
         if (kiemKeDAO.demApDungKiemKe(maBienBan) == 0)
             throw new IllegalStateException("Biên bản đã xử lý.");
         for (ChiTietKiemKe dongDuLieu : kiemKeDAO.timApDungKiemKe(maBienBan))

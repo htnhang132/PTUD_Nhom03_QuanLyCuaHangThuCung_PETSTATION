@@ -7,6 +7,7 @@ import com.petstation.model.chung.LoaiDanhMuc;
 import com.petstation.model.nhansu.NhanVien;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.DanhMucService.CacDong;
+import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +46,7 @@ public final class NhanVienService {
     }
 
     public Optional<NhanVien> timTheoMa(String maNhanVien) {
+        PhienDangNhapService.macDinh().yeuCauHienTai();
         return QuanLyGiaoDich.macDinh()
                 .thucThi(ketNoi -> nhanVienDAO.timTheoMa(ketNoi, maNhanVien));
     }

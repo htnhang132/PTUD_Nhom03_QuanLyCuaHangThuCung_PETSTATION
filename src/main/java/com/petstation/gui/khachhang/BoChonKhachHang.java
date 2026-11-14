@@ -1,8 +1,10 @@
 package com.petstation.gui.khachhang;
 
 import com.petstation.dto.GioHang;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
+import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.khachhang.TichDiemService;
@@ -17,10 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -33,7 +33,7 @@ public final class BoChonKhachHang extends JPanel {
 
     private final JTextField oDauVao = new JTextField();
 
-    private final JPanel khungNhan = new JPanel();
+    private final JPanel khungNhan = new BoGocPanel(10, MauUngDung.mau(0xEEF5FF), true);
 
     private final JLabel nhanVanBanNhan = new JLabel();
 
@@ -56,25 +56,21 @@ public final class BoChonKhachHang extends JPanel {
         khungDong.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         oDauVao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oDauVao.setPreferredSize(new Dimension(180, 34));
+        oDauVao.putClientProperty("JTextField.placeholderText", "SĐT, mã hoặc tên khách...");
         oDauVao.getAccessibleContext().setAccessibleName("Tìm khách hàng");
         oDauVao.addActionListener(suKien -> timKiem());
-        JButton btnTim = new JButton("Tìm");
-        btnTim.setFocusPainted(false);
+        NutDinhDang btnTim = new NutDinhDang("Tìm", NutDinhDang.KieuNut.PHU);
         btnTim.addActionListener(suKien -> timKiem());
         khungDong.add(oDauVao, BorderLayout.CENTER);
         khungDong.add(btnTim, BorderLayout.EAST);
         add(khungDong);
         khungNhan.setLayout(new BorderLayout(8, 0));
-        khungNhan.setBackground(MauUngDung.mau(0xEAF3FF));
-        khungNhan.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.mau(0xBFD6F5)),
-                        new EmptyBorder(6, 10, 6, 10)));
+        khungNhan.setBorder(new EmptyBorder(8, 12, 8, 12));
         khungNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
-        khungNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
+        khungNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         nhanVanBanNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-        JButton btnXoa = new JButton("Bỏ chọn");
-        btnXoa.setFocusPainted(false);
+        NutDinhDang btnXoa = new NutDinhDang("Bỏ chọn", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXoa.addActionListener(suKien -> xoa());
         JPanel khungSuDungDiem = new JPanel();
         khungSuDungDiem.setOpaque(false);
@@ -84,8 +80,7 @@ public final class BoChonKhachHang extends JPanel {
         nhanNhanSuDung.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungSuDungDiem.add(nhanNhanSuDung);
         khungSuDungDiem.add(Box.createVerticalStrut(4));
-        JButton btnDoiVoucher = new JButton("Đổi voucher");
-        btnDoiVoucher.setFocusPainted(false);
+        NutDinhDang btnDoiVoucher = new NutDinhDang("Đổi voucher", NutDinhDang.KieuNut.TRONG_SUOT);
         btnDoiVoucher.addActionListener(e -> doiVoucher());
         JPanel khungDongDoiVoucher = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         khungDongDoiVoucher.setOpaque(false);

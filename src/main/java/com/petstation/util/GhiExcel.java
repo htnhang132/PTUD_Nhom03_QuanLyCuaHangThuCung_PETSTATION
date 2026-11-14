@@ -123,11 +123,19 @@ public final class GhiExcel {
             Cell o, String vanBan, String nhan, boolean laTien, CellStyle tien, CellStyle ngay) {
         if (laTien && vanBan.matches("[-−]?[0-9.,\\s]+[₫đ]?")) {
             try {
-                String chuan =
-                        vanBan.replace("−", "-")
-                                .replaceAll("[\\s₫đ]", "")
-                                .replaceFirst("[.,]00$", "");
-                o.setCellValue(Double.parseDouble(chuan.replaceAll("[.,]", "")));
+                String chuan = vanBan.replace("−", "-").replaceAll("[\\s₫đ]", "");
+                if (chuan.matches("^-?\\d{1,3}([.,]\\d{3})+$")) {
+                    chuan = chuan.replaceAll("[.,]", "");
+                } else {
+                    chuan = chuan.replaceFirst("[.,]00$", "").replace(',', '.');
+                    int lastDot = chuan.lastIndexOf('.');
+                    if (lastDot > 0 && chuan.indexOf('.') != lastDot) {
+                        chuan =
+                                chuan.substring(0, lastDot).replace(".", "")
+                                        + chuan.substring(lastDot);
+                    }
+                }
+                o.setCellValue(Double.parseDouble(chuan));
                 o.setCellStyle(tien);
                 return;
             } catch (NumberFormatException ex) {

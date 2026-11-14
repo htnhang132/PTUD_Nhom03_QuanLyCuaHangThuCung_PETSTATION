@@ -21,8 +21,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 public final class ThanhDanhSach extends JPanel {
-    private static final int CAO_HANG = 32;
-    private static final int KHOANG_CACH_NGANG = 5;
+    private static final int CAO_HANG = 34;
+    private static final int KHOANG_CACH_NGANG = 6;
     private static final int KHOANG_CACH_DOC = 6;
     private int chieuCaoDaTinh = -1;
 

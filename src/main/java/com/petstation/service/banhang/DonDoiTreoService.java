@@ -76,6 +76,7 @@ public final class DonDoiTreoService {
                         hang.getMa(),
                         hang.getMa(),
                         yc.getSoLuong(),
+                        hang.getSoLuong(),
                         yc.getLyDo(),
                         true,
                         true));
@@ -83,6 +84,17 @@ public final class DonDoiTreoService {
 
     public void chuyenThanhToan(
             String maHoaDon, GioHang gio, String maDong, int sl, String ma, String lyDo) {
+        chuyenThanhToan(maHoaDon, gio, maDong, sl, sl, ma, lyDo);
+    }
+
+    public void chuyenThanhToan(
+            String maHoaDon,
+            GioHang gio,
+            String maDong,
+            int slTra,
+            int slMoi,
+            String ma,
+            String lyDo) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.BAN_HANG);
         QuanLyGiaoDich.macDinh()
                 .thucThi(
@@ -93,7 +105,7 @@ public final class DonDoiTreoService {
                                             "Đơn đổi treo đã được mở hoặc xóa ở nơi khác.");
                                 new BanHangService().xoaTreo(maHoaDon);
                             }
-                            new DoiTraService().lapDoiHang(gio, maDong, sl, ma, sl, lyDo);
+                            new DoiTraService().lapDoiHang(gio, maDong, slTra, ma, slMoi, lyDo);
                             return null;
                         });
     }

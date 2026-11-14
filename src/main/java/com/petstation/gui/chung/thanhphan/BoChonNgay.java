@@ -64,6 +64,7 @@ public class BoChonNgay extends JPanel {
         this.hienTaiThang = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getMonthValue();
         this.hienTaiNam = (ngayBanDau == null ? LocalDate.now() : ngayBanDau).getYear();
         oTruongVanBan = new JTextField(10);
+        oTruongVanBan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongVanBan.setEditable(false);
         oTruongVanBan.setBackground(Color.WHITE);
         if (ngayDuocChon != null) {
@@ -72,7 +73,7 @@ public class BoChonNgay extends JPanel {
         btnNutLich = new JButton(new BieuTuong.Net(BieuTuong.Net.Kieu.LICH, 18, MauUngDung.NAU));
         btnNutLich.setToolTipText("Chọn ngày");
         btnNutLich.getAccessibleContext().setAccessibleName("Chọn ngày");
-        btnNutLich.setPreferredSize(new Dimension(35, 25));
+        btnNutLich.setPreferredSize(new Dimension(34, 34));
         btnNutLich.setFocusPainted(false);
         btnNutLich.addActionListener(suKien -> hienThiLich());
         add(oTruongVanBan, BorderLayout.CENTER);

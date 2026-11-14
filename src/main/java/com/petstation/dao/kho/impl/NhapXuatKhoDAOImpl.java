@@ -108,7 +108,10 @@ public final class NhapXuatKhoDAOImpl implements NhapXuatKhoDAO {
     public int capNhatNhapKho(int soLuong, String maLo) {
         return ThaoTacSQL.capNhat(
                 "UPDATE lo_hang SET so_luong_ton = so_luong_ton + ?,"
-                        + " so_luong_nhap = COALESCE(so_luong_nhap, 0) + ? WHERE ma_lo = ?",
+                        + " so_luong_nhap = COALESCE(so_luong_nhap, 0) + ?,"
+                        + " trang_thai = CASE WHEN so_luong_ton + ? > 0 THEN 'SAN_SANG' ELSE"
+                        + " trang_thai END WHERE ma_lo = ?",
+                soLuong,
                 soLuong,
                 soLuong,
                 maLo);
@@ -239,8 +242,10 @@ public final class NhapXuatKhoDAOImpl implements NhapXuatKhoDAO {
     @Override
     public int truTonXuatHuy(int soLuong, String maLo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton = so_luong_ton - ? WHERE ma_lo = ? AND"
-                        + " so_luong_ton >= ?",
+                "UPDATE lo_hang SET so_luong_ton = so_luong_ton - ?,"
+                        + " trang_thai = CASE WHEN so_luong_ton - ? <= 0 THEN 'HET_HANG' ELSE"
+                        + " trang_thai END WHERE ma_lo = ? AND so_luong_ton >= ?",
+                soLuong,
                 soLuong,
                 maLo,
                 soLuong);

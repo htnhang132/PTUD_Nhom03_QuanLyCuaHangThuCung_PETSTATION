@@ -82,9 +82,12 @@ public final class DinhDang {
 
     public static long doc(String vanBan) {
         if (vanBan == null) return -1;
-        String cacChuSo = vanBan.replaceAll("[^0-9]", "");
+        String daTrim = vanBan.trim().replace("−", "-");
+        boolean am = daTrim.startsWith("-");
+        String cacChuSo = daTrim.replaceAll("[^0-9]", "");
         if (cacChuSo.isEmpty() || cacChuSo.length() > 12) return -1;
-        return Long.parseLong(cacChuSo);
+        long ketQua = Long.parseLong(cacChuSo);
+        return am ? -ketQua : ketQua;
     }
 
     public static String ngay(LocalDate d) {

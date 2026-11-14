@@ -1,6 +1,7 @@
 package com.petstation.gui.hethong;
 
 import com.petstation.gui.chung.BieuTuong;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.ChinhFrame;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
@@ -118,10 +119,9 @@ public class DangNhapFrame extends JFrame {
     }
 
     private JPanel taoTheDangNhap() {
-        JPanel khungThe = new JPanel();
-        khungThe.setBackground(MauUngDung.NEN_KEM);
+        BoGocPanel khungThe = new BoGocPanel(16, MauUngDung.NEN_KEM, true);
         khungThe.setLayout(new BoxLayout(khungThe, BoxLayout.Y_AXIS));
-        khungThe.setBorder(new EmptyBorder(28, 48, 28, 48));
+        khungThe.setBorder(new EmptyBorder(28, 44, 28, 44));
         khungThe.setAlignmentX(Component.CENTER_ALIGNMENT);
         themPhanDauThe(khungThe);
         cauHinhTruongDangNhap();

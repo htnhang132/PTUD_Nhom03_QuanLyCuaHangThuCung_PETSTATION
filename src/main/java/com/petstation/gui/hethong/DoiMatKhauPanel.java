@@ -73,13 +73,12 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         JLabel nhanNhanDoManh = taoNhanDoManhMatKhau(khungNoiDung, gc);
         themGhiChuQuyTacMatKhau(khungNoiDung, gc);
         themThanhThaoTacDoiMatKhau(khungNoiDung, gc, nhanNhanDoManh);
-        khungNoiDung.setPreferredSize(new Dimension(520, 425));
+        khungNoiDung.setMinimumSize(new Dimension(480, 0));
         return khungNoiDung;
     }
 
     private void themPhanDauDoiMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
-        JLabel nhanTieuDe = taoTieuDeMuc("Đổi mật khẩu");
-        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
+        JLabel nhanTieuDe = taoTieuDeManHinh("Đổi mật khẩu");
         JLabel nhanGoiY = new JLabel("Cập nhật mật khẩu đăng nhập của tài khoản hiện tại");
         nhanGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
         gc.gridx = 0;

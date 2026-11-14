@@ -21,7 +21,7 @@ public class BoChonKhoangNgay extends JPanel {
     private JPanel khungTuyChinhNgayVungHienThi;
 
     public BoChonKhoangNgay() {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        setLayout(new BorderLayout(0, 4));
         setOpaque(false);
         String[] cacGiaTriCoSan = {
             "Hôm nay",

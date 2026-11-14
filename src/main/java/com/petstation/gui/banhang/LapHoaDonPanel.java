@@ -182,7 +182,6 @@ public class LapHoaDonPanel extends CoSoPanel {
                         SwingUtilities.invokeLater(dongBo);
                     }
                 };
-        this.banHang.themBoLangNghe(this.boLangNgheGioHang);
     }
 
     private void khoiTaoBangVaTimKiemPos() {
@@ -243,10 +242,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 
     private JPanel taoKhuVucQuet() {
         BoGocPanel panel = layThe(new BorderLayout(0, 8));
-        panel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.DO_THUONG_HIEU, 2, true),
-                        new EmptyBorder(10, 14, 10, 14)));
+        panel.setBorder(new EmptyBorder(12, 16, 12, 16));
         JLabel tieuDe = new JLabel("QUÉT MÃ VẠCH SẢN PHẨM (POS)");
         tieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         tieuDe.setForeground(MauUngDung.DO_THUONG_HIEU);
@@ -682,8 +678,14 @@ public class LapHoaDonPanel extends CoSoPanel {
     @Override
     public void xuLyHoanTac() {
         if (lichSuThem.isEmpty()) return;
-        lichSuThem.pop();
-        thayDoiSoLuongDongChon(-1);
+        String maSanPham = lichSuThem.pop();
+        for (int i = gioHang.size() - 1; i >= 0; i--) {
+            if (gioHang.get(i).getMa().equals(maSanPham)) {
+                final int dong = i;
+                napDanhSachSanPhamNen(ds -> apDungThayDoiSoLuong(dong, maSanPham, -1, ds));
+                return;
+            }
+        }
     }
 
     @Override

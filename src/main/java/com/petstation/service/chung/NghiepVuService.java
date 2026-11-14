@@ -62,7 +62,7 @@ public class NghiepVuService {
         phienDangNhapService.yeuCauHienTai();
         return nghiepVuDAO.layCacDong(
                 kieu,
-                kieu == LoaiNghiepVu.GIO_HANG_TREO ? phienDangNhapService.layTenDangNhap() : "");
+                kieu == LoaiNghiepVu.GIO_HANG_TREO ? phienDangNhapService.layMaNhanVien() : "");
     }
 
     public List<MucLuaChon> layLuaChonThuCung() {

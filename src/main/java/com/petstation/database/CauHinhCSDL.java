@@ -49,6 +49,8 @@ public final class CauHinhCSDL {
                         ? thuMuc.resolve(Path.of("config", "db.properties"))
                         : thuMuc.resolve(chiDinh);
         if ((chiDinh == null || chiDinh.isBlank()) && !Files.isRegularFile(tepCauHinh))
+            tepCauHinh = thuMuc.resolve("db.properties");
+        if ((chiDinh == null || chiDinh.isBlank()) && !Files.isRegularFile(tepCauHinh))
             tepCauHinh = thuMuc.resolve(Path.of("src", "main", "resources", "db.properties"));
         try {
             if (chiDinh != null && !chiDinh.isBlank() || Files.isRegularFile(tepCauHinh))
@@ -73,7 +75,8 @@ public final class CauHinhCSDL {
                                 cacThuocTinh,
                                 "db.loginTimeoutSeconds",
                                 "10"));
-        if (url.isBlank() || nguoiDung.isBlank()) {
+        boolean xacThucWindows = url.toLowerCase().contains("integratedsecurity=true");
+        if (url.isBlank() || (!xacThucWindows && nguoiDung.isBlank())) {
             throw new IllegalArgumentException(
                     "Chưa cấu hình SQL Server. Hãy đặt PETSTATION_DB_URL, PETSTATION_DB_USER, "
                             + "PETSTATION_DB_PASSWORD hoặc tạo config/db.properties cục bộ.");

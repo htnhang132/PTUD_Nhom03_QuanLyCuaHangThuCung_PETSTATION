@@ -125,7 +125,8 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
         return ThaoTacSQL.capNhat(
                 "UPDATE yeu_cau_phe_duyet SET"
                         + " trang_thai='DA_DUYET', ma_nhan_vien_xu_ly=?, xu_ly_luc=SYSDATETIME()"
-                        + " WHERE ma_yeu_cau=?",
+                        + " WHERE ma_yeu_cau=? AND trang_thai IN"
+                        + " ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 maNhanVienXuLy,
                 maYeuCau);
     }
@@ -159,7 +160,8 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     public int danhDauYeuCauTuChoi(String maNhanVienXuLy, String lyDo, String maYeuCau) {
         return ThaoTacSQL.capNhat(
                 "UPDATE yeu_cau_phe_duyet SET trang_thai='TU_CHOI', ma_nhan_vien_xu_ly=?,"
-                        + " phan_hoi=?, xu_ly_luc=SYSDATETIME() WHERE ma_yeu_cau=?",
+                        + " phan_hoi=?, xu_ly_luc=SYSDATETIME() WHERE ma_yeu_cau=? AND"
+                        + " trang_thai IN ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 maNhanVienXuLy,
                 lyDo,
                 maYeuCau);

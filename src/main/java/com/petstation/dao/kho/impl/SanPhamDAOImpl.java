@@ -17,7 +17,7 @@ public final class SanPhamDAOImpl implements SanPhamDAO {
     public List<SanPham> layTatCa() {
         return truyVanDanhSach(
                 "SELECT ma_san_pham, ten, nhom_hang, don_vi_tinh, gia_ban,"
-                        + " gia_nhap_gan_nhat, vat_phan_tram, trang_thai, mo_ta, barcode FROM"
+                        + " gia_nhap_gan_nhat, trang_thai, mo_ta, barcode FROM"
                         + " san_pham ORDER BY ma_san_pham ASC",
                 r -> chuyenDong(r));
     }
@@ -27,9 +27,9 @@ public final class SanPhamDAOImpl implements SanPhamDAO {
         List<Object[]> rows =
                 truyVan(
                         "SELECT ma_san_pham, ten, nhom_hang, don_vi_tinh, gia_ban,"
-                            + " gia_nhap_gan_nhat, vat_phan_tram, trang_thai, mo_ta, barcode FROM"
-                            + " san_pham WHERE (ma_san_pham = CAST(? AS VARCHAR) OR barcode ="
-                            + " CAST(? AS VARCHAR))",
+                                + " gia_nhap_gan_nhat, trang_thai, mo_ta, barcode FROM"
+                                + " san_pham WHERE (ma_san_pham = CAST(? AS VARCHAR) OR barcode ="
+                                + " CAST(? AS VARCHAR))",
                         maSanPham,
                         maSanPham);
         if (rows.isEmpty()) return null;
@@ -65,8 +65,9 @@ public final class SanPhamDAOImpl implements SanPhamDAO {
         sp.setDonVi(r[3] != null ? r[3].toString() : null);
         sp.setGiaBan(r[4] != null ? ((Number) r[4]).longValue() : 0L);
         sp.setGiaNhapGanNhat(r[5] != null ? ((Number) r[5]).longValue() : 0L);
-        sp.setMoTa(r[8] != null ? r[8].toString() : null);
-        sp.setBarcode(r[9] != null ? r[9].toString() : null);
+        sp.setTrangThai(r[6] != null ? r[6].toString() : null);
+        sp.setMoTa(r[7] != null ? r[7].toString() : null);
+        sp.setBarcode(r[8] != null ? r[8].toString() : null);
         return sp;
     }
 }

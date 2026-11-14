@@ -424,10 +424,14 @@ public final class DatPhongHotelDialog {
         LocalDateTime ngayVao = spNgayVao.layGiaTri();
         LocalDateTime ngayRa = spNgayRa.layGiaTri();
         String ghiChu = oGhiChu.getText().trim();
-        if (maThuCung.isBlank() || maPhong.isBlank())
-            throw new IllegalArgumentException("Vui lòng chọn thú cưng và phòng.");
-        if (!ngayRa.isAfter(ngayVao))
-            throw new IllegalArgumentException("Ngày trả phòng phải sau ngày nhận phòng.");
+        if (maThuCung.isBlank() || maPhong.isBlank()) {
+            HopThoai.hienThiCanhBao(hopThoai, "Vui lòng chọn thú cưng và phòng.");
+            return;
+        }
+        if (!ngayRa.isAfter(ngayVao)) {
+            HopThoai.hienThiCanhBao(hopThoai, "Ngày trả phòng phải sau ngày nhận phòng.");
+            return;
+        }
         btnLuu.setEnabled(false);
         TacVuNen.chayCoPhien(
                 hopThoai,

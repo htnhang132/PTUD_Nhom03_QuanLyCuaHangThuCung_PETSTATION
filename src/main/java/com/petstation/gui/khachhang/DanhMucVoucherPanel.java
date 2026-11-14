@@ -3,6 +3,7 @@ package com.petstation.gui.khachhang;
 import static com.petstation.gui.chung.TruongDanhMuc.docNgay;
 
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
+import com.petstation.gui.chung.TacVuNen;
 import com.petstation.model.chung.Quyen;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.hethong.PhienDangNhapService;
@@ -12,12 +13,17 @@ import com.petstation.util.DinhDang;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.SwingUtilities;
 
 // Màn hình con (Tab 2) trong Danh mục > Điểm thưởng và voucher
 public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     private final TichDiemService tichDiemService = new TichDiemService();
+    private final Map<String, Boolean> quyenSuaCache = new ConcurrentHashMap<>();
+    private final Set<String> dangTaiQuyenSua = ConcurrentHashMap.newKeySet();
 
     // 1. KIỂM TRA PHÂN QUYỀN & RÀNG BUỘC CHỈNH SỬA BẢN GHI VOUCHER
 
@@ -28,7 +34,29 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
 
     @Override
     protected boolean coTheSuaBanGhi(Object[] dong) {
-        return dong != null && tichDiemService.coTheSuaDanhMuc(String.valueOf(dong[0]));
+        if (dong == null || dong[0] == null) return false;
+        if (DinhDang.doc(String.valueOf(dong[4])) > 0) return false;
+        String ma = String.valueOf(dong[0]);
+        Boolean cached = quyenSuaCache.get(ma);
+        if (cached != null) return cached;
+        if (!SwingUtilities.isEventDispatchThread() || !DieuKienTaiDuLieu.coTheTachLuong()) {
+            boolean choPhep = tichDiemService.coTheSuaDanhMuc(ma);
+            quyenSuaCache.put(ma, choPhep);
+            return choPhep;
+        }
+        if (dangTaiQuyenSua.add(ma)) {
+            TacVuNen.chayCoPhien(
+                    this,
+                    this::isDisplayable,
+                    () -> tichDiemService.coTheSuaDanhMuc(ma),
+                    choPhep -> {
+                        dangTaiQuyenSua.remove(ma);
+                        quyenSuaCache.put(ma, Boolean.TRUE.equals(choPhep));
+                        capNhatTrangThaiNut();
+                    },
+                    ex -> dangTaiQuyenSua.remove(ma));
+        }
+        return false;
     }
 
     // 2. KHỞI TẠO MÀN HÌNH & CẤU HÌNH BỘ LỌC / CHUẨN HÓA TRẠNG THÁI VOUCHER

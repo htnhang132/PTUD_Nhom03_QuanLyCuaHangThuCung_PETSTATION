@@ -95,8 +95,13 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     @Override
     public int xoaGioHangTreo(String maHoaDon, String maNhanVien) {
+        String nv = maNhanVien == null ? "" : maNhanVien.trim();
         return ThaoTacSQL.capNhat(
-                "DELETE FROM hoa_don WHERE ma_hoa_don=? AND trang_thai='GIO_TREO'", maHoaDon);
+                "DELETE FROM hoa_don WHERE ma_hoa_don=? AND trang_thai='GIO_TREO' AND (? = '' OR"
+                        + " ma_nhan_vien=?)",
+                maHoaDon,
+                nv,
+                nv);
     }
 
     @Override
@@ -499,10 +504,13 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     @Override
     public long demGioTreoCuaTaiKhoan(String maHoaDon, String maNhanVien) {
+        String nv = maNhanVien == null ? "" : maNhanVien.trim();
         return ThaoTacSQL.laySo(
                 "SELECT COUNT(*) FROM hoa_don WITH(UPDLOCK,HOLDLOCK) WHERE ma_hoa_don=? AND"
-                        + " trang_thai='GIO_TREO'",
-                maHoaDon);
+                        + " trang_thai='GIO_TREO' AND (? = '' OR ma_nhan_vien=?)",
+                maHoaDon,
+                nv,
+                nv);
     }
 
     @Override
@@ -544,10 +552,13 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     @Override
     public long demXoaTreo(String maHoaDon, String maNhanVien) {
+        String nv = maNhanVien == null ? "" : maNhanVien.trim();
         return ThaoTacSQL.laySo(
                 "SELECT COUNT(*) FROM hoa_don WITH(UPDLOCK,HOLDLOCK) WHERE ma_hoa_don=? AND"
-                        + " trang_thai='GIO_TREO'",
-                maHoaDon);
+                        + " trang_thai='GIO_TREO' AND (? = '' OR ma_nhan_vien=?)",
+                maHoaDon,
+                nv,
+                nv);
     }
 
     @Override
@@ -711,6 +722,8 @@ SELECT JSON_VALUE(j.noi_dung,'$.timHoaDon'),
        JSON_VALUE(j.noi_dung,'$.dongGoc'),
        JSON_VALUE(j.noi_dung,'$.maThayThe'), JSON_VALUE(j.noi_dung,'$.timHang'),
        CAST(JSON_VALUE(j.noi_dung,'$.soLuong') AS int),
+       COALESCE(CAST(JSON_VALUE(j.noi_dung,'$.soLuongMoi') AS int),
+                CAST(JSON_VALUE(j.noi_dung,'$.soLuong') AS int)),
        JSON_VALUE(j.noi_dung,'$.lyDo'),
        JSON_VALUE(j.noi_dung,'$.nguyenTem'), JSON_VALUE(j.noi_dung,'$.chuaDung')
 FROM hoa_don h WITH(UPDLOCK,HOLDLOCK)
@@ -729,9 +742,10 @@ WHERE h.ma_hoa_don = ? AND h.trang_thai='GIO_TREO'
                 (String) d[2],
                 (String) d[3],
                 ((Number) d[4]).intValue(),
-                (String) d[5],
-                "true".equals(d[6]),
-                "true".equals(d[7]));
+                d[5] != null ? ((Number) d[5]).intValue() : ((Number) d[4]).intValue(),
+                (String) d[6],
+                "true".equals(d[7]),
+                "true".equals(d[8]));
     }
 
     @Override
@@ -745,7 +759,7 @@ WHERE h.ma_hoa_don = ? AND h.trang_thai='GIO_TREO'
 DECLARE @nhap nvarchar(max) = (SELECT 'DOI_PHU_KIEN' loai, 1 v,
     CAST(? AS nvarchar(max)) timHoaDon, CAST(? AS nvarchar(max)) dongGoc,
     CAST(? AS nvarchar(max)) maThayThe, CAST(? AS nvarchar(max)) timHang,
-    CAST(? AS int) soLuong, CAST(? AS nvarchar(max)) lyDo,
+    CAST(? AS int) soLuong, CAST(? AS int) soLuongMoi, CAST(? AS nvarchar(max)) lyDo,
     CAST(? AS bit) nguyenTem, CAST(? AS bit) chuaDung
     FOR JSON PATH, WITHOUT_ARRAY_WRAPPER);
 IF DATALENGTH(@nhap)>2000
@@ -761,6 +775,7 @@ WHERE ma_hoa_don = ? AND trang_thai='GIO_TREO';
                 don.maThayThe(),
                 don.timHang(),
                 don.soLuong(),
+                don.soLuongMoi(),
                 don.lyDo(),
                 don.nguyenTem(),
                 don.chuaDung(),
@@ -774,21 +789,16 @@ WHERE ma_hoa_don = ? AND trang_thai='GIO_TREO';
     public String layMaHoaDonGoc(String maDong) {
         if (maDong != null && !maDong.isBlank()) {
             int sep = maDong.indexOf(':');
-            Object ma =
-                    sep > 0
-                            ? ThaoTacSQL.layGiaTriDon(
-                                    "SELECT TOP 1 h.ma_hoa_don FROM hoa_don h JOIN"
-                                            + " chi_tiet_hoa_don c ON c.ma_hoa_don=h.ma_hoa_don"
-                                            + " WHERE h.ma_hoa_don=? AND c.ma_san_pham=?",
-                                    maDong.substring(0, sep),
-                                    maDong.substring(sep + 1))
-                            : ThaoTacSQL.layGiaTriDon(
-                                    "SELECT TOP 1 h.ma_hoa_don FROM hoa_don h JOIN"
-                                            + " chi_tiet_hoa_don c ON c.ma_hoa_don=h.ma_hoa_don"
-                                            + " WHERE c.ma_san_pham=? ORDER BY h.thanh_toan_luc"
-                                            + " DESC",
-                                    maDong);
-            if (ma != null) return ma.toString();
+            if (sep > 0 && sep < maDong.length() - 1) {
+                Object ma =
+                        ThaoTacSQL.layGiaTriDon(
+                                "SELECT TOP 1 h.ma_hoa_don FROM hoa_don h JOIN"
+                                        + " chi_tiet_hoa_don c ON c.ma_hoa_don=h.ma_hoa_don"
+                                        + " WHERE h.ma_hoa_don=? AND c.ma_san_pham=?",
+                                maDong.substring(0, sep),
+                                maDong.substring(sep + 1));
+                if (ma != null) return ma.toString();
+            }
         }
         throw new IllegalArgumentException("Không tìm thấy hóa đơn gốc.");
     }

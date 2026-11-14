@@ -200,13 +200,9 @@ public class BaoCaoPanel extends CoSoPanel {
 
     private JPanel taoPhanDauBaoCao(String tieuDe, String phu, ThanhDanhSach tools) {
         JPanel header = taoVungTrongSuot(new BorderLayout(0, 8));
-        JPanel title = taoVungTrongSuot(new BorderLayout(0, 4));
-        title.add(taoTieuDeMuc(tieuDe), BorderLayout.NORTH);
-        JLabel note = new JLabel(phu);
-        note.setForeground(MauUngDung.VAN_BAN_XAM);
-        title.add(note);
-        header.add(title, BorderLayout.NORTH);
+        header.add(taoTieuDeManHinh(tieuDe, phu), BorderLayout.NORTH);
         header.add(tools);
+        nhanKhoang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhanKhoang.setForeground(MauUngDung.VAN_BAN_XAM);
         header.add(nhanKhoang, BorderLayout.SOUTH);
         JPanel top = taoVungTrongSuot(new BorderLayout(0, 8));

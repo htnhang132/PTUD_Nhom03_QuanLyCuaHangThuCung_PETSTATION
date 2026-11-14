@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -81,7 +82,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         setLayout(new BorderLayout());
         JPanel khungNoiDung = new JPanel(new BorderLayout(0, 12));
         khungNoiDung.setOpaque(false);
-        khungNoiDung.setBorder(new EmptyBorder(10, 10, 10, 10));
         JPanel khungTieuDe = taoTieuDe();
         JPanel khungBoLocVungHienThi = taoBoLocVungHienThi();
         JPanel khungDauTrang = taoVungTrongSuot(new BorderLayout(0, 10));
@@ -97,7 +97,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         cboSuKienKieuHopChon.addActionListener(e -> apDungCacBoLoc());
         cboKetQuaHopChon.addActionListener(e -> apDungCacBoLoc());
         taiLai();
-        NhatKyHeThongService.macDinh().themBoLangNghe(boLangNgheNhatKy);
     }
 
     private final BoLangNgheSuKien<String> boLangNgheNhatKy =
@@ -127,8 +126,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         JPanel khungTraiMuc = new JPanel();
         khungTraiMuc.setOpaque(false);
         khungTraiMuc.setLayout(new BoxLayout(khungTraiMuc, BoxLayout.Y_AXIS));
-        JLabel nhanTieuDe = taoTieuDeMuc("Nhật ký hệ thống");
-        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
+        JLabel nhanTieuDe = taoTieuDeManHinh("Nhật ký hệ thống");
         khungTraiMuc.add(nhanTieuDe);
         khungTraiMuc.add(Box.createVerticalStrut(5));
         JLabel nhanTieuDePhu = new JLabel("Tra cứu lịch sử thao tác và sự kiện bảo mật");
@@ -377,7 +375,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         TacVuNen.chayCoPhien(
                 this,
                 () -> luot == luotTai,
-                () -> new ArrayList<>(NhatKyHeThongService.macDinh().layCacMuc()),
+                () -> new ArrayList<>(NhatKyHeThongService.macDinh().layCacMuc(tu, den)),
                 cacMuc -> apDungDanhSachNhatKy(cacMuc, tu, den, kieuKhoa, ketQua, nguoiDung));
     }
 
@@ -391,9 +389,13 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         moHinhBang.setRowCount(0);
         int cacCanhBao = 0;
         for (DongNhatKyHeThong suKien : cacMuc) {
-            LocalDate ngayDangXet = suKien.thoiGian().toLocalDate();
-            if (tu != null && ngayDangXet.isBefore(tu)) continue;
-            if (den != null && ngayDangXet.isAfter(den)) continue;
+            if (suKien.thoiGian() != null) {
+                LocalDate ngayDangXet = suKien.thoiGian().toLocalDate();
+                if (tu != null && ngayDangXet.isBefore(tu)) continue;
+                if (den != null && ngayDangXet.isAfter(den)) continue;
+            } else if (tu != null || den != null) {
+                continue;
+            }
             if (!kieuKhoa.isEmpty() && !kieuKhoa.equals(suKien.kieu())) continue;
             if (!ketQua.equals("Tất cả") && !ketQua.equals(suKien.ketQua())) continue;
             String tenNguoiDung =
@@ -431,11 +433,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     private void xuLyHienThiChiTiet(int dong) {
         int moHinhDong = bangBang.convertRowIndexToModel(dong);
-        String thoiGian = moHinhBang.getValueAt(moHinhDong, 0).toString();
-        String nguoiDung = moHinhBang.getValueAt(moHinhDong, 1).toString();
-        String thaoTac = moHinhBang.getValueAt(moHinhDong, 2).toString();
-        String kieuSuKien = moHinhBang.getValueAt(moHinhDong, 3).toString();
-        String ketQua = moHinhBang.getValueAt(moHinhDong, 4).toString();
+        String thoiGian = Objects.toString(moHinhBang.getValueAt(moHinhDong, 0), "");
+        String nguoiDung = Objects.toString(moHinhBang.getValueAt(moHinhDong, 1), "");
+        String thaoTac = Objects.toString(moHinhBang.getValueAt(moHinhDong, 2), "");
+        String kieuSuKien = Objects.toString(moHinhBang.getValueAt(moHinhDong, 3), "");
+        String ketQua = Objects.toString(moHinhBang.getValueAt(moHinhDong, 4), "");
         String chiTiet =
                 String.format(
                         "CHI TIẾT SỰ KIỆN\n\n"

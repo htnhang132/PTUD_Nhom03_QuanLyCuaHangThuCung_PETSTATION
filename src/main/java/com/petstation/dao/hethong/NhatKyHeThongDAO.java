@@ -4,6 +4,7 @@ import com.petstation.dto.DongNhatKyHeThong;
 import com.petstation.model.hethong.NhatKyHeThong;
 
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface NhatKyHeThongDAO {
@@ -13,4 +14,8 @@ public interface NhatKyHeThongDAO {
             String maNhanVien, String hanhDong, String ghiChu, String loaiSuKien, String ketQua);
 
     List<DongNhatKyHeThong> timCacMuc();
+
+    default List<DongNhatKyHeThong> timCacMuc(LocalDate tuNgay, LocalDate denNgay) {
+        return timCacMuc();
+    }
 }

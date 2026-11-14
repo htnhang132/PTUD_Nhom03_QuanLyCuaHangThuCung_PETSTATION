@@ -12,9 +12,11 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
 
     public DanhMucNhieuTabPanel(String[] cacTieuDe, JPanel[] cacThanhPhanCon) {
         setLayout(new BorderLayout());
+        setBackground(MauUngDung.NEN_KEM);
+        setBorder(BorderFactory.createEmptyBorder(16, 24, 20, 24));
         tabCacTab.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         for (int chiSo = 0; chiSo < cacTieuDe.length; chiSo++) {
-            cacThanhPhanCon[chiSo].setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+            cacThanhPhanCon[chiSo].setBorder(BorderFactory.createEmptyBorder(14, 0, 0, 0));
             tabCacTab.addTab(cacTieuDe[chiSo], cacThanhPhanCon[chiSo]);
         }
         tabCacTab.addChangeListener(suKien -> xuLyHienThi());

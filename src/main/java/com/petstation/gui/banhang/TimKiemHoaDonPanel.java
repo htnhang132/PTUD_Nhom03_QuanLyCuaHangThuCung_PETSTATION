@@ -3,6 +3,7 @@ package com.petstation.gui.banhang;
 import com.petstation.dto.ChiTietBienLai;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BangNghiepVuPanel;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
@@ -16,12 +17,12 @@ import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.pheduyet.PheDuyetService;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileWriter;
@@ -104,9 +105,9 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
             }
         }
         thanh.removeAll();
-        layOTimKiem().setPreferredSize(new Dimension(190, 32));
-        oTuNgay.setPreferredSize(new Dimension(130, 32));
-        oDenNgay.setPreferredSize(new Dimension(130, 32));
+        layOTimKiem().setPreferredSize(new Dimension(190, 34));
+        oTuNgay.setPreferredSize(new Dimension(135, 34));
+        oDenNgay.setPreferredSize(new Dimension(135, 34));
         thanh.add(layOTimKiem());
         thanh.themBoLoc("Từ ngày:", oTuNgay);
         thanh.themBoLoc("Đến ngày:", oDenNgay);
@@ -117,15 +118,14 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     }
 
     private JPanel taoKhungXemTruocHoaDon() {
-        JPanel khungChiTietPhai = new JPanel(new BorderLayout(0, 8));
-        khungChiTietPhai.setPreferredSize(new Dimension(340, 0));
-        khungChiTietPhai.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 1, 0, 0, MauUngDung.XAM_VIEN_NHE),
-                        new EmptyBorder(0, 10, 0, 4)));
+        BoGocPanel khungChiTietPhai = new BoGocPanel(12, Color.WHITE, true);
+        khungChiTietPhai.setLayout(new BorderLayout(0, 8));
+        khungChiTietPhai.setPreferredSize(new Dimension(350, 0));
+        khungChiTietPhai.setBorder(new EmptyBorder(12, 14, 12, 14));
         JPanel khungTieuDeChiTietPhai = new JPanel(new BorderLayout());
-        nhanTrangThaiHoaDon.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        nhanTrangThaiHoaDon.setForeground(MauUngDung.XAM_TIEU_DE);
+        khungTieuDeChiTietPhai.setOpaque(false);
+        nhanTrangThaiHoaDon.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        nhanTrangThaiHoaDon.setForeground(MauUngDung.NAU);
         khungTieuDeChiTietPhai.add(nhanTrangThaiHoaDon, BorderLayout.CENTER);
         khungChiTietPhai.add(khungTieuDeChiTietPhai, BorderLayout.NORTH);
         JScrollPane scrHoaDon =
@@ -133,10 +133,11 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         khungHoaDon,
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrHoaDon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_TRUNG));
+        scrHoaDon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         khungChiTietPhai.add(scrHoaDon, BorderLayout.CENTER);
-        JPanel khungThaoTacHoaDon = new JPanel(new GridLayout(3, 1, 0, 6));
-        khungThaoTacHoaDon.setBorder(new EmptyBorder(6, 0, 4, 0));
+        JPanel khungThaoTacHoaDon = new JPanel(new GridLayout(3, 1, 0, 8));
+        khungThaoTacHoaDon.setOpaque(false);
+        khungThaoTacHoaDon.setBorder(new EmptyBorder(6, 0, 0, 0));
         btnInLai =
                 taoNutXemTruocHoaDon(
                         "In lại hóa đơn (K80 / A5)",
@@ -172,6 +173,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         remove(centerComp);
         JSplitPane splitPane =
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, centerComp, khungChiTietPhai);
+        splitPane.setDividerSize(8);
         splitPane.setResizeWeight(1.0);
         splitPane.setContinuousLayout(true);
         splitPane.setBorder(null);
@@ -379,16 +381,19 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
 
     private void xuLyInHoaDon() {
         if (bienLaiDangChon == null) return;
+        String soHoaDon = bienLaiDangChon.getSoHoaDon();
         PrinterJob job = PrinterJob.getPrinterJob();
         job.setPrintable(khungHoaDon);
         if (job.printDialog()) {
-            try {
-                job.print();
-                HopThoai.hienThiThanhCong(
-                        this, "Đã gửi lệnh in hóa đơn " + bienLaiDangChon.getSoHoaDon());
-            } catch (PrinterException ex) {
-                HopThoai.hienThiLoi(this, "Lỗi khi in hóa đơn: " + ex.getMessage());
-            }
+            TacVuNen.chay(
+                    () -> {
+                        job.print();
+                        return null;
+                    },
+                    v -> HopThoai.hienThiThanhCong(this, "Đã gửi lệnh in hóa đơn " + soHoaDon),
+                    ex ->
+                            HopThoai.hienThiLoi(
+                                    this, "Lỗi khi in hóa đơn: " + TacVuNen.thongDiepLoi(ex)));
         }
     }
 

@@ -1,5 +1,6 @@
 package com.petstation.gui.khachhang;
 
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
@@ -13,14 +14,15 @@ import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -39,14 +41,11 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
     // 2. KHỞI TẠO BỐ CỤC BIỂU MẪU CẤU HÌNH QUY TẮC TÍCH ĐIỂM & HẠNG
 
     public QuyTacTichDiemPanel() {
-        setLayout(new BorderLayout(0, 10));
-        add(taoTieuDeMuc("Quy tắc tích điểm và hạng thành viên"), BorderLayout.NORTH);
-        JPanel khungThe = new JPanel(new GridBagLayout());
-        khungThe.setBackground(Color.WHITE);
-        khungThe.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN),
-                        new EmptyBorder(16, 18, 16, 18)));
+        setLayout(new BorderLayout(0, 14));
+        add(taoTieuDeManHinh("Quy tắc tích điểm và hạng thành viên"), BorderLayout.NORTH);
+        BoGocPanel khungThe = new BoGocPanel(12, Color.WHITE, true);
+        khungThe.setLayout(new GridBagLayout());
+        khungThe.setBorder(new EmptyBorder(18, 22, 18, 22));
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(6, 0, 6, 12);
         giaTriDangXet.anchor = GridBagConstraints.WEST;
@@ -103,13 +102,18 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         khungThe.add(btnLuu, giaTriDangXet);
         JPanel khungVungChua = taoVungTrongSuot(new BorderLayout());
         khungVungChua.add(khungThe, BorderLayout.NORTH);
-        add(khungVungChua, BorderLayout.CENTER);
+        JScrollPane scrCuon = new JScrollPane(khungVungChua);
+        scrCuon.setBorder(null);
+        scrCuon.getViewport().setBackground(MauUngDung.NEN_KEM);
+        scrCuon.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrCuon, BorderLayout.CENTER);
         nap();
     }
 
     private static JTextField taoTruong() {
         JTextField oGiaTriTam = new JTextField(14);
         oGiaTriTam.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oGiaTriTam.setPreferredSize(new Dimension(200, 34));
         oGiaTriTam.setHorizontalAlignment(JTextField.RIGHT);
         return oGiaTriTam;
     }
@@ -123,11 +127,17 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
             String donVi) {
         giaTriDangXet.gridy = toaDoDoc;
         giaTriDangXet.gridx = 0;
-        khungThe.add(new JLabel(nhan), giaTriDangXet);
+        JLabel nhanDong = new JLabel(nhan);
+        nhanDong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanDong.setForeground(MauUngDung.NAU);
+        khungThe.add(nhanDong, giaTriDangXet);
         giaTriDangXet.gridx = 1;
         khungThe.add(oTruongDangXet, giaTriDangXet);
         giaTriDangXet.gridx = 2;
-        khungThe.add(new JLabel(donVi), giaTriDangXet);
+        JLabel nhanDonVi = new JLabel(donVi);
+        nhanDonVi.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        nhanDonVi.setForeground(MauUngDung.VAN_BAN_XAM);
+        khungThe.add(nhanDonVi, giaTriDangXet);
     }
 
     // 3. NẠP CẤU HÌNH HIỆN TẠI & LƯU NGƯỠNG HẠNG THÀNH VIÊN VÀO CSDL

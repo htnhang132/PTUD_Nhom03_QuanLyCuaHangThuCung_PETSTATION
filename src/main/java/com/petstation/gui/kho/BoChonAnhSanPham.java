@@ -2,6 +2,7 @@ package com.petstation.gui.kho;
 
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
+import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BoSoanThaoTruong;
 import com.petstation.util.TaiAnhSanPham;
@@ -11,7 +12,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -20,7 +20,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public final class BoChonAnhSanPham implements BoSoanThaoTruong {
     private final JPanel khungAnh = new JPanel(new BorderLayout(0, 4));
     private final AnhSanPhamPanel khungXem = new AnhSanPhamPanel(100);
-    private final JButton btnChon = new JButton("Chọn ảnh từ máy…");
+    private final NutDinhDang btnChon =
+            new NutDinhDang("Chọn ảnh từ máy…", NutDinhDang.KieuNut.TRONG_SUOT);
     private String duongDan = "";
     private boolean duocSua;
     private boolean dangTai;
@@ -37,8 +38,8 @@ public final class BoChonAnhSanPham implements BoSoanThaoTruong {
         khungXemBao.add(khungXem);
         JPanel khungNutBao = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 2));
         khungNutBao.setOpaque(false);
-        btnChon.setPreferredSize(new Dimension(142, 28));
-        btnChon.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+        btnChon.setPreferredSize(new Dimension(150, 32));
+        btnChon.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
         khungNutBao.add(btnChon);
         khungAnh.add(khungXemBao, BorderLayout.CENTER);
         khungAnh.add(khungNutBao, BorderLayout.SOUTH);

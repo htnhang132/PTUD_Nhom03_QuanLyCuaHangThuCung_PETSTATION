@@ -20,7 +20,7 @@ public class ChuongTrinhKhuyenMai implements Serializable {
     private long donToiThieu;
 
     public ChuongTrinhKhuyenMai() {
-        this.trangThai = TrangThaiKhuyenMai.HOAT_DONG.tenHienThi();
+        this.trangThai = TrangThaiKhuyenMai.HOAT_DONG.maDB();
     }
 
     public ChuongTrinhKhuyenMai(String maChuongTrinh) {

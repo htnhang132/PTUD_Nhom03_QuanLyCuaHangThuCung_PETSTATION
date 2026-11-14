@@ -113,9 +113,9 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         this.choChon = new LinkedHashSet<>(daChon);
         if (danhSachNguon != null) {
             apDungDanhSach(danhSachNguon, this.choChon);
-            return;
+        } else {
+            apDungDanhSach(List.of(), this.choChon);
         }
-        apDungDanhSach(List.of(), this.choChon);
         if (nguonLuaChon == null) return;
         int luot = ++luotTai;
         TacVuNen.chayCoPhien(
@@ -153,6 +153,7 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
             mapHopKiem.put(muc, chk);
             khungDanhSach.add(chk);
         }
+        chkChonTatCa.setEnabled(duocBat && !mapHopKiem.isEmpty());
         locDanhSach();
         capNhatTrangThaiDem();
     }

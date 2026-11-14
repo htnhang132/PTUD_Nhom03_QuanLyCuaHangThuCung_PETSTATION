@@ -325,24 +325,39 @@ public final class PheDuyetService {
 
     public void apDungPheDuyet(String thaoTac, String maDich, String noiDungXuLy) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.XU_LY_PHE_DUYET);
-        switch (thaoTac) {
-            case "DOI_GIA", "SAN_PHAM", "DE_XUAT_GIA" -> new DeXuatGiaService().apDung(maDich);
-            case "XUAT_HUY", "PHIEU_XUAT_KHO" -> new NhapXuatKhoService().apDungXuatHuy(maDich);
-            case "KIEM_KE", "BIEN_BAN_KIEM_KE" -> new KiemKeService().apDungKiemKe(maDich);
-            case "DOI_TRA", "PHIEU_DOI_TRA" -> new DoiTraService().apDungDoiTra(maDich);
-            case "NGHI_PHEP", "LICH_LAM_VIEC" ->
-                    LichLamViecService.macDinh()
-                            .danhDauNghiPhepDaDuyet(maDich, LocalDate.parse(noiDungXuLy));
-            case "GHI_CHU_HOA_DON", "HOA_DON" -> {
-                if (pheDuyetDAO.demApDungPheDuyet(maDich) == 0)
-                    throw new IllegalArgumentException("Hóa đơn không còn hợp lệ.");
-                NhatKyHeThongService.macDinh()
-                        .ghiNhatKy("Sửa ghi chú hóa đơn", maDich + ": " + noiDungXuLy);
-                pheDuyetDAO.capNhatApDungPheDuyet(noiDungXuLy, maDich);
-            }
-            case "HUY_HOA_DON" -> new BanHangService().huyHoaDon(maDich);
-            default -> throw new IllegalArgumentException("Loại phê duyệt không được hỗ trợ.");
-        }
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            switch (thaoTac) {
+                                case "DOI_GIA", "SAN_PHAM", "DE_XUAT_GIA" ->
+                                        new DeXuatGiaService().apDung(maDich);
+                                case "XUAT_HUY", "PHIEU_XUAT_KHO" ->
+                                        new NhapXuatKhoService().apDungXuatHuy(maDich);
+                                case "KIEM_KE", "BIEN_BAN_KIEM_KE" ->
+                                        new KiemKeService().apDungKiemKe(maDich);
+                                case "DOI_TRA", "PHIEU_DOI_TRA" ->
+                                        new DoiTraService().apDungDoiTra(maDich);
+                                case "NGHI_PHEP", "LICH_LAM_VIEC" ->
+                                        LichLamViecService.macDinh()
+                                                .danhDauNghiPhepDaDuyet(
+                                                        maDich, LocalDate.parse(noiDungXuLy));
+                                case "GHI_CHU_HOA_DON", "HOA_DON" -> {
+                                    if (pheDuyetDAO.demApDungPheDuyet(maDich) == 0)
+                                        throw new IllegalArgumentException(
+                                                "Hóa đơn không còn hợp lệ.");
+                                    NhatKyHeThongService.macDinh()
+                                            .ghiNhatKy(
+                                                    "Sửa ghi chú hóa đơn",
+                                                    maDich + ": " + noiDungXuLy);
+                                    pheDuyetDAO.capNhatApDungPheDuyet(noiDungXuLy, maDich);
+                                }
+                                case "HUY_HOA_DON" -> new BanHangService().huyHoaDon(maDich);
+                                default ->
+                                        throw new IllegalArgumentException(
+                                                "Loại phê duyệt không được hỗ trợ.");
+                            }
+                            return null;
+                        });
     }
 
     public static void xoaBoLangNghe() {

@@ -44,12 +44,10 @@ public final class DoiTraService {
 
     static void kiemTraHanDoi(LocalDateTime ngayLap, LocalDateTime hienTai) {
         int soGio = 72;
-        if (QuanLyGiaoDich.dangTrongGiaoDich()) {
-            try {
-                soGio = Math.max(1, CaiDatService.macDinh().laySoNgayDuocDoiTra()) * 24;
-            } catch (RuntimeException ex) {
-                LOG.warn("Không đọc được cấu hình số ngày đổi trả, dùng mặc định 72 giờ.", ex);
-            }
+        try {
+            soGio = Math.max(1, CaiDatService.macDinh().laySoNgayDuocDoiTra()) * 24;
+        } catch (RuntimeException ex) {
+            LOG.warn("Không đọc được cấu hình số ngày đổi trả, dùng mặc định 72 giờ.", ex);
         }
         if (ngayLap == null
                 || hienTai.isBefore(ngayLap)
@@ -277,14 +275,11 @@ public final class DoiTraService {
             throw new IllegalArgumentException("Tiền chênh lệch không được âm.");
         }
         long tyLe = 10_000L;
-        if (QuanLyGiaoDich.dangTrongGiaoDich()) {
-            try {
-                tyLe = Math.max(1L, CaiDatService.macDinh().laySoTienChoMoiDiemTichLuy());
-            } catch (RuntimeException ex) {
-                LOG.warn(
-                        "Không đọc được cấu hình quy đổi điểm khi đổi trả, dùng mặc định 10.000₫.",
-                        ex);
-            }
+        try {
+            tyLe = Math.max(1L, CaiDatService.macDinh().laySoTienChoMoiDiemTichLuy());
+        } catch (RuntimeException ex) {
+            LOG.warn(
+                    "Không đọc được cấu hình quy đổi điểm khi đổi trả, dùng mặc định 10.000₫.", ex);
         }
         return tienThucTra / tyLe;
     }
@@ -294,6 +289,7 @@ public final class DoiTraService {
     }
 
     public void hoanTat(String maPhieu, String maHoaDon) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.THANH_TOAN);
         doiTraDAO.hoanTat(maPhieu, maHoaDon);
         NhatKyHeThongService.macDinh()
                 .ghiNhatKy("Đổi phụ kiện", maPhieu + " / hóa đơn chênh lệch " + maHoaDon);

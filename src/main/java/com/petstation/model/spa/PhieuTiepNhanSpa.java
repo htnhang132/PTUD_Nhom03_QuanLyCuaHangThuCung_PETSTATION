@@ -94,6 +94,7 @@ public class PhieuTiepNhanSpa implements Serializable {
     }
 
     public void setDonGia(long donGia) {
+        if (donGia < 0) throw new IllegalArgumentException("Đơn giá dịch vụ không được âm.");
         this.donGia = donGia;
     }
 
@@ -102,6 +103,7 @@ public class PhieuTiepNhanSpa implements Serializable {
     }
 
     public void setSoLuong(int soLuong) {
+        if (soLuong < 0) throw new IllegalArgumentException("Số lượng dịch vụ không được âm.");
         this.soLuong = soLuong;
     }
 
@@ -110,6 +112,8 @@ public class PhieuTiepNhanSpa implements Serializable {
     }
 
     public void setCanNangThucTe(double canNangThucTe) {
+        if (canNangThucTe < 0)
+            throw new IllegalArgumentException("Cân nặng thực tế không được âm.");
         this.canNangThucTe = canNangThucTe;
     }
 
@@ -150,6 +154,7 @@ public class PhieuTiepNhanSpa implements Serializable {
     }
 
     public void setTongTien(long tongTien) {
+        if (tongTien < 0) throw new IllegalArgumentException("Tổng tiền phiếu spa không được âm.");
         this.tongTien = tongTien;
     }
 }

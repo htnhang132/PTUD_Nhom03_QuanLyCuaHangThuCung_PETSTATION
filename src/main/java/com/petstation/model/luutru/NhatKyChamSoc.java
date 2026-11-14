@@ -5,6 +5,7 @@ import com.petstation.model.spa.PhieuTiepNhanSpa;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class NhatKyChamSoc implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -130,5 +131,23 @@ public class NhatKyChamSoc implements Serializable {
 
     public void setAnhSau(String anhSau) {
         this.anhSau = anhSau;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NhatKyChamSoc that = (NhatKyChamSoc) o;
+        return Objects.equals(maNhatKy, that.maNhatKy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(maNhatKy);
+    }
+
+    @Override
+    public String toString() {
+        return maNhatKy != null ? maNhatKy : "";
     }
 }

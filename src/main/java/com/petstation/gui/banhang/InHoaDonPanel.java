@@ -23,7 +23,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.net.URL;
 import java.util.function.Consumer;
@@ -60,9 +59,7 @@ public final class InHoaDonPanel extends CoSoPanel {
     public InHoaDonPanel(GioHang banHang, Consumer<MaManHinh> boDieuHuong) {
         this.banHang = banHang;
         setLayout(new BorderLayout(0, 14));
-        JLabel nhanTieuDe = taoTieuDeMuc("Xem hóa đơn");
-        nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
-        add(nhanTieuDe, BorderLayout.NORTH);
+        add(taoTieuDeManHinh("Xem hóa đơn"), BorderLayout.NORTH);
         khungGoc.setOpaque(false);
         nhanBieuNgu.setOpaque(true);
         nhanBieuNgu.setBackground(MauUngDung.XANH_LA_NEN_NHAT);
@@ -365,9 +362,19 @@ public final class InHoaDonPanel extends CoSoPanel {
             PrintRequestAttributeSet thuocTinh = new HashPrintRequestAttributeSet();
             if (congViec.printDialog(thuocTinh)) {
                 congViec.setPrintable(khungHoaDon, congViec.getPageFormat(thuocTinh));
-                congViec.print(thuocTinh);
+                TacVuNen.chay(
+                        () -> {
+                            congViec.print(thuocTinh);
+                            return null;
+                        },
+                        v -> {},
+                        ngoaiLe ->
+                                HopThoai.hienThiCanhBao(
+                                        this,
+                                        "Không thể in: " + TacVuNen.thongDiepLoi(ngoaiLe),
+                                        "Xem hóa đơn"));
             }
-        } catch (PrinterException | HeadlessException ngoaiLe) {
+        } catch (HeadlessException ngoaiLe) {
             HopThoai.hienThiCanhBao(this, "Không thể in: " + ngoaiLe.getMessage(), "Xem hóa đơn");
         }
     }

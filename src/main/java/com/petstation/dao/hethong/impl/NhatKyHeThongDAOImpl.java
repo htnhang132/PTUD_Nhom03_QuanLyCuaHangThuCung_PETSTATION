@@ -10,6 +10,7 @@ import com.petstation.util.DuLieu;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
                 INSERT INTO nhat_ky_he_thong
                     (ma_nhat_ky, ma_nhan_vien, hanh_dong, loai_doi_tuong, ma_doi_tuong,
                      ghi_chu, loai_su_kien, ket_qua, thoi_gian)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, SYSUTCDATETIME())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, muc.getMaNhatKy());
@@ -57,16 +58,40 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
 
     @Override
     public List<DongNhatKyHeThong> timCacMuc() {
+        return timCacMuc(null, null);
+    }
+
+    @Override
+    public List<DongNhatKyHeThong> timCacMuc(LocalDate tuNgay, LocalDate denNgay) {
+        String chon =
+                "SELECT TOP(2000) a.thoi_gian, a.ma_nhan_vien, COALESCE(n.ho_ten,"
+                        + " a.ma_nhan_vien, N'Hệ thống'), a.hanh_dong,"
+                        + " COALESCE(a.ghi_chu,a.ma_doi_tuong,N''),"
+                        + " COALESCE(a.loai_su_kien,'SYSTEM'), COALESCE(a.ket_qua,N'Thành"
+                        + " công') FROM nhat_ky_he_thong a LEFT JOIN nhan_vien n ON"
+                        + " n.ma_nhan_vien=a.ma_nhan_vien";
+        String sapXep = " ORDER BY a.thoi_gian DESC,a.ma_nhat_ky DESC";
+        List<Object[]> cacDong;
+        if (tuNgay != null && denNgay != null) {
+            cacDong =
+                    ThaoTacSQL.truyVan(
+                            chon + " WHERE a.thoi_gian >= ? AND a.thoi_gian < ?" + sapXep,
+                            tuNgay.atStartOfDay(),
+                            denNgay.plusDays(1).atStartOfDay());
+        } else if (tuNgay != null) {
+            cacDong =
+                    ThaoTacSQL.truyVan(
+                            chon + " WHERE a.thoi_gian >= ?" + sapXep, tuNgay.atStartOfDay());
+        } else if (denNgay != null) {
+            cacDong =
+                    ThaoTacSQL.truyVan(
+                            chon + " WHERE a.thoi_gian < ?" + sapXep,
+                            denNgay.plusDays(1).atStartOfDay());
+        } else {
+            cacDong = ThaoTacSQL.truyVan(chon + sapXep);
+        }
         List<DongNhatKyHeThong> ketQua = new ArrayList<>();
-        for (Object[] dong :
-                ThaoTacSQL.truyVan(
-                        "SELECT TOP(2000) a.thoi_gian, a.ma_nhan_vien, COALESCE(n.ho_ten,"
-                                + " a.ma_nhan_vien, N'Hệ thống'), a.hanh_dong,"
-                                + " COALESCE(a.ghi_chu,a.ma_doi_tuong,N''),"
-                                + " COALESCE(a.loai_su_kien,'SYSTEM'), COALESCE(a.ket_qua,N'Thành"
-                                + " công') FROM nhat_ky_he_thong a LEFT JOIN nhan_vien n ON"
-                                + " n.ma_nhan_vien=a.ma_nhan_vien ORDER BY a.thoi_gian"
-                                + " DESC,a.ma_nhat_ky DESC")) {
+        for (Object[] dong : cacDong) {
             NhanVien nguoiDung = new NhanVien();
             String maNhanVien = DuLieu.chuyenThanhChuoi(dong[1]);
             if (!maNhanVien.isBlank()) {

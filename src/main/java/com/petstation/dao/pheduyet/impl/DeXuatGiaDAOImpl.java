@@ -64,8 +64,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     public Optional<ThongTinDeXuat> timChoDuyet(String maDoiTuongHoacYeuCau) {
         var dong =
                 truyVan(
-                        "SELECT y.ma_doi_tuong, CAST(y.noi_dung_truoc AS VARCHAR),"
-                                + " CAST(y.noi_dung_sau AS VARCHAR), p.gia_ban FROM"
+                        "SELECT y.ma_doi_tuong, CAST(y.noi_dung_truoc AS NVARCHAR(MAX)),"
+                                + " CAST(y.noi_dung_sau AS NVARCHAR(MAX)), p.gia_ban FROM"
                                 + " yeu_cau_phe_duyet y JOIN san_pham p ON"
                                 + " p.ma_san_pham=y.ma_doi_tuong WHERE y.loai_doi_tuong='DOI_GIA'"
                                 + " AND (y.ma_yeu_cau=? OR y.ma_doi_tuong=?) AND"
@@ -92,9 +92,10 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     public void apDung(String maDoiTuongHoacYeuCau, String maSanPham, long gia, String maNhanVien) {
         capNhat("UPDATE san_pham SET gia_ban=? WHERE ma_san_pham=?", gia, maSanPham);
         capNhat(
-                "UPDATE yeu_cau_phe_duyet SET trang_thai='DA_DUYET', xu_ly_luc=SYSDATETIME()"
-                        + " WHERE loai_doi_tuong='DOI_GIA' AND (ma_yeu_cau=? OR"
-                        + " ma_doi_tuong=?) AND trang_thai='CHO_DUYET'",
+                "UPDATE yeu_cau_phe_duyet SET trang_thai='DA_DUYET', ma_nhan_vien_xu_ly=?,"
+                        + " xu_ly_luc=SYSDATETIME() WHERE loai_doi_tuong='DOI_GIA' AND"
+                        + " (ma_yeu_cau=? OR ma_doi_tuong=?) AND trang_thai='CHO_DUYET'",
+                maNhanVien,
                 maDoiTuongHoacYeuCau,
                 maDoiTuongHoacYeuCau);
     }
@@ -113,8 +114,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
     public Optional<DeXuatGia> timDeXuatTheoMa(String maYeuCau) {
         var dong =
                 truyVan(
-                        "SELECT ma_yeu_cau, ma_doi_tuong, CAST(noi_dung_truoc AS VARCHAR),"
-                                + " CAST(noi_dung_sau AS VARCHAR), ly_do, ma_nhan_vien_gui,"
+                        "SELECT ma_yeu_cau, ma_doi_tuong, CAST(noi_dung_truoc AS NVARCHAR(MAX)),"
+                                + " CAST(noi_dung_sau AS NVARCHAR(MAX)), ly_do, ma_nhan_vien_gui,"
                                 + " trang_thai, gui_luc FROM yeu_cau_phe_duyet WHERE loai_doi_tuong"
                                 + " = 'DOI_GIA' AND ma_yeu_cau = ?",
                         maYeuCau);

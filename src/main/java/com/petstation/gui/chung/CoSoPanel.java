@@ -19,7 +19,8 @@ import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.print.PrinterException;
+import java.awt.print.Printable;
+import java.awt.print.PrinterJob;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
@@ -74,12 +75,26 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     @Override
     public void xuLyIn() {
         if (bangChinhBang == null) return;
+        JTable bangTam = bangChinhBang;
         try {
-            bangChinhBang.print(
-                    JTable.PrintMode.FIT_WIDTH,
-                    new MessageFormat(layTieuDeTroGiup()),
-                    new MessageFormat("Trang {0}"));
-        } catch (PrinterException | HeadlessException ngoaiLe) {
+            Printable noiDungIn =
+                    bangTam.getPrintable(
+                            JTable.PrintMode.FIT_WIDTH,
+                            new MessageFormat(layTieuDeTroGiup()),
+                            new MessageFormat("Trang {0}"));
+            PrinterJob congViec = PrinterJob.getPrinterJob();
+            congViec.setPrintable(noiDungIn);
+            if (!congViec.printDialog()) return;
+            TacVuNen.chay(
+                    () -> {
+                        congViec.print();
+                        return null;
+                    },
+                    v -> {},
+                    ngoaiLe ->
+                            HopThoai.hienThiCanhBao(
+                                    this, "Không thể in: " + TacVuNen.thongDiepLoi(ngoaiLe), "In"));
+        } catch (HeadlessException ngoaiLe) {
             HopThoai.hienThiCanhBao(this, "Không thể in: " + ngoaiLe.getMessage(), "In");
         }
     }
@@ -99,7 +114,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                 : "Dùng các nút trên màn hình để thao tác.";
     }
 
-    protected JPanel layChiSoThe(String nhan, String giaTri, String boQuaBieuTuong, Color nhan2) {
+    protected JPanel layChiSoThe(String nhan, String giaTri, String ghiChuPhu, Color mauNhan) {
         BoGocPanel khungThe = new BoGocPanel(12, MauUngDung.THE_NEN, true);
         khungThe.setLayout(new BorderLayout(0, 4));
         khungThe.setBorder(new EmptyBorder(14, 18, 14, 18));
@@ -108,10 +123,35 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         nhanHienThi.setForeground(MauUngDung.VAN_BAN_XAM);
         JLabel nhanGiaTri = new JLabel(giaTri);
         nhanGiaTri.setFont(MauUngDung.taoPhongChu(Font.BOLD, 22));
-        nhanGiaTri.setForeground(nhan2 == null ? MauUngDung.VAN_BAN_TOI : nhan2);
+        nhanGiaTri.setForeground(mauNhan == null ? MauUngDung.VAN_BAN_TOI : mauNhan);
         khungThe.add(nhanHienThi, BorderLayout.NORTH);
         khungThe.add(nhanGiaTri, BorderLayout.CENTER);
+        if (ghiChuPhu != null && !ghiChuPhu.isBlank()) {
+            JLabel nhanPhu = new JLabel(ghiChuPhu);
+            nhanPhu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+            nhanPhu.setForeground(MauUngDung.VAN_BAN_XAM);
+            khungThe.add(nhanPhu, BorderLayout.SOUTH);
+        }
         return khungThe;
+    }
+
+    protected JLabel taoTieuDeManHinh(String vanBan) {
+        JLabel nhan = new JLabel(vanBan);
+        nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 20));
+        nhan.setForeground(MauUngDung.NAU);
+        return nhan;
+    }
+
+    protected JPanel taoTieuDeManHinh(String tieuDe, String moTa) {
+        JPanel khung = taoVungTrongSuot(new BorderLayout(0, 3));
+        khung.add(taoTieuDeManHinh(tieuDe), BorderLayout.NORTH);
+        if (moTa != null && !moTa.isBlank()) {
+            JLabel nhanMoTa = new JLabel(moTa);
+            nhanMoTa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+            nhanMoTa.setForeground(MauUngDung.VAN_BAN_XAM);
+            khung.add(nhanMoTa, BorderLayout.SOUTH);
+        }
+        return khung;
     }
 
     protected JPanel layChiSoThe(String nhan, String giaTri) {
@@ -120,8 +160,8 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     protected JLabel taoTieuDeMuc(String vanBan) {
         JLabel nhanDongDangXet = new JLabel(vanBan);
-        nhanDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 16));
-        nhanDongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
+        nhanDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
+        nhanDongDangXet.setForeground(MauUngDung.NAU);
         return nhanDongDangXet;
     }
 
@@ -165,31 +205,39 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                 });
     }
 
+    private static final class BoLangNgheTaiLieuDonGian implements DocumentListener {
+        private final Runnable hanhDong;
+
+        private BoLangNgheTaiLieuDonGian(Runnable hanhDong) {
+            this.hanhDong = hanhDong;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent suKien) {
+            hanhDong.run();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent suKien) {
+            hanhDong.run();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent suKien) {
+            hanhDong.run();
+        }
+    }
+
     public static void themBoLangNgheTaiLieu(JTextComponent oNhap, Runnable hanhDong) {
-        oNhap.getDocument()
-                .addDocumentListener(
-                        new DocumentListener() {
-                            @Override
-                            public void insertUpdate(DocumentEvent suKien) {
-                                hanhDong.run();
-                            }
-
-                            @Override
-                            public void removeUpdate(DocumentEvent suKien) {
-                                hanhDong.run();
-                            }
-
-                            @Override
-                            public void changedUpdate(DocumentEvent suKien) {
-                                hanhDong.run();
-                            }
-                        });
+        oNhap.getDocument().addDocumentListener(new BoLangNgheTaiLieuDonGian(hanhDong));
     }
 
     public static void thayBoLangNgheTaiLieu(JTextComponent oNhap, Runnable hanhDong) {
         if (oNhap.getDocument() instanceof AbstractDocument taiLieu) {
             for (DocumentListener langNghe : taiLieu.getDocumentListeners()) {
-                oNhap.getDocument().removeDocumentListener(langNghe);
+                if (langNghe instanceof BoLangNgheTaiLieuDonGian) {
+                    oNhap.getDocument().removeDocumentListener(langNghe);
+                }
             }
         }
         themBoLangNgheTaiLieu(oNhap, hanhDong);
@@ -222,7 +270,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                 };
         oTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
-        oTruongDangXet.setPreferredSize(new Dimension(280, 36));
+        oTruongDangXet.setPreferredSize(new Dimension(220, 34));
         oTruongDangXet.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),

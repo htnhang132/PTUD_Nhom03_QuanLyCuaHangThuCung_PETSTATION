@@ -229,7 +229,7 @@ public class KhachHangDAOImpl implements KhachHangDAO {
 
     @Override
     public boolean xoa(String maKhachHang) {
-        String sql = "DELETE FROM khach_hang WHERE ma_khach_hang = ?";
+        String sql = "UPDATE khach_hang SET dang_hoat_dong = 0 WHERE ma_khach_hang = ?";
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {
             cauLenh.setString(1, maKhachHang);
             return cauLenh.executeUpdate() > 0;
@@ -303,7 +303,8 @@ public class KhachHangDAOImpl implements KhachHangDAO {
         khachHang.setHoTen(tapKetQua.getString("ho_ten"));
         khachHang.setSoDienThoai(tapKetQua.getString("so_dien_thoai"));
         khachHang.setDiaChi(tapKetQua.getString("dia_chi"));
-        khachHang.setDiemTichLuy(tapKetQua.getInt("diem_tich_luy"));
+        Object diemObj = tapKetQua.getObject("diem_tich_luy");
+        khachHang.setDiemTichLuy(diemObj instanceof Number n ? n.intValue() : 0);
         khachHang.setHangThanhVien(tapKetQua.getString("hang_thanh_vien"));
         khachHang.setEmail(tapKetQua.getString("email"));
         khachHang.setGhiChu(tapKetQua.getString("ghi_chu"));

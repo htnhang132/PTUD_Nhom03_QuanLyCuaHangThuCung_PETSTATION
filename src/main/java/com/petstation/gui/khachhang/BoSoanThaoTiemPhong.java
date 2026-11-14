@@ -79,29 +79,33 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
 
     private JPanel taoVungNhapTiemPhong() {
         cboLoai.setEditable(true);
-        cboLoai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oNgayTiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oNgayHan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        cboLoai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        cboLoai.setPreferredSize(new Dimension(160, 32));
+        oNgayTiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oNgayTiem.setPreferredSize(new Dimension(100, 32));
+        oNgayHan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oNgayHan.setPreferredSize(new Dimension(100, 32));
+        oGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oGhiChu.setPreferredSize(new Dimension(140, 32));
         oGhiChu.putClientProperty("JTextField.placeholderText", "Ghi chú / Số lô / Sổ tiêm...");
-        JPanel nhap = new JPanel(new GridLayout(2, 2, 6, 4));
+        JPanel nhap = new JPanel(new GridLayout(2, 2, 8, 6));
         nhap.setOpaque(false);
-        nhap.add(DinhDangBang.taoHangNhap("Loại vắc-xin", cboLoai, 2, 11));
-        nhap.add(DinhDangBang.taoHangNhap("Ghi chú / Phòng khám", oGhiChu, 2, 11));
-        nhap.add(DinhDangBang.taoHangNhap("Ngày tiêm *", taoOTruongCoNutLich(oNgayTiem), 2, 11));
+        nhap.add(DinhDangBang.taoHangNhap("Loại vắc-xin", cboLoai, 3, 12));
+        nhap.add(DinhDangBang.taoHangNhap("Ghi chú / Phòng khám", oGhiChu, 3, 12));
+        nhap.add(DinhDangBang.taoHangNhap("Ngày tiêm *", taoOTruongCoNutLich(oNgayTiem), 3, 12));
         nhap.add(
                 DinhDangBang.taoHangNhap(
-                        "Ngày hết hạn (tùy chọn)", taoOTruongCoNutLich(oNgayHan), 2, 11));
-        Border viNut = BorderFactory.createEmptyBorder(3, 4, 3, 4);
+                        "Ngày hết hạn (tùy chọn)", taoOTruongCoNutLich(oNgayHan), 3, 12));
+        Border viNut = BorderFactory.createEmptyBorder(4, 8, 4, 8);
         btnThem.setBorder(viNut);
         btnSua.setBorder(viNut);
         btnXoa.setBorder(viNut);
-        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
+        JPanel nut = new JPanel(new GridLayout(1, 3, 8, 0));
         nut.setOpaque(false);
         nut.add(btnThem);
         nut.add(btnSua);
         nut.add(btnXoa);
-        JPanel dau = new JPanel(new BorderLayout(0, 6));
+        JPanel dau = new JPanel(new BorderLayout(0, 8));
         dau.setOpaque(false);
         dau.add(nhap, BorderLayout.CENTER);
         dau.add(nut, BorderLayout.SOUTH);
@@ -110,8 +114,8 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
 
     private static JPanel taoOTruongCoNutLich(JTextField oNgay) {
         JButton btnLich = BoChonNgay.taoNutLich(oNgay, DinhDang.NGAY);
-        btnLich.setPreferredSize(new Dimension(28, 26));
-        JPanel khungTam = new JPanel(new BorderLayout(2, 0));
+        btnLich.setPreferredSize(new Dimension(32, 32));
+        JPanel khungTam = new JPanel(new BorderLayout(4, 0));
         khungTam.setOpaque(false);
         khungTam.add(oNgay, BorderLayout.CENTER);
         khungTam.add(btnLich, BorderLayout.EAST);
