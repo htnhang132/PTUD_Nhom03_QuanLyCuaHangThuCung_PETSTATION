@@ -307,6 +307,10 @@ CREATE TABLE dbo.[chi_tiet_kiem_ke] (
 );
 
 -- 15. Bảng nhật ký hệ thống
+-- loai_su_kien chuẩn: LOGIN (Đăng nhập & Tài khoản), PAYMENT (Bán hàng & Thu ngân),
+-- INVENTORY (Kho hàng), SERVICE (Spa & Lưu trú), APPROVAL (Phê duyệt),
+-- CATALOG (Danh mục & Nhân sự), SYSTEM (Hệ thống)
+-- ket_qua chuẩn: Thành công | Thất bại | Cảnh báo
 CREATE TABLE dbo.[nhat_ky_he_thong] (
     [ma_nhat_ky] VARCHAR(30) NOT NULL,
     [ma_nhan_vien] VARCHAR(20) NULL,
@@ -315,8 +319,8 @@ CREATE TABLE dbo.[nhat_ky_he_thong] (
     [ma_doi_tuong] VARCHAR(60) NULL,
     [ghi_chu] NVARCHAR(1000) NULL,
     [thoi_gian] DATETIME2(7) NOT NULL DEFAULT (sysdatetime()),
-    [loai_su_kien] VARCHAR(30) NULL,
-    [ket_qua] NVARCHAR(100) NULL,
+    [loai_su_kien] VARCHAR(30) NULL DEFAULT ('SYSTEM'),
+    [ket_qua] NVARCHAR(100) NULL DEFAULT (N'Thành công'),
     CONSTRAINT [PK_nhat_ky_he_thong] PRIMARY KEY CLUSTERED ([ma_nhat_ky])
 );
 
@@ -762,6 +766,7 @@ CREATE INDEX [IX_lich_hen_thoi_gian] ON dbo.[lich_hen] ([bat_dau], [ket_thuc], [
 CREATE INDEX [IX_lich_ngay_ca] ON dbo.[lich_lam_viec] ([ngay_lam], [ma_ca]);
 CREATE INDEX [IX_lo_hang_fefo] ON dbo.[lo_hang] ([ma_san_pham], [han_su_dung], [trang_thai]) INCLUDE ([so_luong_ton]);
 CREATE INDEX [IX_audit_time] ON dbo.[nhat_ky_he_thong] ([thoi_gian] DESC);
+CREATE INDEX [IX_nhat_ky_loai_thoi_gian] ON dbo.[nhat_ky_he_thong] ([loai_su_kien], [thoi_gian] DESC);
 CREATE UNIQUE INDEX [UX_phien_dang_mo] ON dbo.[phien_lam_viec] ([ma_nhan_vien]) WHERE ([trang_thai]='DANG_MO');
 CREATE UNIQUE INDEX [UX_doi_hang_khoa] ON dbo.[phieu_doi_tra] ([khoa_thao_tac]) WHERE ([khoa_thao_tac] IS NOT NULL);
 CREATE UNIQUE INDEX [UX_doi_hang_hoa_don] ON dbo.[phieu_doi_tra] ([ma_hoa_don_thay_the]) WHERE ([ma_hoa_don_thay_the] IS NOT NULL);

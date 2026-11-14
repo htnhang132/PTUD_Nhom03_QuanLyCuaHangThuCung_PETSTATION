@@ -45,35 +45,17 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
 
     public BoSoanThaoBangGia() {
         DinhDangBang.apDung(bang);
+        bang.setRowHeight(32);
         bang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.setOpaque(false);
-        JPanel nhap = new JPanel(new GridLayout(2, 2, 8, 6));
-        nhap.setOpaque(false);
-        nhap.add(hangNhap("Loài", loai));
-        nhap.add(hangNhap("Giá dịch vụ (VNĐ)", gia));
-        nhap.add(hangNhap("Từ cân (kg)", tuKg));
-        nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
-        gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
-        Border viNut = BorderFactory.createEmptyBorder(4, 4, 4, 4);
-        them.setBorder(viNut);
-        sua.setBorder(viNut);
-        xoa.setBorder(viNut);
-        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
-        nut.setOpaque(false);
-        nut.add(them);
-        nut.add(sua);
-        nut.add(xoa);
-        JPanel dau = new JPanel(new BorderLayout(0, 6));
-        dau.setOpaque(false);
-        dau.add(nhap, BorderLayout.CENTER);
-        dau.add(nut, BorderLayout.SOUTH);
+        this.dau = taoVungNhapBangGia();
         panel.add(dau, BorderLayout.NORTH);
         if (bang.getColumnModel().getColumnCount() >= 3) {
-            bang.getColumnModel().getColumn(0).setPreferredWidth(65);
-            bang.getColumnModel().getColumn(1).setPreferredWidth(125);
-            bang.getColumnModel().getColumn(2).setPreferredWidth(110);
+            bang.getColumnModel().getColumn(0).setPreferredWidth(55);
+            bang.getColumnModel().getColumn(1).setPreferredWidth(155);
+            bang.getColumnModel().getColumn(2).setPreferredWidth(130);
         }
-        JScrollPane cuon = DinhDangBang.taoBangKhongCuon(bang, new Dimension(320, 130));
+        JScrollPane cuon = DinhDangBang.taoBangKhongCuon(bang, new Dimension(340, 96));
         panel.add(cuon, BorderLayout.CENTER);
         them.addActionListener(e -> capNhat(false));
         sua.addActionListener(e -> capNhat(true));
@@ -96,7 +78,32 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         capNhatKichThuocBang();
     }
 
+    private final JPanel dau;
     private final JScrollPane cuon;
+
+    private JPanel taoVungNhapBangGia() {
+        JPanel nhap = new JPanel(new GridLayout(2, 2, 6, 4));
+        nhap.setOpaque(false);
+        nhap.add(hangNhap("Loài", loai));
+        nhap.add(hangNhap("Giá dịch vụ (VNĐ)", gia));
+        nhap.add(hangNhap("Từ cân (kg)", tuKg));
+        nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
+        gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
+        Border viNut = BorderFactory.createEmptyBorder(3, 4, 3, 4);
+        them.setBorder(viNut);
+        sua.setBorder(viNut);
+        xoa.setBorder(viNut);
+        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
+        nut.setOpaque(false);
+        nut.add(them);
+        nut.add(sua);
+        nut.add(xoa);
+        JPanel vungDau = new JPanel(new BorderLayout(0, 5));
+        vungDau.setOpaque(false);
+        vungDau.add(nhap, BorderLayout.CENTER);
+        vungDau.add(nut, BorderLayout.SOUTH);
+        return vungDau;
+    }
 
     private void capNhatKichThuocBang() {
         DinhDangBang.coGianChieuCaoBangTheoNoiDung(bang, cuon, panel, model.getRowCount());
@@ -213,6 +220,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
 
     @Override
     public void datDuocBat(boolean bat) {
+        dau.setVisible(bat);
         bang.setEnabled(bat);
         loai.setEnabled(bat);
         tuKg.setEnabled(bat);
@@ -221,6 +229,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         them.setEnabled(bat);
         sua.setEnabled(bat);
         xoa.setEnabled(bat);
+        capNhatKichThuocBang();
     }
 
     public static long layGiaNhoNhat(String s) {

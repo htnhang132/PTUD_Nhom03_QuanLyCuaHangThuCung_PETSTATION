@@ -587,13 +587,16 @@ VALUES
 -- 33. NHẬT KÝ HỆ THỐNG
 INSERT INTO dbo.[nhat_ky_he_thong] ([ma_nhat_ky], [ma_nhan_vien], [hanh_dong], [loai_doi_tuong], [ma_doi_tuong], [ghi_chu], [thoi_gian], [loai_su_kien], [ket_qua])
 VALUES
-    (N'LOG00000001', N'NV0001', N'Đăng nhập hệ thống', N'HỆ THỐNG', N'HT01', N'Huỳnh Tấn Nhàng đăng nhập thành công vai trò Cửa hàng trưởng', DATEADD(hour,-4,SYSDATETIME()), N'LOGIN', N'Thành công'),
-    (N'LOG00000002', N'NV0002', N'Mở ca thu ngân', N'PHIÊN LÀM VIỆC', N'MPI00000035', N'Trần Quang Vinh mở ca với số dư đầu ca 2,000,000 VND', DATEADD(hour,-3,SYSDATETIME()), N'SYSTEM', N'Thành công'),
+    (N'LOG00000001', N'NV0001', N'Đăng nhập', N'TAI_KHOAN', N'admin', N'Hệ thống', DATEADD(hour,-4,SYSDATETIME()), N'LOGIN', N'Thành công'),
+    (N'LOG00000002', N'NV0002', N'Mở ca thu ngân', N'PHIÊN LÀM VIỆC', N'MPI00000035', N'Trần Quang Vinh mở ca với số dư đầu ca 2,000,000 VND', DATEADD(hour,-3,SYSDATETIME()), N'PAYMENT', N'Thành công'),
     (N'LOG00000003', N'NV0004', N'Lập hóa đơn thanh toán', N'HÓA ĐƠN', N'HD2610190001', N'Phan Trần Thảo Vy lập hóa đơn bán lẻ thành công', DATEADD(hour,-2,SYSDATETIME()), N'PAYMENT', N'Thành công'),
     (N'LOG00000004', N'NV0003', N'Nhập kho sản phẩm', N'PHIẾU NHẬP', N'PNK00000001', N'Nguyễn Gia Vỉ hoàn tất nhập lô hàng thức ăn Royal Canin', DATEADD(hour,-1,SYSDATETIME()), N'INVENTORY', N'Thành công'),
-    (N'LOG00000005', N'NV0005', N'Tiếp nhận dịch vụ Spa', N'PHIẾU SPA', N'SPA00000001', N'Trần Quang Đạt tiếp nhận bé Poodle thực hiện gói tắm sấy', DATEADD(minute,-30,SYSDATETIME()), N'CREATE', N'Thành công'),
+    (N'LOG00000005', N'NV0005', N'Tiếp nhận dịch vụ Spa', N'PHIẾU SPA', N'SPA00000001', N'Trần Quang Đạt tiếp nhận bé Poodle thực hiện gói tắm sấy', DATEADD(minute,-30,SYSDATETIME()), N'SERVICE', N'Thành công'),
     (N'LOG00000006', N'NV0003', N'Lập phiếu xuất hủy vượt hạn mức', N'PHIẾU XUẤT', N'PXK00000004', N'Phiếu xuất hủy vượt hạn mức tự duyệt, chuyển Quản lý phê duyệt', DATEADD(minute,-20,SYSDATETIME()), N'INVENTORY', N'Cảnh báo'),
-    (N'LOG00000007', N'NV0006', N'Đăng nhập sai mật khẩu', N'HỆ THỐNG', N'HT02', N'Nhập sai mật khẩu lần 1 trên máy quầy thu ngân', DATEADD(minute,-15,SYSDATETIME()), N'LOGIN', N'Thất bại');
+    (N'LOG00000007', N'NV0006', N'Đăng nhập thất bại', N'TAI_KHOAN', N'NV0006', N'Nhập sai mật khẩu lần 1 trên máy quầy thu ngân', DATEADD(minute,-15,SYSDATETIME()), N'LOGIN', N'Thất bại'),
+    (N'LOG00000008', N'NV0001', N'Duyệt', N'YÊU CẦU PHÊ DUYỆT', N'YC00000001', N'Đồng ý phê duyệt áp dụng giá bán mới SP000009', DATEADD(minute,-12,SYSDATETIME()), N'APPROVAL', N'Thành công'),
+    (N'LOG00000009', N'NV0001', N'Sửa', N'DANH MỤC', N'SP000009', N'Cập nhật thông tin sản phẩm vòng cổ da bò', DATEADD(minute,-10,SYSDATETIME()), N'CATALOG', N'Thành công'),
+    (N'LOG00000010', N'NV0001', N'Sửa', N'CÀI ĐẶT HỆ THỐNG', N'PHIEN_BAN_CSDL', N'Cập nhật tham số vận hành hệ thống', DATEADD(minute,-5,SYSDATETIME()), N'SYSTEM', N'Thành công');
 
 -- 16. PHIÊN LÀM VIỆC
 INSERT INTO dbo.[phien_lam_viec] ([ma_phien], [ma_ca], [ma_nhan_vien], [mo_luc], [dong_luc], [tien_dau_ca], [tien_thuc_te], [chenh_lech], [giai_trinh], [trang_thai], [ten_ca], [nguoi_nhan_ban_giao], [hinh_thuc_ban_giao])
@@ -879,7 +882,7 @@ ALTER SEQUENCE dbo.[seq_phieu_doi_tra] RESTART WITH 2;
 ALTER SEQUENCE dbo.[seq_nhat_ky_cham_soc] RESTART WITH 6;
 ALTER SEQUENCE dbo.[seq_yeu_cau_phe_duyet] RESTART WITH 12;
 ALTER SEQUENCE dbo.[seq_phien_lam_viec] RESTART WITH 36;
-ALTER SEQUENCE dbo.[seq_nhat_ky_he_thong] RESTART WITH 8;
+ALTER SEQUENCE dbo.[seq_nhat_ky_he_thong] RESTART WITH 11;
 ALTER SEQUENCE dbo.[seq_phieu_spa_treo] RESTART WITH 3;
 ALTER SEQUENCE dbo.[seq_hoa_don_treo] RESTART WITH 1;
 ALTER SEQUENCE dbo.[seq_hoa_don_treo_doi] RESTART WITH 1;

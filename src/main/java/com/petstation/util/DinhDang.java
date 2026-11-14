@@ -37,6 +37,12 @@ public final class DinhDang {
     public static final DateTimeFormatter NGAY_GIO_U =
             DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm");
 
+    public static final DateTimeFormatter NGAY_GIO_GIAY =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+    public static final DateTimeFormatter NGAY_GIO_GIAY_U =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm:ss");
+
     public static final DateTimeFormatter NGAY_GIO_ISO =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 

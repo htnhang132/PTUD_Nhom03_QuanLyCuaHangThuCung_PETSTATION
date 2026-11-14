@@ -68,7 +68,8 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
                         + " a.ma_nhan_vien, N'Hệ thống'), a.hanh_dong,"
                         + " COALESCE(a.ghi_chu,a.ma_doi_tuong,N''),"
                         + " COALESCE(a.loai_su_kien,'SYSTEM'), COALESCE(a.ket_qua,N'Thành"
-                        + " công') FROM nhat_ky_he_thong a LEFT JOIN nhan_vien n ON"
+                        + " công'), a.loai_doi_tuong, a.ma_doi_tuong, a.ghi_chu FROM"
+                        + " nhat_ky_he_thong a LEFT JOIN nhan_vien n ON"
                         + " n.ma_nhan_vien=a.ma_nhan_vien";
         String sapXep = " ORDER BY a.thoi_gian DESC,a.ma_nhat_ky DESC";
         List<Object[]> cacDong;
@@ -105,7 +106,10 @@ public final class NhatKyHeThongDAOImpl implements NhatKyHeThongDAO {
                             DuLieu.chuyenThanhChuoi(dong[3]),
                             DuLieu.chuyenThanhChuoi(dong[4]),
                             DuLieu.chuyenThanhChuoi(dong[5]),
-                            DuLieu.chuyenThanhChuoi(dong[6])));
+                            DuLieu.chuyenThanhChuoi(dong[6]),
+                            DuLieu.chuyenThanhChuoi(dong[7]),
+                            DuLieu.chuyenThanhChuoi(dong[8]),
+                            DuLieu.chuyenThanhChuoi(dong[9])));
         }
         return ketQua;
     }

@@ -87,13 +87,12 @@ public final class XacThucService {
                         .orElse(null);
         if (nhanVien == null) {
             ghiNhatKyHeThong(
-                    ketNoi, taiKhoan, null, "TU_CHOI_DANG_NHAP", "Nhân viên đã ngừng làm việc");
+                    ketNoi, taiKhoan, null, "Từ chối đăng nhập", "Nhân viên đã ngừng làm việc");
             return KetQuaDangNhap.taoLoi("Nhân viên đã ngừng làm việc.");
         }
         danhSachTaiKhoan.ghiNhanDangNhapThanhCong(ketNoi, taiKhoan.getTenDangNhap());
         Set<Quyen> cacQuyen = danhSachTaiKhoan.timCacQuyen(ketNoi, taiKhoan.getTenDangNhap());
-        ghiNhatKyHeThong(
-                ketNoi, taiKhoan, nhanVien, "DANG_NHAP_THANH_CONG", "Đăng nhập thành công");
+        ghiNhatKyHeThong(ketNoi, taiKhoan, nhanVien, "Đăng nhập", "Hệ thống");
         return KetQuaDangNhap.hienThiThanhCong(new PhienDangNhap(taiKhoan, nhanVien, cacQuyen));
     }
 
@@ -101,12 +100,12 @@ public final class XacThucService {
             Connection ketNoi, TaiKhoan taiKhoan, LocalDateTime hienTai) throws Exception {
         if (taiKhoan.getTrangThai() != TrangThaiTaiKhoan.HOAT_DONG) {
             ghiNhatKyHeThong(
-                    ketNoi, taiKhoan, null, "TU_CHOI_DANG_NHAP", "Tài khoản không hoạt động");
+                    ketNoi, taiKhoan, null, "Từ chối đăng nhập", "Tài khoản không hoạt động");
             return KetQuaDangNhap.taoLoi("Tài khoản đã bị khóa. Vui lòng liên hệ Cửa hàng trưởng.");
         }
         if (taiKhoan.isTamThoiDaKhoa(hienTai)) {
             ghiNhatKyHeThong(
-                    ketNoi, taiKhoan, null, "TU_CHOI_DANG_NHAP", "Tài khoản đang tạm khóa");
+                    ketNoi, taiKhoan, null, "Từ chối đăng nhập", "Tài khoản đang tạm khóa");
             return KetQuaDangNhap.taoLoi(
                     "Tài khoản bị tạm khóa đến " + taiKhoan.getKhoaDenLuc() + ".");
         }
@@ -123,7 +122,7 @@ public final class XacThucService {
         danhSachTaiKhoan.ghiNhanDangNhapThatBai(
                 ketNoi, taiKhoan.getTenDangNhap(), soLuongThatBai, khoaDenLuc);
         ghiNhatKyHeThong(
-                ketNoi, taiKhoan, null, "DANG_NHAP_THAT_BAI", "Sai mật khẩu lần " + soLuongThatBai);
+                ketNoi, taiKhoan, null, "Đăng nhập thất bại", "Sai mật khẩu lần " + soLuongThatBai);
         if (khoaDenLuc != null) {
             return KetQuaDangNhap.taoLoi(
                     "Tài khoản bị tạm khóa. Vui lòng liên hệ Cửa hàng trưởng.");
@@ -148,8 +147,8 @@ public final class XacThucService {
                         "TAI_KHOAN",
                         taiKhoan != null ? taiKhoan.getTenDangNhap() : null,
                         ghiChu,
-                        "AUTH",
-                        "DANG_NHAP_THANH_CONG".equals(thaoTac) ? "Thành công" : "Thất bại",
+                        "LOGIN",
+                        "Đăng nhập".equals(thaoTac) ? "Thành công" : "Thất bại",
                         LocalDateTime.now()));
     }
 

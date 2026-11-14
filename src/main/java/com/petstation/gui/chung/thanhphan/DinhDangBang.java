@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -89,7 +90,9 @@ public final class DinhDangBang {
                     int cot) {
                 super.getTableCellRendererComponent(
                         bangGiaTriTam, giaTri, daChon, false, dong, cot);
-                setBorder(new EmptyBorder(0, 10, 0, 10));
+                boolean laBangGon = Boolean.TRUE.equals(bangGiaTriTam.getClientProperty("bangGon"));
+                int demNgang = laBangGon ? 4 : 10;
+                setBorder(new EmptyBorder(0, demNgang, 0, demNgang));
                 String giaTriGoc = giaTri == null ? "" : giaTri.toString();
                 setBackground(
                         daChon
@@ -110,11 +113,12 @@ public final class DinhDangBang {
                         cot >= 0 && cot < bangGiaTriTam.getColumnModel().getColumnCount()
                                 ? bangGiaTriTam.getColumnModel().getColumn(cot).getWidth()
                                 : 0;
+                int leBu = laBangGon ? 10 : 24;
                 boolean biChe =
                         !vanBan.isEmpty()
                                 && ((rongCot > 0
                                                 && getFontMetrics(getFont()).stringWidth(vanBan)
-                                                                + 24
+                                                                + leBu
                                                         > rongCot)
                                         || vanBan.length() > 20);
                 setToolTipText(biChe ? vanBan : null);
@@ -267,30 +271,65 @@ public final class DinhDangBang {
                         ? bangBang.getParent().getWidth()
                         : bangBang.getWidth();
         if (rongKhung > 200 && tongToiThieu > rongKhung - 6) {
-            double tiLe = (double) (rongKhung - 6) / tongToiThieu;
-            for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
-                TableColumn cot = bangBang.getColumnModel().getColumn(chiSo);
-                cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLe)));
+            coGianCotKhiThieuCho(bangBang, rongKhung - 6, tongToiThieu);
+        }
+    }
+
+    private static void coGianCotKhiThieuCho(JTable bangBang, int dich, int tongToiThieu) {
+        int coDinh = 0;
+        for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
+            String ten =
+                    String.valueOf(bangBang.getColumnModel().getColumn(chiSo).getHeaderValue())
+                            .toLowerCase(Locale.ROOT);
+            if (laCotNgayCoDinh(ten)) {
+                coDinh += bangBang.getColumnModel().getColumn(chiSo).getMinWidth();
             }
         }
+        int conLaiDich = dich - coDinh;
+        int linhHoat = tongToiThieu - coDinh;
+        if (conLaiDich > 90 && linhHoat > 0) {
+            double tiLeLinhHoat = (double) conLaiDich / linhHoat;
+            for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
+                TableColumn cot = bangBang.getColumnModel().getColumn(chiSo);
+                String ten = String.valueOf(cot.getHeaderValue()).toLowerCase(Locale.ROOT);
+                if (laCotNgayCoDinh(ten)) continue;
+                cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLeLinhHoat)));
+            }
+            return;
+        }
+        double tiLe = (double) dich / tongToiThieu;
+        for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
+            TableColumn cot = bangBang.getColumnModel().getColumn(chiSo);
+            cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLe)));
+        }
+    }
+
+    private static boolean laCotNgayCoDinh(String tenThuong) {
+        return tenThuong.contains("ngày") && !tenThuong.contains("ghi chú");
     }
 
     private static int canChinhMotCot(
             JTable bangBang, TableColumn cot, int chiSo, FontMetrics hfm, FontMetrics cfm) {
+        boolean laBangGon = Boolean.TRUE.equals(bangBang.getClientProperty("bangGon"));
+        int buChu = laBangGon ? 12 : 24;
         String tieuDe = String.valueOf(cot.getHeaderValue()).trim();
         String ten = tieuDe.toLowerCase(Locale.ROOT);
-        int rongTieuDe = hfm != null ? hfm.stringWidth(tieuDe) + 22 : 90;
+        int rongTieuDe = hfm != null ? hfm.stringWidth(tieuDe) + buChu : 84;
         int rongDuLieu = doRongDuLieuCot(bangBang, chiSo, cot.getModelIndex(), ten, cfm);
+        if (laCotNgayCoDinh(ten)) {
+            int rongNgay = cfm != null ? cfm.stringWidth("30/12/2099") + (laBangGon ? 14 : 28) : 88;
+            rongDuLieu = Math.max(rongDuLieu, rongNgay);
+        }
         boolean laCotVanBanDai = TU_KHOA_COT_DAI.stream().anyMatch(ten::contains);
         int canThiet = Math.max(rongTieuDe, rongDuLieu);
         int toiThieu =
-                (!laCotVanBanDai && canThiet <= 165)
+                (!laCotVanBanDai && canThiet <= 170)
                         ? canThiet
-                        : Math.max(85, Math.min(130, rongTieuDe));
+                        : Math.max(laBangGon ? 72 : 85, Math.min(130, rongTieuDe));
         int uuTien =
-                (!laCotVanBanDai && canThiet <= 165)
-                        ? canThiet + 6
-                        : Math.max(toiThieu + 40, Math.min(310, canThiet));
+                (!laCotVanBanDai && canThiet <= 170)
+                        ? canThiet + (laBangGon ? 4 : 6)
+                        : Math.max(toiThieu + 36, Math.min(310, canThiet));
         cot.setMinWidth(toiThieu);
         cot.setMaxWidth(Integer.MAX_VALUE);
         cot.setResizable(true);
@@ -300,6 +339,7 @@ public final class DinhDangBang {
 
     private static int doRongDuLieuCot(
             JTable bangBang, int chiSo, int modelCol, String ten, FontMetrics cfm) {
+        int bu = Boolean.TRUE.equals(bangBang.getClientProperty("bangGon")) ? 12 : 22;
         TableModel model = bangBang.getModel();
         int soDong = model == null ? 0 : Math.min(model.getRowCount(), 25);
         int rong = 0;
@@ -314,7 +354,7 @@ public final class DinhDangBang {
             if (val == null) continue;
             String s = dinhDangGiaTriO(bangBang, chiSo, val, val.toString());
             if (cfm != null && !s.startsWith("<html>"))
-                rong = Math.max(rong, cfm.stringWidth(s) + 22);
+                rong = Math.max(rong, cfm.stringWidth(s) + bu);
         }
         return rong;
     }
@@ -387,6 +427,12 @@ public final class DinhDangBang {
         }
         String vanBan = giaTri.toString().trim();
         if (vanBan.isEmpty()) return null;
+        if (vanBan.matches("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}")) {
+            return LocalDateTime.parse(vanBan, DinhDang.NGAY_GIO_GIAY_U)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli();
+        }
         if (vanBan.matches("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}")) {
             return LocalDateTime.parse(vanBan, DinhDang.NGAY_GIO_U)
                     .atZone(ZoneId.systemDefault())
@@ -576,6 +622,10 @@ public final class DinhDangBang {
     }
 
     public static JScrollPane taoBangKhongCuon(JTable bang, Dimension kichThuocViewport) {
+        bang.putClientProperty("bangGon", Boolean.TRUE);
+        if (bang.getTableHeader() != null) {
+            bang.getTableHeader().setPreferredSize(new Dimension(0, 32));
+        }
         bang.setPreferredScrollableViewportSize(kichThuocViewport);
         JScrollPane cuon = new JScrollPane(bang);
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
@@ -587,17 +637,24 @@ public final class DinhDangBang {
     public static void coGianChieuCaoBangTheoNoiDung(
             JTable bang, JScrollPane cuon, JPanel vungChua, int soDong) {
         int caoDong = Math.max(26, bang.getRowHeight());
+        int khoangCachDong = Math.max(0, bang.getRowMargin());
         int caoTieuDe =
                 bang.getTableHeader() != null
-                        ? bang.getTableHeader().getPreferredSize().height
-                        : 26;
-        if (caoTieuDe <= 0) caoTieuDe = 26;
-        int caoMoi = caoTieuDe + Math.max(1, soDong) * caoDong + 4;
-        cuon.setPreferredSize(new Dimension(340, caoMoi));
+                        ? Math.max(28, bang.getTableHeader().getPreferredSize().height)
+                        : 28;
+        int caoMoi = caoTieuDe + Math.max(1, soDong) * (caoDong + khoangCachDong) + 4;
+        int rongHienTai = vungChua.getWidth() > 0 ? vungChua.getWidth() : 340;
+        cuon.setPreferredSize(new Dimension(rongHienTai, caoMoi));
         cuon.setMinimumSize(new Dimension(280, caoMoi));
+        canChinhDoRongCot(bang);
         vungChua.setPreferredSize(null);
         vungChua.revalidate();
         vungChua.repaint();
+        Container cuonCha = SwingUtilities.getAncestorOfClass(JScrollPane.class, vungChua);
+        if (cuonCha != null) {
+            cuonCha.revalidate();
+            cuonCha.repaint();
+        }
     }
 
     public static JPanel taoHangNhap(

@@ -136,14 +136,6 @@ public final class ChinhFrame extends JFrame {
                     }
                 };
         manHinhBoDangKy.layCaLamViec().themBoLangNghe(boLangNgheCaLamViec);
-        TacVuNen.chayCoPhien(
-                this,
-                this::isDisplayable,
-                () -> {
-                    NhatKyHeThongService.macDinh().ghiNhatKy("Đăng nhập", "Hệ thống");
-                    return null;
-                },
-                v -> {});
         dieuHuong(MaManHinh.TONG_QUAN);
     }
 

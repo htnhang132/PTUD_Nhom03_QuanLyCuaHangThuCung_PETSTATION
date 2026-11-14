@@ -1057,6 +1057,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             vao.setEnabled(duocBat);
             for (Component khoaDangXet : ((JPanel) vao).getComponents())
                 khoaDangXet.setEnabled(duocBat);
+            if (vao.getClientProperty("filter") instanceof JTextField oLoc) {
+                oLoc.setVisible(duocBat);
+                vao.revalidate();
+            }
         } else {
             vao.setEnabled(duocBat);
         }

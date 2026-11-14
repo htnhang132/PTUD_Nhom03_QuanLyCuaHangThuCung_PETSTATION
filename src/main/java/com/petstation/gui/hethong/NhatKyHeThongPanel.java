@@ -6,8 +6,8 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.BoChonKhoangNgay;
-import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.hethong.NhatKyHeThongService;
@@ -16,28 +16,24 @@ import com.petstation.service.hethong.PhienDangNhapService;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.RenderingHints;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -48,7 +44,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableRowSorter;
 
 // Màn hình: Nhật ký thao tác hệ thống (Mã: NHAT_KY_HE_THONG)
 // Luồng xử lý: GUI -> NhatKyHeThongService -> NhatKyHeThongDAOImpl -> SQL (nhat_ky_he_thong,
@@ -57,17 +52,34 @@ import javax.swing.table.TableRowSorter;
 // thống
 // Phân hệ: hethong
 public final class NhatKyHeThongPanel extends CoSoPanel {
+    private static final int GIOI_HAN_BAN_GHI = 2000;
+
+    private static final String[] MA_LOAI_SU_KIEN = {
+        "", "LOGIN", "PAYMENT", "INVENTORY", "SERVICE", "APPROVAL", "CATALOG", "SYSTEM"
+    };
+
+    private static final String[] TEN_LOAI_SU_KIEN = {
+        "Tất cả",
+        "Đăng nhập & Tài khoản",
+        "Bán hàng & Thu ngân",
+        "Kho hàng",
+        "Spa & Lưu trú",
+        "Phê duyệt",
+        "Danh mục & Nhân sự",
+        "Hệ thống"
+    };
+
     private JTable bangBang;
 
     private DefaultTableModel moHinhBang;
-
-    private TableRowSorter<DefaultTableModel> boSapXep;
 
     private BoChonKhoangNgay khungKhoangNgayBoChon;
 
     private JComboBox<String> cboSuKienKieuHopChon;
 
     private JComboBox<String> cboKetQuaHopChon;
+
+    private JComboBox<String> cboNhanVienHopChon;
 
     private JTextField oTruongNguoiDungTimKiem;
 
@@ -77,33 +89,37 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     private List<DongNhatKyHeThong> duLieuDaTai = new ArrayList<>();
 
+    private List<DongNhatKyHeThong> duLieuDangHienThi = new ArrayList<>();
+
     private boolean dangDatLaiBoLoc;
 
     public NhatKyHeThongPanel() {
-        setLayout(new BorderLayout());
-        JPanel khungNoiDung = new JPanel(new BorderLayout(0, 12));
-        khungNoiDung.setOpaque(false);
-        JPanel khungTieuDe = taoTieuDe();
-        JPanel khungBoLocVungHienThi = taoBoLocVungHienThi();
-        JPanel khungDauTrang = taoVungTrongSuot(new BorderLayout(0, 10));
-        khungDauTrang.add(khungTieuDe, BorderLayout.NORTH);
-        khungDauTrang.add(khungBoLocVungHienThi, BorderLayout.CENTER);
-        khungNoiDung.add(khungDauTrang, BorderLayout.NORTH);
-        JPanel khungBangVungHienThi = taoBangVungHienThi();
-        khungNoiDung.add(khungBangVungHienThi, BorderLayout.CENTER);
-        JPanel khungChanTrang = taoChanTrang();
-        khungNoiDung.add(khungChanTrang, BorderLayout.SOUTH);
-        add(khungNoiDung, BorderLayout.CENTER);
+        setLayout(new BorderLayout(0, 12));
+        add(taoThanhDau(), BorderLayout.NORTH);
+        add(taoBangVungHienThi(), BorderLayout.CENTER);
         dangDatLaiBoLoc = true;
-        khungKhoangNgayBoChon.chonKy("7 ngày qua");
-        dangDatLaiBoLoc = false;
+        try {
+            khungKhoangNgayBoChon.chonKy("7 ngày qua");
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
         khungKhoangNgayBoChon.addPropertyChangeListener(
                 "dateRange",
                 e -> {
                     if (!dangDatLaiBoLoc) taiLai();
                 });
-        cboSuKienKieuHopChon.addActionListener(e -> apDungBoLocClient());
-        cboKetQuaHopChon.addActionListener(e -> apDungBoLocClient());
+        cboSuKienKieuHopChon.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocClient();
+                });
+        cboKetQuaHopChon.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocClient();
+                });
+        cboNhanVienHopChon.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) apDungBoLocClient();
+                });
         taiLai();
     }
 
@@ -128,141 +144,77 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         super.removeNotify();
     }
 
-    private JPanel taoTieuDe() {
-        JPanel khungTieuDe = new JPanel(new BorderLayout(12, 8));
-        khungTieuDe.setOpaque(false);
-        JPanel khungTraiMuc = new JPanel();
-        khungTraiMuc.setOpaque(false);
-        khungTraiMuc.setLayout(new BoxLayout(khungTraiMuc, BoxLayout.Y_AXIS));
-        JLabel nhanTieuDe = taoTieuDeManHinh("Nhật ký hệ thống");
-        khungTraiMuc.add(nhanTieuDe);
-        khungTraiMuc.add(Box.createVerticalStrut(5));
-        JLabel nhanTieuDePhu = new JLabel("Tra cứu lịch sử thao tác và sự kiện bảo mật");
-        nhanTieuDePhu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        nhanTieuDePhu.setForeground(MauUngDung.VAN_BAN_XAM);
-        khungTraiMuc.add(nhanTieuDePhu);
-        khungTraiMuc.add(Box.createVerticalStrut(5));
-        nhanNhanCacChiSo = new JLabel("Đang hiển thị: 0 sự kiện");
-        nhanNhanCacChiSo.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+    private JPanel taoThanhDau() {
+        JPanel khungTren = taoVungTrongSuot(new BorderLayout());
+        nhanNhanCacChiSo = new JLabel("· 0 sự kiện");
+        nhanNhanCacChiSo.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         nhanNhanCacChiSo.setForeground(MauUngDung.VAN_BAN_XAM);
-        khungTraiMuc.add(nhanNhanCacChiSo);
-        khungTieuDe.add(khungTraiMuc, BorderLayout.WEST);
-        JPanel khungPhaiMuc = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        khungPhaiMuc.setOpaque(false);
+        khungTren.add(
+                ThanhDanhSach.tieuDe(taoTieuDeManHinh("Nhật ký hệ thống"), nhanNhanCacChiSo),
+                BorderLayout.NORTH);
+
+        ThanhDanhSach thanhLoc = new ThanhDanhSach();
+        taoOTimKiemNhatKy();
+        taoBoLocLoaiSuKien();
+        taoBoLocKetQua();
+        taoBoLocNhanVien();
+        khungKhoangNgayBoChon = new BoChonKhoangNgay();
+
+        thanhLoc.add(oTruongNguoiDungTimKiem);
+        thanhLoc.themBoLoc("Loại sự kiện:", cboSuKienKieuHopChon);
+        thanhLoc.themBoLoc("Kết quả:", cboKetQuaHopChon);
+        thanhLoc.themBoLoc("Nhân viên:", cboNhanVienHopChon);
+        thanhLoc.add(khungKhoangNgayBoChon);
+
         NutDinhDang btnXuatNut = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuatNut.setToolTipText("Xuất kết quả tìm kiếm ra file Excel (.xlsx)");
+        btnXuatNut.putClientProperty("luonCuoi", Boolean.TRUE);
         btnXuatNut.addActionListener(suKien -> xuLyXuat());
-        khungPhaiMuc.add(btnXuatNut);
-        khungTieuDe.add(khungPhaiMuc, BorderLayout.EAST);
-        return khungTieuDe;
+        thanhLoc.add(btnXuatNut);
+
+        khungTren.add(thanhLoc, BorderLayout.CENTER);
+        return khungTren;
     }
 
-    private JPanel taoBoLocVungHienThi() {
-        JPanel khungVungHienThi = layThe(new BorderLayout(0, 10));
-        JLabel nhanTieuDeBoLoc = new JLabel("Bộ lọc tra cứu");
-        nhanTieuDeBoLoc.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
-        khungVungHienThi.add(nhanTieuDeBoLoc, BorderLayout.NORTH);
-        JPanel khungBoLocNoiDung = new JPanel(new GridBagLayout());
-        khungBoLocNoiDung.setOpaque(false);
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(4, 4, 4, 4);
-        gc.anchor = GridBagConstraints.WEST;
-        gc.fill = GridBagConstraints.HORIZONTAL;
-        gc.gridx = 0;
-        gc.gridy = 0;
-        gc.gridwidth = 4;
-        gc.weightx = 1.0;
-        khungKhoangNgayBoChon = new BoChonKhoangNgay();
-        khungBoLocNoiDung.add(khungKhoangNgayBoChon, gc);
-        gc.gridy = 1;
-        gc.gridwidth = 1;
-        gc.weightx = 0.0;
-        gc.gridx = 0;
-        khungBoLocNoiDung.add(taoTruongLocLoaiSuKien(), gc);
-        gc.gridx = 1;
-        khungBoLocNoiDung.add(taoTruongLocKetQua(), gc);
-        gc.gridx = 2;
-        khungBoLocNoiDung.add(taoTruongLocNguoiDung(), gc);
-        gc.gridx = 3;
-        gc.weightx = 1.0;
-        khungBoLocNoiDung.add(taoCumNutLoc(), gc);
-        khungVungHienThi.add(khungBoLocNoiDung, BorderLayout.CENTER);
-        return khungVungHienThi;
+    private void taoBoLocLoaiSuKien() {
+        cboSuKienKieuHopChon = new JComboBox<>(TEN_LOAI_SU_KIEN);
     }
 
-    private JPanel taoTruongLocLoaiSuKien() {
-        String[] suKienCacKieu = {
-            "Tất cả",
-            "LOGIN - Đăng nhập / Đăng xuất",
-            "CREATE - Thêm mới",
-            "UPDATE - Sửa",
-            "DELETE - Xóa / Ngừng hoạt động",
-            "APPROVAL - Phê duyệt",
-            "INVENTORY - Kho",
-            "PAYMENT - Thanh toán / Đổi trả",
-            "SYSTEM - Hệ thống"
-        };
-        cboSuKienKieuHopChon = new JComboBox<>(suKienCacKieu);
-        cboSuKienKieuHopChon.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        cboSuKienKieuHopChon.setPreferredSize(new Dimension(210, 34));
-        return bocNhanVaTruong("Loại sự kiện:", 105, cboSuKienKieuHopChon);
-    }
-
-    private JPanel taoTruongLocKetQua() {
+    private void taoBoLocKetQua() {
         String[] cacKetQua = {"Tất cả", "Thành công", "Thất bại", "Cảnh báo"};
         cboKetQuaHopChon = new JComboBox<>(cacKetQua);
-        cboKetQuaHopChon.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        cboKetQuaHopChon.setPreferredSize(new Dimension(120, 34));
-        return bocNhanVaTruong("Kết quả:", 0, cboKetQuaHopChon);
     }
 
-    private JPanel taoTruongLocNguoiDung() {
-        oTruongNguoiDungTimKiem = taoOTimKiem("Tìm theo tên người dùng...");
-        oTruongNguoiDungTimKiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oTruongNguoiDungTimKiem.setPreferredSize(new Dimension(170, 34));
-        oTruongNguoiDungTimKiem.setToolTipText("Tìm theo tên người dùng");
+    private void taoBoLocNhanVien() {
+        cboNhanVienHopChon = new JComboBox<>(new String[] {"Tất cả"});
+        cboNhanVienHopChon.setPrototypeDisplayValue("Nguyễn Văn Hoàng Anh");
+    }
+
+    private void taoOTimKiemNhatKy() {
+        oTruongNguoiDungTimKiem = taoOTimKiem("Tìm người dùng, hành động, mã...");
+        oTruongNguoiDungTimKiem.setToolTipText(
+                "Tìm theo nhân viên, hành động, đối tượng hoặc mã chứng từ");
         themBoLangNgheTaiLieu(oTruongNguoiDungTimKiem, this::apDungBoLocClient);
-        oTruongNguoiDungTimKiem.addActionListener(e -> apDungBoLocClient());
-        return bocNhanVaTruong("Người dùng:", 0, oTruongNguoiDungTimKiem);
+        oTruongNguoiDungTimKiem.addActionListener(
+                e -> {
+                    if (bangBang != null && bangBang.getRowCount() > 0) {
+                        bangBang.setRowSelectionInterval(0, 0);
+                        bangBang.requestFocusInWindow();
+                    }
+                });
+        oTruongNguoiDungTimKiem.addKeyListener(
+                new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ESCAPE
+                                && !oTruongNguoiDungTimKiem.getText().isEmpty()) {
+                            oTruongNguoiDungTimKiem.setText("");
+                        }
+                    }
+                });
     }
 
-    private static JPanel bocNhanVaTruong(String tieuDe, int chieuRongNhan, JComponent thanhPhan) {
-        JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        khungTam.setOpaque(false);
-        JLabel nhanChu = new JLabel(tieuDe);
-        nhanChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        if (chieuRongNhan > 0) nhanChu.setPreferredSize(new Dimension(chieuRongNhan, 34));
-        khungTam.add(nhanChu);
-        khungTam.add(thanhPhan);
-        return khungTam;
-    }
-
-    private JPanel taoCumNutLoc() {
-        JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        khungTam.setOpaque(false);
-        khungTam.add(taoNutLoc("Xóa lọc", 86, NutDinhDang.KieuNut.TRONG_SUOT, e -> xoaCacBoLoc()));
-        khungTam.add(taoNutLoc("Áp dụng", 90, NutDinhDang.KieuNut.CHINH, e -> taiLai()));
-        return khungTam;
-    }
-
-    private static NutDinhDang taoNutLoc(
-            String nhan, int rong, NutDinhDang.KieuNut kieu, ActionListener hanhDong) {
-        NutDinhDang nut = new NutDinhDang(nhan, kieu);
-        nut.setPreferredSize(new Dimension(rong, 34));
-        nut.addActionListener(hanhDong);
-        return nut;
-    }
-
-    private JPanel taoBangVungHienThi() {
-        JPanel khungVungHienThi = layThe(new BorderLayout(0, 10));
-        JPanel khungBangTieuDe = new JPanel(new BorderLayout());
-        khungBangTieuDe.setOpaque(false);
-        khungBangTieuDe.add(taoTieuDeMuc("Kết quả tra cứu"), BorderLayout.WEST);
-        JLabel nhanGoiY = new JLabel("Double-click vào dòng để xem chi tiết");
-        nhanGoiY.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-        nhanGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
-        khungBangTieuDe.add(nhanGoiY, BorderLayout.EAST);
-        khungVungHienThi.add(khungBangTieuDe, BorderLayout.NORTH);
+    private JScrollPane taoBangVungHienThi() {
         String[] cacCot = {"Thời gian", "Người dùng", "Hành động", "Loại sự kiện", "Kết quả"};
         moHinhBang =
                 new DefaultTableModel(new Object[0][], cacCot) {
@@ -271,12 +223,11 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                         return false;
                     }
                 };
-        bangBang = new JTable(moHinhBang);
-        DinhDangBang.apDung(bangBang);
+        JScrollPane scrCuonKhung = taoBangDinhDang(moHinhBang);
+        bangBang = layBang(scrCuonKhung);
         bangBang.setRowHeight(38);
         bangBang.setFillsViewportHeight(true);
-        boSapXep = new TableRowSorter<>(moHinhBang);
-        bangBang.setRowSorter(boSapXep);
+        bangBang.setToolTipText("Nhấp đúp vào dòng để xem chi tiết sự kiện");
         datBangChinh(bangBang);
         cauHinhCotHienThiNhatKy();
         bangBang.addMouseListener(
@@ -292,10 +243,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                         }
                     }
                 });
-        JScrollPane scrCuonKhung = new JScrollPane(bangBang);
-        scrCuonKhung.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        khungVungHienThi.add(scrCuonKhung, BorderLayout.CENTER);
-        return khungVungHienThi;
+        return scrCuonKhung;
     }
 
     private void cauHinhCotHienThiNhatKy() {
@@ -317,20 +265,35 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                                     taoNhanBangNhatKy(
                                             giaTri, SwingConstants.CENTER, Font.BOLD, daChon, dong);
                             if (!daChon) {
-                                String s = giaTri == null ? "" : giaTri.toString();
-                                if (s.contains("WARNING")
+                                String s =
+                                        (giaTri == null ? "" : giaTri.toString())
+                                                .toUpperCase(Locale.ROOT);
+                                if (s.contains("CẢNH BÁO")
+                                        || s.contains("LỖI")
+                                        || s.contains("XÓA")
+                                        || s.contains("WARNING")
                                         || s.contains("ERROR")
                                         || s.contains("DELETE")) {
                                     nhanChu.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-                                } else if (s.contains("LOGIN") || s.contains("LOGOUT")) {
+                                } else if (s.contains("ĐĂNG NHẬP")
+                                        || s.contains("TÀI KHOẢN")
+                                        || s.contains("LOGIN")
+                                        || s.contains("LOGOUT")) {
                                     nhanChu.setForeground(MauUngDung.CHINH);
-                                } else if (s.contains("APPROVAL")) {
+                                } else if (s.contains("PHÊ DUYỆT") || s.contains("APPROVAL")) {
                                     nhanChu.setForeground(MauUngDung.CAM_NHAN);
-                                } else if (s.contains("PAYMENT")) {
+                                } else if (s.contains("BÁN HÀNG")
+                                        || s.contains("THU NGÂN")
+                                        || s.contains("THANH TOÁN")
+                                        || s.contains("PAYMENT")) {
                                     nhanChu.setForeground(MauUngDung.XANH_LA);
-                                } else if (s.contains("CREATE")
-                                        || s.contains("UPDATE")
-                                        || s.contains("INVENTORY")) {
+                                } else if (s.contains("KHO")
+                                        || s.contains("SPA")
+                                        || s.contains("LƯU TRÚ")
+                                        || s.contains("DANH MỤC")
+                                        || s.contains("INVENTORY")
+                                        || s.contains("SERVICE")
+                                        || s.contains("CATALOG")) {
                                     nhanChu.setForeground(MauUngDung.NAU);
                                 }
                             }
@@ -353,20 +316,6 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         return nhanChu;
     }
 
-    private JPanel taoChanTrang() {
-        JPanel khungChanTrang = new JPanel(new BorderLayout());
-        khungChanTrang.setBackground(MauUngDung.CANH_BAO_NEN);
-        khungChanTrang.setBorder(new EmptyBorder(8, 12, 8, 12));
-        JLabel nhanGhiChu =
-                new JLabel(
-                        "Nhật ký được lưu trên SQL Server. Chọn khoảng thời gian và bộ lọc để tra"
-                                + " cứu.");
-        nhanGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        nhanGhiChu.setForeground(MauUngDung.NAU);
-        khungChanTrang.add(nhanGhiChu, BorderLayout.WEST);
-        return khungChanTrang;
-    }
-
     private void taiLai() {
         LocalDate tu = khungKhoangNgayBoChon.layNgayBatDau();
         LocalDate den = khungKhoangNgayBoChon.layNgayKetThuc();
@@ -381,18 +330,49 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                 () -> new ArrayList<>(NhatKyHeThongService.macDinh().layCacMuc(tu, den)),
                 cacMuc -> {
                     duLieuDaTai = cacMuc;
+                    capNhatDanhSachNhanVien();
                     apDungBoLocClient();
                 });
+    }
+
+    private void capNhatDanhSachNhanVien() {
+        String luaChonTruoc = Objects.toString(cboNhanVienHopChon.getSelectedItem(), "Tất cả");
+        Set<String> dsTen = new TreeSet<>(String::compareToIgnoreCase);
+        for (DongNhatKyHeThong suKien : duLieuDaTai) {
+            if (suKien.nguoiDung() != null && suKien.nguoiDung().getHoTen() != null) {
+                String ten = suKien.nguoiDung().getHoTen().trim();
+                if (!ten.isEmpty()) dsTen.add(ten);
+            }
+        }
+        dangDatLaiBoLoc = true;
+        try {
+            cboNhanVienHopChon.removeAllItems();
+            cboNhanVienHopChon.addItem("Tất cả");
+            for (String ten : dsTen) {
+                cboNhanVienHopChon.addItem(ten);
+            }
+            if (dsTen.contains(luaChonTruoc)) {
+                cboNhanVienHopChon.setSelectedItem(luaChonTruoc);
+            } else {
+                cboNhanVienHopChon.setSelectedIndex(0);
+            }
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
     }
 
     private void apDungBoLocClient() {
         LocalDate tu = khungKhoangNgayBoChon.layNgayBatDau();
         LocalDate den = khungKhoangNgayBoChon.layNgayKetThuc();
-        String kieu = String.valueOf(cboSuKienKieuHopChon.getSelectedItem());
-        String kieuKhoa = kieu.startsWith("Tất cả") ? "" : kieu.split(" ")[0];
+        int viTriLoai = cboSuKienKieuHopChon.getSelectedIndex();
+        String kieuKhoa =
+                viTriLoai > 0 && viTriLoai < MA_LOAI_SU_KIEN.length
+                        ? MA_LOAI_SU_KIEN[viTriLoai]
+                        : "";
         String ketQua = String.valueOf(cboKetQuaHopChon.getSelectedItem());
-        String nguoiDung = oTruongNguoiDungTimKiem.getText().trim().toLowerCase();
-        apDungDanhSachNhatKy(duLieuDaTai, tu, den, kieuKhoa, ketQua, nguoiDung);
+        String nhanVien = Objects.toString(cboNhanVienHopChon.getSelectedItem(), "Tất cả");
+        String tuKhoa = oTruongNguoiDungTimKiem.getText().trim().toLowerCase(Locale.ROOT);
+        apDungDanhSachNhatKy(duLieuDaTai, tu, den, kieuKhoa, ketQua, nhanVien, tuKhoa);
     }
 
     private void apDungDanhSachNhatKy(
@@ -401,48 +381,96 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             LocalDate den,
             String kieuKhoa,
             String ketQua,
-            String nguoiDung) {
+            String nhanVien,
+            String tuKhoa) {
         moHinhBang.setRowCount(0);
+        duLieuDangHienThi = new ArrayList<>();
         int cacCanhBao = 0;
         for (DongNhatKyHeThong suKien : cacMuc) {
-            if (suKien.thoiGian() != null) {
-                LocalDate ngayDangXet = suKien.thoiGian().toLocalDate();
-                if (tu != null && ngayDangXet.isBefore(tu)) continue;
-                if (den != null && ngayDangXet.isAfter(den)) continue;
-            } else if (tu != null || den != null) {
-                continue;
-            }
+            if (!trongKhoangNgay(suKien, tu, den)) continue;
             if (!khopKieuSuKien(kieuKhoa, suKien.kieu())) continue;
-            if (!ketQua.equals("Tất cả") && !ketQua.equals(suKien.ketQua())) continue;
+            if (!"Tất cả".equals(ketQua) && !ketQua.equals(suKien.ketQua())) continue;
             String tenNguoiDung =
                     suKien.nguoiDung() != null && suKien.nguoiDung().getHoTen() != null
-                            ? suKien.nguoiDung().getHoTen()
+                            ? suKien.nguoiDung().getHoTen().trim()
                             : "";
-            if (!nguoiDung.isEmpty() && !tenNguoiDung.toLowerCase().contains(nguoiDung)) continue;
+            if (!"Tất cả".equals(nhanVien) && !nhanVien.equalsIgnoreCase(tenNguoiDung)) continue;
+            String hanhDong = taoVanBanHanhDong(suKien);
+            if (!khopTuKhoa(suKien, tenNguoiDung, hanhDong, tuKhoa)) continue;
             if ("Cảnh báo".equals(suKien.ketQua()) || "Thất bại".equals(suKien.ketQua()))
                 cacCanhBao++;
+            duLieuDangHienThi.add(suKien);
             moHinhBang.addRow(
                     new Object[] {
                         suKien.layVanBanThoiGian(),
                         tenNguoiDung,
-                        suKien.thaoTac()
-                                + (suKien.doiTuong().isBlank() ? "" : ": " + suKien.doiTuong()),
-                        suKien.kieu(),
+                        hanhDong,
+                        dinhDangLoaiSuKien(suKien.kieu()),
                         suKien.ketQua()
                     });
         }
-        nhanNhanCacChiSo.setText(
-                "Đang hiển thị: "
-                        + moHinhBang.getRowCount()
-                        + " sự kiện • "
-                        + cacCanhBao
-                        + " cảnh báo/thất bại");
+        capNhatChiSoTieuDe(cacCanhBao);
+    }
+
+    private void capNhatChiSoTieuDe(int cacCanhBao) {
+        String chiSo = "· " + moHinhBang.getRowCount() + " sự kiện";
+        if (cacCanhBao > 0) chiSo += " · " + cacCanhBao + " cảnh báo/thất bại";
+        boolean chamGioiHan = duLieuDaTai.size() >= GIOI_HAN_BAN_GHI;
+        if (chamGioiHan) chiSo += " · Đạt giới hạn 2.000 dòng (nên thu hẹp khoảng ngày)";
+        nhanNhanCacChiSo.setText(chiSo);
+        nhanNhanCacChiSo.setForeground(chamGioiHan ? MauUngDung.CAM_NHAN : MauUngDung.VAN_BAN_XAM);
+    }
+
+    private static boolean trongKhoangNgay(DongNhatKyHeThong suKien, LocalDate tu, LocalDate den) {
+        if (suKien.thoiGian() == null) return tu == null && den == null;
+        LocalDate ngay = suKien.thoiGian().toLocalDate();
+        if (tu != null && ngay.isBefore(tu)) return false;
+        return den == null || !ngay.isAfter(den);
+    }
+
+    private static String taoVanBanHanhDong(DongNhatKyHeThong suKien) {
+        return suKien.thaoTac() + (suKien.doiTuong().isBlank() ? "" : ": " + suKien.doiTuong());
+    }
+
+    private static boolean khopTuKhoa(
+            DongNhatKyHeThong suKien, String tenNguoiDung, String hanhDong, String tuKhoa) {
+        if (tuKhoa.isEmpty()) return true;
+        return tenNguoiDung.toLowerCase(Locale.ROOT).contains(tuKhoa)
+                || hanhDong.toLowerCase(Locale.ROOT).contains(tuKhoa)
+                || suKien.loaiDoiTuong().toLowerCase(Locale.ROOT).contains(tuKhoa)
+                || suKien.maDoiTuong().toLowerCase(Locale.ROOT).contains(tuKhoa)
+                || suKien.ghiChu().toLowerCase(Locale.ROOT).contains(tuKhoa)
+                || dinhDangLoaiSuKien(suKien.kieu()).toLowerCase(Locale.ROOT).contains(tuKhoa);
+    }
+
+    private static String dinhDangLoaiSuKien(String kieu) {
+        if (kieu == null || kieu.isBlank()) return "";
+        return switch (kieu.trim().toUpperCase(Locale.ROOT)) {
+            case "LOGIN", "LOGOUT", "AUTH" -> "Đăng nhập & Tài khoản";
+            case "PAYMENT" -> "Bán hàng & Thu ngân";
+            case "INVENTORY" -> "Kho hàng";
+            case "SERVICE" -> "Spa & Lưu trú";
+            case "APPROVAL" -> "Phê duyệt";
+            case "CATALOG", "CREATE", "UPDATE", "DELETE" -> "Danh mục & Nhân sự";
+            case "SYSTEM" -> "Hệ thống";
+            case "WARNING" -> "Cảnh báo";
+            case "ERROR" -> "Lỗi";
+            default -> kieu;
+        };
     }
 
     private static boolean khopKieuSuKien(String kieuKhoa, String kieuSuKien) {
         if (kieuKhoa == null || kieuKhoa.isEmpty()) return true;
         if ("LOGIN".equals(kieuKhoa)) {
-            return "LOGIN".equalsIgnoreCase(kieuSuKien) || "LOGOUT".equalsIgnoreCase(kieuSuKien);
+            return "LOGIN".equalsIgnoreCase(kieuSuKien)
+                    || "LOGOUT".equalsIgnoreCase(kieuSuKien)
+                    || "AUTH".equalsIgnoreCase(kieuSuKien);
+        }
+        if ("CATALOG".equals(kieuKhoa)) {
+            return "CATALOG".equalsIgnoreCase(kieuSuKien)
+                    || "CREATE".equalsIgnoreCase(kieuSuKien)
+                    || "UPDATE".equalsIgnoreCase(kieuSuKien)
+                    || "DELETE".equalsIgnoreCase(kieuSuKien);
         }
         return kieuKhoa.equalsIgnoreCase(kieuSuKien);
     }
@@ -453,6 +481,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             khungKhoangNgayBoChon.chonKy("7 ngày qua");
             cboSuKienKieuHopChon.setSelectedIndex(0);
             cboKetQuaHopChon.setSelectedIndex(0);
+            cboNhanVienHopChon.setSelectedIndex(0);
             oTruongNguoiDungTimKiem.setText("");
         } finally {
             dangDatLaiBoLoc = false;
@@ -462,28 +491,50 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     private void xuLyHienThiChiTiet(int dong) {
         int moHinhDong = bangBang.convertRowIndexToModel(dong);
-        String thoiGian = Objects.toString(moHinhBang.getValueAt(moHinhDong, 0), "");
-        String nguoiDung = Objects.toString(moHinhBang.getValueAt(moHinhDong, 1), "");
-        String thaoTac = Objects.toString(moHinhBang.getValueAt(moHinhDong, 2), "");
-        String kieuSuKien = Objects.toString(moHinhBang.getValueAt(moHinhDong, 3), "");
-        String ketQua = Objects.toString(moHinhBang.getValueAt(moHinhDong, 4), "");
-        String chiTiet =
-                String.format(
-                        "CHI TIẾT SỰ KIỆN\n\n"
-                                + "═══════════════════════════\n"
-                                + "Thời gian: %s\n"
-                                + "Người dùng: %s\n"
-                                + "Hành động: %s\n"
-                                + "Loại: %s\n"
-                                + "Kết quả: %s\n"
-                                + "═══════════════════════════\n\n"
-                                + "Nhật ký chỉ đọc, không thể sửa hoặc xóa.",
-                        thoiGian, nguoiDung, thaoTac, kieuSuKien, ketQua);
-        HopThoai.hienThiThongTin(this, chiTiet, "Chi tiết Audit Log");
+        if (moHinhDong < 0 || moHinhDong >= duLieuDangHienThi.size()) return;
+        DongNhatKyHeThong suKien = duLieuDangHienThi.get(moHinhDong);
+        String tenNguoi = Objects.toString(moHinhBang.getValueAt(moHinhDong, 1), "");
+        String maNv =
+                suKien.nguoiDung() != null && suKien.nguoiDung().getMaNhanVien() != null
+                        ? suKien.nguoiDung().getMaNhanVien().trim()
+                        : "";
+        String nguoiThucHien = maNv.isEmpty() ? tenNguoi : tenNguoi + " (" + maNv + ")";
+        StringBuilder chiTiet = new StringBuilder();
+        chiTiet.append("CHI TIẾT SỰ KIỆN\n\n")
+                .append("══════════════════════════════\n")
+                .append("Thời gian: ")
+                .append(suKien.layVanBanThoiGian())
+                .append('\n')
+                .append("Người thực hiện: ")
+                .append(nguoiThucHien)
+                .append('\n')
+                .append("Phân loại: ")
+                .append(dinhDangLoaiSuKien(suKien.kieu()))
+                .append('\n')
+                .append("Hành động: ")
+                .append(suKien.thaoTac())
+                .append('\n');
+        if (!suKien.loaiDoiTuong().isBlank() || !suKien.maDoiTuong().isBlank()) {
+            chiTiet.append("Đối tượng: ");
+            if (!suKien.loaiDoiTuong().isBlank()) chiTiet.append(suKien.loaiDoiTuong());
+            if (!suKien.loaiDoiTuong().isBlank() && !suKien.maDoiTuong().isBlank()) {
+                chiTiet.append(" - ");
+            }
+            if (!suKien.maDoiTuong().isBlank()) chiTiet.append(suKien.maDoiTuong());
+            chiTiet.append('\n');
+        }
+        String ghiChu = suKien.ghiChu().isBlank() ? suKien.doiTuong() : suKien.ghiChu();
+        if (!ghiChu.isBlank()) chiTiet.append("Chi tiết: ").append(ghiChu).append('\n');
+        chiTiet.append("Kết quả: ")
+                .append(suKien.ketQua())
+                .append('\n')
+                .append("══════════════════════════════\n\n")
+                .append("Nhật ký chỉ đọc, không thể sửa hoặc xóa.");
+        HopThoai.hienThiThongTin(this, chiTiet.toString(), "Chi tiết nhật ký");
     }
 
     private void xuLyXuat() {
-        XuatExcelDialog.xuatBang(this, bangBang, "Audit_Log");
+        XuatExcelDialog.xuatBang(this, bangBang, "Nhat_ky_he_thong");
     }
 
     @Override
@@ -503,21 +554,22 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
 
     @Override
     protected String layNoiDungTroGiup() {
-        return "Hướng dẫn tra cứu Audit Log:\n\n"
+        return "Hướng dẫn tra cứu nhật ký hệ thống:\n\n"
                 + "【 Bộ lọc 】\n"
-                + "• Date Range: BẮT BUỘC phải chọn khoảng thời gian\n"
-                + "→ Database có hàng triệu bản ghi, không thể load hết\n"
-                + "• Loại sự kiện: Lọc theo LOGIN, PAYMENT, DELETE...\n"
-                + "• Kết quả: Lọc Thành công/Thất bại/Cảnh báo\n"
-                + "• Người dùng: Tìm theo tên\n\n"
-                + "【 Tra soát gian lận 】\n"
-                + "Các loại sự kiện quan trọng cần kiểm tra:\n"
-                + "• DELETE: Xóa hóa đơn, xóa dữ liệu\n"
-                + "• WARNING/ERROR: Cảnh báo bất thường\n"
-                + "• LOGIN thất bại nhiều lần: Nghi vấn tấn công\n\n"
-                + "【 Export 】\n"
-                + "Xuất kết quả ra Excel (.xlsx) để phân tích chi tiết\n\n"
-                + "Mẹo: Double-click vào dòng để xem chi tiết đầy đủ.";
+                + "• Khoảng thời gian: Chọn khoảng ngày cần tra cứu (tối đa 2.000 dòng/lượt)\n"
+                + "• Loại sự kiện: Lọc theo phân hệ nghiệp vụ (Đăng nhập & Tài khoản, Bán hàng"
+                + " & Thu ngân, Kho hàng, Spa & Lưu trú, Phê duyệt, Danh mục & Nhân sự, Hệ"
+                + " thống)\n"
+                + "• Kết quả & Nhân viên: Lọc Thành công / Thất bại / Cảnh báo hoặc theo từng"
+                + " nhân viên\n"
+                + "• Tìm kiếm: Lọc nhanh theo tên nhân viên, hành động, đối tượng hoặc mã chứng"
+                + " từ\n\n"
+                + "【 Tra soát bất thường 】\n"
+                + "• Hủy hóa đơn / Từ chối / Điều chỉnh cọc: Kiểm tra lý do ở cửa sổ chi tiết\n"
+                + "• Đăng nhập thất bại nhiều lần: Nghi vấn truy cập trái phép\n\n"
+                + "【 Xuất dữ liệu 】\n"
+                + "Xuất kết quả ra tập tin Excel (.xlsx) để đối soát chi tiết\n\n"
+                + "Mẹo: Nhấp đúp vào dòng để xem đầy đủ đối tượng, mã chứng từ và ghi chú.";
     }
 
     private static class PillBadgeCellRenderer extends JPanel implements TableCellRenderer {
