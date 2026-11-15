@@ -186,9 +186,9 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 },
                 ketQua -> {
                     soTienMoiDiemDoi = ketQua[1] > 0 ? ketQua[1] : 1000L;
-                    oTichDiem.setText(DinhDang.dinhDang(ketQua[0]));
+                    oTichDiem.setText(DinhDang.soNguyen(ketQua[0]));
                     for (int chiSo = 0; chiSo < 4; chiSo++) {
-                        cacHang[chiSo].setText(DinhDang.dinhDang(ketQua[chiSo + 2]));
+                        cacHang[chiSo].setText(DinhDang.soNguyen(ketQua[chiSo + 2]));
                     }
                 });
     }

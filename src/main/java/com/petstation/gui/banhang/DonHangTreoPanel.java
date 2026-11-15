@@ -20,15 +20,25 @@ import java.util.function.Consumer;
 public final class DonHangTreoPanel extends BangNghiepVuPanel {
     private final DonDoiTreoService donDoiTreoService = new DonDoiTreoService();
     private final BanHangService banHangService = new BanHangService();
+    private final NutDinhDang btnMoLai = new NutDinhDang("Mở lại đơn", NutDinhDang.KieuNut.PHU);
+    private final NutDinhDang btnXoa =
+            new NutDinhDang("Xóa đơn treo", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public DonHangTreoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.GIO_HANG_TREO, banHang, dieuHuong);
-        NutDinhDang btnMoLai = new NutDinhDang("Mở lại đơn", NutDinhDang.KieuNut.PHU);
         btnMoLai.addActionListener(e -> moLaiDon(banHang, dieuHuong));
         layKhungThaoTac().add(btnMoLai);
-        NutDinhDang btnXoa = new NutDinhDang("Xóa đơn treo", NutDinhDang.KieuNut.PHU);
         btnXoa.addActionListener(e -> xoaDonTreo());
         layKhungThaoTac().add(btnXoa);
+        ganSuKienDupChuot(() -> moLaiDon(banHang, dieuHuong));
+        capNhatThaoTac();
+    }
+
+    @Override
+    protected void capNhatThaoTac() {
+        boolean co = layBangDuLieu().getSelectedRow() >= 0;
+        if (btnMoLai != null) btnMoLai.setEnabled(co);
+        if (btnXoa != null) btnXoa.setEnabled(co);
     }
 
     private void moLaiDon(GioHang banHang, Consumer<MaManHinh> dieuHuong) {

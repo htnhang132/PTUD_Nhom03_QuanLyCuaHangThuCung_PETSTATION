@@ -48,16 +48,16 @@ public class BoChonKhoangNgay extends JPanel {
         khungTuyChinhNgayVungHienThi.setOpaque(false);
         khungTuyChinhNgayVungHienThi.add(taoNhan("Từ ngày:"));
         khungNgayBatDauBoChon = new BoChonNgay();
-        khungNgayBatDauBoChon.setPreferredSize(new Dimension(136, 34));
+        khungNgayBatDauBoChon.setPreferredSize(new Dimension(152, 34));
         khungTuyChinhNgayVungHienThi.add(khungNgayBatDauBoChon);
         khungTuyChinhNgayVungHienThi.add(taoNhan("Đến ngày:"));
         khungNgayKetThucBoChon = new BoChonNgay();
-        khungNgayKetThucBoChon.setPreferredSize(new Dimension(136, 34));
+        khungNgayKetThucBoChon.setPreferredSize(new Dimension(152, 34));
         khungTuyChinhNgayVungHienThi.add(khungNgayKetThucBoChon);
         khungTuyChinhNgayVungHienThi.setVisible(true);
         add(khungTuyChinhNgayVungHienThi);
-        khungNgayBatDauBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
-        khungNgayKetThucBoChon.addPropertyChangeListener("date", e -> chonTuyChinh());
+        khungNgayBatDauBoChon.addPropertyChangeListener("date", e -> chonTuyChinh(true));
+        khungNgayKetThucBoChon.addPropertyChangeListener("date", e -> chonTuyChinh(false));
         cboGiaTriCoSanHopChon.setSelectedIndex(0);
         xuLyGiaTriCoSanThayDoi();
     }
@@ -134,8 +134,19 @@ public class BoChonKhoangNgay extends JPanel {
         firePropertyChange("dateRange", null, new LocalDate[] {tu, den});
     }
 
-    private void chonTuyChinh() {
+    private void chonTuyChinh(boolean thayDoiBatDau) {
         if (!dangDatKy) {
+            LocalDate tu = layNgayBatDau();
+            LocalDate den = layNgayKetThuc();
+            if (tu != null && den != null && tu.isAfter(den)) {
+                dangDatKy = true;
+                if (thayDoiBatDau) {
+                    khungNgayKetThucBoChon.datNgayDuocChon(tu);
+                } else {
+                    khungNgayBatDauBoChon.datNgayDuocChon(den);
+                }
+                dangDatKy = false;
+            }
             cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
             firePropertyChange(
                     "dateRange", null, new LocalDate[] {layNgayBatDau(), layNgayKetThuc()});

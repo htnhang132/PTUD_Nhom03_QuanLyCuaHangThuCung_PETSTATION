@@ -137,10 +137,12 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
         return truyVan(
                         "SELECT h.ma_phong, h.ma_hop_dong, t.ma_thu_cung, t.ten,"
                                 + " k.ma_khach_hang, k.ho_ten, h.ngay_vao,"
-                                + " h.ngay_ra_du_kien, h.trang_thai FROM hop_dong_luu_tru h JOIN"
-                                + " thu_cung t ON t.ma_thu_cung=h.ma_thu_cung JOIN khach_hang k ON"
-                                + " k.ma_khach_hang=h.ma_khach_hang WHERE h.trang_thai"
-                                + " IN('DA_DAT','DANG_O') ORDER BY h.ngay_vao, h.ma_hop_dong")
+                                + " h.ngay_ra_du_kien, h.trang_thai,"
+                                + " COALESCE(k.so_dien_thoai, '') FROM hop_dong_luu_tru h"
+                                + " JOIN thu_cung t ON t.ma_thu_cung=h.ma_thu_cung JOIN"
+                                + " khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                                + " h.trang_thai IN('DA_DAT','DANG_O') ORDER BY"
+                                + " h.ngay_vao, h.ma_hop_dong")
                 .stream()
                 .map(
                         r -> {
@@ -152,6 +154,7 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
                             tc.setTen(DuLieu.chuyenThanhChuoi(r[3]));
                             KhachHang kh = new KhachHang(DuLieu.chuyenThanhChuoi(r[4]));
                             kh.setHoTen(DuLieu.chuyenThanhChuoi(r[5]));
+                            kh.setSoDienThoai(DuLieu.chuyenThanhChuoi(r[9]));
                             return new HotelDTO.ChiTietLichPhong(
                                     phong,
                                     new HotelDTO.LichPhong(

@@ -25,6 +25,8 @@ public class TruongMatKhauAnHien extends JPanel {
 
     private JToggleButton btnNutBatTat;
 
+    private final char kyTuAnMacDinh;
+
     private boolean matKhauHienThi = false;
 
     public TruongMatKhauAnHien() {
@@ -37,6 +39,7 @@ public class TruongMatKhauAnHien extends JPanel {
         oTruongMatKhau = new JPasswordField(cacCot);
         oTruongMatKhau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongMatKhau.setPreferredSize(new Dimension(220, 36));
+        this.kyTuAnMacDinh = oTruongMatKhau.getEchoChar();
         btnNutBatTat = new JToggleButton();
         btnNutBatTat.setIcon(taoBieuTuongMat(false));
         btnNutBatTat.setSelectedIcon(taoBieuTuongMat(true));
@@ -60,7 +63,7 @@ public class TruongMatKhauAnHien extends JPanel {
             btnNutBatTat.setToolTipText("Ẩn mật khẩu");
             btnNutBatTat.setSelected(true);
         } else {
-            oTruongMatKhau.setEchoChar('●');
+            oTruongMatKhau.setEchoChar(kyTuAnMacDinh != 0 ? kyTuAnMacDinh : '•');
             btnNutBatTat.setToolTipText("Hiển thị mật khẩu");
             btnNutBatTat.setSelected(false);
         }
@@ -105,6 +108,7 @@ public class TruongMatKhauAnHien extends JPanel {
 
     public void xoa() {
         oTruongMatKhau.setText("");
+        if (matKhauHienThi) batTatMatKhauHienThi();
     }
 
     public JPasswordField layTruongMatKhau() {
@@ -121,5 +125,10 @@ public class TruongMatKhauAnHien extends JPanel {
     @Override
     public void requestFocus() {
         oTruongMatKhau.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return oTruongMatKhau.requestFocusInWindow();
     }
 }

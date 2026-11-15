@@ -18,7 +18,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 public final class BieuMauTruong {
     public static final class LuaChon {
@@ -140,6 +143,22 @@ public final class BieuMauTruong {
             giaTriDangXet.gridx = 1;
             giaTriDangXet.weightx = 1;
             khungBieuMau.add(dauVao, giaTriDangXet);
+        }
+        if (!cacDauVao.isEmpty()) {
+            JComponent dauVaoDauTien = cacDauVao.values().iterator().next();
+            dauVaoDauTien.addAncestorListener(
+                    new AncestorListener() {
+                        @Override
+                        public void ancestorAdded(AncestorEvent event) {
+                            SwingUtilities.invokeLater(dauVaoDauTien::requestFocusInWindow);
+                        }
+
+                        @Override
+                        public void ancestorRemoved(AncestorEvent event) {}
+
+                        @Override
+                        public void ancestorMoved(AncestorEvent event) {}
+                    });
         }
         if (!HopThoai.xacNhanOk(cha, khungBieuMau, tieuDe)) return null;
         Map<String, String> cacGiaTri = new LinkedHashMap<>();

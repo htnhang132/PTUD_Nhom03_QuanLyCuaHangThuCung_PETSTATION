@@ -2,9 +2,12 @@ package com.petstation.gui.chung.thanhphan;
 
 import com.petstation.gui.chung.MauUngDung;
 
+import org.slf4j.LoggerFactory;
+
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -51,9 +54,18 @@ public class BoChonNgayGio extends JPanel {
     }
 
     public LocalDateTime layGiaTri() {
+        try {
+            spGio.commitEdit();
+        } catch (ParseException ex) {
+            LoggerFactory.getLogger(BoChonNgayGio.class)
+                    .debug(
+                            "Giữ nguyên giờ trước đó khi giá trị nhập chưa hợp lệ: {}",
+                            ex.getMessage());
+        }
         LocalDate ngay = boChonNgay.layNgayDuocChon();
         if (ngay == null) {
             ngay = LocalDate.now();
+            boChonNgay.datNgayDuocChon(ngay);
         }
         Date dateVal = (Date) spGio.getValue();
         Calendar cal = Calendar.getInstance();

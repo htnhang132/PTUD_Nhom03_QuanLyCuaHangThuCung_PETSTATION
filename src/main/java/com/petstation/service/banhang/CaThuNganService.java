@@ -268,6 +268,10 @@ public final class CaThuNganService {
         cacBoLangNghe.remove(boLangNghe);
     }
 
+    public void thongBaoThayDoi() {
+        thongBao();
+    }
+
     private void thongBao() {
         for (BoLangNgheSuKien<CaThuNganService> boLangNghe : cacBoLangNghe) {
             boLangNghe.khiThayDoi(this);

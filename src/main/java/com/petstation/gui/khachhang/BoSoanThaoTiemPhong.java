@@ -1,5 +1,6 @@
 package com.petstation.gui.khachhang;
 
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
@@ -33,7 +34,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
 
     private final DefaultTableModel model =
             new DefaultTableModel(
-                    new String[] {"Loại vắc-xin", "Ngày tiêm", "Ngày hết hạn", "Ghi chú"}, 0) {
+                    new String[] {"Loại vắc-xin", "Ngày tiêm", "Hết hạn", "Ghi chú"}, 0) {
                 @Override
                 public boolean isCellEditable(int r, int c) {
                     return false;
@@ -148,6 +149,9 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         return khungTam;
     }
 
+    private boolean dangKhoiTaoNhap;
+    private boolean nguoiDungDaSuaNhap;
+
     private void ganSuKienBoSoanTiemPhong() {
         btnThem.addActionListener(e -> capNhat(false));
         btnSua.addActionListener(e -> capNhat(true));
@@ -156,30 +160,52 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                     DinhDangBang.xoaDongDangChon(bang, model, this::capNhatKichThuocBang);
                     xoaTrangNhap();
                 });
+        Runnable danhDauDaSua =
+                () -> {
+                    if (!dangKhoiTaoNhap && dau.isVisible()) {
+                        nguoiDungDaSuaNhap = true;
+                    }
+                };
+        CoSoPanel.themBoLangNgheTaiLieu(oNgayTiem, danhDauDaSua);
+        CoSoPanel.themBoLangNgheTaiLieu(oNgayHan, danhDauDaSua);
+        CoSoPanel.themBoLangNgheTaiLieu(oGhiChu, danhDauDaSua);
+        cboLoai.addActionListener(e -> danhDauDaSua.run());
         bang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
                             if (e.getValueIsAdjusting() || bang.getSelectedRow() < 0) return;
-                            int r = bang.convertRowIndexToModel(bang.getSelectedRow());
-                            cboLoai.setSelectedItem(String.valueOf(model.getValueAt(r, 0)));
-                            oNgayTiem.setText(String.valueOf(model.getValueAt(r, 1)));
-                            oNgayHan.setText(
-                                    model.getValueAt(r, 2) == null
-                                            ? ""
-                                            : String.valueOf(model.getValueAt(r, 2)));
-                            oGhiChu.setText(
-                                    model.getValueAt(r, 3) == null
-                                            ? ""
-                                            : String.valueOf(model.getValueAt(r, 3)));
+                            dangKhoiTaoNhap = true;
+                            try {
+                                int r = bang.convertRowIndexToModel(bang.getSelectedRow());
+                                cboLoai.setSelectedItem(String.valueOf(model.getValueAt(r, 0)));
+                                oNgayTiem.setText(String.valueOf(model.getValueAt(r, 1)));
+                                oNgayHan.setText(
+                                        model.getValueAt(r, 2) == null
+                                                ? ""
+                                                : String.valueOf(model.getValueAt(r, 2)));
+                                oGhiChu.setText(
+                                        model.getValueAt(r, 3) == null
+                                                ? ""
+                                                : String.valueOf(model.getValueAt(r, 3)));
+                                nguoiDungDaSuaNhap = false;
+                            } finally {
+                                dangKhoiTaoNhap = false;
+                            }
                         });
     }
 
     private void xoaTrangNhap() {
-        if (cboLoai.getItemCount() > 0) cboLoai.setSelectedIndex(0);
-        oNgayTiem.setText(LocalDate.now().format(DinhDang.NGAY_CHUAN));
-        oNgayHan.setText("");
-        oGhiChu.setText("");
-        bang.clearSelection();
+        dangKhoiTaoNhap = true;
+        try {
+            if (cboLoai.getItemCount() > 0) cboLoai.setSelectedIndex(0);
+            oNgayTiem.setText(LocalDate.now().format(DinhDang.NGAY_CHUAN));
+            oNgayHan.setText("");
+            oGhiChu.setText("");
+            bang.clearSelection();
+            nguoiDungDaSuaNhap = false;
+        } finally {
+            dangKhoiTaoNhap = false;
+        }
     }
 
     private final JScrollPane cuon;
@@ -188,7 +214,18 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
         DinhDangBang.coGianChieuCaoBangTheoNoiDung(bang, cuon, panel, model.getRowCount());
     }
 
-    private void capNhat(boolean laSua) {
+    @Override
+    public boolean xacNhanDangNhap() {
+        if (!dau.isVisible()) return true;
+        boolean coNoiDung =
+                nguoiDungDaSuaNhap || !oNgayHan.getText().isBlank() || !oGhiChu.getText().isBlank();
+        if (coNoiDung && bang.getSelectedRow() < 0) {
+            return capNhat(false);
+        }
+        return true;
+    }
+
+    private boolean capNhat(boolean laSua) {
         try {
             Object chon = cboLoai.getSelectedItem();
             String loai = chon == null ? "" : chon.toString().trim();
@@ -233,8 +270,11 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
             DinhDangBang.capNhatHoacThemDong(bang, model, laSua, dong, duLieu);
             capNhatKichThuocBang();
             if (!laSua) xoaTrangNhap();
+            else nguoiDungDaSuaNhap = false;
+            return true;
         } catch (Exception ex) {
             HopThoai.hienThiCanhBao(panel, ex.getMessage());
+            return false;
         }
     }
 

@@ -324,6 +324,18 @@ public class BaoCaoPanel extends CoSoPanel {
     }
 
     private void ganSuKienBieuDo() {
+        bangBang.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (e.getClickCount() == 2 && bangBang.getSelectedRow() >= 0) {
+                            chiTiet(
+                                    new int[] {
+                                        bangBang.convertRowIndexToModel(bangBang.getSelectedRow())
+                                    });
+                        }
+                    }
+                });
         bieuDo.khiChon(
                 i -> {
                     if (tongHop != null && i < tongHop.dongGoc().size())

@@ -34,12 +34,13 @@ public final class ThaoTacNhanh {
         Window cuaSoCha = cha == null ? null : SwingUtilities.getWindowAncestor(cha);
         JDialog hopThoai =
                 new JDialog(cuaSoCha, "Đăng ký nghỉ phép", Dialog.ModalityType.APPLICATION_MODAL);
-        BoChonNgay chonNgay = new BoChonNgay(LocalDate.now());
+        BoChonNgay chonTuNgay = new BoChonNgay(LocalDate.now());
+        BoChonNgay chonDenNgay = new BoChonNgay(LocalDate.now());
         JTextField oLyDo = new JTextField(24);
         boolean[] xacNhan = {false};
 
-        JPanel khungForm = taoKhungForm(chonNgay, oLyDo);
-        JPanel khungNut = taoKhungNut(hopThoai, chonNgay, oLyDo, xacNhan);
+        JPanel khungForm = taoKhungForm(chonTuNgay, chonDenNgay, oLyDo);
+        JPanel khungNut = taoKhungNut(hopThoai, chonTuNgay, chonDenNgay, oLyDo, xacNhan);
         hopThoai.setLayout(new BorderLayout(8, 8));
         hopThoai.add(khungForm, BorderLayout.CENTER);
         hopThoai.add(khungNut, BorderLayout.SOUTH);
@@ -48,7 +49,17 @@ public final class ThaoTacNhanh {
         hopThoai.setVisible(true);
         if (!xacNhan[0]) return;
 
-        LocalDate ngay = chonNgay.layNgayDuocChon();
+        LocalDate tuNgay = chonTuNgay.layNgayDuocChon();
+        LocalDate denNgay = chonDenNgay.layNgayDuocChon();
+        boolean nhieuNgay = !tuNgay.equals(denNgay);
+        String moTaNgay =
+                nhieuNgay
+                        ? "Lịch làm việc từ "
+                                + tuNgay.format(DinhDang.NGAY)
+                                + " đến "
+                                + denNgay.format(DinhDang.NGAY)
+                        : "Lịch làm việc ngày " + tuNgay.format(DinhDang.NGAY);
+        String giaTriNgay = nhieuNgay ? tuNgay + ".." + denNgay : tuNgay.toString();
         String lyDo = oLyDo.getText().trim();
         String maNv = PhienDangNhapService.macDinh().layMaNhanVien();
         TacVuNen.chayCoPhien(
@@ -59,15 +70,16 @@ public final class ThaoTacNhanh {
                                 .guiThaoTac(
                                         PheDuyetService.Loai.NGHI_PHEP,
                                         lyDo,
-                                        "Lịch làm việc ngày " + ngay.format(DinhDang.NGAY),
+                                        moTaNgay,
                                         "Nghỉ phép",
                                         LoaiLichLamViec.NGHI_PHEP.maDB(),
                                         maNv,
-                                        ngay.toString()),
+                                        giaTriNgay),
                 () -> HopThoai.hienThiThanhCong(cha, "Đã gửi yêu cầu nghỉ phép."));
     }
 
-    private static JPanel taoKhungForm(BoChonNgay chonNgay, JTextField oLyDo) {
+    private static JPanel taoKhungForm(
+            BoChonNgay chonTuNgay, BoChonNgay chonDenNgay, JTextField oLyDo) {
         JPanel khung = new JPanel(new GridBagLayout());
         khung.setBorder(BorderFactory.createEmptyBorder(14, 16, 6, 16));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -75,13 +87,22 @@ public final class ThaoTacNhanh {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        khung.add(new JLabel("Ngày nghỉ phép:"), gbc);
+        khung.add(new JLabel("Từ ngày:"), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
-        khung.add(chonNgay, gbc);
+        khung.add(chonTuNgay, gbc);
         gbc.gridx = 0;
         gbc.gridy = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+        khung.add(new JLabel("Đến ngày:"), gbc);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        khung.add(chonDenNgay, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
         khung.add(new JLabel("Lý do:"), gbc);
@@ -93,15 +114,25 @@ public final class ThaoTacNhanh {
     }
 
     private static JPanel taoKhungNut(
-            JDialog hopThoai, BoChonNgay chonNgay, JTextField oLyDo, boolean[] xacNhan) {
+            JDialog hopThoai,
+            BoChonNgay chonTuNgay,
+            BoChonNgay chonDenNgay,
+            JTextField oLyDo,
+            boolean[] xacNhan) {
         JButton nutGui = new NutDinhDang("Gửi yêu cầu", NutDinhDang.KieuNut.CHINH);
         JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.PHU);
         nutGui.addActionListener(
                 e -> {
-                    LocalDate ngay = chonNgay.layNgayDuocChon();
-                    if (ngay == null || ngay.isBefore(LocalDate.now())) {
+                    LocalDate tuNgay = chonTuNgay.layNgayDuocChon();
+                    LocalDate denNgay = chonDenNgay.layNgayDuocChon();
+                    if (tuNgay == null
+                            || denNgay == null
+                            || tuNgay.isBefore(LocalDate.now())
+                            || denNgay.isBefore(tuNgay)) {
                         HopThoai.hienThiCanhBao(
-                                hopThoai, "Ngày nghỉ phép không hợp lệ hoặc nằm trong quá khứ.");
+                                hopThoai,
+                                "Khoảng ngày nghỉ phép không hợp lệ (Từ ngày phải từ hôm nay và"
+                                        + " Đến ngày không nhỏ hơn Từ ngày).");
                         return;
                     }
                     if (oLyDo.getText() == null || oLyDo.getText().isBlank()) {

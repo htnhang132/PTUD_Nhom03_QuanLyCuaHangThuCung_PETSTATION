@@ -55,6 +55,8 @@ public interface PhieuTiepNhanSpaDAO {
 
     int capNhatThemDichVuSpa(String maPhieu, String maGoi, String moTa, long donGia);
 
+    int capNhatDanhSachDichVuSpa(String maPhieu, String moTaMoi, long donGiaMoi);
+
     int tinhLaiTongPhieuSpa(String maPhieu);
 
     int capNhatTrangThaiSpa(String trangThaiMoi, String maPhieu, String trangThaiHienTai);

@@ -74,6 +74,8 @@ public interface HopDongLuuTruDAO {
 
     int danhDauPhongKhaDung(String maPhong);
 
+    int hoanTatBaoTriPhong(String maPhong);
+
     int datMucCoc(long muc, String maHopDong);
 
     List<HotelDTO.DongLichSuCoc> layLichSuThuCoc(String maHopDong);

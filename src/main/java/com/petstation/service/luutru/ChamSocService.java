@@ -64,17 +64,9 @@ public final class ChamSocService {
 
     private Path layThuMucAnhDungChung() {
         String config = caiDatService.layTuyChon("THU_MUC_ANH_CHAM_SOC").trim();
-        String dauGachCheo = Character.toString((char) 92);
-        if (config.isBlank())
-            throw new IllegalArgumentException(
-                    "Chưa cấu hình thư mục ảnh chăm sóc dùng chung. "
-                            + "Quản lý cần nhập đường dẫn UNC trong Cài đặt hệ thống.");
-        if (!config.startsWith(dauGachCheo + dauGachCheo))
-            throw new IllegalArgumentException(
-                    "Ảnh chăm sóc phải lưu trên thư mục mạng UNC, ví dụ "
-                            + "\\\\PETSTATION-NAS\\DuLieuPetStation\\cham-soc. "
-                            + "Không dùng thư mục C:, D: hoặc ổ mạng Z: trên từng máy.");
-
+        if (config.isBlank()) {
+            config = "images/care";
+        }
         Path folder;
         try {
             folder = Path.of(config).toAbsolutePath().normalize();
@@ -88,8 +80,9 @@ public final class ChamSocService {
             Files.deleteIfExists(probe);
         } catch (IOException | InvalidPathException ex) {
             throw new IllegalArgumentException(
-                    "Không truy cập được thư mục ảnh dùng chung. Kiểm tra kết nối mạng "
-                            + "và quyền đọc/ghi của tài khoản Windows.",
+                    "Không truy cập được thư mục ảnh chăm sóc ("
+                            + config
+                            + "). Kiểm tra đường dẫn và quyền ghi thư mục.",
                     ex);
         }
         return folder;

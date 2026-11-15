@@ -28,8 +28,10 @@ import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -68,6 +70,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     private final JLabel nhanThongKeChiTiet = new JLabel("");
     private NutDinhDang btnCanBang;
     private String bienBanHienTaiMa;
+    private final Map<String, Object[]> banGhiDaDem = new HashMap<>();
 
     public KiemKePanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.KIEM_KE, banHang, dieuHuong);
@@ -331,14 +334,15 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
     }
 
     private void moKhongGianKiemKe() {
+        banGhiDaDem.clear();
         TacVuNen.chayCoPhien(
                 this,
                 this::isDisplayable,
                 () -> {
                     List<Object[]> dsBanDau =
-                            kiemKeService.layDanhSachLoHangKiemKe("TẤT CẢ", false);
+                            kiemKeService.layDanhSachLoHangKiemKe("Tất cả", false);
                     Set<String> cacNhom = new LinkedHashSet<>();
-                    cacNhom.add("TẤT CẢ");
+                    cacNhom.add("Tất cả");
                     for (Object[] r : dsBanDau) {
                         if (r[7] != null && !r[7].toString().isBlank())
                             cacNhom.add(r[7].toString());
@@ -633,14 +637,28 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         boolean[] dangCapNhat = {false};
         moHinhWs.addTableModelListener(
                 e -> {
-                    if (dangCapNhat[0] || e.getColumn() != 7 || e.getFirstRow() < 0) return;
+                    if (dangCapNhat[0] || e.getFirstRow() < 0) return;
+                    int col = e.getColumn();
                     int row = e.getFirstRow();
+                    if (col == 9) {
+                        String maLo = String.valueOf(moHinhWs.getValueAt(row, 0));
+                        banGhiDaDem.put(
+                                maLo,
+                                new Object[] {
+                                    moHinhWs.getValueAt(row, 7), moHinhWs.getValueAt(row, 9)
+                                });
+                        return;
+                    }
+                    if (col != 7) return;
                     dangCapNhat[0] = true;
                     try {
                         Object val = moHinhWs.getValueAt(row, 7);
                         String raw = val == null ? "" : val.toString().trim();
                         if (raw.isEmpty()) {
                             moHinhWs.setValueAt("", row, 8);
+                            banGhiDaDem.put(
+                                    String.valueOf(moHinhWs.getValueAt(row, 0)),
+                                    new Object[] {"", moHinhWs.getValueAt(row, 9)});
                             capNhatThongKe.run();
                             return;
                         }
@@ -654,6 +672,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                                 int tonHT =
                                         Integer.parseInt(moHinhWs.getValueAt(row, 6).toString());
                                 moHinhWs.setValueAt(tonTT - tonHT, row, 8);
+                                banGhiDaDem.put(
+                                        String.valueOf(moHinhWs.getValueAt(row, 0)),
+                                        new Object[] {tonTT, moHinhWs.getValueAt(row, 9)});
                             }
                         } catch (NumberFormatException ex) {
                             HopThoai.hienThiCanhBao(dlg, "Vui lòng nhập số nguyên hợp lệ.");
@@ -708,6 +729,11 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 continue;
             }
             int tonHT = ((Number) r[6]).intValue();
+            Object[] daNhap = banGhiDaDem.get(String.valueOf(r[0]));
+            Object tonTT = daNhap != null ? daNhap[0] : (kiemDemMu ? "" : tonHT);
+            Object lyDo = daNhap != null ? daNhap[1] : "";
+            Integer tonTTSo = docTonThucTe(tonTT);
+            Object chenhLech = tonTTSo == null ? "" : (tonTTSo - tonHT);
             moHinhWs.addRow(
                     new Object[] {
                         r[0],
@@ -717,9 +743,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         r[4],
                         r[5] == null ? "-" : r[5].toString(),
                         tonHT,
-                        kiemDemMu ? "" : tonHT,
-                        kiemDemMu ? "" : 0,
-                        ""
+                        tonTT,
+                        chenhLech,
+                        lyDo
                     });
         }
         capNhatThongKe.run();

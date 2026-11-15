@@ -8,6 +8,7 @@ import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.chung.DanhMucService;
@@ -130,7 +131,8 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         themNeuCo(phan, diaChi);
         themNeuCo(phan, hang);
         String diemSach = lamSachChuoi(diem);
-        phan.add((diemSach.isEmpty() ? "0" : diemSach) + " điểm");
+        long diemSo = DinhDang.doc(diemSach);
+        phan.add((diemSo >= 0 ? DinhDang.soNguyen(diemSo) : "0") + " điểm");
         return String.join(" · ", phan);
     }
 
@@ -166,10 +168,12 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                             t.ten,
                                             t.loai,
                                             t.giong,
-                                            t.ngaySinh,
-                                            t.canNang,
-                                            t.tiemChung,
-                                            t.diUngBenhLy
+                                            t.ngaySinh == null ? "—" : DinhDang.ngay(t.ngaySinh),
+                                            t.canNang > 0 ? t.canNang + " kg" : "—",
+                                            tomTatTiemChung(t.tiemChung),
+                                            t.diUngBenhLy == null || t.diUngBenhLy.isBlank()
+                                                    ? "—"
+                                                    : t.diUngBenhLy
                                         })
                         .toList();
         List<Object[]> hoaDon =
@@ -179,9 +183,9 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                         new Object[] {
                                             hd.maHoaDon,
                                             dinhDangGio(hd.thanhToanLuc),
-                                            hd.tongTien,
-                                            hd.hinhThucThanhToan,
-                                            hd.trangThai
+                                            DinhDang.dinhDang(hd.tongTien),
+                                            DinhDangBang.tenTrangThai(hd.hinhThucThanhToan),
+                                            DinhDangBang.tenTrangThai(hd.trangThai)
                                         })
                         .toList();
         List<Object[]> spa =
@@ -192,8 +196,8 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                             s.maPhieu,
                                             s.tenThuCung,
                                             dinhDangGio(s.taoLuc),
-                                            s.tongTien,
-                                            s.trangThai
+                                            DinhDang.dinhDang(s.tongTien),
+                                            DinhDangBang.tenTrangThai(s.trangThai)
                                         })
                         .toList();
         return new DuLieuChiTietKhachHang(
@@ -215,7 +219,7 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                                     l.maPhong,
                                     dinhDangGio(l.ngayVao),
                                     dinhDangGio(l.ngayRaDuKien),
-                                    l.trangThai
+                                    DinhDangBang.tenTrangThai(l.trangThai)
                                 })
                 .toList();
     }
@@ -227,13 +231,29 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                         v ->
                                 new Object[] {
                                     v.maVoucher,
-                                    v.menhGia,
-                                    dinhDangGio(v.hieuLucDen),
+                                    DinhDang.dinhDang(v.menhGia),
+                                    v.hieuLucDen == null
+                                            ? "—"
+                                            : DinhDang.ngay(v.hieuLucDen.toLocalDate()),
                                     v.daDung,
                                     v.soLuong,
-                                    v.trangThai
+                                    DinhDangBang.tenTrangThai(v.trangThai)
                                 })
                 .toList();
+    }
+
+    private static String tomTatTiemChung(String raw) {
+        if (raw == null || raw.isBlank()) return "Chưa có";
+        String[] cacMui = raw.split(";");
+        int dem = 0;
+        String ganNhat = "";
+        for (String mui : cacMui) {
+            if (mui.isBlank()) continue;
+            dem++;
+            String[] p = mui.split("\\|", -1);
+            if (p.length >= 1) ganNhat = p[0].trim();
+        }
+        return dem == 0 ? "Chưa có" : dem + " mũi (" + ganNhat + ")";
     }
 
     private void apDungDuLieuChiTiet(DuLieuChiTietKhachHang duLieu) {
@@ -267,6 +287,17 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
             NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
             btnXemTruoc.addActionListener(suKien -> xemHoaDonChon(scrBang));
             thanhNut.add(btnXemTruoc);
+        } else {
+            JTable bangKhac = layBang(scrBang);
+            bangKhac.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (e.getClickCount() == 2 && bangKhac.getSelectedRow() >= 0) {
+                                hienThiChiTietDongBang(bangKhac);
+                            }
+                        }
+                    });
         }
         NutDinhDang btnXuatExcel = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.PHU);
         btnXuatExcel.addActionListener(
@@ -274,6 +305,20 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
         thanhNut.add(btnXuatExcel);
         khung.add(thanhNut, BorderLayout.SOUTH);
         return khung;
+    }
+
+    private void hienThiChiTietDongBang(JTable bang) {
+        int rView = bang.getSelectedRow();
+        if (rView < 0) return;
+        int r = bang.convertRowIndexToModel(rView);
+        StringBuilder sb = new StringBuilder();
+        for (int c = 0; c < bang.getModel().getColumnCount(); c++) {
+            sb.append(bang.getModel().getColumnName(c))
+                    .append(": ")
+                    .append(chuyenThanhChuoi(bang.getModel().getValueAt(r, c)))
+                    .append('\n');
+        }
+        HopThoai.hienThiThongTin(this, sb.toString().trim());
     }
 
     private void xemHoaDonChon(JScrollPane scrHoaDonBang) {

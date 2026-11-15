@@ -161,9 +161,26 @@ public final class NhatKyChamSocDialog {
         themPhanTu(khungBieuMauTrai, nhanTieuDeBieuMauChinh);
         khungBieuMauTrai.add(Box.createVerticalStrut(10));
         themTruong(khungBieuMauTrai, "Tình trạng sức khỏe khi nhận *", taoCuon(health, 60));
+        themPhanTu(
+                khungBieuMauTrai,
+                taoThanhQuickTag(
+                        health,
+                        "Khỏe mạnh, tỉnh táo",
+                        "Ăn uống tốt",
+                        "Hơi nhút nhát",
+                        "Cần theo dõi thêm"));
         themTruong(khungBieuMauTrai, "Hướng dẫn ăn uống & khẩu phần", taoCuon(food, 50));
         themTruong(khungBieuMauTrai, "Thuốc & chỉ định từ chủ nuôi", taoCuon(medicine, 50));
         themTruong(khungBieuMauTrai, "Việc đã thực hiện trong ca", taoCuon(tasks, 60));
+        themPhanTu(
+                khungBieuMauTrai,
+                taoThanhQuickTag(
+                        tasks,
+                        "Ăn hết suất",
+                        "Uống nước bình thường",
+                        "Vận động vui vẻ",
+                        "Tắm / vệ sinh sạch",
+                        "Ngủ ngoan"));
         themPhanTu(khungBieuMauTrai, taoHangChonAnh(dialog, chamSocService, images, nhanAnhDaChon));
         khungBieuMauTrai.add(Box.createVerticalStrut(6));
         JLabel sharedHint =
@@ -176,8 +193,27 @@ public final class NhatKyChamSocDialog {
         khungBieuMauTrai.add(Box.createVerticalStrut(10));
         btnLuu.setMaximumSize(new Dimension(Short.MAX_VALUE, 38));
         btnLuu.setPreferredSize(new Dimension(280, 38));
-        themPhanTu(khungBieuMauTrai, btnLuu);
+        khungBieuMauTrai.add(btnLuu);
         return khungBieuMauTrai;
+    }
+
+    private static JPanel taoThanhQuickTag(JTextArea mucTieu, String... tags) {
+        JPanel thanhTag = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 3));
+        thanhTag.setOpaque(false);
+        thanhTag.setAlignmentX(Component.LEFT_ALIGNMENT);
+        thanhTag.setMaximumSize(new Dimension(Short.MAX_VALUE, 64));
+        for (String tag : tags) {
+            NutDinhDang btnTag = new NutDinhDang("+ " + tag, NutDinhDang.KieuNut.TRONG_SUOT);
+            btnTag.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+            btnTag.addActionListener(
+                    e -> {
+                        String hienTai = mucTieu.getText().trim();
+                        if (hienTai.contains(tag)) return;
+                        mucTieu.setText(hienTai.isEmpty() ? tag : hienTai + ", " + tag);
+                    });
+            thanhTag.add(btnTag);
+        }
+        return thanhTag;
     }
 
     private static JPanel taoHangChonAnh(
@@ -308,7 +344,7 @@ public final class NhatKyChamSocDialog {
                         String tg =
                                 r.getThoiGian() == null
                                         ? ""
-                                        : r.getThoiGian().format(DinhDang.NGAY_GIO_SQL);
+                                        : r.getThoiGian().format(DinhDang.NGAY_GIO);
                         String tenNv =
                                 r.getNhanVien() != null && r.getNhanVien().getHoTen() != null
                                         ? r.getNhanVien().getHoTen()
@@ -336,7 +372,7 @@ public final class NhatKyChamSocDialog {
         int i = list.getSelectedIndex();
         if (i < 0 || i >= data.size()) return;
         NhatKyChamSoc r = data.get(i);
-        String tg = r.getThoiGian() == null ? "" : r.getThoiGian().format(DinhDang.NGAY_GIO_SQL);
+        String tg = r.getThoiGian() == null ? "" : r.getThoiGian().format(DinhDang.NGAY_GIO);
         StringBuilder h =
                 new StringBuilder(
                         "<html><body style='font-family:Segoe UI, sans-serif; margin:8px;"

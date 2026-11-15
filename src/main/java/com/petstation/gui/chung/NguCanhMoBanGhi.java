@@ -36,8 +36,9 @@ public final class NguCanhMoBanGhi {
     }
 
     private static void xoaLoc(Component c, YeuCau r) {
-        if (c instanceof JTextField t && "timKiemDanhMuc".equals(t.getName()))
-            t.setText(r.ma() == null ? "" : r.ma());
+        if (c instanceof JTextField t
+                && ("timKiemDanhMuc".equals(t.getName()) || "timKiemNghiepVu".equals(t.getName())))
+            t.setText("");
         if (c instanceof JComboBox<?> box
                 && box.getName() != null
                 && box.getName().startsWith("loc:"))

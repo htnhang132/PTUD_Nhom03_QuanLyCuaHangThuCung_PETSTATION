@@ -81,7 +81,7 @@ public final class DeXuatGiaService {
     }
 
     public void apDung(String maDoiTuongHoacYeuCau) {
-        phienService.yeuCau(Quyen.DUYET_GIA);
+        phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
         DeXuatGiaDAO.ThongTinDeXuat d =
                 deXuatGiaDAO
                         .timChoDuyet(maDoiTuongHoacYeuCau)
@@ -96,12 +96,12 @@ public final class DeXuatGiaService {
     }
 
     public void tuChoi(String maDoiTuongHoacYeuCau) {
-        phienService.yeuCau(Quyen.DUYET_GIA);
+        phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
         deXuatGiaDAO.tuChoi(maDoiTuongHoacYeuCau);
     }
 
     public Optional<DeXuatGia> timDeXuat(String maYeuCau) {
-        phienService.yeuCau(Quyen.DUYET_GIA);
+        phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
         return deXuatGiaDAO.timDeXuatTheoMa(maYeuCau);
     }
 }

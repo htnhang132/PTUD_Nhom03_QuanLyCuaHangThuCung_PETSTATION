@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,18 @@ public final class ThanhMenuChinh extends JPanel {
         btnNut.setEnabled(pmnMenuBatLen.getComponentCount() > 0);
         btnNut.getAccessibleContext().setAccessibleName("Menu " + nhan);
         btnNut.addActionListener(suKien -> pmnMenuBatLen.show(btnNut, 0, btnNut.getHeight()));
+        btnNut.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent suKien) {
+                        if (!btnNut.isEnabled() || pmnMenuBatLen.isVisible()) return;
+                        boolean coMenuDangMo =
+                                cacMenuBatLen.values().stream().anyMatch(JPopupMenu::isVisible);
+                        if (!coMenuDangMo) return;
+                        cacMenuBatLen.values().forEach(p -> p.setVisible(false));
+                        pmnMenuBatLen.show(btnNut, 0, btnNut.getHeight());
+                    }
+                });
         menuCacNut.put(phimTruyCap, btnNut);
         cacMenuBatLen.put(phimTruyCap, pmnMenuBatLen);
         add(btnNut);

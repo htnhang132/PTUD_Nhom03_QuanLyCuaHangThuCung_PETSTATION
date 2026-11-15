@@ -139,6 +139,20 @@ public final class DanhMucService {
                 .toList();
     }
 
+    public List<String> layLuaChonKhachHangCoSdt() {
+        return layKhachHang().stream()
+                .filter(dongDuLieu -> "Đang hoạt động".equals(dongDuLieu[8]))
+                .map(
+                        dongDuLieu -> {
+                            String sdt = chuyenThanhChuoi(dongDuLieu[2]).trim();
+                            return dongDuLieu[0]
+                                    + " - "
+                                    + dongDuLieu[1]
+                                    + (sdt.isBlank() ? "" : " - " + sdt);
+                        })
+                .toList();
+    }
+
     public List<String> layLuaChonNhanVien() {
         return layNhanVien().stream()
                 .filter(dongDuLieu -> !"Nghỉ việc".equals(dongDuLieu[6]))
@@ -489,10 +503,15 @@ public final class DanhMucService {
     }
 
     public static String suyRaVaiTroTuChucVu(String chucVu) {
-        String cv = chucVu == null ? "" : chucVu;
-        if (cv.contains("trưởng")) return VaiTro.QUAN_LY_CUA_HANG.name();
+        String cv = chucVu == null ? "" : chucVu.toLowerCase(Locale.ROOT);
+        if (cv.contains("trưởng") || cv.contains("quản lý")) return VaiTro.QUAN_LY_CUA_HANG.name();
         if (cv.contains("kho")) return VaiTro.NHAN_VIEN_KHO.name();
-        if (cv.contains("Spa")) return VaiTro.NHAN_VIEN_SPA_HOTEL.name();
+        if (cv.contains("spa")
+                || cv.contains("hotel")
+                || cv.contains("chăm sóc")
+                || cv.contains("kỹ thuật")) {
+            return VaiTro.NHAN_VIEN_SPA_HOTEL.name();
+        }
         return VaiTro.NHAN_VIEN_BAN_HANG.name();
     }
 

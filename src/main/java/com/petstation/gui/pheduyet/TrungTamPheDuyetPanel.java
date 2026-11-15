@@ -23,9 +23,11 @@ import java.awt.GridLayout;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -60,6 +62,12 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     private final List<YeuCau> daHienThi = new ArrayList<>();
 
+    private final List<YeuCau> tatCaDaTai = new ArrayList<>();
+
+    private final JComboBox<String> cboLoaiYeuCau = taoComboLoaiYeuCau();
+
+    private final JTextField oTimKiem = new JTextField(16);
+
     private final JCheckBox btnDangChoChi = new JCheckBox("Chỉ hiện yêu cầu chờ duyệt", true);
 
     private final JPanel khungChiTiet = new BoGocPanel(12, Color.WHITE, true);
@@ -68,17 +76,33 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     private YeuCau daChon;
 
+    private static JComboBox<String> taoComboLoaiYeuCau() {
+        JComboBox<String> cbo = new JComboBox<>();
+        cbo.addItem("Tất cả");
+        for (PheDuyetService.Loai loai : PheDuyetService.Loai.values()) {
+            cbo.addItem(loai.layNhan());
+        }
+        return cbo;
+    }
+
     public TrungTamPheDuyetPanel() {
         setLayout(new BorderLayout(0, 10));
         JPanel khungTren = taoVungTrongSuot(new BorderLayout(10, 0));
         khungTren.add(taoTieuDeManHinh("Trung tâm phê duyệt"), BorderLayout.WEST);
-        JPanel khungPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        JPanel khungPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         khungPhai.setOpaque(false);
         nhanBoDem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         nhanBoDem.setForeground(MauUngDung.CAM);
+        oTimKiem.putClientProperty("JTextField.placeholderText", "Tìm mã, người gửi...");
+        oTimKiem.setPreferredSize(new Dimension(170, 30));
+        themBoLangNgheTaiLieu(oTimKiem, this::apDungBoLoc);
+        cboLoaiYeuCau.addActionListener(suKien -> apDungBoLoc());
         btnDangChoChi.setOpaque(false);
         btnDangChoChi.addActionListener(suKien -> taiLai());
         khungPhai.add(nhanBoDem);
+        khungPhai.add(new JLabel("Loại:"));
+        khungPhai.add(cboLoaiYeuCau);
+        khungPhai.add(oTimKiem);
         khungPhai.add(btnDangChoChi);
         khungTren.add(khungPhai, BorderLayout.EAST);
         add(khungTren, BorderLayout.NORTH);
@@ -155,39 +179,72 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                 },
                 ketQua -> {
                     if (luotHienTai != luotTai) return;
-                    daHienThi.clear();
-                    moHinh.setRowCount(0);
-                    for (YeuCau dongDuLieu : ketQua.tatCa) {
-                        if (btnDangChoChi.isSelected()
-                                && (dongDuLieu.layTrangThai() == null
-                                        || !dongDuLieu.layTrangThai().coTheDuyet())) continue;
-                        daHienThi.add(dongDuLieu);
-                        moHinh.addRow(
-                                new Object[] {
-                                    dongDuLieu.layId(),
-                                    dongDuLieu.layLoai().layNhan(),
-                                    dongDuLieu.layNguoiGui(),
-                                    dongDuLieu.layVanBanThoiGian(),
-                                    dongDuLieu.layTenTrangThai()
-                                });
-                    }
+                    tatCaDaTai.clear();
+                    tatCaDaTai.addAll(ketQua.tatCa);
                     long dangCho = ketQua.dangCho;
                     nhanBoDem.setText(
                             dangCho == 0
                                     ? "Không có yêu cầu chờ duyệt"
                                     : dangCho + " yêu cầu chờ duyệt");
-                    int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
-                    int viewRow = chiSo < 0 ? -1 : bangBang.convertRowIndexToView(chiSo);
-                    if (viewRow >= 0) bangBang.setRowSelectionInterval(viewRow, viewRow);
-                    else {
-                        daChon = null;
-                        hienThiChiTiet();
-                    }
+                    apDungBoLoc(giu);
                 },
                 ex -> {
                     if (luotHienTai != luotTai) return;
                     HopThoai.hienThiCanhBao(TrungTamPheDuyetPanel.this, TacVuNen.thongDiepLoi(ex));
                 });
+    }
+
+    private void apDungBoLoc() {
+        apDungBoLoc(daChon);
+    }
+
+    private void apDungBoLoc(YeuCau giu) {
+        String loaiChon =
+                cboLoaiYeuCau.getSelectedItem() == null
+                        ? "Tất cả"
+                        : String.valueOf(cboLoaiYeuCau.getSelectedItem());
+        String tuKhoa =
+                oTimKiem.getText() == null
+                        ? ""
+                        : oTimKiem.getText().trim().toLowerCase(Locale.ROOT);
+        daHienThi.clear();
+        moHinh.setRowCount(0);
+        for (YeuCau dongDuLieu : tatCaDaTai) {
+            if (btnDangChoChi.isSelected()
+                    && (dongDuLieu.layTrangThai() == null
+                            || !dongDuLieu.layTrangThai().coTheDuyet())) continue;
+            if (!"Tất cả".equals(loaiChon) && !loaiChon.equals(dongDuLieu.layLoai().layNhan())) {
+                continue;
+            }
+            if (!tuKhoa.isEmpty()) {
+                String ghep =
+                        (dongDuLieu.layId()
+                                        + " "
+                                        + dongDuLieu.layLoai().layNhan()
+                                        + " "
+                                        + dongDuLieu.layNguoiGui()
+                                        + " "
+                                        + dongDuLieu.layTenTrangThai())
+                                .toLowerCase(Locale.ROOT);
+                if (!ghep.contains(tuKhoa)) continue;
+            }
+            daHienThi.add(dongDuLieu);
+            moHinh.addRow(
+                    new Object[] {
+                        dongDuLieu.layId(),
+                        dongDuLieu.layLoai().layNhan(),
+                        dongDuLieu.layNguoiGui(),
+                        dongDuLieu.layVanBanThoiGian(),
+                        dongDuLieu.layTenTrangThai()
+                    });
+        }
+        int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
+        int viewRow = chiSo < 0 ? -1 : bangBang.convertRowIndexToView(chiSo);
+        if (viewRow >= 0) bangBang.setRowSelectionInterval(viewRow, viewRow);
+        else {
+            daChon = null;
+            hienThiChiTiet();
+        }
     }
 
     private void hienThiChiTiet() {

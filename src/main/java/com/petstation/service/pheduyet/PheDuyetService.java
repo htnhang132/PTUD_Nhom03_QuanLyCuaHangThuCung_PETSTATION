@@ -304,6 +304,10 @@ public final class PheDuyetService {
         CAC_BO_LANG_NGHE.remove(boLangNghe);
     }
 
+    public static void thongBaoCapNhatNgoai(String suKien) {
+        thongBao(suKien);
+    }
+
     private static void thongBao(String suKien) {
         for (BoLangNgheSuKien<String> boLangNghe : CAC_BO_LANG_NGHE) {
             boLangNghe.khiThayDoi(suKien);
@@ -424,8 +428,20 @@ public final class PheDuyetService {
             return;
         }
         try {
-            LichLamViecService.macDinh()
-                    .danhDauNghiPhepDaDuyet(maDich, LocalDate.parse(noiDungXuLy));
+            if (noiDungXuLy.contains("..")) {
+                String[] parts = noiDungXuLy.split("\\.\\.", 2);
+                LocalDate tuNgay = LocalDate.parse(parts[0].trim());
+                LocalDate denNgay = LocalDate.parse(parts[1].trim());
+                if (denNgay.isBefore(tuNgay)) {
+                    throw new IllegalArgumentException("Khoảng ngày nghỉ phép không hợp lệ.");
+                }
+                for (LocalDate d = tuNgay; !d.isAfter(denNgay); d = d.plusDays(1)) {
+                    LichLamViecService.macDinh().danhDauNghiPhepDaDuyet(maDich, d);
+                }
+            } else {
+                LichLamViecService.macDinh()
+                        .danhDauNghiPhepDaDuyet(maDich, LocalDate.parse(noiDungXuLy));
+            }
         } catch (DateTimeParseException ex) {
             throw new IllegalArgumentException(
                     "Dữ liệu ngày nghỉ phép không hợp lệ: " + noiDungXuLy, ex);

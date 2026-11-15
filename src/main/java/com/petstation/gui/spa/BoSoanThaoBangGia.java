@@ -39,9 +39,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private final JTextField tuKg = new JTextField("0", 4);
     private final JTextField denKg = new JTextField("5", 4);
     private final JTextField gia = new JTextField(6);
-    private final JButton them = new NutDinhDang("+ Thêm mức giá", NutDinhDang.KieuNut.PHU);
-    private final JButton sua = new NutDinhDang("Sửa mức giá", NutDinhDang.KieuNut.PHU);
-    private final JButton xoa = new NutDinhDang("Xóa mức giá", NutDinhDang.KieuNut.NGUY_HIEM);
+    private final JButton them = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.PHU);
+    private final JButton taoNhanh = new NutDinhDang("4 mốc cân", NutDinhDang.KieuNut.TRONG_SUOT);
+    private final JButton sua = new NutDinhDang("Sửa", NutDinhDang.KieuNut.PHU);
+    private final JButton xoa = new NutDinhDang("Xóa", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public BoSoanThaoBangGia() {
         DinhDangBang.apDung(bang);
@@ -58,6 +59,9 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         JScrollPane cuon = DinhDangBang.taoBangKhongCuon(bang, new Dimension(340, 96));
         panel.add(cuon, BorderLayout.CENTER);
         them.addActionListener(e -> capNhat(false));
+        taoNhanh.setToolTipText(
+                "Tạo nhanh 4 mốc cân (<5kg, 5-10kg, 10-20kg, >=20kg) theo giá cơ bản");
+        taoNhanh.addActionListener(e -> taoNhanhBonMocCan());
         sua.addActionListener(e -> capNhat(true));
         xoa.addActionListener(
                 e -> DinhDangBang.xoaDongDangChon(bang, model, this::capNhatKichThuocBang));
@@ -85,17 +89,19 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         JPanel nhap = new JPanel(new GridLayout(2, 2, 6, 4));
         nhap.setOpaque(false);
         nhap.add(hangNhap("Loài", loai));
-        nhap.add(hangNhap("Giá dịch vụ (VNĐ)", gia));
+        nhap.add(hangNhap("Giá dịch vụ (₫)", gia));
         nhap.add(hangNhap("Từ cân (kg)", tuKg));
         nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
         gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
         Border viNut = BorderFactory.createEmptyBorder(3, 4, 3, 4);
         them.setBorder(viNut);
+        taoNhanh.setBorder(viNut);
         sua.setBorder(viNut);
         xoa.setBorder(viNut);
-        JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
+        JPanel nut = new JPanel(new GridLayout(1, 4, 4, 0));
         nut.setOpaque(false);
         nut.add(them);
+        nut.add(taoNhanh);
         nut.add(sua);
         nut.add(xoa);
         JPanel vungDau = new JPanel(new BorderLayout(0, 5));
@@ -107,6 +113,44 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
 
     private void capNhatKichThuocBang() {
         DinhDangBang.coGianChieuCaoBangTheoNoiDung(bang, cuon, panel, model.getRowCount());
+        if (bang.getColumnModel().getColumnCount() >= 3) {
+            bang.getColumnModel().getColumn(0).setPreferredWidth(55);
+            bang.getColumnModel().getColumn(1).setPreferredWidth(155);
+            bang.getColumnModel().getColumn(2).setPreferredWidth(130);
+        }
+    }
+
+    private void taoNhanhBonMocCan() {
+        long giaCoBan = DinhDang.doc(gia.getText());
+        if (giaCoBan <= 0) {
+            HopThoai.hienThiCanhBao(
+                    panel, "Nhập Giá cơ bản (₫) vào ô Giá dịch vụ trước khi tạo nhanh 4 mốc cân.");
+            gia.requestFocusInWindow();
+            return;
+        }
+        Object loaiChon = loai.getSelectedItem();
+        for (int i = model.getRowCount() - 1; i >= 0; i--) {
+            if (loaiChon.equals(model.getValueAt(i, 0))) {
+                model.removeRow(i);
+            }
+        }
+        String[] cacMoc = {"< 5kg", "5 - 10kg", "10 - 20kg", ">= 20kg"};
+        for (int i = 0; i < cacMoc.length; i++) {
+            model.addRow(
+                    new Object[] {loaiChon, cacMoc[i], DinhDang.dinhDang(giaCoBan + i * 50_000L)});
+        }
+        gia.setText("");
+        tuKg.setText("0");
+        denKg.setText("5");
+        capNhatKichThuocBang();
+    }
+
+    @Override
+    public boolean xacNhanDangNhap() {
+        if (dau.isVisible() && !gia.getText().isBlank() && bang.getSelectedRow() < 0) {
+            return capNhat(false);
+        }
+        return true;
     }
 
     private static JPanel hangNhap(String nhan, JComponent oNhap) {
@@ -114,7 +158,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         return DinhDangBang.taoHangNhap(nhan, oNhap, 4, 12);
     }
 
-    private void capNhat(boolean laSua) {
+    private boolean capNhat(boolean laSua) {
         try {
             double tu = Double.parseDouble(tuKg.getText().trim().replace(',', '.'));
             double den =
@@ -160,8 +204,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                 denKg.setText("");
             }
             gia.setText("");
+            return true;
         } catch (Exception ex) {
             HopThoai.hienThiCanhBao(panel, ex.getMessage());
+            return false;
         }
     }
 
@@ -227,6 +273,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         denKg.setEnabled(bat);
         gia.setEnabled(bat);
         them.setEnabled(bat);
+        taoNhanh.setEnabled(bat);
         sua.setEnabled(bat);
         xoa.setEnabled(bat);
         capNhatKichThuocBang();

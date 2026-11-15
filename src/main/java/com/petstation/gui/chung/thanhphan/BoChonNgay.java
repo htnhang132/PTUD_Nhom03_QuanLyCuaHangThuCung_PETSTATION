@@ -23,6 +23,10 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -54,6 +58,8 @@ public class BoChonNgay extends JPanel {
 
     private int hienTaiNam;
 
+    private DateTimeFormatter dinhDangHienThi = DinhDang.NGAY;
+
     public BoChonNgay() {
         this(LocalDate.now());
     }
@@ -67,6 +73,28 @@ public class BoChonNgay extends JPanel {
         oTruongVanBan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongVanBan.setEditable(false);
         oTruongVanBan.setBackground(Color.WHITE);
+        oTruongVanBan.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (isEnabled() && btnNutLich.isEnabled()) hienThiLich();
+                    }
+                });
+        oTruongVanBan.addKeyListener(
+                new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        int kc = e.getKeyCode();
+                        if (isEnabled()
+                                && btnNutLich.isEnabled()
+                                && (kc == KeyEvent.VK_ENTER
+                                        || kc == KeyEvent.VK_SPACE
+                                        || (kc == KeyEvent.VK_DOWN && e.isAltDown()))) {
+                            e.consume();
+                            hienThiLich();
+                        }
+                    }
+                });
         if (ngayDuocChon != null) {
             oTruongVanBan.setText(dinhDangNgay(ngayDuocChon));
         }
@@ -143,8 +171,12 @@ public class BoChonNgay extends JPanel {
     }
 
     private JPanel taoPhanDauLich() {
-        JPanel khungTieuDe = new JPanel(new BorderLayout());
+        JPanel khungTieuDe = new JPanel(new BorderLayout(4, 0));
         khungTieuDe.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        JButton btnNamTruoc = new JButton("«");
+        btnNamTruoc.setToolTipText("Năm trước");
+        btnNamTruoc.setFocusPainted(false);
+        btnNamTruoc.addActionListener(e -> doiNamLich(-1));
         JButton btnTruoc = new JButton(new BieuTuong.GiaoDien(BieuTuong.GiaoDien.Kieu.TRUOC));
         btnTruoc.setToolTipText("Tháng trước");
         btnTruoc.getAccessibleContext().setAccessibleName("Tháng trước");
@@ -153,12 +185,29 @@ public class BoChonNgay extends JPanel {
         btnSau.setToolTipText("Tháng sau");
         btnSau.getAccessibleContext().setAccessibleName("Tháng sau");
         btnSau.addActionListener(e -> doiThangLich(1));
+        JButton btnNamSau = new JButton("»");
+        btnNamSau.setToolTipText("Năm sau");
+        btnNamSau.setFocusPainted(false);
+        btnNamSau.addActionListener(e -> doiNamLich(1));
+        JPanel nhomTrai = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        nhomTrai.setOpaque(false);
+        nhomTrai.add(btnNamTruoc);
+        nhomTrai.add(btnTruoc);
+        JPanel nhomPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 0));
+        nhomPhai.setOpaque(false);
+        nhomPhai.add(btnSau);
+        nhomPhai.add(btnNamSau);
         nhanNhanThangNam = new JLabel("", SwingConstants.CENTER);
         nhanNhanThangNam.setFont(nhanNhanThangNam.getFont().deriveFont(Font.BOLD, 14f));
-        khungTieuDe.add(btnTruoc, BorderLayout.WEST);
+        khungTieuDe.add(nhomTrai, BorderLayout.WEST);
         khungTieuDe.add(nhanNhanThangNam, BorderLayout.CENTER);
-        khungTieuDe.add(btnSau, BorderLayout.EAST);
+        khungTieuDe.add(nhomPhai, BorderLayout.EAST);
         return khungTieuDe;
+    }
+
+    private void doiNamLich(int buocNam) {
+        hienTaiNam = Math.max(1900, Math.min(2100, hienTaiNam + buocNam));
+        capNhatLich();
     }
 
     private void doiThangLich(int buoc) {
@@ -247,8 +296,8 @@ public class BoChonNgay extends JPanel {
     }
 
     private String dinhDangNgay(LocalDate ngay) {
-        return String.format(
-                "%02d/%02d/%d", ngay.getDayOfMonth(), ngay.getMonthValue(), ngay.getYear());
+        DateTimeFormatter fmt = dinhDangHienThi != null ? dinhDangHienThi : DinhDang.NGAY;
+        return ngay.format(fmt);
     }
 
     public LocalDate layNgayDuocChon() {
@@ -278,6 +327,7 @@ public class BoChonNgay extends JPanel {
     public static JButton taoNutLich(JTextField oTruong, DateTimeFormatter dinhDang) {
         BoChonNgay boChon = new BoChonNgay((LocalDate) null);
         boChon.oTruongVanBan = oTruong;
+        boChon.dinhDangHienThi = dinhDang != null ? dinhDang : DinhDang.NGAY;
         JButton btn = boChon.btnNutLich;
         for (ActionListener al : btn.getActionListeners()) {
             btn.removeActionListener(al);
@@ -302,7 +352,12 @@ public class BoChonNgay extends JPanel {
         String chuoi = vanBan.trim();
         for (DateTimeFormatter fmt :
                 new DateTimeFormatter[] {
-                    dinhDang, DinhDang.NGAY_CHUAN, DinhDang.NGAY_GACH_CHEO_NGUOC, DinhDang.NGAY_ISO
+                    dinhDang,
+                    DinhDang.NGAY_CHUAN,
+                    DinhDang.NGAY_NGAN_CHUAN,
+                    DinhDang.NGAY_GACH_NGANG_CHUAN,
+                    DinhDang.NGAY_GACH_CHEO_NGUOC,
+                    DinhDang.NGAY_ISO
                 }) {
             if (fmt == null) continue;
             try {

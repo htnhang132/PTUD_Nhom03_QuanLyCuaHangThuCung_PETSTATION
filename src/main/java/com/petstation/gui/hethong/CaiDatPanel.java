@@ -53,9 +53,33 @@ public final class CaiDatPanel extends CoSoPanel {
     private final JCheckBox hopChonMacDinhKiemDemMu =
             new JCheckBox("Mặc định bật chế độ kiểm kê mù (Blind Count) cho nhân viên kho");
     private final JComboBox<String> cboMayIn = new JComboBox<>();
+    private final JComboBox<String> cboNganHangVietQR = new JComboBox<>();
     private final boolean coTheSua;
 
     private static final String MUC_MAC_DINH_KHONG_CO_MAY_IN = "Không có máy in";
+
+    private static final String[][] NGAN_HANG_VIETQR = {
+        {"970436", "Vietcombank (VCB) - 970436"},
+        {"970422", "MB Bank (MB) - 970422"},
+        {"970407", "Techcombank (TCB) - 970407"},
+        {"970418", "BIDV - 970418"},
+        {"970415", "VietinBank - 970415"},
+        {"970416", "ACB - 970416"},
+        {"970432", "VPBank - 970432"},
+        {"970423", "TPBank - 970423"},
+        {"970403", "Sacombank - 970403"},
+        {"970405", "Agribank - 970405"},
+        {"970437", "HDBank - 970437"},
+        {"970441", "VIB - 970441"},
+        {"970443", "SHB - 970443"},
+        {"970426", "MSB - 970426"},
+        {"970448", "OCB - 970448"},
+        {"970440", "SeABank - 970440"},
+        {"970431", "Eximbank - 970431"},
+        {"970449", "LPBank - 970449"},
+        {"970428", "Nam A Bank - 970428"},
+        {"", "Ngân hàng khác (nhập BIN thủ công)"}
+    };
 
     private final Map<String, String> giaTriDaNap = new LinkedHashMap<>();
     private JTabbedPane tabCaiDat;
@@ -133,11 +157,12 @@ public final class CaiDatPanel extends CoSoPanel {
         btnKiemThu.addActionListener(e -> inThu());
         khungHoaDonVaMayIn.add(btnKiemThu);
         khungHoaDonVaMayIn.add(Box.createVerticalStrut(12));
+        themChonNganHangVietQR(khungHoaDonVaMayIn);
         taoTruong(
                 khungHoaDonVaMayIn,
                 "MA_BIN_NGAN_HANG",
                 "Mã BIN ngân hàng VietQR",
-                "Mã BIN 6 số ngân hàng (VD: 970436 - Vietcombank)");
+                "Mã BIN 6 số ngân hàng (tự điền khi chọn ngân hàng phía trên)");
         taoTruong(
                 khungHoaDonVaMayIn,
                 "SO_TAI_KHOAN_NGAN_HANG",
@@ -175,7 +200,7 @@ public final class CaiDatPanel extends CoSoPanel {
         taoTruong(
                 khungKho2,
                 "HAN_MUC_XUAT_HUY_CAN_DUYET",
-                "Hạn mức xuất hủy cần duyệt (đồng)",
+                "Hạn mức xuất hủy cần duyệt (₫)",
                 "Phiếu xuất hủy vượt giá trị này cần Quản lý phê duyệt");
         hopChonMacDinhKiemDemMu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         hopChonMacDinhKiemDemMu.setEnabled(coTheSua);
@@ -204,7 +229,7 @@ public final class CaiDatPanel extends CoSoPanel {
         taoTruong(
                 khungNhanSu2,
                 "PHI_TRA_PHONG_TRE",
-                "Phí trả phòng lưu trú trễ (đồng/ngày)",
+                "Phí trả phòng lưu trú trễ (₫/ngày)",
                 "Phí phụ thu khi khách nhận thú cưng trễ ngày hẹn");
         taoTruong(
                 khungNhanSu2,
@@ -289,6 +314,52 @@ public final class CaiDatPanel extends CoSoPanel {
         khungTam.add(nhanNhom);
         khungTam.add(Box.createVerticalStrut(12));
         return khungTam;
+    }
+
+    private void themChonNganHangVietQR(JPanel khungTam) {
+        JLabel nhanNganHang = new JLabel("Ngân hàng nhận tiền (VietQR)");
+        nhanNganHang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhanNganHang.setAlignmentX(Component.LEFT_ALIGNMENT);
+        khungTam.add(nhanNganHang);
+        khungTam.add(Box.createVerticalStrut(4));
+        cboNganHangVietQR.removeAllItems();
+        for (String[] nh : NGAN_HANG_VIETQR) {
+            cboNganHangVietQR.addItem(nh[1]);
+        }
+        cboNganHangVietQR.setEnabled(coTheSua);
+        cboNganHangVietQR.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cboNganHangVietQR.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        cboNganHangVietQR.addActionListener(
+                e -> {
+                    int idx = cboNganHangVietQR.getSelectedIndex();
+                    if (idx >= 0 && idx < NGAN_HANG_VIETQR.length) {
+                        String bin = NGAN_HANG_VIETQR[idx][0];
+                        JTextField oBin = cacDauVao.get("MA_BIN_NGAN_HANG");
+                        if (!bin.isEmpty() && oBin != null) {
+                            oBin.setText(bin);
+                        }
+                    }
+                });
+        khungTam.add(cboNganHangVietQR);
+        khungTam.add(Box.createVerticalStrut(10));
+    }
+
+    private void dongBoChonNganHangTheoBin(String bin) {
+        String b = bin == null ? "" : bin.trim();
+        for (int i = 0; i < NGAN_HANG_VIETQR.length; i++) {
+            if (!NGAN_HANG_VIETQR[i][0].isEmpty() && NGAN_HANG_VIETQR[i][0].equals(b)) {
+                cboNganHangVietQR.setSelectedIndex(i);
+                return;
+            }
+        }
+        if (cboNganHangVietQR.getItemCount() > 0) {
+            cboNganHangVietQR.setSelectedIndex(NGAN_HANG_VIETQR.length - 1);
+        }
+    }
+
+    private static String chuanHoaChuoiSo(String raw) {
+        if (raw == null) return "";
+        return raw.replaceAll("[.,\\s₫đ]+", "").trim();
     }
 
     private void taoTruong(JPanel khungTam, String khoa, String nhan, String tooltip) {
@@ -515,6 +586,7 @@ public final class CaiDatPanel extends CoSoPanel {
         for (var muc : cacDauVao.entrySet()) {
             muc.getValue().setText(ketQua.getOrDefault(muc.getKey(), ""));
         }
+        dongBoChonNganHangTheoBin(ketQua.getOrDefault("MA_BIN_NGAN_HANG", ""));
         hopChonMacDinhKiemDemMu.setSelected(
                 Boolean.parseBoolean(ketQua.getOrDefault("MAC_DINH_KIEM_KE_MU", "false")));
         if (!daChon.isEmpty()) {
@@ -546,7 +618,15 @@ public final class CaiDatPanel extends CoSoPanel {
     public void xuLyLuu() {
         if (!coTheSua || !kiemTraHopLeTruocKhiLuu()) return;
         Map<String, String> giaTri = new LinkedHashMap<>();
-        cacDauVao.forEach((khoa, truong) -> giaTri.put(khoa, truong.getText().trim()));
+        cacDauVao.forEach(
+                (khoa, truong) -> {
+                    String val = truong.getText().trim();
+                    if ("HAN_MUC_XUAT_HUY_CAN_DUYET".equals(khoa)
+                            || "PHI_TRA_PHONG_TRE".equals(khoa)) {
+                        val = chuanHoaChuoiSo(val);
+                    }
+                    giaTri.put(khoa, val);
+                });
         giaTri.put("MAC_DINH_KIEM_KE_MU", String.valueOf(hopChonMacDinhKiemDemMu.isSelected()));
         Object mucMayIn = cboMayIn.getSelectedItem();
         String mayIn =
@@ -614,7 +694,7 @@ public final class CaiDatPanel extends CoSoPanel {
         if (truong == null) return true;
         String tenTab = tabCaiDat.getTitleAt(chiSoTab);
         try {
-            long giaTri = Long.parseLong(truong.getText().trim());
+            long giaTri = Long.parseLong(chuanHoaChuoiSo(truong.getText().trim()));
             if (giaTri < min || giaTri > max) {
                 String phamVi =
                         max == Long.MAX_VALUE

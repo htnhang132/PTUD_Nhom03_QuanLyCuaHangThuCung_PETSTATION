@@ -292,6 +292,14 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
     }
 
     @Override
+    public int hoanTatBaoTriPhong(String maPhong) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE phong_hotel SET trang_thai='TRONG' WHERE ma_phong=? AND"
+                        + " trang_thai='BAO_TRI'",
+                maPhong);
+    }
+
+    @Override
     public int datMucCoc(long muc, String maHopDong) {
         return capNhat(
                 "UPDATE hop_dong_luu_tru SET coc_yeu_cau=? WHERE ma_hop_dong=?", muc, maHopDong);

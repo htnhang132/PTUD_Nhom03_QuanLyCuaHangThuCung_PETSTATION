@@ -109,6 +109,11 @@ public final class DoiMatKhauPanel extends CoSoPanel {
             nhanNhanDoManh.setText("");
             return;
         }
+        if (matKhau.length() < 8) {
+            nhanNhanDoManh.setText("Mật khẩu yếu (tối thiểu 8 ký tự)");
+            nhanNhanDoManh.setForeground(MauUngDung.NGUY_HIEM);
+            return;
+        }
         int doManh = tinhMatKhauDoManh(matKhau);
         if (doManh < 3) {
             nhanNhanDoManh.setText("Mật khẩu yếu");

@@ -58,6 +58,8 @@ public final class ChinhFrame extends JFrame {
 
     private final ThanhMenuChinh khungThanhMenu;
 
+    private final ThanhTieuDe khungThanhTieuDe;
+
     private final ThanhQuyTrinh khungThanhQuyTrinh;
 
     private final QuyTrinhService quyTrinhService = new QuyTrinhService();
@@ -88,14 +90,19 @@ public final class ChinhFrame extends JFrame {
                         () -> dieuHuong(MaManHinh.TONG_QUAN),
                         this::diQuayLai,
                         this::lamMoiManHinhHienTai);
-        khungThanhTrangThai = new ThanhTrangThai(phienDangNhap, manHinhBoDangKy.layCaLamViec());
+        khungThanhTrangThai =
+                new ThanhTrangThai(
+                        phienDangNhap,
+                        manHinhBoDangKy.layCaLamViec(),
+                        () -> dieuHuong(MaManHinh.CA_THU_NGAN));
         khungThanhQuyTrinh = new ThanhQuyTrinh(this::chuyenBuoc);
         khungThanhMenu =
                 new ThanhMenuChinh(
                         manHinhBoDangKy, this::dieuHuong, this::dangXuat, this::yeuCauThoat);
+        khungThanhTieuDe = new ThanhTieuDe(this, this::dieuHuong, this::yeuCauThoat);
         JPanel khungTren = new JPanel();
         khungTren.setLayout(new BoxLayout(khungTren, BoxLayout.Y_AXIS));
-        khungTren.add(new ThanhTieuDe(this, this::dieuHuong, this::yeuCauThoat));
+        khungTren.add(khungThanhTieuDe);
         khungTren.add(khungThanhMenu);
         khungTren.add(khungThanhCongCu);
         khungTren.add(khungThanhQuyTrinh);
@@ -256,7 +263,7 @@ public final class ChinhFrame extends JFrame {
             SwingUtilities.invokeLater(
                     () -> {
                         try {
-                            dat.moDonPhong(yeuCau.ma());
+                            dat.moDatPhongTheoPhong(yeuCau.ma());
                         } catch (RuntimeException ex) {
                             HopThoai.hienThiCanhBao(this, ex.getMessage());
                         }
@@ -264,6 +271,7 @@ public final class ChinhFrame extends JFrame {
         }
         khungThanhQuyTrinh.hienThi(id);
         khungThanhTrangThai.datGoiY(dinhNghia.goiY());
+        khungThanhTieuDe.datTenManHinh(dinhNghia.tieuDe());
         setTitle("Pet Station – " + dinhNghia.tieuDe());
     }
 
@@ -356,7 +364,17 @@ public final class ChinhFrame extends JFrame {
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
                 "pay",
-                () -> dieuHuong(MaManHinh.THANH_TOAN));
+                () -> {
+                    if (hienTai == MaManHinh.THANH_TOAN) return;
+                    if (manHinhBoDangKy.layGioHang().getCacDong().isEmpty()) {
+                        HopThoai.hienThiCanhBao(
+                                this,
+                                "Giỏ hàng đang trống. Vui lòng thêm sản phẩm hoặc chọn đơn cần"
+                                        + " thanh toán trước.");
+                        return;
+                    }
+                    dieuHuong(MaManHinh.THANH_TOAN);
+                });
     }
 
     private void dangKyPhimTatThaoTac(JRootPane goc) {

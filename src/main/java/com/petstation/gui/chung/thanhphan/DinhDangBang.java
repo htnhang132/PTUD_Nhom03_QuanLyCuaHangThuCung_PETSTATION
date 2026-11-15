@@ -102,10 +102,19 @@ public final class DinhDangBang {
                 setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
                 String vanBan = dinhDangGiaTriO(bangGiaTriTam, cot, giaTri, giaTriGoc);
                 setHorizontalAlignment(SwingConstants.LEFT);
+                String tenCot = bangGiaTriTam.getColumnName(cot).toLowerCase(Locale.ROOT);
+                boolean laCotMaHoacSdt =
+                        tenCot.contains("sđt")
+                                || tenCot.contains("điện thoại")
+                                || tenCot.contains("cccd")
+                                || tenCot.contains("barcode")
+                                || tenCot.contains("số lô")
+                                || tenCot.startsWith("mã");
                 if (kiemTraCotTrangThai(bangGiaTriTam, cot)) {
                     setForeground(MauUngDung.layMauTongMau(giaTriGoc));
                     setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-                } else if (giaTri instanceof Number || layCoDangDangSo(vanBan)) {
+                } else if (!laCotMaHoacSdt
+                        && (giaTri instanceof Number || layCoDangDangSo(vanBan))) {
                     setHorizontalAlignment(SwingConstants.RIGHT);
                 }
                 setText(vanBan);
@@ -147,7 +156,8 @@ public final class DinhDangBang {
         }
         if (kiemTraCotTrangThai(bangDuLieu, cot)
                 || tenCot.contains("thanh toán")
-                || tenCot.contains("phương thức")) return tenTrangThai(vanBan);
+                || tenCot.contains("phương thức")
+                || tenCot.contains("hình thức")) return tenTrangThai(vanBan);
         return vanBan;
     }
 
@@ -239,6 +249,10 @@ public final class DinhDangBang {
                     "khách hàng",
                     "chủ nuôi",
                     "dịch vụ",
+                    "vắc-xin",
+                    "cân nặng",
+                    "loại",
+                    "thú cưng",
                     "nhân viên",
                     "thu ngân",
                     "người",
@@ -287,25 +301,45 @@ public final class DinhDangBang {
         }
         int conLaiDich = dich - coDinh;
         int linhHoat = tongToiThieu - coDinh;
-        if (conLaiDich > 90 && linhHoat > 0) {
+        if (conLaiDich > 60 && linhHoat > 0) {
             double tiLeLinhHoat = (double) conLaiDich / linhHoat;
             for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
                 TableColumn cot = bangBang.getColumnModel().getColumn(chiSo);
                 String ten = String.valueOf(cot.getHeaderValue()).toLowerCase(Locale.ROOT);
-                if (laCotNgayCoDinh(ten)) continue;
-                cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLeLinhHoat)));
+                if (laCotNgayCoDinh(ten)) {
+                    cot.setPreferredWidth(Math.max(cot.getMinWidth(), 88));
+                    continue;
+                }
+                int minMoi = Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLeLinhHoat));
+                int prefMoi =
+                        Math.max(minMoi, (int) Math.floor(cot.getPreferredWidth() * tiLeLinhHoat));
+                cot.setMinWidth(minMoi);
+                cot.setPreferredWidth(prefMoi);
             }
             return;
         }
         double tiLe = (double) dich / tongToiThieu;
         for (int chiSo = 0; chiSo < bangBang.getColumnCount(); chiSo++) {
             TableColumn cot = bangBang.getColumnModel().getColumn(chiSo);
-            cot.setMinWidth(Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLe)));
+            String ten = String.valueOf(cot.getHeaderValue()).toLowerCase(Locale.ROOT);
+            if (laCotNgayCoDinh(ten)) {
+                cot.setMinWidth(Math.min(cot.getMinWidth(), 86));
+                cot.setPreferredWidth(Math.max(cot.getMinWidth(), 86));
+            } else {
+                int minMoi = Math.max(48, (int) Math.floor(cot.getMinWidth() * tiLe));
+                cot.setMinWidth(minMoi);
+                cot.setPreferredWidth(
+                        Math.max(minMoi, (int) Math.floor(cot.getPreferredWidth() * tiLe)));
+            }
         }
     }
 
     private static boolean laCotNgayCoDinh(String tenThuong) {
-        return tenThuong.contains("ngày") && !tenThuong.contains("ghi chú");
+        return (tenThuong.contains("ngày")
+                        || tenThuong.contains("hết hạn")
+                        || tenThuong.contains("hạn dùng")
+                        || tenThuong.contains("thời gian"))
+                && !tenThuong.contains("ghi chú");
     }
 
     private static int canChinhMotCot(
@@ -317,7 +351,7 @@ public final class DinhDangBang {
         int rongTieuDe = hfm != null ? hfm.stringWidth(tieuDe) + buChu : 84;
         int rongDuLieu = doRongDuLieuCot(bangBang, chiSo, cot.getModelIndex(), ten, cfm);
         if (laCotNgayCoDinh(ten)) {
-            int rongNgay = cfm != null ? cfm.stringWidth("30/12/2099") + (laBangGon ? 14 : 28) : 88;
+            int rongNgay = cfm != null ? cfm.stringWidth("30/12/2099") + (laBangGon ? 22 : 28) : 90;
             rongDuLieu = Math.max(rongDuLieu, rongNgay);
         }
         boolean laCotVanBanDai = TU_KHOA_COT_DAI.stream().anyMatch(ten::contains);
@@ -607,6 +641,11 @@ public final class DinhDangBang {
 
     private static boolean layCoDangDangSo(String vanBan) {
         if (vanBan.isEmpty() || vanBan.length() > 30) return false;
+        if (vanBan.startsWith("0")
+                && vanBan.length() >= 9
+                && vanBan.chars().allMatch(Character::isDigit)) {
+            return false;
+        }
         String giaTriTam =
                 vanBan.replace("₫", "")
                         .replace("đ", "")
@@ -627,6 +666,7 @@ public final class DinhDangBang {
             bang.getTableHeader().setPreferredSize(new Dimension(0, 32));
         }
         bang.setPreferredScrollableViewportSize(kichThuocViewport);
+        canChinhDoRongCot(bang);
         JScrollPane cuon = new JScrollPane(bang);
         cuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         cuon.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);

@@ -108,6 +108,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 dsPhong -> hienThiHopThoaiDonPhong(maPhong, dsPhong));
     }
 
+    public void moDatPhongTheoPhong(String maPhong) {
+        if (maPhong != null && !maPhong.isBlank()) {
+            layBanHang().getQuyTrinh().chonPhongHotel(maPhong);
+        }
+        datPhong();
+    }
+
     private void hienThiHopThoaiDonPhong(String maPhong, List<PhongHotel> dsPhong) {
         if (dsPhong.isEmpty()) {
             HopThoai.hienThiThongTin(

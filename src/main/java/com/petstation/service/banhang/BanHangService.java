@@ -491,7 +491,8 @@ public final class BanHangService {
         List<GioHang.DongHang> cacDong = new ArrayList<>();
         String maKhachHang;
         if (loai.equals("SPA")) {
-            PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_SPA);
+            PhienDangNhapService.macDinh()
+                    .yeuCauMotTrong(Quyen.QUAN_LY_SPA, Quyen.BAN_HANG, Quyen.THANH_TOAN);
             if (banHangDAO.demQuyetToan(ma) == 0)
                 throw new IllegalStateException("Phiếu Spa chưa hoàn thành hoặc đã thanh toán.");
             for (ChiTietHoaDon dongDuLieu : banHangDAO.layDichVuSpaQuyetToan(ma))
@@ -503,7 +504,8 @@ public final class BanHangService {
                                 dongDuLieu.getSoLuong()));
             maKhachHang = banHangDAO.layKhachCuaPhieuSpa(ma).orElse(null);
         } else if (loai.equals("HOTEL") || loai.equals("LUU_TRU")) {
-            PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
+            PhienDangNhapService.macDinh()
+                    .yeuCauMotTrong(Quyen.QUAN_LY_LUU_TRU, Quyen.BAN_HANG, Quyen.THANH_TOAN);
             long conPhaiThu = luuTruService.tinhTienLuuTruConLai(ma);
             cacDong.add(
                     new GioHang.DongHang(
@@ -573,6 +575,7 @@ public final class BanHangService {
                             NhatKyHeThongService.macDinh().ghiNhatKy("Hủy hóa đơn", maHoaDon);
                             return null;
                         });
+        CaThuNganService.macDinh().thongBaoThayDoi();
     }
 
     public List<Object[]> layCoTheBanCacSanPham() {

@@ -19,6 +19,7 @@ import com.petstation.service.khachhang.TiemPhongService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -252,6 +253,51 @@ public final class SpaService {
                             NhatKyHeThongService.macDinh()
                                     .ghiNhatKy(
                                             "Thêm dịch vụ Spa", maGoiDichVu + " / " + maPhieuSpa);
+                            return null;
+                        });
+    }
+
+    public void xoaDichVuSpa(String maPhieuSpa, int viTriDichVu) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_SPA);
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            List<PhieuTiepNhanSpaDAO.ThongTinThemDichVu> cacPhieuSpa =
+                                    xuLySpaDAO.timThemDichVuSpa(maPhieuSpa);
+                            if (cacPhieuSpa.isEmpty()
+                                    || !Set.of(
+                                                    TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
+                                                    TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(),
+                                                    TrangThaiPhieuSpa.HOAN_TAT.maDB())
+                                            .contains(cacPhieuSpa.get(0).trangThai)) {
+                                throw new IllegalArgumentException(
+                                        "Chỉ có thể xóa dịch vụ trên phiếu Spa chưa thanh toán.");
+                            }
+                            List<SpaDTO.DongChiTietSpa> ds =
+                                    new ArrayList<>(xuLySpaDAO.layPhieuSpaChiTiet(maPhieuSpa));
+                            if (ds.size() <= 1) {
+                                throw new IllegalArgumentException(
+                                        "Phiếu Spa phải giữ lại ít nhất 1 dịch vụ.");
+                            }
+                            if (viTriDichVu < 0 || viTriDichVu >= ds.size()) {
+                                throw new IllegalArgumentException("Dịch vụ cần xóa không hợp lệ.");
+                            }
+                            SpaDTO.DongChiTietSpa daXoa = ds.remove(viTriDichVu);
+                            String moTaMoi =
+                                    String.join(
+                                            "; ",
+                                            ds.stream()
+                                                    .map(SpaDTO.DongChiTietSpa::getTenDichVu)
+                                                    .toList());
+                            long tongMoi =
+                                    ds.stream()
+                                            .mapToLong(SpaDTO.DongChiTietSpa::getThanhTien)
+                                            .sum();
+                            xuLySpaDAO.capNhatDanhSachDichVuSpa(maPhieuSpa, moTaMoi, tongMoi);
+                            NhatKyHeThongService.macDinh()
+                                    .ghiNhatKy(
+                                            "Xóa dịch vụ Spa",
+                                            daXoa.getTenDichVu() + " / " + maPhieuSpa);
                             return null;
                         });
     }

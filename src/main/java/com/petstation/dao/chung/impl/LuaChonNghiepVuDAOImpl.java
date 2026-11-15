@@ -24,7 +24,9 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
     public List<MucLuaChon> layLuaChonThuCung() {
         return mapLuaChonChuoi(
                 ThaoTacSQL.truyVan(
-                        "SELECT p.ma_thu_cung, p.ma_thu_cung+N' - '+p.ten+N' / '+k.ho_ten FROM"
+                        "SELECT p.ma_thu_cung, p.ma_thu_cung+N' - '+p.ten+N' / '+k.ho_ten"
+                                + "+CASE WHEN COALESCE(k.so_dien_thoai,'')<>'' THEN N' ('"
+                                + "+k.so_dien_thoai+N')' ELSE N'' END FROM"
                                 + " thu_cung p JOIN khach_hang k ON k.ma_khach_hang=p.ma_khach_hang"
                                 + " WHERE p.dang_theo_doi=1 AND k.dang_hoat_dong=1 ORDER BY"
                                 + " p.ma_thu_cung"));
@@ -42,9 +44,11 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
     public List<MucLuaChon> layLuaChonLoHang() {
         return mapLuaChonChuoi(
                 ThaoTacSQL.truyVan(
-                        "SELECT l.ma_lo, p.ma_san_pham+N' - '+p.ten+N' / '+l.so_lo+N' / tồn"
-                            + " '+CAST(l.so_luong_ton AS nvarchar(20)) FROM lo_hang l JOIN san_pham"
-                            + " p ON p.ma_san_pham=l.ma_san_pham ORDER BY p.ma_san_pham, l.ma_lo"));
+                        "SELECT l.ma_lo, p.ma_san_pham+N' - '+p.ten+CASE WHEN"
+                            + " COALESCE(p.barcode,'')<>'' THEN N' ['+p.barcode+N']' ELSE N''"
+                            + " END+N' / '+l.so_lo+N' / tồn '+CAST(l.so_luong_ton AS nvarchar(20))"
+                            + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham ORDER"
+                            + " BY p.ma_san_pham, l.ma_lo"));
     }
 
     @Override
@@ -68,8 +72,9 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
     public List<MucLuaChon> layLuaChonSanPham() {
         return mapLuaChonChuoi(
                 ThaoTacSQL.truyVan(
-                        "SELECT ma_san_pham, ma_san_pham+N' - '+ten FROM san_pham ORDER BY"
-                                + " ma_san_pham"));
+                        "SELECT ma_san_pham, ma_san_pham+N' - '+ten+CASE WHEN"
+                                + " COALESCE(barcode,'')<>'' THEN N' ['+barcode+N']' ELSE N'' END"
+                                + " FROM san_pham ORDER BY ma_san_pham"));
     }
 
     @Override

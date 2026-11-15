@@ -78,4 +78,9 @@ public final class PhienDangNhapService {
         if (!layPhien().kiemTraCo(quyen))
             throw new SecurityException("Bạn không có quyền thực hiện thao tác này.");
     }
+
+    public void yeuCauMotTrong(Quyen... quyens) {
+        if (!layPhien().kiemTraCoMotTrong(quyens))
+            throw new SecurityException("Bạn không có quyền thực hiện thao tác này.");
+    }
 }

@@ -39,7 +39,7 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                                         return "Sức chứa phải lớn hơn 0.";
                                     }
                                     if (DinhDang.doc(String.valueOf(dong[3])) <= 0) {
-                                        return "Giá phòng theo ngày phải lớn hơn 0 đồng.";
+                                        return "Giá phòng theo ngày phải lớn hơn 0₫.";
                                     }
                                     return null;
                                 })

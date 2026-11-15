@@ -148,19 +148,38 @@ public final class CaiDatService {
         if (giaTri == null) {
             String macDinh =
                     switch (khoaChuan) {
+                        case "TEN_CUA_HANG" -> "PetStation";
+                        case "DIA_CHI_CUA_HANG",
+                                        "SO_DIEN_THOAI_CUA_HANG",
+                                        "EMAIL_CUA_HANG",
+                                        "WEBSITE_CUA_HANG",
+                                        "MA_SO_THUE",
+                                        "MA_BIN_NGAN_HANG",
+                                        "SO_TAI_KHOAN_NGAN_HANG",
+                                        "TEN_CHU_TAI_KHOAN",
+                                        "MAY_IN" ->
+                                "";
                         case "NGUONG_TON_KHO_THAP" -> "10";
-                        case "SO_NGAY_CANH_BAO_HET_HAN" -> "30";
+                        case "SO_NGAY_CANH_BAO_HET_HAN", "SO_NGAY_TON_DONG" -> "30";
                         case "PHI_TRA_PHONG_TRE" -> "100000";
-                        case "MAY_IN" -> "";
                         case "THUE_VAT_PHAN_TRAM" -> "8";
                         case "HAN_MUC_XUAT_HUY_CAN_DUYET" -> "500000";
+                        case "MAC_DINH_KIEM_KE_MU" -> "0";
+                        case "SO_GIO_TOI_DA_MOI_TUAN" -> "48";
+                        case "SO_GIO_BAO_TRUOC_DOI_CA" -> "24";
                         case "SO_NGAY_DOI_TRA" -> "3";
+                        case "THU_MUC_ANH_CHAM_SOC" -> "images/care";
+                        case "MUC_CHI_TIEU_HANG" -> "0;2000000;5000000;10000000";
                         case "SO_TIEN_MOI_DIEM_TICH" -> "10000";
+                        case "SO_TIEN_MOI_DIEM_DOI" -> "1000";
                         default -> null;
                     };
             if (macDinh != null) return macDinh;
             throw new IllegalArgumentException(
-                    "Thiếu cài đặt " + khoaChuan + ". Chạy database/002_sample_data.sql.");
+                    "Thiếu cài đặt "
+                            + khoaChuan
+                            + ". Kiểm tra Cài đặt hệ thống hoặc chạy"
+                            + " database/002_sample_data.sql.");
         }
         return giaTri;
     }

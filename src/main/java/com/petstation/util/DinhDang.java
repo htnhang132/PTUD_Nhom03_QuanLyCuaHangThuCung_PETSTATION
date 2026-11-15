@@ -25,6 +25,12 @@ public final class DinhDang {
 
     public static final DateTimeFormatter NGAY_NGAN = DateTimeFormatter.ofPattern("d/M/yyyy");
 
+    public static final DateTimeFormatter NGAY_NGAN_CHUAN =
+            DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT);
+
+    public static final DateTimeFormatter NGAY_GACH_NGANG_CHUAN =
+            DateTimeFormatter.ofPattern("d-M-uuuu").withResolverStyle(ResolverStyle.STRICT);
+
     public static final DateTimeFormatter NGAY_ISO =
             DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
 
@@ -83,6 +89,12 @@ public final class DinhDang {
     public static String dinhDang(long soTien) {
         synchronized (DINH_DANG_TIEN) {
             return DINH_DANG_TIEN.format(soTien) + "₫";
+        }
+    }
+
+    public static String soNguyen(long so) {
+        synchronized (DINH_DANG_TIEN) {
+            return DINH_DANG_TIEN.format(so);
         }
     }
 

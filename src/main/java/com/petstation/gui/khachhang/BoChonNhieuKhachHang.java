@@ -5,6 +5,7 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BoSoanThaoTruong;
 import com.petstation.service.chung.DanhMucService;
+import com.petstation.service.khachhang.KhachHangService;
 
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
     private boolean dangCapNhat = false;
 
     public BoChonNhieuKhachHang() {
-        this(() -> DanhMucService.macDinh().layLuaChonKhachHang());
+        this(() -> KhachHangService.macDinh().layLuaChonKhachHangCoSdt());
     }
 
     public BoChonNhieuKhachHang(Supplier<List<String>> nguonLuaChon) {
@@ -60,7 +61,8 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         oTimKiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         oTimKiem.setPreferredSize(new Dimension(0, 32));
         oTimKiem.putClientProperty("JTextField.padding", new Insets(4, 8, 4, 8));
-        oTimKiem.putClientProperty("JTextField.placeholderText", "Tìm mã hoặc tên khách hàng...");
+        oTimKiem.putClientProperty(
+                "JTextField.placeholderText", "Tìm mã, tên hoặc SĐT khách hàng...");
         CoSoPanel.themBoLangNgheTaiLieu(oTimKiem, this::locDanhSach);
         chkChonTatCa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         chkChonTatCa.setOpaque(false);
@@ -135,9 +137,21 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
     }
 
     private void apDungDanhSach(List<String> nguon, Set<String> daChon) {
+        Set<String> maDaChon =
+                daChon.stream()
+                        .map(DanhMucService::layMaTuLuaChon)
+                        .filter(m -> !m.isBlank())
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<String> maTrongNguon =
+                nguon.stream()
+                        .map(DanhMucService::layMaTuLuaChon)
+                        .filter(m -> !m.isBlank())
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
         List<String> luaChon = new ArrayList<>(nguon);
         for (String muc : daChon) {
-            if (!muc.isBlank() && !luaChon.contains(muc)) {
+            if (!muc.isBlank()
+                    && !luaChon.contains(muc)
+                    && !maTrongNguon.contains(DanhMucService.layMaTuLuaChon(muc))) {
                 luaChon.add(muc);
             }
         }
@@ -145,12 +159,13 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         khungDanhSach.removeAll();
         for (String muc : luaChon) {
             JCheckBox chk = new JCheckBox(muc);
-            chk.setName("khach:" + DanhMucService.layMaTuLuaChon(muc));
+            String maMuc = DanhMucService.layMaTuLuaChon(muc);
+            chk.setName("khach:" + maMuc);
             chk.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             chk.setOpaque(false);
             chk.setBorder(new EmptyBorder(3, 2, 3, 2));
             chk.setToolTipText(muc);
-            chk.setSelected(daChon.contains(muc));
+            chk.setSelected(daChon.contains(muc) || maDaChon.contains(maMuc));
             chk.setEnabled(duocBat);
             chk.addActionListener(e -> capNhatTrangThaiDem());
             mapHopKiem.put(muc, chk);

@@ -18,11 +18,33 @@ import javax.swing.table.TableCellRenderer;
 public final class BangChiTietHoaDon {
     private BangChiTietHoaDon() {}
 
+    private static DefaultTableCellRenderer taoRendererCanLe(int canLe) {
+        return new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable bangDuLieu,
+                    Object value,
+                    boolean selected,
+                    boolean focus,
+                    int row,
+                    int col) {
+                super.getTableCellRendererComponent(bangDuLieu, value, selected, focus, row, col);
+                setHorizontalAlignment(canLe);
+                setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+                setForeground(
+                        selected ? bangDuLieu.getSelectionForeground() : MauUngDung.VAN_BAN_TOI);
+                setBackground(
+                        selected
+                                ? bangDuLieu.getSelectionBackground()
+                                : row % 2 == 1 ? MauUngDung.DONG_XEN_KE : MauUngDung.TRANG);
+                return this;
+            }
+        };
+    }
+
     public static void apDung(JTable bang) {
-        DefaultTableCellRenderer soLuong = new DefaultTableCellRenderer();
-        soLuong.setHorizontalAlignment(SwingConstants.CENTER);
-        DefaultTableCellRenderer tien = new DefaultTableCellRenderer();
-        tien.setHorizontalAlignment(SwingConstants.RIGHT);
+        DefaultTableCellRenderer soLuong = taoRendererCanLe(SwingConstants.CENTER);
+        DefaultTableCellRenderer tien = taoRendererCanLe(SwingConstants.RIGHT);
         bang.getColumnModel().getColumn(0).setPreferredWidth(300);
         bang.getColumnModel().getColumn(1).setPreferredWidth(45);
         bang.getColumnModel().getColumn(1).setCellRenderer(soLuong);
@@ -55,7 +77,9 @@ public final class BangChiTietHoaDon {
                                 oTen.setBackground(
                                         selected
                                                 ? bangDuLieu.getSelectionBackground()
-                                                : MauUngDung.TRANG);
+                                                : row % 2 == 1
+                                                        ? MauUngDung.DONG_XEN_KE
+                                                        : MauUngDung.TRANG);
                                 oTen.setSize(
                                         Math.max(
                                                 40,

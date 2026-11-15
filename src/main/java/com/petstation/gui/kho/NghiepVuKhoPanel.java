@@ -9,12 +9,14 @@ import com.petstation.dto.GioHang;
 import com.petstation.dto.MucLuaChon;
 import com.petstation.dto.PhienDangNhap;
 import com.petstation.gui.chung.BangNghiepVuPanel;
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.Quyen;
+import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.kho.NhapXuatKhoService;
 import com.petstation.util.DinhDang;
@@ -22,6 +24,7 @@ import com.petstation.util.DinhDang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -79,8 +82,8 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         layTruongVanBan(
                                 "expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", hanDungGoiY),
                         layTruongVanBan("qty", "Số lượng", ""),
-                        layTruongVanBan("cost", "Giá nhập / đơn vị (đồng)", ""),
-                        layTruongVanBan("da_tra", "Đã trả (đồng)", "0"));
+                        layTruongVanBan("cost", "Giá nhập / đơn vị (₫)", ""),
+                        layTruongVanBan("da_tra", "Đã trả (₫)", "0"));
         if (giaTri == null) return;
         DuLieuNhapKho duLieuNhap = docVaKiemTraNhapKho(giaTri);
         if (duLieuNhap == null) return;
@@ -277,26 +280,53 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
 
     // Mở hộp thoại chọn lô hàng, số lượng và lý do để lập phiếu xuất hủy
     protected void ghiHuy() {
+        ghiHuy(null);
+    }
+
+    protected void ghiHuy(String maLoMacDinh) {
+        moHopThoaiGhiHuy(this, layNghiepVuService(), nhapXuatKhoService, maLoMacDinh, this::lamMoi);
+    }
+
+    public static void moHopThoaiGhiHuy(
+            CoSoPanel cha,
+            NghiepVuService nghiepVuService,
+            NhapXuatKhoService nhapXuatKhoService,
+            String maLoMacDinh,
+            Runnable sauKhiLuu) {
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chayCoPhien(
                 phien,
                 () -> true,
-                () -> layNghiepVuService().layLuaChonLoHang(),
+                nghiepVuService::layLuaChonLoHang,
                 null,
-                dsLo -> hienThiHopThoaiGhiHuy(dsLo, phien),
-                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+                dsLo ->
+                        hienThiHopThoaiGhiHuy(
+                                cha, nhapXuatKhoService, dsLo, phien, maLoMacDinh, sauKhiLuu),
+                ex -> HopThoai.hienThiCanhBao(cha, TacVuNen.thongDiepLoi(ex)));
     }
 
-    private void hienThiHopThoaiGhiHuy(List<MucLuaChon> dsLo, PhienDangNhap phien) {
+    private static void hienThiHopThoaiGhiHuy(
+            Component cha,
+            NhapXuatKhoService nhapXuatKhoService,
+            List<MucLuaChon> dsLo,
+            PhienDangNhap phien,
+            String maLoMacDinh,
+            Runnable sauKhiLuu) {
         if (dsLo.isEmpty()) {
-            HopThoai.hienThiCanhBao(this, "Không có lô hàng nào còn tồn kho để xuất hủy.");
+            HopThoai.hienThiCanhBao(cha, "Không có lô hàng nào còn tồn kho để xuất hủy.");
             return;
+        }
+        BieuMauTruong.TruongDuLieu truongLo = taoLuaChonMuc("batch", "Lô hàng", dsLo);
+        if (maLoMacDinh != null && !maLoMacDinh.isBlank()) {
+            truongLo =
+                    new BieuMauTruong.TruongDuLieu(
+                            truongLo.khoa(), truongLo.nhan(), maLoMacDinh, truongLo.cacLuaChon());
         }
         Map<String, String> giaTri =
                 BieuMauTruong.layYeuCauNhap(
-                        this,
+                        cha,
                         "Xuất hủy hàng hóa",
-                        taoLuaChonMuc("batch", "Lô hàng", dsLo),
+                        truongLo,
                         layTruongVanBan("qty", "Số lượng", "1"),
                         layTruongVanBan("reason", "Lý do", ""));
         if (giaTri != null) {
@@ -304,16 +334,16 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
             try {
                 sl = docSoLuong(giaTri, "qty");
             } catch (Exception ex) {
-                HopThoai.hienThiCanhBao(this, "Số lượng xuất hủy phải là số nguyên.");
+                HopThoai.hienThiCanhBao(cha, "Số lượng xuất hủy phải là số nguyên.");
                 return;
             }
             if (sl <= 0) {
-                HopThoai.hienThiCanhBao(this, "Số lượng xuất hủy phải lớn hơn 0.");
+                HopThoai.hienThiCanhBao(cha, "Số lượng xuất hủy phải lớn hơn 0.");
                 return;
             }
             String lyDo = giaTri.get("reason");
             if (lyDo == null || lyDo.trim().isBlank()) {
-                HopThoai.hienThiCanhBao(this, "Vui lòng nhập lý do xuất hủy hàng hóa.");
+                HopThoai.hienThiCanhBao(cha, "Vui lòng nhập lý do xuất hủy hàng hóa.");
                 return;
             }
             TacVuNen.chayCoPhien(
@@ -326,10 +356,10 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                     null,
                     v -> {
                         HopThoai.hienThiThanhCong(
-                                this, "Đã lưu phiếu. Phiếu vượt ngưỡng sẽ chờ phê duyệt.");
-                        lamMoi();
+                                cha, "Đã lưu phiếu. Phiếu vượt ngưỡng sẽ chờ phê duyệt.");
+                        if (sauKhiLuu != null) sauKhiLuu.run();
                     },
-                    ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+                    ex -> HopThoai.hienThiCanhBao(cha, TacVuNen.thongDiepLoi(ex)));
         }
     }
 }

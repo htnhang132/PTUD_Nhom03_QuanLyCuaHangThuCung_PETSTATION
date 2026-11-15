@@ -69,7 +69,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                                 + " yeu_cau_phe_duyet y JOIN san_pham p ON"
                                 + " p.ma_san_pham=y.ma_doi_tuong WHERE y.loai_doi_tuong='DOI_GIA'"
                                 + " AND (y.ma_yeu_cau=? OR y.ma_doi_tuong=?) AND"
-                                + " y.trang_thai='CHO_DUYET' ORDER BY y.gui_luc DESC",
+                                + " y.trang_thai IN ('CHO_DUYET','CAN_THEM_THONG_TIN') ORDER BY"
+                                + " y.gui_luc DESC",
                         maDoiTuongHoacYeuCau,
                         maDoiTuongHoacYeuCau);
         if (dong.isEmpty()) return Optional.empty();
@@ -94,7 +95,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         capNhat(
                 "UPDATE yeu_cau_phe_duyet SET trang_thai='DA_DUYET', ma_nhan_vien_xu_ly=?,"
                         + " xu_ly_luc=SYSDATETIME() WHERE loai_doi_tuong='DOI_GIA' AND"
-                        + " (ma_yeu_cau=? OR ma_doi_tuong=?) AND trang_thai='CHO_DUYET'",
+                        + " (ma_yeu_cau=? OR ma_doi_tuong=?) AND trang_thai IN"
+                        + " ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 maNhanVien,
                 maDoiTuongHoacYeuCau,
                 maDoiTuongHoacYeuCau);
@@ -105,7 +107,8 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         capNhat(
                 "UPDATE yeu_cau_phe_duyet SET trang_thai='TU_CHOI', xu_ly_luc=SYSDATETIME()"
                         + " WHERE loai_doi_tuong='DOI_GIA' AND (ma_yeu_cau=? OR"
-                        + " ma_doi_tuong=?) AND trang_thai='CHO_DUYET'",
+                        + " ma_doi_tuong=?) AND trang_thai IN"
+                        + " ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 maDoiTuongHoacYeuCau,
                 maDoiTuongHoacYeuCau);
     }

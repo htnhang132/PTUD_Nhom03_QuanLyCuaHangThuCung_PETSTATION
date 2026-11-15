@@ -48,6 +48,14 @@ public class PhienDangNhap implements Serializable {
         return cacQuyen != null && cacQuyen.contains(quyen);
     }
 
+    public boolean kiemTraCoMotTrong(Quyen... quyens) {
+        if (cacQuyen == null || quyens == null) return false;
+        for (Quyen q : quyens) {
+            if (q != null && cacQuyen.contains(q)) return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

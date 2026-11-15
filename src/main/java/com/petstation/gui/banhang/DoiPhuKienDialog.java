@@ -99,6 +99,16 @@ public final class DoiPhuKienDialog extends JDialog {
         this(cha, gio, dieuHuong, "", null);
     }
 
+    public static void moVoiHoaDon(
+            Component cha, GioHang gio, Consumer<MaManHinh> dieuHuong, String maHoaDon) {
+        DoiPhuKienDialog hopThoai = new DoiPhuKienDialog(cha, gio, dieuHuong);
+        if (maHoaDon != null && !maHoaDon.isBlank()) {
+            hopThoai.timHoaDon.setText(maHoaDon.trim());
+            hopThoai.timHoaDon();
+        }
+        hopThoai.setVisible(true);
+    }
+
     public DoiPhuKienDialog(
             Component cha,
             GioHang gio,
@@ -164,7 +174,7 @@ public final class DoiPhuKienDialog extends JDialog {
                 nhom(
                         "1. Chọn hóa đơn gốc",
                         thanhTim(timHoaDon, nut("Tìm hóa đơn", this::timHoaDon)),
-                        cuon(hoaDonBang, 100)));
+                        cuon(hoaDonBang, 150)));
         noiDung.add(Box.createVerticalStrut(12));
         JPanel thongTinDoi = new JPanel(new BorderLayout(16, 0));
         thongTinDoi.setOpaque(false);
@@ -221,12 +231,7 @@ public final class DoiPhuKienDialog extends JDialog {
         JPanel nutDong = new JPanel(new BorderLayout());
         nutDong.setOpaque(false);
         nutDong.add(nut("Hủy", this::huy), BorderLayout.WEST);
-        nutDong.add(
-                hang(
-                        nut("Treo đơn đổi", this::treoDon),
-                        nut("Kiểm tra chênh lệch", this::tinhGia),
-                        tiepTuc),
-                BorderLayout.EAST);
+        nutDong.add(hang(nut("Treo đơn đổi", this::treoDon), tiepTuc), BorderLayout.EAST);
         trangThaiDong.add(nutDong, BorderLayout.CENTER);
         chan.add(trangThaiDong, BorderLayout.CENTER);
         return chan;
@@ -248,8 +253,6 @@ public final class DoiPhuKienDialog extends JDialog {
                 .addListSelectionListener(
                         e -> {
                             if (!e.getValueIsAdjusting() && !dangKhoiPhuc) {
-                                tem.setSelected(false);
-                                chuaDung.setSelected(false);
                                 voHieuGia();
                             }
                         });
@@ -491,53 +494,6 @@ public final class DoiPhuKienDialog extends JDialog {
                 });
     }
 
-    private void tinhGia() {
-        if (dangChay) return;
-        try {
-            soLuong.commitEdit();
-            soLuongMoi.commitEdit();
-            Object[] cu = dongChon();
-            Object[] moi = hangChon();
-            int sl = (Integer) soLuong.getValue();
-            int slMoi = (Integer) soLuongMoi.getValue();
-            kiemTraTinhTrang();
-            if (sl > so(cu[3]) - so(cu[4]))
-                throw new IllegalArgumentException("Số lượng vượt phần chưa đổi.");
-            if (slMoi > so(moi[3]))
-                throw new IllegalStateException("Phụ kiện thay thế không đủ tồn.");
-            String maDong = String.valueOf(cu[0]);
-            long giaMoi = so(moi[2]);
-            long luot = ++phien;
-            chayNen(
-                    () -> doiTraService.layGiaTriDuocDoi(maDong, sl),
-                    cuTien -> {
-                        if (luot != phien) return;
-                        long moiTien = Math.multiplyExact(giaMoi, slMoi);
-                        if (moiTien < cuTien) {
-                            baoLoi(
-                                    new IllegalArgumentException(
-                                            "Hàng thay thế phải bằng hoặc cao giá hơn hàng cũ."));
-                            return;
-                        }
-                        giaTriCu = cuTien;
-                        long chenhlech = moiTien - cuTien;
-                        tongKet.setText(
-                                "Hàng cũ: "
-                                        + tien(cuTien)
-                                        + "    Hàng mới: "
-                                        + tien(moiTien)
-                                        + "    Cần thu: "
-                                        + tien(chenhlech)
-                                        + "    Điểm thêm: "
-                                        + DoiTraService.tinhDiemChenhLech(chenhlech));
-                        trangThai.setText("Đủ điều kiện. Hệ thống sẽ kiểm tra lại khi thanh toán.");
-                        tiepTuc.setEnabled(true);
-                    });
-        } catch (Exception e) {
-            baoLoi(e);
-        }
-    }
-
     private void chuyenThanhToan() {
         if (dangChay || giaTriCu < 0) return;
         try {
@@ -606,7 +562,99 @@ public final class DoiPhuKienDialog extends JDialog {
         phien++;
         giaTriCu = -1;
         tiepTuc.setEnabled(false);
-        tongKet.setText("Chọn hàng cần đổi và phụ kiện thay thế, sau đó kiểm tra chênh lệch.");
+        capNhatChenhLechTuDong();
+    }
+
+    private void capNhatChenhLechTuDong() {
+        if (dangChay || dangKhoiPhuc) return;
+        int dongChonIdx = dongBang.getSelectedRow();
+        int hangChonIdx = hangBang.getSelectedRow();
+        if (dongChonIdx < 0
+                || dongChonIdx >= dongs.size()
+                || hangChonIdx < 0
+                || hangChonIdx >= hangs.size()) {
+            tongKet.setText("Chọn hàng cần đổi và phụ kiện thay thế để tính chênh lệch.");
+            return;
+        }
+        try {
+            soLuong.commitEdit();
+            soLuongMoi.commitEdit();
+        } catch (ParseException ignored) {
+            tongKet.setText("Số lượng chưa hợp lệ.");
+            return;
+        }
+        Object[] cu = dongs.get(dongChonIdx);
+        Object[] moi = hangs.get(hangChonIdx);
+        int sl = (Integer) soLuong.getValue();
+        int slMoi = (Integer) soLuongMoi.getValue();
+        long conDoi = so(cu[3]) - so(cu[4]);
+        if (sl <= 0 || sl > conDoi) {
+            tongKet.setText("Số lượng đổi vượt phần còn đổi (" + conDoi + ").");
+            trangThai.setText("Điều chỉnh số lượng đổi trong giới hạn còn lại.");
+            return;
+        }
+        if (slMoi <= 0 || slMoi > so(moi[3])) {
+            tongKet.setText("Phụ kiện thay thế không đủ tồn (" + so(moi[3]) + ").");
+            trangThai.setText("Chọn số lượng thay thế không vượt tồn khả dụng.");
+            return;
+        }
+        String maDong = String.valueOf(cu[0]);
+        long giaMoi = so(moi[2]);
+        long luot = ++phien;
+        var phienDangNhap = PhienDangNhapService.macDinh().layPhienHienTai();
+        TacVuNen.chay(
+                () ->
+                        PhienDangNhapService.macDinh()
+                                .trongPhien(
+                                        phienDangNhap,
+                                        () -> doiTraService.layGiaTriDuocDoi(maDong, sl)),
+                cuTien -> {
+                    if (luot == phien) {
+                        hienThiKetQuaChenhLech(cuTien, giaMoi, slMoi);
+                    }
+                },
+                loi -> {
+                    if (luot == phien) {
+                        trangThai.setText(TacVuNen.thongDiepLoi(loi));
+                        tiepTuc.setEnabled(false);
+                    }
+                });
+    }
+
+    private void hienThiKetQuaChenhLech(long cuTien, long giaMoi, int slMoi) {
+        long moiTien = Math.multiplyExact(giaMoi, slMoi);
+        long chenhlech = moiTien - cuTien;
+        if (moiTien < cuTien) {
+            giaTriCu = -1;
+            tongKet.setText(
+                    "Hàng cũ: "
+                            + tien(cuTien)
+                            + "    Hàng mới: "
+                            + tien(moiTien)
+                            + "    (Thiếu "
+                            + tien(cuTien - moiTien)
+                            + ")");
+            trangThai.setText("Hàng thay thế phải có tổng tiền bằng hoặc cao hơn hàng cũ.");
+            tiepTuc.setEnabled(false);
+            return;
+        }
+        giaTriCu = cuTien;
+        tongKet.setText(
+                "Hàng cũ: "
+                        + tien(cuTien)
+                        + "    Hàng mới: "
+                        + tien(moiTien)
+                        + "    Cần thu: "
+                        + tien(chenhlech)
+                        + "    Điểm thêm: "
+                        + DoiTraService.tinhDiemChenhLech(chenhlech));
+        boolean duDieuKien = tem.isSelected() && chuaDung.isSelected();
+        trangThai.setText(
+                duDieuKien
+                        ? "Đủ điều kiện. Bấm \"Tiếp tục thanh toán\" để hoàn tất."
+                        : "Tích đủ 2 cam kết tình trạng hàng (tem mác & chưa sử dụng)"
+                                + " để tiếp tục.");
+        tiepTuc.setEnabled(duDieuKien);
     }
 
     private void huy() {

@@ -80,7 +80,9 @@ public final class HopThoaiTroGiup {
                         JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.getRootPane().setDefaultButton(btnDong);
         dialog.setContentPane(khungBao);
-        dialog.setSize(680, 540);
+        dialog.setMinimumSize(new Dimension(620, 460));
+        dialog.setSize(700, 560);
+        dialog.setResizable(true);
         dialog.setLocationRelativeTo(win);
         dialog.setVisible(true);
     }
@@ -105,7 +107,7 @@ public final class HopThoaiTroGiup {
         khungTieuDeDau.add(nhanTen, BorderLayout.WEST);
         khungTieuDeDau.add(nhanHuyHieu, BorderLayout.EAST);
         JLabel nhanMucDich =
-                new JLabel("<html><body style='width:420px'>" + hd.mucDich + "</body></html>");
+                new JLabel("<html><body style='width:480px'>" + hd.mucDich + "</body></html>");
         nhanMucDich.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         nhanMucDich.setForeground(MauUngDung.VAN_BAN_XAM);
         khungDau.add(khungTieuDeDau, BorderLayout.NORTH);
@@ -154,7 +156,7 @@ public final class HopThoaiTroGiup {
                 icon.setPreferredSize(new Dimension(16, 22));
             }
             JLabel oNhapLieu =
-                    new JLabel("<html><body style='width:370px'>" + dong.get(i) + "</body></html>");
+                    new JLabel("<html><body style='width:430px'>" + dong.get(i) + "</body></html>");
             oNhapLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             oNhapLieu.setForeground(MauUngDung.VAN_BAN_TOI);
             hang.add(icon, BorderLayout.WEST);
@@ -216,7 +218,29 @@ public final class HopThoaiTroGiup {
         if (lop.contains("Kho") || lop.contains("KiemKe") || lop.contains("TonTheoLo"))
             return huongDanKho(tieuDe);
         if (lop.contains("ThongKe") || cha instanceof BaoCaoPanel) return huongDanBaoCao(tieuDe);
+        if (lop.contains("CaiDatPanel")) return huongDanCaiDat();
         return huongDanMacDinh(tieuDe, noiDungGoc);
+    }
+
+    private static NoiDungHuongDan huongDanCaiDat() {
+        return new NoiDungHuongDan(
+                "Cài đặt hệ thống",
+                "Thiết lập thông tin cửa hàng, tài khoản ngân hàng VietQR, quy tắc kho và tham số"
+                        + " lưu trú.",
+                List.of(
+                        "<b>Tab Thông tin & VietQR:</b> Nhập tên, địa chỉ, SĐT cửa hàng và chọn"
+                                + " ngân hàng VietQR để in trên hóa đơn và mã QR thu tiền.",
+                        "<b>Tab Bán hàng, Kho & Lưu trú:</b> Điều chỉnh thuế VAT, ngưỡng cảnh báo"
+                                + " hết hạn và hạn mức xuất hủy cần duyệt.",
+                        "<b>Lưu thay đổi:</b> Sau khi chỉnh ở các tab, bấm <b>Lưu cài đặt</b> để"
+                                + " áp dụng toàn hệ thống."),
+                List.of(
+                        "Chỉ tài khoản quản lý có quyền cấu hình mới được lưu cài đặt hệ thống.",
+                        "Nút <b>Khôi phục thiết lập chuẩn</b> chỉ nạp sẵn giá trị gợi ý lên form,"
+                                + " hãy bấm <b>Lưu cài đặt</b> nếu muốn lưu xuống cơ sở dữ liệu."),
+                List.of(
+                        new String[] {"Ctrl + S", "Lưu tất cả cài đặt"},
+                        new String[] {"F1", "Xem hướng dẫn màn hình"}));
     }
 
     private static NoiDungHuongDan huongDanLapHoaDon() {
@@ -233,7 +257,7 @@ public final class HopThoaiTroGiup {
                         "<b>Chọn khách & Khuyến mãi:</b> Nhập SĐT khách hàng ở khung bên phải rồi"
                                 + " nhấn <b>Enter</b> để tích điểm và tự động áp dụng khuyến mãi.",
                         "<b>Hoàn tất:</b> Bấm <b>Thanh toán (F9)</b> để chuyển sang thu tiền, hoặc"
-                                + " <b>Lưu đơn nháp (F7)</b> nếu khách cần chờ."),
+                                + " <b>Lưu tạm (giỏ hàng)</b> nếu khách cần chờ."),
                 List.of(
                         "Cần <b>Mở ca thu ngân</b> trước khi lập hóa đơn và thanh toán.",
                         "Chế độ thẻ tự động phân trang (24 SP/trang) và dùng bộ nhớ đệm ảnh để hệ"
@@ -241,7 +265,7 @@ public final class HopThoaiTroGiup {
                         "Sản phẩm hết hàng (Tồn = 0) sẽ được khóa chọn để tránh bán âm kho."),
                 List.of(
                         new String[] {"Ctrl + K", "Đặt con trỏ vào ô quét mã/tìm kiếm"},
-                        new String[] {"F7 / F8", "Lưu đơn nháp / Mở danh sách đơn nháp"},
+                        new String[] {"F7 / F8", "Mở Đổi trả hàng / Danh sách đơn treo"},
                         new String[] {"F9", "Chuyển nhanh sang màn hình Thanh toán"},
                         new String[] {"Click đúp", "Thêm nhanh sản phẩm ở chế độ Bảng POS"}));
     }

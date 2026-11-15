@@ -8,6 +8,7 @@ import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.chung.DanhMucService;
+import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -97,7 +98,10 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                                     dongDuLieu[2],
                                     dongDuLieu[4],
                                     dongDuLieu[6],
-                                    dongDuLieu[7]
+                                    DinhDang.soNguyen(
+                                            Math.max(
+                                                    0L,
+                                                    DinhDang.doc(String.valueOf(dongDuLieu[7]))))
                                 });
                     }
                     lamMoiLuaChonHangThe();
@@ -298,13 +302,8 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private static long docDiemAnToan(Object giaTri) {
         if (giaTri == null) return 0L;
         if (giaTri instanceof Number so) return so.longValue();
-        String chuoi = giaTri.toString().trim();
-        if (chuoi.isEmpty()) return 0L;
-        try {
-            return Long.parseLong(chuoi);
-        } catch (NumberFormatException ignored) {
-            return 0L;
-        }
+        long kq = DinhDang.doc(giaTri.toString());
+        return Math.max(0L, kq);
     }
 
     private void cauHinhSapXepBangKhach() {
@@ -361,11 +360,13 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
-        dangXemChiTiet = false;
-        chiTietHienTai = null;
         taiLaiCacKhachHangNen();
+        if (dangXemChiTiet && chiTietHienTai != null) {
+            chiTietHienTai.lamMoiDuLieu();
+            cacThe.show(khungGoc, CHI_TIET);
+            return;
+        }
         cacThe.show(khungGoc, CHON);
-        bangBang.clearSelection();
     }
 
     @Override

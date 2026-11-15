@@ -6,7 +6,10 @@ import com.petstation.gui.chung.thanhphan.BieuMauTruong.TruongDuLieu;
 import com.petstation.service.chung.NghiepVuService;
 import com.petstation.util.DinhDang;
 
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -55,17 +58,26 @@ public final class TruongNghiepVu {
         String s = giaTri == null ? null : giaTri.get(khoa);
         if (s == null || s.isBlank())
             throw new IllegalArgumentException(
-                    "Vui lòng nhập thời gian theo định dạng yyyy-MM-dd HH:mm.");
-        try {
-            return LocalDateTime.parse(s.trim(), DinhDang.NGAY_GIO_ISO_U);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(
-                    "Thời gian không hợp lệ (định dạng chuẩn: yyyy-MM-dd HH:mm).");
+                    "Vui lòng nhập thời gian theo định dạng dd/MM/yyyy HH:mm.");
+        String val = s.trim();
+        for (var fmt : new DateTimeFormatter[] {DinhDang.NGAY_GIO_U, DinhDang.NGAY_GIO_ISO_U}) {
+            try {
+                return LocalDateTime.parse(val, fmt);
+            } catch (Exception ex) {
+                LoggerFactory.getLogger(TruongNghiepVu.class)
+                        .debug(
+                                "Chuỗi thời gian '{}' chưa khớp định dạng {}: {}",
+                                val,
+                                fmt,
+                                ex.getMessage());
+            }
         }
+        throw new IllegalArgumentException(
+                "Thời gian không hợp lệ (định dạng chuẩn: dd/MM/yyyy HH:mm).");
     }
 
     public static String layThoiGianHienTai() {
-        return LocalDateTime.now().withSecond(0).format(DinhDang.NGAY_GIO_ISO_U);
+        return LocalDateTime.now().withSecond(0).format(DinhDang.NGAY_GIO_U);
     }
 
     public static TruongDuLieu layThuCung() {

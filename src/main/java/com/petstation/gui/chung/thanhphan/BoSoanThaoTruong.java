@@ -10,4 +10,8 @@ public interface BoSoanThaoTruong {
     void dat(String giaTri);
 
     void datDuocBat(boolean duocBat);
+
+    default boolean xacNhanDangNhap() {
+        return true;
+    }
 }

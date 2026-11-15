@@ -511,6 +511,27 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             xacNhanDonPhong(maPhong);
             return;
         }
+        if (TrangThaiPhongHotel.BAO_TRI.maDB().equals(trangThai)) {
+            if (HopThoai.xacNhan(
+                    this,
+                    "Phòng "
+                            + maPhong
+                            + " đang ở trạng thái Bảo trì.\n"
+                            + "Bạn có muốn chuyển phòng sang trạng thái Trống để sẵn sàng đón"
+                            + " khách không?")) {
+                TacVuNen.chayCoPhien(
+                        this,
+                        () -> true,
+                        () -> new LuuTruService().hoanTatBaoTriPhong(maPhong),
+                        () -> {
+                            nap();
+                            HopThoai.hienThiThanhCong(
+                                    this, "Đã chuyển phòng " + maPhong + " sang trạng thái Trống.");
+                        },
+                        ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+            }
+            return;
+        }
         if (!List.of(TrangThaiPhongHotel.TRONG.maDB(), TrangThaiPhongHotel.DANG_O.maDB())
                 .contains(trangThai)) {
             HopThoai.hienThiThongTin(
@@ -535,16 +556,28 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
             }
             String maHd = phong.getDangO().getHopDong().getMaHopDong();
             if (gio != null) gio.getQuyTrinh().chonHotel(maHd);
-            DieuHuongBanGhiService.macDinh().dat(MaManHinh.NHAT_KY_CHAM_SOC, maHd);
-            if (dieuHuong != null) dieuHuong.accept(MaManHinh.NHAT_KY_CHAM_SOC);
+            int luaChon =
+                    HopThoai.tuyChon(
+                            this,
+                            "Phòng "
+                                    + maPhong
+                                    + " đang phục vụ hợp đồng #"
+                                    + maHd
+                                    + ".\n"
+                                    + "Chọn thao tác muốn thực hiện:",
+                            "Phòng " + maPhong,
+                            new String[] {"Xem / Check-out", "Nhật ký chăm sóc", "Đóng"},
+                            false);
+            if (luaChon == 0) {
+                DieuHuongBanGhiService.macDinh().dat(MaManHinh.QUAN_LY_LUU_TRU, maHd);
+                if (dieuHuong != null) dieuHuong.accept(MaManHinh.QUAN_LY_LUU_TRU);
+            } else if (luaChon == 1) {
+                NhatKyChamSocDialog.mo(this, "HOTEL", maHd);
+            }
             return;
         }
         if (gio != null) gio.getQuyTrinh().chonHotel("");
-        if (dieuHuong != null) {
-            DieuHuongBanGhiService.macDinh().dat(MaManHinh.QUAN_LY_LUU_TRU, maPhong);
-            dieuHuong.accept(MaManHinh.DAT_PHONG_LUU_TRU);
-        } else {
-            DatPhongHotelDialog.mo(this, null, maPhong);
+        if (DatPhongHotelDialog.mo(this, null, maPhong) != null) {
             nap();
         }
     }

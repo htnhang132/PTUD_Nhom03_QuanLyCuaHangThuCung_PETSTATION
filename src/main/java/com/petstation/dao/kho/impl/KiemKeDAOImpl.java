@@ -20,9 +20,9 @@ public final class KiemKeDAOImpl implements KiemKeDAO {
                 ThaoTacSQL.truyVan(
                         "SELECT l.ma_lo, p.ma_san_pham, p.ten, COALESCE(p.barcode, ''), l.so_lo,"
                             + " l.han_su_dung, l.so_luong_ton, p.nhom_hang FROM lo_hang l JOIN"
-                            + " san_pham p ON p.ma_san_pham = l.ma_san_pham WHERE l.trang_thai ="
-                            + " 'SAN_SANG' AND p.trang_thai = 'DANG_BAN' ORDER BY p.ma_san_pham,"
-                            + " l.han_su_dung");
+                            + " san_pham p ON p.ma_san_pham = l.ma_san_pham WHERE l.trang_thai IN"
+                            + " ('SAN_SANG','HET_HANG') AND p.trang_thai = 'DANG_BAN' ORDER BY"
+                            + " p.ma_san_pham, l.han_su_dung");
         List<LoHang> ketQua = new ArrayList<>();
         for (Object[] r : rows) {
             SanPham sp = new SanPham();
@@ -159,6 +159,17 @@ public final class KiemKeDAOImpl implements KiemKeDAO {
     public int danhDauKiemKeDaDuyet(String maBienBan) {
         return ThaoTacSQL.capNhat(
                 "UPDATE bien_ban_kiem_ke SET trang_thai='DA_DUYET' WHERE ma_bien_ban = ?",
+                maBienBan);
+    }
+
+    @Override
+    public int dongBoYeuCauPheDuyetDaDuyet(String maBienBan, String maNhanVienXuLy) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE yeu_cau_phe_duyet SET trang_thai='DA_DUYET', ma_nhan_vien_xu_ly=?,"
+                        + " xu_ly_luc=SYSDATETIME() WHERE loai_doi_tuong IN"
+                        + " ('KIEM_KE','BIEN_BAN_KIEM_KE') AND ma_doi_tuong=? AND trang_thai IN"
+                        + " ('CHO_DUYET','CAN_THEM_THONG_TIN')",
+                maNhanVienXuLy,
                 maBienBan);
     }
 }

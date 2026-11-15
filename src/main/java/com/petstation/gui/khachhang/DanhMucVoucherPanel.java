@@ -62,6 +62,14 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     }
 
     @Override
+    protected boolean coTheSuaKhiBam(Object[] dong) {
+        if (dong == null || dong[0] == null) return false;
+        if (DinhDang.doc(String.valueOf(dong[4])) > 0) return false;
+        String ma = String.valueOf(dong[0]);
+        return quyenSuaCache.computeIfAbsent(ma, k -> tichDiemService.coTheSuaDanhMuc(k));
+    }
+
+    @Override
     protected String layLyDoKhongSuaBanGhi(Object[] dong) {
         if (dong == null || dong[0] == null) return null;
         if (DinhDang.doc(String.valueOf(dong[4])) > 0) {
@@ -163,11 +171,9 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Mã voucher", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Giá trị (₫)", Kieu.TIEN_TE).batBuoc(),
                 TruongDuLieu.tao("Hạn dùng", Kieu.NGAY).batBuoc(),
-                TruongDuLieu.tao("Số lượt (voucher cá nhân: 1)", Kieu.SO_NGUYEN)
-                        .chiDoc()
-                        .datMacDinh("1"),
+                TruongDuLieu.tao("Số lượt", Kieu.SO_NGUYEN).chiDoc().datMacDinh("1"),
                 TruongDuLieu.tao("Đã dùng", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
-                TruongDuLieu.tao("Đơn tối thiểu", Kieu.TIEN_TE).datMacDinh("0"),
+                TruongDuLieu.tao("Đơn tối thiểu (₫)", Kieu.TIEN_TE).datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Còn hiệu lực", "Hết hạn", "Hết lượt", "Ngừng"),
                 TruongDuLieu.tao("Khách hàng sở hữu", Kieu.TUY_CHINH)

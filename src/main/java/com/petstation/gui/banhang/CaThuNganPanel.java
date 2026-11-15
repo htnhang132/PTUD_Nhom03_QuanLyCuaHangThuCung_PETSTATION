@@ -17,12 +17,15 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.time.LocalTime;
 
 import javax.swing.BorderFactory;
@@ -127,37 +130,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         dau.add(nhanDangChoBieuNgu, BorderLayout.SOUTH);
         theThongTin.add(dau, BorderLayout.NORTH);
 
-        JPanel form = taoVungTrongSuot(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTH;
-
-        cboTenCaLamViec.setPreferredSize(new Dimension(260, 42));
-        oTienDauCa.setPreferredSize(new Dimension(260, 42));
-        oTienDauCa.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
-        oTienDauCa.setHorizontalAlignment(SwingConstants.RIGHT);
-        oTienDauCa.putClientProperty("JTextField.placeholderText", "0₫");
-        oTienDauCa.addActionListener(e -> moCaLamViec());
-
-        JPanel hangNhap = new JPanel(new GridLayout(1, 2, 18, 0));
-        hangNhap.setOpaque(false);
-        hangNhap.add(taoCumNhapLieu(layNho("Ca làm việc"), cboTenCaLamViec));
-        hangNhap.add(taoCumNhapLieu(layNho("Tiền mặt đầu ca (đ)"), oTienDauCa));
-        gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 14, 0);
-        form.add(hangNhap, gbc);
-
-        nhanCuoiCungBanGiao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        nhanCuoiCungBanGiao.setForeground(MauUngDung.VAN_BAN_XAM);
-        gbc.gridy = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        form.add(nhanCuoiCungBanGiao, gbc);
-
-        gbc.gridy = 2;
-        gbc.weighty = 1;
-        form.add(taoVungTrongSuot(new BorderLayout()), gbc);
+        JPanel form = taoFormMoCa();
         theThongTin.add(form, BorderLayout.CENTER);
 
         JPanel duoi = taoVungTrongSuot(new BorderLayout(0, 6));
@@ -174,6 +147,59 @@ public final class CaThuNganPanel extends CoSoPanel {
         gbcThe.gridy = 0;
         khungMo.add(theThongTin, gbcThe);
         return khungMo;
+    }
+
+    private JPanel taoFormMoCa() {
+        JPanel form = taoVungTrongSuot(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+
+        cboTenCaLamViec.setPreferredSize(new Dimension(260, 42));
+        oTienDauCa.setPreferredSize(new Dimension(260, 42));
+        oTienDauCa.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
+        oTienDauCa.setHorizontalAlignment(SwingConstants.RIGHT);
+        oTienDauCa.putClientProperty("JTextField.placeholderText", "0₫");
+        ganDinhDangTienKhiNhap(oTienDauCa);
+        oTienDauCa.addActionListener(e -> moCaLamViec());
+
+        JPanel hangNhap = new JPanel(new GridLayout(1, 2, 18, 0));
+        hangNhap.setOpaque(false);
+        hangNhap.add(taoCumNhapLieu(layNho("Ca làm việc"), cboTenCaLamViec));
+        hangNhap.add(taoCumNhapLieu(layNho("Tiền mặt đầu ca (₫)"), oTienDauCa));
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 8, 0);
+        form.add(hangNhap, gbc);
+
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 10, 0);
+        form.add(taoThanhGoiYTienMoCa(), gbc);
+
+        nhanCuoiCungBanGiao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        nhanCuoiCungBanGiao.setForeground(MauUngDung.VAN_BAN_XAM);
+        gbc.gridy = 2;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        form.add(nhanCuoiCungBanGiao, gbc);
+
+        gbc.gridy = 3;
+        gbc.weighty = 1;
+        form.add(taoVungTrongSuot(new BorderLayout()), gbc);
+        return form;
+    }
+
+    private JPanel taoThanhGoiYTienMoCa() {
+        JPanel thanhGoiYTien = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        thanhGoiYTien.setOpaque(false);
+        for (long muc : new long[] {1_000_000L, 2_000_000L, 3_000_000L, 5_000_000L}) {
+            NutDinhDang nutMuc =
+                    new NutDinhDang(DinhDang.dinhDang(muc), NutDinhDang.KieuNut.TRONG_SUOT);
+            nutMuc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+            nutMuc.addActionListener(e -> oTienDauCa.setText(DinhDang.soNguyen(muc)));
+            thanhGoiYTien.add(nutMuc);
+        }
+        return thanhGoiYTien;
     }
 
     private JPanel taoDangChay() {
@@ -202,6 +228,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         oTienThucDem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 19));
         oTienThucDem.setHorizontalAlignment(SwingConstants.RIGHT);
         oTienThucDem.putClientProperty("JTextField.placeholderText", "0₫");
+        ganDinhDangTienKhiNhap(oTienThucDem);
         themBoLangNgheTaiLieu(oTienThucDem, this::capNhatSoLuongTomTat);
         oTienThucDem.addActionListener(suKien -> dongCaLamViec());
 
@@ -214,7 +241,7 @@ public final class CaThuNganPanel extends CoSoPanel {
 
         gbcTrai.gridy = 0;
         gbcTrai.insets = new Insets(0, 0, 12, 0);
-        khungTrai.add(taoCumNhapLieu(layNho("Tổng tiền mặt thực đếm (đ)"), oTienThucDem), gbcTrai);
+        khungTrai.add(taoCumNhapLieu(layNho("Tổng tiền mặt thực đếm (₫)"), oTienThucDem), gbcTrai);
 
         JPanel khungChenhLech = new JPanel(new BorderLayout(10, 0));
         khungChenhLech.setBackground(MauUngDung.mau(0xFAF7F2));
@@ -496,16 +523,37 @@ public final class CaThuNganPanel extends CoSoPanel {
         return "Ca thu ngân";
     }
 
+    private static void ganDinhDangTienKhiNhap(JTextField truong) {
+        truong.addFocusListener(
+                new FocusAdapter() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        long v = DinhDang.doc(truong.getText());
+                        if (v >= 0 && !truong.getText().isBlank()) {
+                            truong.setText(String.valueOf(v));
+                            truong.selectAll();
+                        }
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        String raw = truong.getText().trim().replaceAll("(?i)[₫đ\\s]+$", "");
+                        if (!raw.isEmpty() && raw.matches("\\d+(?:[.,]\\d{3})*")) {
+                            long v = DinhDang.doc(raw);
+                            if (v >= 0) truong.setText(DinhDang.soNguyen(v));
+                        }
+                    }
+                });
+    }
+
     private static long docSoTien(JTextField truong) {
-        String giaTri = truong.getText().trim();
-        if (!giaTri.matches("[0-9]+"))
-            throw new IllegalArgumentException(
-                    "Nhập số tiền nguyên không âm, không có dấu phân cách.");
-        try {
-            return Long.parseLong(giaTri);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Số tiền quá lớn.");
+        String giaTri = truong.getText().trim().replaceAll("(?i)[₫đ\\s]+$", "");
+        if (!giaTri.matches("\\d+(?:[.,]\\d{3})*")) {
+            throw new IllegalArgumentException("Nhập số tiền nguyên không âm hợp lệ.");
         }
+        long ketQua = DinhDang.doc(giaTri);
+        if (ketQua < 0) throw new IllegalArgumentException("Số tiền quá lớn.");
+        return ketQua;
     }
 
     private BoGocPanel layTheGon(LayoutManager boCuc) {

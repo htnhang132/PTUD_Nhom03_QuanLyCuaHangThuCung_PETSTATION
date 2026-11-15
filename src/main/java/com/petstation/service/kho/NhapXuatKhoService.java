@@ -169,13 +169,17 @@ public final class NhapXuatKhoService {
                                                 LoaiPhieuXuat.XUAT_HUY.maDB(),
                                                 maPhieuXuat,
                                                 "");
-                            else apDungXuatHuy(maPhieuXuat);
+                            else apDungXuatHuyNoiBo(maPhieuXuat);
                             return maPhieuXuat;
                         });
     }
 
     public void apDungXuatHuy(String maPhieuXuat) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.XU_LY_PHE_DUYET);
+        apDungXuatHuyNoiBo(maPhieuXuat);
+    }
+
+    private void apDungXuatHuyNoiBo(String maPhieuXuat) {
         if (nhapXuatKhoDAO.demApDungXuatHuy(maPhieuXuat) == 0)
             throw new IllegalStateException("Phiếu xuất đã xử lý.");
         for (ChiTietPhieuXuat dongDuLieu : nhapXuatKhoDAO.timApDungXuatHuy(maPhieuXuat))

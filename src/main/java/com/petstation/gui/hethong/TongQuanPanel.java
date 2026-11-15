@@ -21,10 +21,13 @@ import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,6 +67,8 @@ public final class TongQuanPanel extends CoSoPanel {
     private int luotTai;
 
     private final BieuDoCot bieuDo = new BieuDoCot();
+
+    private final JTable bangBang;
 
     private final DefaultTableModel trenMoHinh =
             new DefaultTableModel(new String[] {"#", "Sản phẩm", "Đã bán", "Doanh thu"}, 0) {
@@ -106,12 +111,10 @@ public final class TongQuanPanel extends CoSoPanel {
         nhanKieuCot.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         khungBieuDoThe.add(nhanKieuCot, BorderLayout.NORTH);
         khungBieuDoThe.add(bieuDo, BorderLayout.CENTER);
-        JTable bangBang = new JTable(trenMoHinh);
+        bangBang = new JTable(trenMoHinh);
         DinhDangBang.apDung(bangBang);
         bangBang.setAutoCreateRowSorter(false);
-        bangBang.getColumnModel().getColumn(0).setPreferredWidth(36);
-        bangBang.getColumnModel().getColumn(1).setPreferredWidth(190);
-        bangBang.getColumnModel().getColumn(3).setPreferredWidth(120);
+        canChinhCotBangTop();
         JScrollPane scrKhungCuon = new JScrollPane(bangBang);
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         scrKhungCuon.getViewport().setBackground(Color.WHITE);
@@ -161,6 +164,8 @@ public final class TongQuanPanel extends CoSoPanel {
     private static final class DuLieuTongQuan {
         final long dangCho;
         final long doanhThu;
+        final long doanhThuHomNay;
+        final boolean coQuyenBaoCao;
         final long thapTonKho;
         final int demHoaDon;
         final boolean moCa;
@@ -174,6 +179,8 @@ public final class TongQuanPanel extends CoSoPanel {
         private DuLieuTongQuan(
                 long dangCho,
                 long doanhThu,
+                long doanhThuHomNay,
+                boolean coQuyenBaoCao,
                 long thapTonKho,
                 int demHoaDon,
                 boolean moCa,
@@ -185,6 +192,8 @@ public final class TongQuanPanel extends CoSoPanel {
                 boolean coQuyenKho) {
             this.dangCho = dangCho;
             this.doanhThu = doanhThu;
+            this.doanhThuHomNay = doanhThuHomNay;
+            this.coQuyenBaoCao = coQuyenBaoCao;
             this.thapTonKho = thapTonKho;
             this.demHoaDon = demHoaDon;
             this.moCa = moCa;
@@ -287,9 +296,12 @@ public final class TongQuanPanel extends CoSoPanel {
         }
         List<SanPhamBanChay> spBanChay =
                 coQuyenBaoCao ? thongKeService.laySanPhamBanChay(7) : new ArrayList<>();
+        long doanhThuHomNay = Math.round(doanhThuTheoNgay.getOrDefault(LocalDate.now(), 0.0));
         return new DuLieuTongQuan(
                 dangCho,
                 doanhThu,
+                doanhThuHomNay,
+                coQuyenBaoCao,
                 thapTonKho,
                 demHoaDon,
                 moCa,
@@ -304,33 +316,60 @@ public final class TongQuanPanel extends CoSoPanel {
     private void hienThiDuLieuTongQuan(DuLieuTongQuan d) {
         capNhatCacPhimTat(d.dangCho);
         khungCacChiSo.removeAll();
-        khungCacChiSo.add(
-                layChiSoThe(
-                        d.moCa ? "Thu tiền ca hiện tại" : "Chưa mở ca",
-                        d.moCa ? DinhDang.dinhDang(d.doanhThu) : "—",
-                        d.moCa ? d.tenCa : "Mở ca để bán hàng",
-                        MauUngDung.XANH_LA));
-        khungCacChiSo.add(
+        String tieuDeDoanhThu;
+        String giaTriDoanhThu;
+        String phuDeDoanhThu;
+        if (d.moCa) {
+            tieuDeDoanhThu = "Thu tiền ca hiện tại";
+            giaTriDoanhThu = DinhDang.dinhDang(d.doanhThu);
+            phuDeDoanhThu =
+                    d.coQuyenBaoCao && d.doanhThuHomNay > d.doanhThu
+                            ? d.tenCa + " · Hôm nay: " + DinhDang.dinhDang(d.doanhThuHomNay)
+                            : d.tenCa;
+        } else if (d.coQuyenBaoCao && d.doanhThuHomNay > 0) {
+            tieuDeDoanhThu = "Doanh thu hôm nay";
+            giaTriDoanhThu = DinhDang.dinhDang(d.doanhThuHomNay);
+            phuDeDoanhThu = "Chưa mở ca hiện tại — Bấm để mở ca";
+        } else {
+            tieuDeDoanhThu = "Chưa mở ca";
+            giaTriDoanhThu = "—";
+            phuDeDoanhThu = "Mở ca để bán hàng";
+        }
+        JPanel theDoanhThu =
+                layChiSoThe(tieuDeDoanhThu, giaTriDoanhThu, phuDeDoanhThu, MauUngDung.XANH_LA);
+        ganDieuHuongThe(
+                theDoanhThu,
+                d.moCa && coTheTruyCap.test(MaManHinh.THONG_KE_DOANH_THU)
+                        ? MaManHinh.THONG_KE_DOANH_THU
+                        : MaManHinh.CA_THU_NGAN);
+        khungCacChiSo.add(theDoanhThu);
+        JPanel theHoaDon =
                 layChiSoThe(
                         "Hóa đơn trong ca",
                         d.moCa ? String.valueOf(d.demHoaDon) : "—",
-                        "",
-                        MauUngDung.NAU));
+                        d.moCa ? "Bấm để tra cứu hóa đơn" : "Chưa mở ca",
+                        MauUngDung.NAU);
+        ganDieuHuongThe(theHoaDon, MaManHinh.TIM_KIEM_HOA_DON);
+        khungCacChiSo.add(theHoaDon);
         if (d.coQuyenKho) {
-            khungCacChiSo.add(
+            JPanel theTonThap =
                     layChiSoThe(
                             "Sản phẩm tồn thấp",
                             String.valueOf(d.thapTonKho),
-                            "Cần nhập thêm",
-                            MauUngDung.DO_THUONG_HIEU));
+                            "Cần nhập thêm — Bấm để xem",
+                            MauUngDung.DO_THUONG_HIEU);
+            ganDieuHuongThe(theTonThap, MaManHinh.TRA_CUU_LO_HANG);
+            khungCacChiSo.add(theTonThap);
         }
         if (d.coQuyenPheDuyet) {
-            khungCacChiSo.add(
+            JPanel thePheDuyet =
                     layChiSoThe(
                             "Yêu cầu chờ duyệt",
                             String.valueOf(d.dangCho),
                             d.dangCho > 0 ? "Cần Cửa hàng trưởng xử lý" : "Không có",
-                            MauUngDung.CAM));
+                            MauUngDung.CAM);
+            ganDieuHuongThe(thePheDuyet, MaManHinh.PHE_DUYET_YEU_CAU);
+            khungCacChiSo.add(thePheDuyet);
         }
         khungCacChiSo.revalidate();
         khungCacChiSo.repaint();
@@ -347,6 +386,42 @@ public final class TongQuanPanel extends CoSoPanel {
                         DinhDang.dinhDang(Math.round(sanPham.getDoanhThu()))
                     });
         }
+        SwingUtilities.invokeLater(this::canChinhCotBangTop);
+    }
+
+    private void canChinhCotBangTop() {
+        if (bangBang == null || bangBang.getColumnCount() < 4) return;
+        bangBang.getColumnModel().getColumn(0).setPreferredWidth(36);
+        bangBang.getColumnModel().getColumn(0).setMaxWidth(44);
+        bangBang.getColumnModel().getColumn(1).setPreferredWidth(210);
+        bangBang.getColumnModel().getColumn(2).setPreferredWidth(72);
+        bangBang.getColumnModel().getColumn(3).setPreferredWidth(120);
+    }
+
+    private void ganDieuHuongThe(JPanel the, MaManHinh dich) {
+        if (dich == null || !coTheTruyCap.test(dich)) return;
+        the.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        the.setToolTipText("Bấm để mở nhanh màn hình này");
+        Color nenGoc = the.getBackground();
+        the.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        the.setBackground(MauUngDung.KEM_NEN_NHAN);
+                        the.repaint();
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        the.setBackground(nenGoc);
+                        the.repaint();
+                    }
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        boDieuHuong.accept(dich);
+                    }
+                });
     }
 
     private static long layThapTonKho() {

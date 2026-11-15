@@ -24,8 +24,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.Normalizer;
@@ -45,6 +50,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -60,6 +66,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
@@ -359,6 +366,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     private final JTable bangBang;
 
+    private final List<Integer> thuTuNhapLieu = new ArrayList<>();
+
+    private String[] giaTriBanDau = new String[0];
+
     private final JComponent[] cacDauVao;
 
     private final BoSoanThaoTruong[] cacBoSoanThao;
@@ -422,6 +433,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         cacBoSoanThao = new BoSoanThaoTruong[cacTruong.size()];
         add(taoSplitDanhMuc(scrCuon), BorderLayout.CENTER);
         ganSuKienBangDanhMuc();
+        dangKyPhimTatDanhMuc();
         taiLai(null);
         datCheDo(CheDo.HIEN_THI);
         if (cacDong.isEmpty()
@@ -623,6 +635,57 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                 });
     }
 
+    private void dangKyPhimTatDanhMuc() {
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "huyHoacXoaLocDanhMuc");
+        getActionMap()
+                .put(
+                        "huyHoacXoaLocDanhMuc",
+                        new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if (cheDo != CheDo.HIEN_THI) {
+                                    huySua();
+                                } else if (oTimKiemChung != null
+                                        && !oTimKiemChung.getText().isEmpty()) {
+                                    oTimKiemChung.setText("");
+                                }
+                            }
+                        });
+    }
+
+    private static void ganNhanDupSua(Component thanhPhan, MouseAdapter suKien) {
+        if (thanhPhan == null) return;
+        thanhPhan.addMouseListener(suKien);
+        if (thanhPhan instanceof java.awt.Container vung) {
+            for (Component con : vung.getComponents()) {
+                ganNhanDupSua(con, suKien);
+            }
+        }
+    }
+
+    private void xuLyEnterTrenTruong(int chiSoHienTai) {
+        if (cheDo == CheDo.HIEN_THI) return;
+        int viTri = thuTuNhapLieu.indexOf(chiSoHienTai);
+        if (viTri >= 0) {
+            for (int i = viTri + 1; i < thuTuNhapLieu.size(); i++) {
+                int chiSoTiep = thuTuNhapLieu.get(i);
+                TruongDuLieu truongTiep = cacTruong.get(chiSoTiep);
+                JComponent dauVaoTiep = cacDauVao[chiSoTiep];
+                if (dauVaoTiep != null
+                        && dauVaoTiep.isVisible()
+                        && dauVaoTiep.isEnabled()
+                        && truongTiep.trongBieuMau
+                        && truongTiep.kieu != Kieu.TUY_CHINH
+                        && truongTiep.kieu != Kieu.TEP) {
+                    focusThanhPhan(dauVaoTiep, true);
+                    return;
+                }
+            }
+        }
+        luu();
+    }
+
     private static final class KhungBieuMauCuon extends JPanel implements Scrollable {
         KhungBieuMauCuon() {
             super(new GridBagLayout());
@@ -703,9 +766,27 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             thuTuBieuMau.add(cauHinh.chiSoTruongDau);
         for (int i = 0; i < cacTruong.size(); i++)
             if (i != cauHinh.chiSoTruongDau) thuTuBieuMau.add(i);
+        thuTuNhapLieu.clear();
+        thuTuNhapLieu.addAll(thuTuBieuMau);
+        MouseAdapter kichHoatSuaKhiNhanDup =
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent suKien) {
+                        if (SwingUtilities.isLeftMouseButton(suKien)
+                                && suKien.getClickCount() == 2
+                                && cheDo == CheDo.HIEN_THI
+                                && hienTai != null
+                                && coTheChinhSua()
+                                && coTheSuaKhiBam(hienTai)) {
+                            batDauSua();
+                        }
+                    }
+                };
+        khungBieuMau.addMouseListener(kichHoatSuaKhiNhanDup);
         for (int chiSo : thuTuBieuMau) {
             TruongDuLieu truong = cacTruong.get(chiSo);
             JComponent dauVao = taoDauVao(chiSo, truong);
+            ganNhanDupSua(dauVao, kichHoatSuaKhiNhanDup);
             cacDauVao[chiSo] = dauVao;
             if (!truong.trongBieuMau) continue;
             if (truong.hienNhan && !truong.nhan.isBlank()) {
@@ -749,7 +830,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     private JComponent taoDauVao(int chiSo, TruongDuLieu truongDangXet) {
         if (truongDangXet.nhieuDong) return taoVungVanBanCuon(2, 56, 48);
         return switch (truongDangXet.kieu) {
-            case MAT_KHAU -> taoMatKhauDauVao();
+            case MAT_KHAU -> taoMatKhauDauVao(chiSo);
             case HOP_CHON ->
                     truongDangXet.timNhanh
                             ? taoHopChonTimNhanh(truongDangXet)
@@ -760,20 +841,17 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                 cacBoSoanThao[chiSo] = boSoanThao;
                 yield boSoanThao.layThanhPhan();
             }
-            case TEP -> taoChonTepDauVao(truongDangXet);
-            case NGAY -> taoChonNgayDauVao(truongDangXet);
-            default -> layVanBanDauVao(truongDangXet);
+            case TEP -> taoChonTepDauVao(chiSo, truongDangXet);
+            case NGAY -> taoChonNgayDauVao(chiSo, truongDangXet);
+            default -> layVanBanDauVao(chiSo, truongDangXet);
         };
     }
 
-    private JPasswordField taoMatKhauDauVao() {
+    private JPasswordField taoMatKhauDauVao(int chiSo) {
         JPasswordField oMatKhau = new JPasswordField(20);
         oMatKhau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oMatKhau.setMinimumSize(new Dimension(80, 32));
-        oMatKhau.addActionListener(
-                e -> {
-                    if (cheDo != CheDo.HIEN_THI && btnNutLuu.isEnabled()) luu();
-                });
+        oMatKhau.addActionListener(e -> xuLyEnterTrenTruong(chiSo));
         return oMatKhau;
     }
 
@@ -789,6 +867,35 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         khung.add(cboHop, BorderLayout.CENTER);
         khung.putClientProperty("combo", cboHop);
         khung.putClientProperty("filter", oLoc);
+        cboHop.addActionListener(
+                e -> {
+                    Object sel = cboHop.getSelectedItem();
+                    if (sel != null) khung.putClientProperty("lastSelected", sel.toString());
+                });
+        oLoc.addKeyListener(
+                new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                            cboHop.requestFocusInWindow();
+                            if (cboHop.getItemCount() > 0 && cboHop.isShowing()) {
+                                cboHop.showPopup();
+                            }
+                            e.consume();
+                        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE
+                                && !oLoc.getText().isEmpty()) {
+                            oLoc.setText("");
+                            e.consume();
+                        }
+                    }
+                });
+        oLoc.addActionListener(
+                e -> {
+                    cboHop.requestFocusInWindow();
+                    if (cboHop.getItemCount() > 1 && cboHop.isShowing()) {
+                        cboHop.showPopup();
+                    }
+                });
         themBoLangNgheTaiLieu(
                 oLoc, () -> locHopChonTimNhanh(khung, cboHop, truongDangXet, oLoc.getText()));
         return khung;
@@ -804,7 +911,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         String tk = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase(Locale.ROOT);
         String tkKhongDau = boDauTiengViet(tk);
         boolean dungKhongDau = tk.equals(tkKhongDau);
-        Object dangChonTruoc = cboHop.getSelectedItem();
+        Object dangChonTruoc =
+                cboHop.getSelectedItem() != null
+                        ? cboHop.getSelectedItem()
+                        : khung.getClientProperty("lastSelected");
         List<String> khop = new ArrayList<>();
         for (String muc : tatCa) {
             if (tk.isEmpty() || khopChuoiTimKiem(muc, tk, tkKhongDau, dungKhongDau)) {
@@ -865,10 +975,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         return cboHop;
     }
 
-    private JPanel taoChonTepDauVao(TruongDuLieu truongDangXet) {
+    private JPanel taoChonTepDauVao(int chiSo, TruongDuLieu truongDangXet) {
         JPanel khungTam = new JPanel(new BorderLayout(6, 0));
         khungTam.setOpaque(false);
-        JTextField oGiaTriTam = layVanBanDauVao(truongDangXet);
+        JTextField oGiaTriTam = layVanBanDauVao(chiSo, truongDangXet);
         NutDinhDang btnChon = new NutDinhDang("Chọn ảnh...", NutDinhDang.KieuNut.TRONG_SUOT);
         btnChon.addActionListener(
                 suKien -> {
@@ -884,10 +994,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         return khungTam;
     }
 
-    private JPanel taoChonNgayDauVao(TruongDuLieu truongDangXet) {
+    private JPanel taoChonNgayDauVao(int chiSo, TruongDuLieu truongDangXet) {
         JPanel khungTam = new JPanel(new BorderLayout(6, 0));
         khungTam.setOpaque(false);
-        JTextField oGiaTriTam = layVanBanDauVao(truongDangXet);
+        JTextField oGiaTriTam = layVanBanDauVao(chiSo, truongDangXet);
         JButton btnChonNgay = BoChonNgay.taoNutLich(oGiaTriTam, DinhDang.NGAY_CHUAN);
         btnChonNgay.setName("chonNgay:" + truongDangXet.nhan);
         btnChonNgay.setPreferredSize(new Dimension(36, 32));
@@ -898,7 +1008,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         return khungTam;
     }
 
-    private JTextField layVanBanDauVao(TruongDuLieu truongDangXet) {
+    private JTextField layVanBanDauVao(int chiSo, TruongDuLieu truongDangXet) {
         JTextField oGiaTriTam =
                 new JTextField() {
                     @Override
@@ -920,11 +1030,30 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         oGiaTriTam.setMinimumSize(new Dimension(80, 32));
         if (truongDangXet.kieu == Kieu.NGAY)
             oGiaTriTam.setToolTipText("Định dạng dd/MM/yyyy hoặc chọn từ lịch");
-        if (truongDangXet.kieu != Kieu.TEP) {
-            oGiaTriTam.addActionListener(
-                    e -> {
-                        if (cheDo != CheDo.HIEN_THI && btnNutLuu.isEnabled()) luu();
+        if (truongDangXet.kieu == Kieu.TIEN_TE) {
+            oGiaTriTam.addFocusListener(
+                    new FocusAdapter() {
+                        @Override
+                        public void focusGained(FocusEvent e) {
+                            if (!oGiaTriTam.isEnabled()) return;
+                            String raw = docTienTeHopLe(oGiaTriTam.getText());
+                            if (!"?".equals(raw)) {
+                                oGiaTriTam.setText(raw);
+                            }
+                            oGiaTriTam.selectAll();
+                        }
+
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            String raw = docTienTeHopLe(oGiaTriTam.getText());
+                            if (!raw.isEmpty() && !"?".equals(raw)) {
+                                oGiaTriTam.setText(DinhDang.dinhDang(DinhDang.doc(raw)));
+                            }
+                        }
                     });
+        }
+        if (truongDangXet.kieu != Kieu.TEP) {
+            oGiaTriTam.addActionListener(e -> xuLyEnterTrenTruong(chiSo));
         }
         ToolTipManager.sharedInstance().registerComponent(oGiaTriTam);
         return oGiaTriTam;
@@ -1074,6 +1203,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         return true;
     }
 
+    protected boolean coTheSuaKhiBam(Object[] dong) {
+        return coTheSuaBanGhi(dong);
+    }
+
     protected final void capNhatTrangThaiNut() {
         if (cheDo == CheDo.HIEN_THI) datCheDo(CheDo.HIEN_THI);
     }
@@ -1098,7 +1231,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                         && coTheSuaBanGhi(hienTai);
         btnNutSua.setEnabled(co);
         btnNutXoa.setEnabled(co && !kiemTraNgungHoatDong(hienTai));
-        for (NutDinhDang btnGiaTriSau : boSungCacNut) btnGiaTriSau.setEnabled(co);
+        for (NutDinhDang btnGiaTriSau : boSungCacNut) {
+            boolean choPhepBarcodeKhiSua = dangSua && "Tạo Barcode".equals(btnGiaTriSau.getText());
+            btnGiaTriSau.setEnabled(co || choPhepBarcodeKhiSua);
+        }
         nhanTieuDeBieuMau.setText(
                 switch (moHinhDangXet) {
                     case MOI -> "Thêm " + cauHinh.tenThucThe + " mới";
@@ -1135,11 +1271,18 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         datCheDo(CheDo.HIEN_THI);
     }
 
+    private void chupGiaTriBanDau() {
+        giaTriBanDau = new String[cacTruong.size()];
+        for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
+            giaTriBanDau[chiSo] = layDauVao(chiSo);
+        }
+    }
+
     private boolean kiemTraChuaLuu() {
+        if (giaTriBanDau.length != cacTruong.size()) return false;
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
             String hienTai2 = layDauVao(chiSo);
-            String truoc =
-                    cheDo == CheDo.MOI ? layMacDinhCua(chiSo) : String.valueOf(hienTai[chiSo]);
+            String truoc = giaTriBanDau[chiSo] == null ? "" : giaTriBanDau[chiSo];
             if (!hienTai2.equals(truoc)) return true;
         }
         return false;
@@ -1280,6 +1423,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
                             : layMacDinhCua(chiSo));
         }
         datCheDo(CheDo.MOI);
+        chupGiaTriBanDau();
         layTieuDiemDauTienCoTheSua();
     }
 
@@ -1289,7 +1433,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             HopThoai.hienThiThongTin(this, "Chọn một dòng để sửa.");
             return;
         }
-        if (!coTheSuaBanGhi(hienTai)) {
+        if (!coTheSuaKhiBam(hienTai)) {
             String lyDo = layLyDoKhongSuaBanGhi(hienTai);
             if (lyDo != null && !lyDo.isBlank()) HopThoai.hienThiThongTin(this, lyDo);
             return;
@@ -1299,6 +1443,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         }
         xoaThongBao();
         datCheDo(CheDo.SUA);
+        chupGiaTriBanDau();
         layTieuDiemDauTienCoTheSua();
     }
 
@@ -1378,6 +1523,11 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         Object[] cacGiaTri = new Object[cacTruong.size()];
         for (int chiSo = 0; chiSo < cacTruong.size(); chiSo++) {
             TruongDuLieu truong = cacTruong.get(chiSo);
+            if (truong.kieu == Kieu.TUY_CHINH
+                    && cacBoSoanThao[chiSo] != null
+                    && !cacBoSoanThao[chiSo].xacNhanDangNhap()) {
+                return null;
+            }
             String giaTri;
             try {
                 giaTri = layDauVao(chiSo);
@@ -1665,6 +1815,24 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     private void chayBoSung(ThaoTacBoSung ngoaiLe) {
+        if (cheDo != CheDo.HIEN_THI && "Tạo Barcode".equals(ngoaiLe.nhan())) {
+            int n = Math.max(cacTruong.size(), 14);
+            Object[] tam = hienTai != null ? hienTai.clone() : new Object[n];
+            for (int i = 0; i < cacTruong.size() && i < tam.length; i++) {
+                tam[i] = layDauVao(i);
+            }
+            try {
+                String ketQua = ngoaiLe.boXuLy().apply(tam);
+                if (tam.length > 13 && cacDauVao.length > 13) {
+                    datDauVao(13, String.valueOf(tam[13] == null ? "" : tam[13]));
+                    if (hienTai != null && hienTai.length > 13) hienTai[13] = tam[13];
+                }
+                if (ketQua != null) nhay(ketQua);
+            } catch (RuntimeException ex) {
+                HopThoai.hienThiCanhBao(this, ex.getMessage());
+            }
+            return;
+        }
         if (hienTai == null) return;
         Object[] truoc = hienTai.clone();
         String ketQua;
@@ -1801,8 +1969,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             if (chiSo < 0) bangBang.clearSelection();
             else {
                 int hienThi = bangBang.convertRowIndexToView(chiSo);
-                if (hienThi >= 0) bangBang.setRowSelectionInterval(hienThi, hienThi);
-                else bangBang.clearSelection();
+                if (hienThi >= 0) {
+                    bangBang.setRowSelectionInterval(hienThi, hienThi);
+                    bangBang.scrollRectToVisible(bangBang.getCellRect(hienThi, 0, true));
+                } else bangBang.clearSelection();
             }
         } finally {
             dangChon = false;
@@ -2010,8 +2180,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         }
         if (cauHinh.chiSoTrangThai >= 0) {
             cboTrangThai.setName("loc:Trạng thái");
-            cboTrangThai.addItem(layNhanTrangThaiMacDinh());
             cboTrangThai.addItem("Tất cả");
+            cboTrangThai.addItem(layNhanTrangThaiMacDinh());
             cacDong.stream()
                     .map(d -> String.valueOf(d[cauHinh.chiSoTrangThai]))
                     .distinct()
@@ -2066,8 +2236,8 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
             if (cauHinh.chiSoTrangThai >= 0 && cboTrangThai.getItemCount() > 0) {
                 Object daChon = cboTrangThai.getSelectedItem();
                 List<String> moi = new ArrayList<>();
-                moi.add(layNhanTrangThaiMacDinh());
                 moi.add("Tất cả");
+                moi.add(layNhanTrangThaiMacDinh());
                 cacDong.stream()
                         .map(d -> String.valueOf(d[cauHinh.chiSoTrangThai]))
                         .filter(v -> !moi.contains(v))

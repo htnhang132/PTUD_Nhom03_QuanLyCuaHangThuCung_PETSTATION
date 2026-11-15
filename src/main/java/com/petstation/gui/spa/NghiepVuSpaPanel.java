@@ -22,6 +22,7 @@ import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.chung.QuyTrinhService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.spa.SpaService;
+import com.petstation.util.DinhDang;
 
 import java.awt.Component;
 import java.util.ArrayList;
@@ -65,6 +66,14 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                                                     TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
                                                     TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())
                                             .contains(trangThai));
+                    case "Xóa dịch vụ" ->
+                            btn.setEnabled(
+                                    coDichVu
+                                            && Set.of(
+                                                            TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
+                                                            TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(),
+                                                            TrangThaiPhieuSpa.HOAN_TAT.maDB())
+                                                    .contains(trangThai));
                     case "Bắt đầu làm" ->
                             btn.setEnabled(
                                     trangThai.equals(TrangThaiPhieuSpa.TIEP_NHAN.maDB())
@@ -221,6 +230,69 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                 ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
     }
 
+    protected void xoaDichVu() {
+        String maPhieu = layDongChon();
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        TacVuNen.chayCoPhien(
+                phien,
+                () -> true,
+                () -> spaService.layPhieuSpaChiTiet(maPhieu),
+                null,
+                ds -> {
+                    if (ds.size() <= 1) {
+                        HopThoai.hienThiCanhBao(this, "Phiếu Spa phải giữ lại ít nhất 1 dịch vụ.");
+                        return;
+                    }
+                    String[] cacMuc = new String[ds.size()];
+                    for (int i = 0; i < ds.size(); i++) {
+                        SpaDTO.DongChiTietSpa d = ds.get(i);
+                        cacMuc[i] =
+                                (i + 1)
+                                        + ". "
+                                        + d.getTenDichVu()
+                                        + " — "
+                                        + DinhDang.dinhDang(d.getThanhTien());
+                    }
+                    Object chon =
+                            HopThoai.chonMuc(
+                                    this,
+                                    "Chọn dịch vụ thêm nhầm cần xóa khỏi phiếu " + maPhieu + ":",
+                                    "Xóa dịch vụ Spa",
+                                    cacMuc,
+                                    cacMuc[cacMuc.length - 1]);
+                    if (chon == null) return;
+                    int viTri = -1;
+                    for (int i = 0; i < cacMuc.length; i++) {
+                        if (cacMuc[i].equals(chon)) {
+                            viTri = i;
+                            break;
+                        }
+                    }
+                    if (viTri < 0
+                            || !HopThoai.xacNhan(
+                                    this,
+                                    "Xóa dịch vụ \""
+                                            + ds.get(viTri).getTenDichVu()
+                                            + "\" khỏi phiếu "
+                                            + maPhieu
+                                            + "?")) {
+                        return;
+                    }
+                    int idxXoa = viTri;
+                    TacVuNen.chayCoPhien(
+                            phien,
+                            () -> true,
+                            () -> {
+                                spaService.xoaDichVuSpa(maPhieu, idxXoa);
+                                return null;
+                            },
+                            null,
+                            v -> lamMoi(),
+                            ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+                },
+                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+    }
+
     protected void laySpaChiTiet() {
         String maPhieu = layDongChon();
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
@@ -233,9 +305,9 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
                         dongChiTiet.add(
                                 new Object[] {
                                     d.getTenDichVu(),
-                                    d.getDonGia(),
+                                    DinhDang.dinhDang(d.getDonGia()),
                                     d.getSoLuong(),
-                                    d.getThanhTien()
+                                    DinhDang.dinhDang(d.getThanhTien())
                                 });
                     }
                     return dongChiTiet;

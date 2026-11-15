@@ -74,10 +74,8 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                     : tenDangNhap;
                                     NhanVienService.macDinh()
                                             .capNhatHoacTaoTaiKhoan(maNv, tenMoi, passMoi, vaiTro);
-                                    return "Đã cấp/đặt lại mật khẩu tài khoản "
-                                            + tenMoi
-                                            + " thành: "
-                                            + passMoi;
+                                    HopThoai.hienThiMatKhauTam(null, tenMoi, passMoi);
+                                    return "Đã cấp/đặt lại mật khẩu cho tài khoản " + tenMoi + ".";
                                 })
                         .datTrangThai(6, "Đang làm", "Nghỉ việc");
         return cauHinh;

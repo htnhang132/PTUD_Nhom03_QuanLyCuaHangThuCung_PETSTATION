@@ -66,6 +66,19 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                 .datTienTo("KH")
                 .timKiem("Tìm theo tên, SĐT, Email, Địa chỉ, mã khách...")
                 .datTrangThai(8, "Đang hoạt động", "Ngừng hoạt động")
+                .themThaoTacBoSungKhongLuu(
+                        "+ Thêm thú cưng",
+                        dong -> {
+                            Object[] thuMoi =
+                                    DanhMucThuCungPanel.moThem(
+                                            java.awt.KeyboardFocusManager
+                                                    .getCurrentKeyboardFocusManager()
+                                                    .getActiveWindow(),
+                                            dong[0] + " - " + dong[1]);
+                            return thuMoi != null
+                                    ? "Đã thêm thú cưng " + thuMoi[1] + " (" + thuMoi[0] + ")."
+                                    : null;
+                        })
                 .datBoKiemTra(
                         d -> {
                             String ten = d[1] == null ? "" : d[1].toString().trim();

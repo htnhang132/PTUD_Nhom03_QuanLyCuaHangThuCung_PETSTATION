@@ -26,4 +26,8 @@ public interface KiemKeDAO {
     int capNhatApDungKiemKe(int tonThucTe, String maLo, int tonHeThong);
 
     int danhDauKiemKeDaDuyet(String maBienBan);
+
+    default int dongBoYeuCauPheDuyetDaDuyet(String maBienBan, String maNhanVienXuLy) {
+        return 0;
+    }
 }

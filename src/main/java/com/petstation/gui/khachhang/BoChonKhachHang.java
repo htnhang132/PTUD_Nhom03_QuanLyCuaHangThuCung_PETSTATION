@@ -75,7 +75,7 @@ public final class BoChonKhachHang extends JPanel {
         JPanel khungSuDungDiem = new JPanel();
         khungSuDungDiem.setOpaque(false);
         khungSuDungDiem.setLayout(new BoxLayout(khungSuDungDiem, BoxLayout.Y_AXIS));
-        JLabel nhanNhanSuDung = new JLabel("Đổi 200 điểm → voucher Spa 150.000đ / 60 ngày");
+        JLabel nhanNhanSuDung = new JLabel("Đổi 200 điểm → voucher Spa 150.000₫ / 60 ngày");
         nhanNhanSuDung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhanNhanSuDung.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungSuDungDiem.add(nhanNhanSuDung);
@@ -109,7 +109,7 @@ public final class BoChonKhachHang extends JPanel {
         String maKh = banHang.getMaKhachHang();
         if (maKh.isBlank()) return;
         if (!HopThoai.xacNhanDongY(
-                this, "Trừ 200 điểm để nhận voucher Spa 150.000đ, hạn 60 ngày?", "Đổi voucher"))
+                this, "Trừ 200 điểm để nhận voucher Spa 150.000₫, hạn 60 ngày?", "Đổi voucher"))
             return;
         if (khoaDoiVoucher == null) khoaDoiVoucher = "DOI-" + UUID.randomUUID();
         String khoaTam = khoaDoiVoucher;
@@ -237,7 +237,10 @@ public final class BoChonKhachHang extends JPanel {
         khungNhan.setVisible(co);
         if (co) {
             nhanVanBanNhan.setText(
-                    banHang.getTenKhachHang() + "  ·  " + banHang.getKhachHangDiem() + " điểm");
+                    banHang.getTenKhachHang()
+                            + "  ·  "
+                            + DinhDang.soNguyen(banHang.getKhachHangDiem())
+                            + " điểm");
             int luot = ++luotDongBo;
             TacVuNen.chayCoPhien(
                     this,
@@ -254,7 +257,7 @@ public final class BoChonKhachHang extends JPanel {
                                             + "  ·  Hạng "
                                             + hang
                                             + "  ·  "
-                                            + banHang.getKhachHangDiem()
+                                            + DinhDang.soNguyen(banHang.getKhachHangDiem())
                                             + " điểm"));
         }
         revalidate();

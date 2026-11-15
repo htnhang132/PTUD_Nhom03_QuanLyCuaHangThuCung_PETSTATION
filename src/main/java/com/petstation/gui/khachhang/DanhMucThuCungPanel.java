@@ -99,9 +99,10 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         var bieuMau =
                 new QuanLyDanhMucPanel(cauHinh, cacTruong, ThuCungService.macDinh().layDanhMuc());
         hopThoai.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        hopThoai.setResizable(true);
         bieuMau.batCheDoThuGon(hopThoai::dispose);
         hopThoai.setContentPane(bieuMau);
-        hopThoai.setSize(540, 610);
+        hopThoai.setSize(580, 700);
         HopThoai.chuanHoaCuaSo(hopThoai, cha);
         bieuMau.moTaoMoi();
         hopThoai.setVisible(true);
@@ -128,9 +129,10 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         var bieuMau =
                 new QuanLyDanhMucPanel(cauHinh, cacTruong, ThuCungService.macDinh().layDanhMuc());
         hopThoai.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        hopThoai.setResizable(true);
         bieuMau.batCheDoThuGon(hopThoai::dispose);
         hopThoai.setContentPane(bieuMau);
-        hopThoai.setSize(560, 700);
+        hopThoai.setSize(580, 700);
         HopThoai.chuanHoaCuaSo(hopThoai, cha);
         bieuMau.moSuaTheoKhoa(maThuCung);
         hopThoai.setVisible(true);

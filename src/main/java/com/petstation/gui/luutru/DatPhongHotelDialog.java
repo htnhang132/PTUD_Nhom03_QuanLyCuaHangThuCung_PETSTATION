@@ -1,15 +1,20 @@
 package com.petstation.gui.luutru;
 
 import com.petstation.dto.HotelDTO;
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgayGio;
+import com.petstation.gui.khachhang.DanhMucKhachHangPanel;
+import com.petstation.gui.khachhang.DanhMucThuCungPanel;
 import com.petstation.model.chung.TrangThaiHopDong;
 import com.petstation.model.chung.TrangThaiPhongHotel;
+import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.NghiepVuService;
+import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.luutru.LuuTruService;
 import com.petstation.util.DinhDang;
 
@@ -40,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -49,8 +55,15 @@ public final class DatPhongHotelDialog {
     private final LuuTruService luuTruService = new LuuTruService();
     private final String maHopDong;
     private final JDialog hopThoai;
+    private final JTextField oTimKhach = new JTextField(12);
+    private final JComboBox<BieuMauTruong.LuaChon> cboKhachHang = new JComboBox<>();
+    private final NutDinhDang btnThemKhach = new NutDinhDang("+ Khách", NutDinhDang.KieuNut.PHU);
     private final JComboBox<BieuMauTruong.LuaChon> cboThuCung;
+    private final NutDinhDang btnThemThuCung =
+            new NutDinhDang("+ Thú cưng", NutDinhDang.KieuNut.PHU);
     private final JComboBox<BieuMauTruong.LuaChon> cboPhong;
+    private List<BieuMauTruong.LuaChon> tatCaKhachHang = List.of();
+    private List<Object[]> tatCaThuCung = List.of();
     private final BoChonNgayGio spNgayVao;
     private final BoChonNgayGio spNgayRa;
     private final JTextArea oGhiChu = new JTextArea(3, 24);
@@ -68,18 +81,32 @@ public final class DatPhongHotelDialog {
     private String ketQua;
 
     private static final class DuLieuKhoiTao {
-        final List<BieuMauTruong.LuaChon> thuCung;
+        final List<BieuMauTruong.LuaChon> khachHang;
+        final List<Object[]> thuCung;
         final List<BieuMauTruong.LuaChon> phong;
         final HotelDTO.ThongTinDatPhong thongTinSua;
 
         DuLieuKhoiTao(
-                List<BieuMauTruong.LuaChon> thuCung,
+                List<BieuMauTruong.LuaChon> khachHang,
+                List<Object[]> thuCung,
                 List<BieuMauTruong.LuaChon> phong,
                 HotelDTO.ThongTinDatPhong thongTinSua) {
+            this.khachHang = khachHang;
             this.thuCung = thuCung;
             this.phong = phong;
             this.thongTinSua = thongTinSua;
         }
+    }
+
+    private static List<BieuMauTruong.LuaChon> taiDanhSachKhach() {
+        return DanhMucService.macDinh().layKhachHang().stream()
+                .filter(k -> "Đang hoạt động".equals(k[8]))
+                .map(
+                        k ->
+                                new BieuMauTruong.LuaChon(
+                                        String.valueOf(k[0]),
+                                        k[0] + " — " + k[1] + " (" + k[2] + ")"))
+                .toList();
     }
 
     private static String dinhDangTenPhong(String raw, String maTrangThai) {
@@ -125,6 +152,8 @@ public final class DatPhongHotelDialog {
                         SwingUtilities.getWindowAncestor(parent),
                         this.maHopDong == null ? "Đặt phòng Pet Hotel" : "Sửa đặt phòng Pet Hotel",
                         Dialog.ModalityType.APPLICATION_MODAL);
+        oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
+        oTimKhach.setPreferredSize(new Dimension(130, 32));
         cboThuCung = new JComboBox<>();
         cboPhong = new JComboBox<>();
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
@@ -133,13 +162,17 @@ public final class DatPhongHotelDialog {
         btnLuu.setEnabled(false);
         nhanTrangThai.setText("Đang tải dữ liệu phòng và thú cưng...");
         taoGiaoDien();
+        CoSoPanel.themBoLangNgheTaiLieu(oTimKhach, () -> locKhachHang(oTimKhach.getText()));
+        cboKhachHang.addActionListener(e -> capNhatDanhSachThuCung());
+        btnThemKhach.addActionListener(e -> xuLyThemKhachNhanh());
+        btnThemThuCung.addActionListener(e -> xuLyThemThuCungNhanh());
         cboThuCung.addActionListener(e -> capNhatDuKien());
         cboPhong.addActionListener(e -> capNhatDuKien());
         spNgayVao.addChangeListener(this::capNhatDuKien);
         spNgayRa.addChangeListener(this::capNhatDuKien);
         hopThoai.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        hopThoai.setSize(680, 590);
-        hopThoai.setMinimumSize(new Dimension(620, 530));
+        hopThoai.setSize(700, 645);
+        hopThoai.setMinimumSize(new Dimension(640, 580));
         HopThoai.chuanHoaCuaSo(hopThoai, hopThoai.getOwner());
         taiDuLieuBanDau(maPhongMacDinh);
     }
@@ -149,11 +182,9 @@ public final class DatPhongHotelDialog {
                 hopThoai,
                 () -> true,
                 () -> {
+                    List<BieuMauTruong.LuaChon> khach = taiDanhSachKhach();
+                    List<Object[]> thu = DanhMucService.macDinh().layThuCung();
                     NghiepVuService nghiepVuService = new NghiepVuService();
-                    List<BieuMauTruong.LuaChon> pets =
-                            nghiepVuService.layLuaChonThuCung().stream()
-                                    .map(d -> new BieuMauTruong.LuaChon(d.giaTri(), d.nhan()))
-                                    .toList();
                     Map<String, String> trangThaiPhong = luuTruService.layTrangThaiTatCaPhong();
                     List<BieuMauTruong.LuaChon> rooms =
                             nghiepVuService.layLuaChonPhong().stream()
@@ -168,7 +199,7 @@ public final class DatPhongHotelDialog {
                                     .toList();
                     HotelDTO.ThongTinDatPhong thongTin =
                             maHopDong != null ? luuTruService.layThongTinChinhSua(maHopDong) : null;
-                    return new DuLieuKhoiTao(pets, rooms, thongTin);
+                    return new DuLieuKhoiTao(khach, thu, rooms, thongTin);
                 },
                 duLieu -> apDungDuLieuBanDau(duLieu, maPhongMacDinh),
                 ex -> {
@@ -179,19 +210,27 @@ public final class DatPhongHotelDialog {
     }
 
     private void apDungDuLieuBanDau(DuLieuKhoiTao duLieu, String maPhongMacDinh) {
-        if (duLieu.thuCung.isEmpty() && maHopDong == null) {
-            HopThoai.hienThiCanhBao(hopThoai, "Chưa có thú cưng đang hoạt động để đặt lưu trú.");
-            hopThoai.dispose();
-            return;
-        }
         if (duLieu.phong.isEmpty() && maHopDong == null) {
             HopThoai.hienThiCanhBao(hopThoai, "Không có phòng đang sẵn sàng nhận đặt chỗ.");
             hopThoai.dispose();
             return;
         }
-        duLieu.thuCung.forEach(cboThuCung::addItem);
+        tatCaKhachHang = duLieu.khachHang;
+        tatCaThuCung = duLieu.thuCung;
         duLieu.phong.forEach(cboPhong::addItem);
+        locKhachHang(oTimKhach.getText());
         if (duLieu.thongTinSua != null) {
+            String maThuCu =
+                    duLieu.thongTinSua.getThuCung() != null
+                            ? duLieu.thongTinSua.getThuCung().getMaThuCung()
+                            : "";
+            if (maThuCu != null && !maThuCu.isBlank()) {
+                tatCaThuCung.stream()
+                        .filter(t -> maThuCu.equals(String.valueOf(t[0])))
+                        .findFirst()
+                        .ifPresent(
+                                t -> chonGiaTri(cboKhachHang, DanhMucService.layMaTuLuaChon(t[8])));
+            }
             apDungDuLieuSua(duLieu.thongTinSua);
         } else {
             chonGiaTri(cboPhong, maPhongMacDinh);
@@ -200,6 +239,101 @@ public final class DatPhongHotelDialog {
         }
         dangTaiDuLieu = false;
         capNhatDuKien();
+    }
+
+    private void locKhachHang(String tuKhoa) {
+        String k = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+        BieuMauTruong.LuaChon dangChon = (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
+        cboKhachHang.removeAllItems();
+        List<BieuMauTruong.LuaChon> hopLe =
+                tatCaKhachHang.stream()
+                        .filter(item -> k.isEmpty() || item.nhan().toLowerCase().contains(k))
+                        .toList();
+        for (var khach : hopLe) {
+            cboKhachHang.addItem(khach);
+        }
+        if (dangChon != null) {
+            chonGiaTri(cboKhachHang, dangChon.giaTri());
+        }
+        if (cboKhachHang.getSelectedIndex() < 0 && !hopLe.isEmpty()) {
+            cboKhachHang.setSelectedIndex(0);
+        }
+        capNhatDanhSachThuCung();
+    }
+
+    private void capNhatDanhSachThuCung() {
+        cboThuCung.removeAllItems();
+        BieuMauTruong.LuaChon khachDangChon =
+                (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
+        if (khachDangChon == null) {
+            btnThemThuCung.setEnabled(false);
+            return;
+        }
+        btnThemThuCung.setEnabled(true);
+        String maKhach = khachDangChon.giaTri();
+        var dsThu =
+                tatCaThuCung.stream()
+                        .filter(
+                                t ->
+                                        "Đang hoạt động".equals(t[13])
+                                                && maKhach.equals(
+                                                        DanhMucService.layMaTuLuaChon(t[8])))
+                        .map(
+                                t ->
+                                        new BieuMauTruong.LuaChon(
+                                                String.valueOf(t[0]),
+                                                t[0] + " — " + t[1] + " (" + t[2] + ")"))
+                        .toList();
+        if (dsThu.isEmpty()) {
+            cboThuCung.addItem(
+                    new BieuMauTruong.LuaChon("", "(Khách chưa có thú cưng - Bấm + Thú cưng)"));
+        } else {
+            for (var thu : dsThu) {
+                cboThuCung.addItem(thu);
+            }
+        }
+        capNhatDuKien();
+    }
+
+    private void xuLyThemKhachNhanh() {
+        Object[] khachMoi = DanhMucKhachHangPanel.moThem(hopThoai, "");
+        if (khachMoi == null) return;
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        TacVuNen.chayCoPhien(
+                phien,
+                hopThoai::isDisplayable,
+                DatPhongHotelDialog::taiDanhSachKhach,
+                null,
+                dsKhach -> {
+                    tatCaKhachHang = dsKhach;
+                    oTimKhach.setText("");
+                    locKhachHang("");
+                    chonGiaTri(cboKhachHang, String.valueOf(khachMoi[0]));
+                },
+                ex -> HopThoai.hienThiCanhBao(hopThoai, TacVuNen.thongDiepLoi(ex)));
+    }
+
+    private void xuLyThemThuCungNhanh() {
+        BieuMauTruong.LuaChon khachDangChon =
+                (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
+        if (khachDangChon == null || khachDangChon.giaTri().isBlank()) {
+            HopThoai.hienThiCanhBao(hopThoai, "Vui lòng chọn khách hàng trước khi thêm thú cưng.");
+            return;
+        }
+        Object[] thuMoi = DanhMucThuCungPanel.moThem(hopThoai, khachDangChon.giaTri());
+        if (thuMoi == null) return;
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        TacVuNen.chayCoPhien(
+                phien,
+                hopThoai::isDisplayable,
+                () -> DanhMucService.macDinh().layThuCung(),
+                null,
+                dsThu -> {
+                    tatCaThuCung = dsThu;
+                    capNhatDanhSachThuCung();
+                    chonGiaTri(cboThuCung, String.valueOf(thuMoi[0]));
+                },
+                ex -> HopThoai.hienThiCanhBao(hopThoai, TacVuNen.thongDiepLoi(ex)));
     }
 
     public static String mo(Component parent, String maHopDong, String maPhongMacDinh) {
@@ -230,7 +364,17 @@ public final class DatPhongHotelDialog {
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.anchor = GridBagConstraints.WEST;
         int dong = 0;
-        themDong(form, gc, dong++, "Thú cưng *", cboThuCung);
+        JPanel khungKhach = new JPanel(new BorderLayout(6, 0));
+        khungKhach.setOpaque(false);
+        khungKhach.add(oTimKhach, BorderLayout.WEST);
+        khungKhach.add(cboKhachHang, BorderLayout.CENTER);
+        khungKhach.add(btnThemKhach, BorderLayout.EAST);
+        themDong(form, gc, dong++, "Khách hàng *", khungKhach);
+        JPanel khungThuCung = new JPanel(new BorderLayout(6, 0));
+        khungThuCung.setOpaque(false);
+        khungThuCung.add(cboThuCung, BorderLayout.CENTER);
+        khungThuCung.add(btnThemThuCung, BorderLayout.EAST);
+        themDong(form, gc, dong++, "Thú cưng *", khungThuCung);
         themDong(form, gc, dong++, "Phòng *", cboPhong);
         themDong(form, gc, dong++, "Ngày/giờ nhận phòng *", spNgayVao);
         themDong(form, gc, dong++, "Ngày/giờ trả phòng *", spNgayRa);
@@ -408,6 +552,10 @@ public final class DatPhongHotelDialog {
         if (cheDoGiaHan) {
             hopThoai.setTitle("Gia hạn / Đổi ngày trả Pet Hotel");
             nhanTieuDeHopThoai.setText("GIA HẠN / ĐỔI NGÀY TRẢ PHÒNG");
+            oTimKhach.setEnabled(false);
+            cboKhachHang.setEnabled(false);
+            btnThemKhach.setEnabled(false);
+            btnThemThuCung.setEnabled(false);
             cboThuCung.setEnabled(false);
             cboPhong.setEnabled(false);
             spNgayVao.setEnabled(false);

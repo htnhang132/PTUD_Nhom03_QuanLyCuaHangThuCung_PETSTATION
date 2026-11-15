@@ -237,6 +237,17 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
     }
 
     @Override
+    public int capNhatDanhSachDichVuSpa(String maPhieu, String moTaMoi, long donGiaMoi) {
+        return ThaoTacSQL.capNhat(
+                "UPDATE phieu_tiep_nhan_spa SET mo_ta_dich_vu=?, don_gia=?, tong_tien=? *"
+                        + " COALESCE(NULLIF(so_luong,0),1) WHERE ma_phieu = ?",
+                moTaMoi,
+                donGiaMoi,
+                donGiaMoi,
+                maPhieu);
+    }
+
+    @Override
     public int tinhLaiTongPhieuSpa(String maPhieu) {
         return ThaoTacSQL.capNhat(
                 "UPDATE phieu_tiep_nhan_spa SET tong_tien=don_gia*COALESCE(NULLIF(so_luong,0),1)"
@@ -417,7 +428,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
                 """
 SELECT t.ma_phieu AS ma_khoa, t.ma_phieu, k.ma_khach_hang, k.ho_ten, p.ma_thu_cung, p.ten,
        t.can_nang_thuc_te, COALESCE(n.ma_nhan_vien, N''), COALESCE(n.ho_ten, N''),
-       t.tong_tien, t.trang_thai, t.tao_luc
+       t.tong_tien, t.trang_thai, t.tao_luc, COALESCE(k.so_dien_thoai, '')
 FROM phieu_tiep_nhan_spa t
 JOIN thu_cung p ON p.ma_thu_cung = t.ma_thu_cung
 JOIN khach_hang k ON k.ma_khach_hang = p.ma_khach_hang
@@ -451,6 +462,7 @@ WHERE 1 = 1
             phieu.setTaoLuc(DuLieu.chuyenLocalDateTime(r[11]));
             KhachHang kh = new KhachHang(DuLieu.chuyenThanhChuoi(r[2]));
             kh.setHoTen(DuLieu.chuyenThanhChuoi(r[3]));
+            kh.setSoDienThoai(DuLieu.chuyenThanhChuoi(r[12]));
             ThuCung tc = new ThuCung(DuLieu.chuyenThanhChuoi(r[4]));
             tc.setTen(DuLieu.chuyenThanhChuoi(r[5]));
             String maNv = DuLieu.chuyenThanhChuoi(r[7]);

@@ -86,18 +86,7 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                     NhatKyHeThongService.macDinh()
                             .ghiNhatKy("Đặt lại mật khẩu", "Tài khoản " + tenTk);
                 },
-                () ->
-                        HopThoai.hienThiThongTin(
-                                cha,
-                                "Đã đặt lại mật khẩu cho "
-                                        + tenTk
-                                        + ".\n"
-                                        + "Mật khẩu tạm của "
-                                        + tenTk
-                                        + ": "
-                                        + tam
-                                        + "\n"
-                                        + "Tài khoản phải đổi mật khẩu ở lần đăng nhập kế tiếp."));
+                () -> HopThoai.hienThiMatKhauTam(cha, tenTk, tam));
         return null;
     }
 
@@ -107,6 +96,7 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Nhân viên", Kieu.HOP_CHON)
                         .batBuoc()
                         .kiemTraDuyNhat()
+                        .coTheTimNhanh()
                         .layDong(() -> DanhMucService.macDinh().layLuaChonNhanVien()),
                 TruongDuLieu.tao("Vai trò", Kieu.HOP_CHON).batBuoc().datLuaChon(layTenCacVaiTro()),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON).datLuaChon("Hoạt động", "Đã khóa"),

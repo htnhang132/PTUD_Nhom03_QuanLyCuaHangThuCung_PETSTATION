@@ -246,14 +246,17 @@ public final class KiemKeService {
 
     public void duyetVaCanBangKho(String maBienBan) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.XU_LY_PHE_DUYET);
+        String maNguoiDuyet = PhienDangNhapService.macDinh().layMaNhanVien();
         QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
                             apDungKiemKe(maBienBan);
+                            kiemKeDAO.dongBoYeuCauPheDuyetDaDuyet(maBienBan, maNguoiDuyet);
                             NhatKyHeThongService.macDinh()
                                     .ghiNhatKy("Cân bằng kho kiểm kê", "Biên bản " + maBienBan);
                             return null;
                         });
+        PheDuyetService.thongBaoCapNhatNgoai("DUYET_KIEM_KE:" + maBienBan);
     }
 
     public void apDungKiemKe(String maBienBan) {

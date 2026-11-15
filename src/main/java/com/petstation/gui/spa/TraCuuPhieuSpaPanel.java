@@ -42,12 +42,7 @@ public final class TraCuuPhieuSpaPanel extends NghiepVuSpaPanel {
     private final JComboBox<String> cboTrangThai =
             new JComboBox<>(
                     new String[] {
-                        "Tất cả trạng thái",
-                        "Tiếp nhận",
-                        "Đang làm",
-                        "Hoàn tất",
-                        "Đã thanh toán",
-                        "Đã hủy"
+                        "Tất cả", "Tiếp nhận", "Đang làm", "Hoàn tất", "Đã thanh toán", "Đã hủy"
                     });
 
     private static final String[] MA_TRANG_THAI = {

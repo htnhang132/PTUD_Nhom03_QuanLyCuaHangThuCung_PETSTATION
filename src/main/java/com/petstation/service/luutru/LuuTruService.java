@@ -19,6 +19,7 @@ import com.petstation.model.chung.VaiTro;
 import com.petstation.model.khachhang.ThuCung;
 import com.petstation.model.luutru.HopDongLuuTru;
 import com.petstation.model.luutru.PhongHotel;
+import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.hethong.CaiDatService;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
@@ -225,6 +226,7 @@ public final class LuuTruService {
                                     .ghiNhatKy("Thu cọc Hotel", maHopDong + " / " + soTien);
                             return null;
                         });
+        CaThuNganService.macDinh().thongBaoThayDoi();
     }
 
     public void dieuChinhCoc(String maHopDong, long muc, String lyDo) {
@@ -624,6 +626,21 @@ public final class LuuTruService {
                                 throw new IllegalStateException("Chỉ áp dụng cho phòng đang dọn.");
                             NhatKyHeThongService.macDinh()
                                     .ghiNhatKy("Cập nhật phòng", "Hoàn thành dọn phòng");
+                            return null;
+                        });
+    }
+
+    public void hoanTatBaoTriPhong(String maPhong) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
+        QuanLyGiaoDich.macDinh()
+                .thucThi(
+                        ketNoi -> {
+                            if (luuTruDAO.hoanTatBaoTriPhong(maPhong) != 1)
+                                throw new IllegalStateException(
+                                        "Chỉ áp dụng cho phòng đang bảo trì.");
+                            NhatKyHeThongService.macDinh()
+                                    .ghiNhatKy(
+                                            "Cập nhật phòng", "Hoàn tất bảo trì phòng " + maPhong);
                             return null;
                         });
     }

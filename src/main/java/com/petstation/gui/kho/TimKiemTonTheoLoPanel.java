@@ -3,6 +3,7 @@ package com.petstation.gui.kho;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BangNghiepVuPanel;
 import com.petstation.gui.chung.MauUngDung;
+import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
@@ -10,6 +11,7 @@ import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.TrangThaiLoHang;
 import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.hethong.CaiDatService;
+import com.petstation.service.kho.NhapXuatKhoService;
 import com.petstation.util.DinhDang;
 
 import java.awt.Component;
@@ -64,6 +66,35 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
         } else {
             layKhungThaoTac().add(cboTrangThai);
         }
+        NutDinhDang btnXuatHuyLo =
+                themNut(
+                        layKhungThaoTac(),
+                        "Xuất hủy lô này",
+                        NutDinhDang.KieuNut.NGUY_HIEM,
+                        () ->
+                                NghiepVuKhoPanel.moHopThoaiGhiHuy(
+                                        this,
+                                        layNghiepVuService(),
+                                        new NhapXuatKhoService(),
+                                        layDongChon(),
+                                        this::lamMoi));
+        Runnable capNhatNutHuy =
+                () -> {
+                    int r = layBangDuLieu().getSelectedRow();
+                    if (r < 0) {
+                        btnXuatHuyLo.setEnabled(false);
+                        return;
+                    }
+                    int dm = layBangDuLieu().convertRowIndexToModel(r);
+                    btnXuatHuyLo.setEnabled(docSoNguyen(layMoHinh().getValueAt(dm, 5)) > 0);
+                };
+        layBangDuLieu()
+                .getSelectionModel()
+                .addListSelectionListener(
+                        e -> {
+                            if (!e.getValueIsAdjusting()) capNhatNutHuy.run();
+                        });
+        capNhatNutHuy.run();
         doiTenCotMaSanPham();
         cauHinhToMauCanhBaoHan();
         thayBoLangNgheTimKiem(this::loc);

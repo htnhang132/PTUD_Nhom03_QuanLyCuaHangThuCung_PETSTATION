@@ -27,6 +27,7 @@ public final class ChiBaoBuoc extends JComponent {
         this.cacBuoc = List.copyOf(cacBuoc);
         setPreferredSize(new Dimension(0, 44));
         setOpaque(false);
+        setToolTipText("");
         addMouseListener(
                 new MouseAdapter() {
                     @Override
@@ -56,6 +57,12 @@ public final class ChiBaoBuoc extends JComponent {
         int o = getWidth() / cacBuoc.size();
         int chiSo = toaDoNgang / Math.max(o, 1);
         return chiSo >= 0 && chiSo < cacBuoc.size() ? chiSo : -1;
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent suKien) {
+        int chiSo = layChiSoTai(suKien.getX());
+        return chiSo >= 0 && chiSo < cacBuoc.size() ? cacBuoc.get(chiSo) : null;
     }
 
     @Override

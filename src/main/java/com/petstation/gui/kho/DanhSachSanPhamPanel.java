@@ -56,9 +56,10 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                         return "Sản phẩm đã có mã vạch: " + barcodeHienTai;
                                     }
                                     String maMoi = SanPhamService.taoBarcodeEan13(ma);
-                                    DanhMucService.macDinh()
-                                            .xacNhanTonTai("san_pham", "ma_san_pham", ma);
-                                    DanhMucService.macDinh().capNhatBarcode(ma, maMoi);
+                                    if (DanhMucService.macDinh()
+                                            .tonTai("san_pham", "ma_san_pham", ma)) {
+                                        DanhMucService.macDinh().capNhatBarcode(ma, maMoi);
+                                    }
                                     if (dong.length > 13) dong[13] = maMoi;
                                     return "Đã cấp mã vạch EAN-13 mới: " + maMoi;
                                 })
@@ -81,11 +82,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
     }
 
     private static TruongDuLieu taoTruongGia() {
-        var gia = TruongDuLieu.tao("Giá bán", Kieu.TIEN_TE).batBuoc().datMacDinh("0");
-        if (!PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.DUYET_GIA)) {
-            gia.chiDocKhiSua();
-        }
-        return gia;
+        return TruongDuLieu.tao("Giá bán", Kieu.TIEN_TE).batBuoc().datMacDinh("0");
     }
 
     private static List<TruongDuLieu> taoCacTruong() {

@@ -18,6 +18,8 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -55,6 +57,7 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
                 NutDinhDang.KieuNut.TRONG_SUOT,
                 this::laySpaChiTiet);
         themNut(layKhungThaoTac(), "Thêm dịch vụ", NutDinhDang.KieuNut.PHU, this::themDichVu);
+        themNut(layKhungThaoTac(), "Xóa dịch vụ", NutDinhDang.KieuNut.NGUY_HIEM, this::xoaDichVu);
         themNut(
                 layKhungThaoTac(),
                 "Bắt đầu làm",
@@ -104,14 +107,17 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
                             "Bắt đầu làm",
                             () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())));
             popup.add(taoMucMenu("Thêm dịch vụ", this::themDichVu));
+            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         } else if (TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThai)) {
             popup.add(
                     taoMucMenu(
                             "Đánh dấu hoàn thành",
                             () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.HOAN_TAT.maDB())));
             popup.add(taoMucMenu("Thêm dịch vụ", this::themDichVu));
+            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         } else if (TrangThaiPhieuSpa.HOAN_TAT.maDB().equals(trangThai)) {
             popup.add(taoMucMenu("Thanh toán (POS)", () -> quyetToan("SPA")));
+            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         }
         if (popup.getComponentCount() > 0) popup.addSeparator();
         popup.add(taoMucMenu("Chi tiết dịch vụ", this::laySpaChiTiet));
@@ -225,6 +231,15 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         bangPhieuTreo = layBang(scr);
         bangPhieuTreo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bangPhieuTreo.removeColumn(bangPhieuTreo.getColumnModel().getColumn(0));
+        bangPhieuTreo.addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (e.getClickCount() == 2 && bangPhieuTreo.getSelectedRow() >= 0) {
+                            moLaiPhieuTreoChon();
+                        }
+                    }
+                });
         JPanel khungThaoTacTreo = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         khungThaoTacTreo.setOpaque(false);
         NutDinhDang btnMoLai =

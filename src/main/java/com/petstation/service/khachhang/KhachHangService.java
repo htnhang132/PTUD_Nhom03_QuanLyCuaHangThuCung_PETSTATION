@@ -51,6 +51,10 @@ public final class KhachHangService {
         return danhMucService.layLuaChonKhachHang();
     }
 
+    public List<String> layLuaChonKhachHangCoSdt() {
+        return danhMucService.layLuaChonKhachHangCoSdt();
+    }
+
     public List<KhachHang> timTatCa() {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_KHACH_HANG);
         if (khachHangDAO != null) {

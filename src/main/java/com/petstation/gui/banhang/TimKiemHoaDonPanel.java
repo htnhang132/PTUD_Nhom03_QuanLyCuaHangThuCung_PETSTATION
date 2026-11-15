@@ -14,6 +14,7 @@ import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.service.banhang.BanHangService;
+import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.pheduyet.PheDuyetService;
 import com.petstation.util.DinhDang;
 
@@ -50,6 +51,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
@@ -64,7 +66,16 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private final JLabel nhanTrangThaiHoaDon = new JLabel("Chọn hóa đơn bên trái để xem trước");
     private NutDinhDang btnInLai;
     private NutDinhDang btnXuatPdf;
+    private NutDinhDang btnDoiHang;
     private NutDinhDang btnYeuCauPheDuyet;
+    private final BoLangNgheSuKien<String> boLangNghePheDuyet =
+            suKien -> {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    taiLaiNen();
+                } else {
+                    SwingUtilities.invokeLater(this::taiLaiNen);
+                }
+            };
 
     private final BoChonNgay oTuNgay;
     private final BoChonNgay oDenNgay;
@@ -137,7 +148,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrHoaDon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         khungChiTietPhai.add(scrHoaDon, BorderLayout.CENTER);
-        JPanel khungThaoTacHoaDon = new JPanel(new GridLayout(3, 1, 0, 8));
+        JPanel khungThaoTacHoaDon = new JPanel(new GridLayout(4, 1, 0, 8));
         khungThaoTacHoaDon.setOpaque(false);
         khungThaoTacHoaDon.setBorder(new EmptyBorder(6, 0, 0, 0));
         btnInLai =
@@ -146,6 +157,19 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         btnXuatPdf =
                 taoNutXemTruocHoaDon(
                         "Xuất file PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
+        btnDoiHang =
+                taoNutXemTruocHoaDon(
+                        "Đổi hàng từ HĐ này",
+                        NutDinhDang.KieuNut.PHU,
+                        e -> {
+                            if (bienLaiDangChon != null) {
+                                DoiPhuKienDialog.moVoiHoaDon(
+                                        this,
+                                        layBanHang(),
+                                        layDieuHuong(),
+                                        bienLaiDangChon.getSoHoaDon());
+                            }
+                        });
         btnYeuCauPheDuyet =
                 taoNutXemTruocHoaDon(
                         "Yêu cầu hủy / sửa HĐ",
@@ -153,9 +177,22 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         e -> xuLyYeuCauHuySua());
         khungThaoTacHoaDon.add(btnInLai);
         khungThaoTacHoaDon.add(btnXuatPdf);
+        khungThaoTacHoaDon.add(btnDoiHang);
         khungThaoTacHoaDon.add(btnYeuCauPheDuyet);
         khungChiTietPhai.add(khungThaoTacHoaDon, BorderLayout.SOUTH);
         return khungChiTietPhai;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        PheDuyetService.themBoLangNghe(boLangNghePheDuyet);
+    }
+
+    @Override
+    public void removeNotify() {
+        PheDuyetService.xoaBoLangNghe(boLangNghePheDuyet);
+        super.removeNotify();
     }
 
     private static NutDinhDang taoNutXemTruocHoaDon(
@@ -277,6 +314,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
         btnXuatPdf.setEnabled(false);
+        btnDoiHang.setEnabled(false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("");
     }
@@ -297,6 +335,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
         btnXuatPdf.setEnabled(false);
+        btnDoiHang.setEnabled(false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("Đang tải hóa đơn " + soHoaDon + "...");
         TacVuNen.chayCoPhien(
@@ -317,7 +356,9 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                             "Hóa đơn: " + soHoaDon + " (" + trangThaiHienThi + ")");
                     btnInLai.setEnabled(duLieu.chiTiet != null);
                     btnXuatPdf.setEnabled(duLieu.chiTiet != null);
-                    btnYeuCauPheDuyet.setEnabled(!daKhoaPheDuyet(trangThai, trangThaiHienThi));
+                    boolean duocThaoTacHd = !daKhoaPheDuyet(trangThai, trangThaiHienThi);
+                    btnDoiHang.setEnabled(duLieu.bienLai != null && duocThaoTacHd);
+                    btnYeuCauPheDuyet.setEnabled(duocThaoTacHd);
                 },
                 ex -> nhanTrangThaiHoaDon.setText("Lỗi nạp hóa đơn: " + ex.getMessage()));
     }

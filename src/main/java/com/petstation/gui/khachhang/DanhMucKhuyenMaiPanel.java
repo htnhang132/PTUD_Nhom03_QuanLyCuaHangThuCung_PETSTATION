@@ -30,7 +30,7 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                         .chuanBi(
                                 !SwingUtilities.isEventDispatchThread()
                                         || !DieuKienTaiDuLieu.coTheTachLuong()));
-        ganHauToTheoTruong(2, 4, loai -> "Giảm %".equals(loai) ? "%" : "đ");
+        ganHauToTheoTruong(2, 4, loai -> "Giảm %".equals(loai) ? "%" : "₫");
     }
 
     // 2. CẤU HÌNH BỘ LỌC, TÌM KIẾM & KIỂM TRA DỮ LIỆU HỢP LỆ (VALIDATION)

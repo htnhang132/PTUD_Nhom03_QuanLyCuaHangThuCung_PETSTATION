@@ -833,9 +833,7 @@ public class LichTuanPanel extends CoSoPanel {
         oTimKiemNhanh.setToolTipText("Tìm tên hoặc mã nhân viên...");
         JComboBox<String> cboRole =
                 new JComboBox<>(
-                        new String[] {
-                            "Tất cả chức vụ", "Bán hàng", "Spa", "Kho", "Cửa hàng trưởng"
-                        });
+                        new String[] {"Tất cả", "Bán hàng", "Spa", "Kho", "Cửa hàng trưởng"});
         Runnable filterAction =
                 () ->
                         apDungLocPhanCa(
@@ -865,7 +863,7 @@ public class LichTuanPanel extends CoSoPanel {
                         boolean matchText =
                                 text.isEmpty() || ma.contains(text) || ten.contains(text);
                         boolean matchRole =
-                                "Tất cả chức vụ".equals(role)
+                                "Tất cả".equals(role)
                                         || cv.toLowerCase().contains(role.toLowerCase());
                         return matchText && matchRole;
                     }

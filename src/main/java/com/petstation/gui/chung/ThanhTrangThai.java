@@ -5,8 +5,11 @@ import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.util.DinhDang;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalTime;
 
 import javax.swing.BorderFactory;
@@ -34,6 +37,11 @@ public final class ThanhTrangThai extends JPanel {
     private final Timer dongHoTimer;
 
     public ThanhTrangThai(PhienDangNhap phienDangNhap, CaThuNganService caLamViec) {
+        this(phienDangNhap, caLamViec, null);
+    }
+
+    public ThanhTrangThai(
+            PhienDangNhap phienDangNhap, CaThuNganService caLamViec, Runnable khiBamCa) {
         this.caLamViec = caLamViec;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setPreferredSize(new Dimension(0, 26));
@@ -45,6 +53,27 @@ public final class ThanhTrangThai extends JPanel {
         add(layPhanCach());
         add(nhanNhanCaLamViec);
         nhanNhanCaLamViec.setText("Ca hiện tại: " + caLamViec.layNhan());
+        if (khiBamCa != null) {
+            nhanNhanCaLamViec.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            nhanNhanCaLamViec.setToolTipText("Bấm để mở màn hình Ca thu ngân");
+            nhanNhanCaLamViec.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseEntered(MouseEvent e) {
+                            nhanNhanCaLamViec.setForeground(MauUngDung.DO_THUONG_HIEU);
+                        }
+
+                        @Override
+                        public void mouseExited(MouseEvent e) {
+                            nhanNhanCaLamViec.setForeground(MauUngDung.VAN_BAN_TOI);
+                        }
+
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            khiBamCa.run();
+                        }
+                    });
+        }
         boLangNgheCa =
                 ca -> {
                     Runnable capNhat =

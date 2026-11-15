@@ -144,6 +144,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                 BorderLayout.NORTH);
         khungCacThaoTac = new ThanhDanhSach();
         oTimKiem = taoOTimKiem("Tìm trong danh sách...");
+        oTimKiem.setName("timKiemNghiepVu");
         ganPhimTimKiem(oTimKiem);
         khungCacThaoTac.add(oTimKiem);
         khungTren.add(khungCacThaoTac, BorderLayout.CENTER);
@@ -209,7 +210,11 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         bangBang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
-                            if (e.getValueIsAdjusting() || bangBang.getSelectedRow() < 0) return;
+                            if (e.getValueIsAdjusting()) return;
+                            if (bangBang.getSelectedRow() < 0) {
+                                capNhatThaoTac();
+                                return;
+                            }
                             String ma = layDongChon();
                             switch (kieuNghiepVu) {
                                 case LICH_HEN -> banHang.getQuyTrinh().chonLichHen(ma);
@@ -360,7 +365,10 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         for (int dong = 0; giu != null && !giu.isBlank() && dong < moHinh.getRowCount(); dong++)
             if (giu.equals(String.valueOf(moHinh.getValueAt(dong, 0)))) {
                 int hienThi = bangBang.convertRowIndexToView(dong);
-                if (hienThi >= 0) bangBang.setRowSelectionInterval(hienThi, hienThi);
+                if (hienThi >= 0) {
+                    bangBang.setRowSelectionInterval(hienThi, hienThi);
+                    bangBang.scrollRectToVisible(bangBang.getCellRect(hienThi, 0, true));
+                }
                 break;
             }
         capNhatThaoTac();

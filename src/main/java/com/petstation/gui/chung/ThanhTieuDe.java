@@ -23,12 +23,15 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 public final class ThanhTieuDe extends JPanel {
     private final JFrame cuaSo;
+
+    private final JLabel nhanBreadcrumb = new JLabel();
 
     private Point keoGoc;
 
@@ -44,14 +47,19 @@ public final class ThanhTieuDe extends JPanel {
         btnThuongHieu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         btnThuongHieu.setForeground(Color.WHITE);
         btnThuongHieu.setHorizontalAlignment(SwingConstants.LEFT);
-        btnThuongHieu.setBorder(new EmptyBorder(0, 10, 0, 10));
+        btnThuongHieu.setBorder(new EmptyBorder(0, 10, 0, 8));
         btnThuongHieu.setOpaque(false);
         btnThuongHieu.setContentAreaFilled(false);
         btnThuongHieu.setFocusPainted(false);
         btnThuongHieu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnThuongHieu.setToolTipText("Về màn hình chính (Alt+Home)");
         btnThuongHieu.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.TONG_QUAN));
-        add(btnThuongHieu, BorderLayout.CENTER);
+        add(btnThuongHieu, BorderLayout.WEST);
+        nhanBreadcrumb.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        nhanBreadcrumb.setForeground(MauUngDung.voiDoTrong(Color.WHITE, 210));
+        nhanBreadcrumb.setHorizontalAlignment(SwingConstants.LEFT);
+        nhanBreadcrumb.setBorder(new EmptyBorder(0, 2, 0, 10));
+        add(nhanBreadcrumb, BorderLayout.CENTER);
         JPanel khungCacControl = new JPanel(new GridLayout(1, 3));
         khungCacControl.setOpaque(false);
         khungCacControl.add(layNutCuaSo("–", suKien -> cuaSo.setState(Frame.ICONIFIED), false));
@@ -79,8 +87,16 @@ public final class ThanhTieuDe extends JPanel {
                 };
         addMouseListener(keoBoXuLy);
         addMouseMotionListener(keoBoXuLy);
-        btnThuongHieu.addMouseListener(keoBoXuLy);
-        btnThuongHieu.addMouseMotionListener(keoBoXuLy);
+        nhanBreadcrumb.addMouseListener(keoBoXuLy);
+        nhanBreadcrumb.addMouseMotionListener(keoBoXuLy);
+    }
+
+    public void datTenManHinh(String tenManHinh) {
+        if (tenManHinh == null || tenManHinh.isBlank()) {
+            nhanBreadcrumb.setText("");
+            return;
+        }
+        nhanBreadcrumb.setText("›  " + tenManHinh);
     }
 
     private JButton layNutCuaSo(String vanBan, ActionListener boLangNghe, boolean dong) {

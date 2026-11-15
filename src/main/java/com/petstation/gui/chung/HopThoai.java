@@ -1,16 +1,25 @@
 package com.petstation.gui.chung;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -239,7 +248,66 @@ public final class HopThoai {
                 cacLuaChon[0]);
     }
 
+    public static void hienThiMatKhauTam(Component cha, String tenTaiKhoan, String matKhauTam) {
+        JPanel noiDung = new JPanel(new BorderLayout(0, 8));
+        noiDung.setOpaque(false);
+        JLabel nhanMoTa =
+                new JLabel(
+                        "<html>Đã cấp / đặt lại mật khẩu tạm cho tài khoản <b>"
+                                + tenTaiKhoan
+                                + "</b>.<br>Tài khoản cần đổi mật khẩu ở lần đăng nhập kế"
+                                + " tiếp.</html>");
+        JTextField oMatKhau = new JTextField(matKhauTam);
+        oMatKhau.setEditable(false);
+        oMatKhau.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
+        oMatKhau.setPreferredSize(new Dimension(240, 34));
+        JButton btnSaoChep = new NutDinhDang("Sao chép", NutDinhDang.KieuNut.CHINH);
+        JLabel nhanTrangThai = new JLabel(" ");
+        nhanTrangThai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        nhanTrangThai.setForeground(MauUngDung.XANH_LA);
+        btnSaoChep.addActionListener(
+                e -> {
+                    Toolkit.getDefaultToolkit()
+                            .getSystemClipboard()
+                            .setContents(new StringSelection(matKhauTam), null);
+                    oMatKhau.selectAll();
+                    nhanTrangThai.setText("Đã sao chép mật khẩu vào bộ nhớ tạm.");
+                });
+        JPanel hangCopy = new JPanel(new BorderLayout(8, 0));
+        hangCopy.setOpaque(false);
+        hangCopy.add(oMatKhau, BorderLayout.CENTER);
+        hangCopy.add(btnSaoChep, BorderLayout.EAST);
+        JPanel phanDuoi = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        phanDuoi.setOpaque(false);
+        phanDuoi.add(nhanTrangThai);
+        noiDung.add(nhanMoTa, BorderLayout.NORTH);
+        noiDung.add(hangCopy, BorderLayout.CENTER);
+        noiDung.add(phanDuoi, BorderLayout.SOUTH);
+        oMatKhau.selectAll();
+        hienThiNoiDung(cha, noiDung, "Mật khẩu tạm");
+    }
+
     private static void hienThi(Component cha, Object thongBao, String tieuDe, int kieu) {
+        if (thongBao instanceof Component) {
+            JOptionPane tuyChon =
+                    new JOptionPane(
+                            thongBao,
+                            kieu,
+                            JOptionPane.DEFAULT_OPTION,
+                            null,
+                            new Object[] {DONG},
+                            DONG);
+            JDialog hopThoai = tuyChon.createDialog(cha, tieuDe);
+            hopThoai.setResizable(true);
+            hopThoai.getRootPane()
+                    .registerKeyboardAction(
+                            e -> hopThoai.dispose(),
+                            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                            JComponent.WHEN_IN_FOCUSED_WINDOW);
+            hopThoai.setVisible(true);
+            hopThoai.dispose();
+            return;
+        }
         JOptionPane.showOptionDialog(
                 cha,
                 thongBao,

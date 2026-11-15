@@ -40,8 +40,8 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai, Runnable diLamMoi) {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 2, 4));
-        setPreferredSize(new Dimension(0, 48));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 2, 1));
+        setPreferredSize(new Dimension(0, 30));
         setBackground(MauUngDung.BE_MAT_XEN_KE);
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN));
         btnNutQuayLai = taoNut("Quay lại", "Alt+Left", BieuTuong.Net.Kieu.QUAY_LAI);
@@ -108,13 +108,13 @@ public final class ThanhCongCuChinh extends JPanel {
         JButton btnNut = taoNut(nhan, phimTat, kieuBieuTuong);
         btnNut.addActionListener(suKien -> kichHoat(thaoTac));
         cacNut.put(thaoTac, btnNut);
-        cacGoiYKhiReChuot.put(thaoTac, nhan + "(" + phimTat + ")");
+        cacGoiYKhiReChuot.put(thaoTac, nhan + " (" + phimTat + ")");
         add(btnNut);
     }
 
     private JButton taoNut(String nhan, String phimTat, BieuTuong.Net.Kieu kieuBieuTuong) {
         JButton btnNut =
-                new JButton(nhan, new BieuTuong.Net(kieuBieuTuong, 20, MauUngDung.NAU)) {
+                new JButton(nhan, new BieuTuong.Net(kieuBieuTuong, 16, MauUngDung.NAU)) {
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
@@ -131,10 +131,11 @@ public final class ThanhCongCuChinh extends JPanel {
                         super.paintComponent(doHoa);
                     }
                 };
+        btnNut.setDisabledIcon(new BieuTuong.Net(kieuBieuTuong, 16, MauUngDung.VIEN));
         btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         btnNut.setForeground(MauUngDung.VAN_BAN_TOI);
         btnNut.setToolTipText(nhan + " (" + phimTat + ")");
-        btnNut.setBorder(new EmptyBorder(5, 8, 5, 8));
+        btnNut.setBorder(new EmptyBorder(3, 8, 3, 8));
         btnNut.setFocusPainted(false);
         btnNut.setRolloverEnabled(true);
         btnNut.setOpaque(false);
@@ -146,7 +147,7 @@ public final class ThanhCongCuChinh extends JPanel {
 
     private JSeparator layDuongPhanCach() {
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);
-        phanCach.setPreferredSize(new Dimension(7, 30));
+        phanCach.setPreferredSize(new Dimension(7, 20));
         phanCach.setForeground(MauUngDung.VIEN);
         return phanCach;
     }

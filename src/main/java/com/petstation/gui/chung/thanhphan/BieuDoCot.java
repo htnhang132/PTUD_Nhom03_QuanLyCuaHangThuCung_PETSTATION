@@ -4,6 +4,7 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.util.DinhDang;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -13,6 +14,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,17 @@ public final class BieuDoCot extends JComponent implements Scrollable {
                     public void mouseClicked(MouseEvent e) {
                         int i = tim(e.getPoint());
                         if (i >= 0) chon.accept(i);
+                    }
+                });
+        addMouseMotionListener(
+                new MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(MouseEvent e) {
+                        setCursor(
+                                Cursor.getPredefinedCursor(
+                                        tim(e.getPoint()) >= 0
+                                                ? Cursor.HAND_CURSOR
+                                                : Cursor.DEFAULT_CURSOR));
                     }
                 });
     }

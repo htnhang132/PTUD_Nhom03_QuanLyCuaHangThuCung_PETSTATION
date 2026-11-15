@@ -300,9 +300,9 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         Font phong = font(7.5f, dam);
         List<Chu> chu = new ArrayList<>();
         double doc = 10;
-        var dongTen = xuongDong(Objects.toString(ten, ""), phong, 68);
+        var dongTen = xuongDong(Objects.toString(ten, ""), phong, 72);
         for (String dong : dongTen) {
-            chu.add(new Chu(12, doc, dong, phong, 0));
+            chu.add(new Chu(11, doc, dong, phong, 0));
             doc += 10;
         }
         String sttAnToan = Objects.toString(stt, "");
@@ -311,13 +311,13 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         String tienAnToan = Objects.toString(tien, "");
         Font fontSl = thuNhoDeVua(slAnToan, phong, 16);
         Font fontSo = phong;
-        while ((rong(giaAnToan, fontSo) > 46 || rong(tienAnToan, fontSo) > 51)
-                && fontSo.getSize2D() > 5.5f) {
+        while ((rong(giaAnToan, fontSo) > 48 || rong(tienAnToan, fontSo) > 52)
+                && fontSo.getSize2D() > 5.25f) {
             fontSo = fontSo.deriveFont(fontSo.getSize2D() - .25f);
         }
         chu.add(new Chu(0, 10, sttAnToan, phong, 0));
-        chu.add(new Chu(91, 10, slAnToan, fontSl, 1));
-        chu.add(new Chu(150, 10, giaAnToan, fontSo, 2));
+        chu.add(new Chu(93, 10, slAnToan, fontSl, 1));
+        chu.add(new Chu(151, 10, giaAnToan, fontSo, 2));
         chu.add(new Chu(RONG_NOI_DUNG, 10, tienAnToan, fontSo, 2));
         khoi.add(new Khoi(Math.max(14, doc - 6), chu, true, false));
     }

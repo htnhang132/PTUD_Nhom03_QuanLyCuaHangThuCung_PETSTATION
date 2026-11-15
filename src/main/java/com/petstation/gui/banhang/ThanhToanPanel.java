@@ -10,6 +10,7 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
+import com.petstation.gui.khachhang.BoChonKhachHang;
 import com.petstation.model.chung.LoaiPhieuDoiTra;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.PhuongThuc;
@@ -32,6 +33,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -96,6 +99,9 @@ public final class ThanhToanPanel extends CoSoPanel {
 
     private final JTextField oDaNhan = BieuMauPanel.layTruongVanBan("");
     private final JPanel khungNhanhCacSoTien = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    private BoChonKhachHang boChonKhach;
+    private long tongTruocDo = -1;
+    private boolean dangCapNhatTuDongDaNhan;
     private final JPanel khungNhapTienMat = new JPanel();
 
     private final JLabel nhanNhanThayDoi = new JLabel("");
@@ -261,6 +267,15 @@ public final class ThanhToanPanel extends CoSoPanel {
                         }
                     }
                 });
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "xacNhanThanhToanF9");
+        am.put(
+                "xacNhanThanhToanF9",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        xacNhanThanhToan(layPhuongThuc() == PhuongThuc.TIEN_MAT);
+                    }
+                });
         lamMoi();
     }
 
@@ -398,7 +413,11 @@ public final class ThanhToanPanel extends CoSoPanel {
         khungNoiDung.setLayout(new BoxLayout(khungNoiDung, BoxLayout.Y_AXIS));
         khungNoiDung.setBorder(new EmptyBorder(8, 10, 8, 10));
         khungNoiDung.add(taoNhomPhuongThuc());
-        khungNoiDung.add(Box.createVerticalStrut(14));
+        khungNoiDung.add(Box.createVerticalStrut(12));
+        boChonKhach = new BoChonKhachHang(banHang, this::khiKhachHangThayDoi);
+        boChonKhach.setAlignmentX(Component.LEFT_ALIGNMENT);
+        khungNoiDung.add(boChonKhach);
+        khungNoiDung.add(Box.createVerticalStrut(12));
         themKhuVucVoucher(khungNoiDung);
         themKhuVucTienMatVaQR(khungNoiDung);
         khungNoiDung.add(Box.createVerticalGlue());
@@ -469,6 +488,22 @@ public final class ThanhToanPanel extends CoSoPanel {
         oDaNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
         oDaNhan.getAccessibleContext().setAccessibleName("Tiền khách đưa");
         themBoLangNgheTaiLieu(oDaNhan, this::kiemTraDauVao);
+        oDaNhan.addFocusListener(
+                new FocusAdapter() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        if (!oDaNhan.getText().isBlank()) {
+                            SwingUtilities.invokeLater(oDaNhan::selectAll);
+                        }
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        if (!oDaNhan.getText().isBlank()) {
+                            oDaNhan.setText(DinhDang.soNguyen(DinhDang.doc(oDaNhan.getText())));
+                        }
+                    }
+                });
         khungNhapTienMat.add(oDaNhan);
         khungNhapTienMat.add(Box.createVerticalStrut(6));
         khungNhanhCacSoTien.setOpaque(false);
@@ -578,6 +613,15 @@ public final class ThanhToanPanel extends CoSoPanel {
                 : btnTheThanhToan.isSelected() ? PhuongThuc.THE_NGAN_HANG : PhuongThuc.TIEN_MAT;
     }
 
+    private void khiKhachHangThayDoi() {
+        capNhatTrangThaiVoucherKhach();
+        if (!oTruongVoucher.getText().isBlank()) {
+            apDungVoucher();
+        } else {
+            lamMoiCacTong();
+        }
+    }
+
     private void capNhatTrangThaiVoucherKhach() {
         boolean coKhachHang =
                 banHang.getMaKhachHang() != null && !banHang.getMaKhachHang().isBlank();
@@ -585,13 +629,13 @@ public final class ThanhToanPanel extends CoSoPanel {
         btnChonVoucher.setToolTipText(
                 coKhachHang
                         ? "Chọn voucher đang sở hữu của khách hàng."
-                        : "Vui lòng chọn khách hàng ở màn hình Lập hóa đơn trước.");
+                        : "Vui lòng chọn khách hàng trước.");
     }
 
     private void chonVoucher() {
         String maKhach = banHang.getMaKhachHang();
         if (maKhach == null || maKhach.isBlank()) {
-            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng ở màn hình Lập hóa đơn trước.");
+            HopThoai.hienThiCanhBao(this, "Cần chọn khách hàng trước.");
             capNhatTrangThaiVoucherKhach();
             return;
         }
@@ -614,9 +658,14 @@ public final class ThanhToanPanel extends CoSoPanel {
                                                             + " — "
                                                             + DinhDang.dinhDang(v.getMenhGia())
                                                             + " — "
-                                                            + v.getTrangThai()
+                                                            + DinhDangBang.tenTrangThai(
+                                                                    v.getTrangThai())
                                                             + " — hạn "
-                                                            + v.getHieuLucDen())
+                                                            + (v.getHieuLucDen() == null
+                                                                    ? ""
+                                                                    : DinhDang.ngay(
+                                                                            v.getHieuLucDen()
+                                                                                    .toLocalDate())))
                                     .toArray(String[]::new);
                     String chon =
                             (String)
@@ -696,6 +745,12 @@ public final class ThanhToanPanel extends CoSoPanel {
         oTruongVoucher.setText(banHang.getMaVoucher());
         boolean doiHang = LoaiPhieuDoiTra.DOI_HANG.maDB().equals(banHang.getKieuNguon());
         dieuKhienVoucher.forEach(c -> c.setEnabled(!doiHang));
+        if (boChonKhach != null) {
+            boChonKhach.setVisible(!doiHang);
+            if (!doiHang) {
+                boChonKhach.dongBo();
+            }
+        }
         if (!doiHang) {
             capNhatTrangThaiVoucherKhach();
         }
@@ -706,9 +761,12 @@ public final class ThanhToanPanel extends CoSoPanel {
             nhanVoucherThongBao.setText("");
         }
         if (!cungDon) {
-            oDaNhan.setText(doiHang && banHang.tinhTong() == 0 ? "0" : "");
+            long tongBanDau = banHang.tinhTong();
+            tongTruocDo = tongBanDau;
+            oDaNhan.setText(DinhDang.soNguyen(tongBanDau));
             btnTienMat.setSelected(true);
         } else if (doiHang && banHang.tinhTong() == 0 && oDaNhan.getText().isBlank()) {
+            tongTruocDo = 0;
             oDaNhan.setText("0");
         }
         dangXuLy = false;
@@ -720,7 +778,14 @@ public final class ThanhToanPanel extends CoSoPanel {
         nhanTamTinh.setText(DinhDang.dinhDang(banHang.tinhTamTinh()));
         long ngayDangXet = banHang.tinhGiamGia();
         nhanGiamGia.setText(ngayDangXet == 0 ? "0₫" : "−" + DinhDang.dinhDang(ngayDangXet));
-        nhanTong.setText(DinhDang.dinhDang(banHang.tinhTong()));
+        long tongMoi = banHang.tinhTong();
+        nhanTong.setText(DinhDang.dinhDang(tongMoi));
+        if (tongMoi != tongTruocDo) {
+            if (oDaNhan.getText().isBlank() || DinhDang.doc(oDaNhan.getText()) == tongTruocDo) {
+                oDaNhan.setText(DinhDang.soNguyen(tongMoi));
+            }
+            tongTruocDo = tongMoi;
+        }
         capNhatQR();
         dungLaiNhanhCacSoTien();
         kiemTraDauVao();
@@ -744,7 +809,7 @@ public final class ThanhToanPanel extends CoSoPanel {
             if (khungNhanhCacSoTien.getComponentCount() > 0) {
                 khungNhanhCacSoTien.add(Box.createHorizontalStrut(8));
             }
-            btnGiaTriSau.addActionListener(suKien -> oDaNhan.setText(String.valueOf(soTien)));
+            btnGiaTriSau.addActionListener(suKien -> oDaNhan.setText(DinhDang.soNguyen(soTien)));
             khungNhanhCacSoTien.add(btnGiaTriSau);
         }
         khungNhanhCacSoTien.revalidate();
@@ -961,6 +1026,10 @@ public final class ThanhToanPanel extends CoSoPanel {
     }
 
     private void xacNhanThanhToan() {
+        xacNhanThanhToan(false);
+    }
+
+    private void xacNhanThanhToan(boolean boQuaXacNhanTienMat) {
         if (dangXuLy || banHang.kiemTraTrong()) return;
         if (!banHang.kiemTraDaNhanTien(layPhuongThuc())) {
             HopThoai.hienThiCanhBao(
@@ -997,7 +1066,8 @@ public final class ThanhToanPanel extends CoSoPanel {
                         + "Chỉ tiếp tục sau khi đã kiểm tra giao dịch thực tế trên tài khoản ngân"
                         + " hàng.";
         }
-        if (!HopThoai.xacNhanOk(this, thongBao, "Xác nhận thanh toán")) return;
+        if (!(boQuaXacNhanTienMat && layPhuongThuc() == PhuongThuc.TIEN_MAT)
+                && !HopThoai.xacNhanOk(this, thongBao, "Xác nhận thanh toán")) return;
         PhuongThuc phuongThuc = layPhuongThuc();
         dangXuLy = true;
         btnXacNhan.setEnabled(false);
