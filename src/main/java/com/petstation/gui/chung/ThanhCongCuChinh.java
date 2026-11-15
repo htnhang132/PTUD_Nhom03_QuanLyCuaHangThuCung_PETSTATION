@@ -1,9 +1,9 @@
 package com.petstation.gui.chung;
 
 import java.awt.BasicStroke;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +11,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -40,7 +42,7 @@ public final class ThanhCongCuChinh extends JPanel {
     }
 
     public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai, Runnable diLamMoi) {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 2, 1));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setPreferredSize(new Dimension(0, 30));
         setBackground(MauUngDung.BE_MAT_XEN_KE);
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, MauUngDung.VIEN));
@@ -55,8 +57,11 @@ public final class ThanhCongCuChinh extends JPanel {
         JButton btnLamMoi = taoNut("Làm mới", "F5", BieuTuong.Net.Kieu.LAM_MOI);
         btnLamMoi.addActionListener(suKien -> diLamMoi.run());
         add(btnLamMoi);
+        add(Box.createHorizontalStrut(4));
         add(layDuongPhanCach());
+        add(Box.createHorizontalStrut(4));
         themThaoTac(ThaoTac.TRO_GIUP, "Trợ giúp", "F1", BieuTuong.Net.Kieu.TRO_GIUP);
+        add(Box.createHorizontalGlue());
         datHoatDongVungHienThi(null);
     }
 
@@ -114,28 +119,37 @@ public final class ThanhCongCuChinh extends JPanel {
 
     private JButton taoNut(String nhan, String phimTat, BieuTuong.Net.Kieu kieuBieuTuong) {
         JButton btnNut =
-                new JButton(nhan, new BieuTuong.Net(kieuBieuTuong, 16, MauUngDung.NAU)) {
+                new JButton(nhan, new BieuTuong.Net(kieuBieuTuong, 18, MauUngDung.NAU)) {
                     @Override
                     protected void paintComponent(Graphics doHoa) {
                         Graphics2D doHoa2 = (Graphics2D) doHoa.create();
                         if (isEnabled() && getModel().isRollover()) {
                             doHoa2.setColor(MauUngDung.DO_NHAT);
-                            doHoa2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                            doHoa2.fillRect(0, 0, getWidth(), getHeight());
                         }
                         if (isFocusOwner()) {
                             doHoa2.setColor(MauUngDung.VANG);
                             doHoa2.setStroke(new BasicStroke(2));
-                            doHoa2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 6, 6);
+                            doHoa2.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
                         }
                         doHoa2.dispose();
                         super.paintComponent(doHoa);
                     }
+
+                    @Override
+                    public Dimension getMaximumSize() {
+                        return new Dimension(getPreferredSize().width, Integer.MAX_VALUE);
+                    }
                 };
-        btnNut.setDisabledIcon(new BieuTuong.Net(kieuBieuTuong, 16, MauUngDung.VIEN));
-        btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        btnNut.setDisabledIcon(new BieuTuong.Net(kieuBieuTuong, 18, MauUngDung.VIEN));
+        btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         btnNut.setForeground(MauUngDung.VAN_BAN_TOI);
+        btnNut.setIconTextGap(8);
+        btnNut.setHorizontalAlignment(SwingConstants.LEFT);
+        btnNut.setVerticalAlignment(SwingConstants.CENTER);
+        btnNut.setAlignmentY(Component.CENTER_ALIGNMENT);
         btnNut.setToolTipText(nhan + " (" + phimTat + ")");
-        btnNut.setBorder(new EmptyBorder(3, 8, 3, 8));
+        btnNut.setBorder(new EmptyBorder(5, 12, 5, 12));
         btnNut.setFocusPainted(false);
         btnNut.setRolloverEnabled(true);
         btnNut.setOpaque(false);
@@ -147,7 +161,9 @@ public final class ThanhCongCuChinh extends JPanel {
 
     private JSeparator layDuongPhanCach() {
         JSeparator phanCach = new JSeparator(SwingConstants.VERTICAL);
-        phanCach.setPreferredSize(new Dimension(7, 20));
+        phanCach.setPreferredSize(new Dimension(2, 18));
+        phanCach.setMaximumSize(new Dimension(2, 18));
+        phanCach.setAlignmentY(Component.CENTER_ALIGNMENT);
         phanCach.setForeground(MauUngDung.VIEN);
         return phanCach;
     }
