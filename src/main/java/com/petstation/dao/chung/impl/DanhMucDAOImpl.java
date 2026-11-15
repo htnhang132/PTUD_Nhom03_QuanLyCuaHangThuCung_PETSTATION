@@ -21,8 +21,6 @@ import com.petstation.model.chung.VaiTro;
 import com.petstation.util.DinhDang;
 
 import org.mindrot.jbcrypt.BCrypt;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,7 +37,6 @@ import java.util.regex.Pattern;
 
 // Triển khai truy vấn SQL cho toàn bộ các màn hình Quản lý Danh mục
 public final class DanhMucDAOImpl implements DanhMucDAO {
-    private static final Logger LOG = LoggerFactory.getLogger(DanhMucDAOImpl.class);
     private static final Map<String, Set<String>> COT_HOP_LE =
             Map.ofEntries(
                     Map.entry(

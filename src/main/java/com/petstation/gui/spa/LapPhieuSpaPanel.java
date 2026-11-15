@@ -120,7 +120,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private int luotGia;
     private int luotHoSo;
     private boolean boQuaSuKienThuCung;
-    private boolean hoSoDuDieuKien;
 
     private static boolean laDangHoatDong(Object giaTri) {
         String s = giaTri == null ? "" : String.valueOf(giaTri).trim();
@@ -981,7 +980,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private void capNhatDanhGiaHoSo(boolean canhBaoSom) {
         LuaChon thu = (LuaChon) cboThuCung.getSelectedItem();
         if (thu == null) {
-            hoSoDuDieuKien = false;
             nhanHuyHieuHoSo.setText("CHƯA CHỌN THÚ CƯNG");
             nhanHuyHieuHoSo.setForeground(MauUngDung.VAN_BAN_XAM);
             nhanChiTietHoSo.setText(
@@ -1013,7 +1011,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                 null,
                 kq -> hienThiKetQuaHoSo(kq, canhBaoSom),
                 ex -> {
-                    hoSoDuDieuKien = false;
                     nhanChiTietHoSo.setText(TacVuNen.thongDiepLoi(ex));
                 });
     }
@@ -1026,7 +1023,6 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     private void hienThiKetQuaHoSo(TiemPhongService.KetQuaTiemPhong kq, boolean canhBaoSom) {
-        hoSoDuDieuKien = kq.duDieuKien;
         if (kq.duDieuKien) {
             nhanHuyHieuHoSo.setText("✓ ĐẠT ĐIỀU KIỆN HỒ SƠ TIÊM PHÒNG");
             nhanHuyHieuHoSo.setForeground(MauUngDung.mau(0x065F46));

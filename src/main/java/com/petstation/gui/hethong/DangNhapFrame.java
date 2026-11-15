@@ -10,6 +10,9 @@ import com.petstation.gui.chung.TacVuNen;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.util.KhoiTaoUngDung;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -53,6 +56,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 public class DangNhapFrame extends JFrame {
+    private static final Logger LOG = LoggerFactory.getLogger(DangNhapFrame.class);
+
     private static final char HIEN_THI_THAY_THE = '\u2022';
 
     private static final int CHIEU_RONG_BIEU_MAU = 340;
@@ -325,7 +330,7 @@ public class DangNhapFrame extends JFrame {
                     new ChinhFrame(nguCanh).setVisible(true);
                 },
                 ngoaiLe -> {
-                    ngoaiLe.printStackTrace();
+                    LOG.warn("Lỗi đăng nhập", ngoaiLe);
                     String thongBao =
                             ngoaiLe instanceof SecurityException
                                     ? ngoaiLe.getMessage()

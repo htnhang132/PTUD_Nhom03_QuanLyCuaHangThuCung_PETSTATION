@@ -101,7 +101,6 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final JPanel khungNhanhCacSoTien = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     private BoChonKhachHang boChonKhach;
     private long tongTruocDo = -1;
-    private boolean dangCapNhatTuDongDaNhan;
     private final JPanel khungNhapTienMat = new JPanel();
 
     private final JLabel nhanNhanThayDoi = new JLabel("");

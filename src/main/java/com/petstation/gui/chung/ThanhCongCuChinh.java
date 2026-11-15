@@ -37,10 +37,6 @@ public final class ThanhCongCuChinh extends JPanel {
 
     private final JButton btnNutQuayLai;
 
-    public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai) {
-        this(diTrangChinh, diQuayLai, () -> {});
-    }
-
     public ThanhCongCuChinh(Runnable diTrangChinh, Runnable diQuayLai, Runnable diLamMoi) {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setPreferredSize(new Dimension(0, 30));

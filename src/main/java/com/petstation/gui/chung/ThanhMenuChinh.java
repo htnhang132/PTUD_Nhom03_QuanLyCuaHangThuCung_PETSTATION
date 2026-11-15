@@ -136,10 +136,6 @@ public final class ThanhMenuChinh extends JPanel {
             JMenuItem btnMuc = new JMenuItem(muc.nhan());
             btnMuc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
             btnMuc.setEnabled(dinhNghia.daTrienKhai());
-            btnMuc.setToolTipText(
-                    dinhNghia.daTrienKhai()
-                            ? dinhNghia.goiY()
-                            : "Chức năng sẽ được triển khai ở giai đoạn tiếp theo");
             if (muc.phimTat() != null) btnMuc.setAccelerator(docPhimTat(muc.phimTat()));
             btnMuc.addActionListener(suKien -> boDieuHuong.accept(muc.manHinh()));
             pmnMenuBatLen.add(btnMuc);
