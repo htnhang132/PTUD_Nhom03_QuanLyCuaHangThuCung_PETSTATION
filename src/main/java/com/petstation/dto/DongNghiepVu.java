@@ -25,10 +25,6 @@ public final class DongNghiepVu {
         return thanhHang();
     }
 
-    public Object[] getDuLieu() {
-        return thanhHang();
-    }
-
     public void capNhatChuoi(int cot, String giaTri) {
         if (cot >= 0 && cot < duLieu.length) {
             duLieu[cot] = giaTri;

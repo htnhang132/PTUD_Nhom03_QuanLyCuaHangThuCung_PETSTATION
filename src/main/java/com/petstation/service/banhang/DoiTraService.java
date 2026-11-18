@@ -3,11 +3,16 @@ package com.petstation.service.banhang;
 import com.petstation.dao.banhang.PhieuDoiTraDAO;
 import com.petstation.dao.banhang.impl.PhieuDoiTraDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
+import com.petstation.dto.ChiTietXemTruocPhieuDoi;
+import com.petstation.dto.DieuKienDoiHoaDon;
 import com.petstation.dto.GioHang;
+import com.petstation.model.banhang.ChiTietDoiTra;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
+import com.petstation.model.banhang.PhieuDoiTra;
 import com.petstation.model.chung.LoaiPhieuDoiTra;
 import com.petstation.model.chung.Quyen;
+import com.petstation.model.chung.TrangThaiHoaDon;
 import com.petstation.model.khachhang.KhachHang;
 import com.petstation.model.kho.LoHang;
 import com.petstation.model.kho.SanPham;
@@ -112,12 +117,74 @@ public final class DoiTraService {
         return new DuLieuGoc(goc, phanBo(daDoi + soLuong, goc) - phanBo(daDoi, goc));
     }
 
+    public int laySoNgayHanDoi() {
+        try {
+            return Math.max(1, CaiDatService.macDinh().laySoNgayDuocDoiTra());
+        } catch (RuntimeException ex) {
+            LOG.warn("Không đọc được cấu hình số ngày đổi trả, dùng mặc định 3 ngày.", ex);
+            return 3;
+        }
+    }
+
+    public DieuKienDoiHoaDon kiemTraDieuKienDoiHoaDon(String maHoaDon) {
+        PhienDangNhapService.macDinh().layPhien();
+        int soNgay = laySoNgayHanDoi();
+        if (maHoaDon == null || maHoaDon.isBlank()) {
+            return new DieuKienDoiHoaDon(false, "Chưa chọn hóa đơn.", soNgay, 0L);
+        }
+        Optional<HoaDon> hdOpt = doiTraDAO.layThongTinHoaDonDoi(maHoaDon);
+        if (hdOpt.isEmpty()) {
+            return new DieuKienDoiHoaDon(false, "Không tìm thấy hóa đơn.", soNgay, 0L);
+        }
+        HoaDon hd = hdOpt.get();
+        TrangThaiHoaDon tt = hd.getTrangThaiEnum();
+        if (tt == null || !tt.daHoanTat()) {
+            return new DieuKienDoiHoaDon(
+                    false, "Hóa đơn không ở trạng thái đã thanh toán.", soNgay, 0L);
+        }
+        if (doiTraDAO.laHoaDonThayThe(maHoaDon)) {
+            return new DieuKienDoiHoaDon(
+                    false, "Hóa đơn thay thế không được đổi tiếp.", soNgay, 0L);
+        }
+        LocalDateTime ngayLap = hd.getThanhToanLuc();
+        if (ngayLap == null || LocalDateTime.now().isAfter(ngayLap.plusHours(soNgay * 24L))) {
+            return new DieuKienDoiHoaDon(
+                    false, "Hóa đơn đã quá hạn đổi " + (soNgay * 24) + " giờ.", soNgay, 0L);
+        }
+        long conDoi = 0L;
+        for (ChiTietDoiTra ctDt : doiTraDAO.layDongHoaDon(maHoaDon)) {
+            ChiTietHoaDon ctHd = ctDt.getChiTietHoaDon();
+            if (ctHd == null || ctHd.getSanPham() == null) continue;
+            if (!"Phụ kiện".equals(ctHd.getSanPham().getNhomHang())) continue;
+            conDoi += Math.max(0, ctHd.getSoLuong() - ctDt.getSoLuong());
+        }
+        if (conDoi <= 0L) {
+            return new DieuKienDoiHoaDon(
+                    false, "Hóa đơn không có phụ kiện còn hạn mức đổi.", soNgay, 0L);
+        }
+        return new DieuKienDoiHoaDon(true, "", soNgay, conDoi);
+    }
+
+    public Optional<ChiTietXemTruocPhieuDoi> layChiTietXemTruocPhieu(String maPhieu) {
+        PhienDangNhapService.macDinh().yeuCau(Quyen.BAN_HANG);
+        if (maPhieu == null || maPhieu.isBlank()) return Optional.empty();
+        Optional<PhieuDoiTra> phieuOpt = doiTraDAO.layPhieuDoi(maPhieu.trim());
+        if (phieuOpt.isEmpty()) return Optional.empty();
+        PhieuDoiTra phieu = phieuOpt.get();
+        List<ChiTietDoiTra> hangTra = doiTraDAO.layChiTietPhieuDoi(maPhieu.trim());
+        String maHdThayThe =
+                phieu.getHoaDonThayThe() != null ? phieu.getHoaDonThayThe().getMaHoaDon() : null;
+        List<ChiTietHoaDon> hangThayThe = doiTraDAO.layHangThayTheCuaPhieu(maHdThayThe);
+        return Optional.of(new ChiTietXemTruocPhieuDoi(phieu, hangTra, hangThayThe));
+    }
+
     public List<Object[]> timHoaDon(String tuKhoa) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.BAN_HANG);
-        if (tuKhoa == null || tuKhoa.isBlank()) {
-            throw new IllegalArgumentException("Nhập mã hóa đơn hoặc SĐT.");
-        }
-        return doiTraDAO.timHoaDon(tuKhoa.trim()).stream()
+        List<HoaDon> danhSach =
+                (tuKhoa == null || tuKhoa.isBlank())
+                        ? doiTraDAO.timHoaDonGanDay(laySoNgayHanDoi())
+                        : doiTraDAO.timHoaDon(tuKhoa.trim());
+        return danhSach.stream()
                 .map(
                         hd ->
                                 new Object[] {

@@ -1,5 +1,6 @@
 package com.petstation.service.banhang;
 
+import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.GioHang.MucKhuyenMai;
 import com.petstation.model.chung.PhuongThuc;
@@ -16,6 +17,8 @@ public final class GioHangService {
     private final TichDiemService tichDiemService;
     private final DanhMucService danhMucService;
     private final PhienDangNhapService phienDangNhapService;
+    private volatile List<MucKhuyenMai> khuyenMaiDem = List.of();
+    private volatile long thoiDiemDemKmMs;
 
     public GioHangService() {
         this(
@@ -50,20 +53,37 @@ public final class GioHangService {
                     @Override
                     public List<MucKhuyenMai> layKhuyenMai() {
                         phienDangNhapService.yeuCauHienTai();
-                        return danhMucService.layKhuyenMai().stream()
-                                .map(
-                                        dongDuLieu ->
-                                                new MucKhuyenMai(
-                                                        String.valueOf(dongDuLieu[0]),
-                                                        String.valueOf(dongDuLieu[1]),
-                                                        String.valueOf(dongDuLieu[2]),
-                                                        String.valueOf(dongDuLieu[3]),
-                                                        DinhDang.doc(String.valueOf(dongDuLieu[4])),
-                                                        DinhDang.doc(String.valueOf(dongDuLieu[5])),
-                                                        String.valueOf(dongDuLieu[6]),
-                                                        String.valueOf(dongDuLieu[7]),
-                                                        String.valueOf(dongDuLieu[8])))
-                                .toList();
+                        boolean coTheDem =
+                                danhMucService == DanhMucService.macDinh()
+                                        && !ThaoTacSQL.dangTrongGiaoDich();
+                        long bayGio = System.currentTimeMillis();
+                        if (coTheDem && bayGio - thoiDiemDemKmMs < 1500L) {
+                            return khuyenMaiDem;
+                        }
+                        List<MucKhuyenMai> ds =
+                                danhMucService.layKhuyenMai().stream()
+                                        .map(
+                                                dongDuLieu ->
+                                                        new MucKhuyenMai(
+                                                                String.valueOf(dongDuLieu[0]),
+                                                                String.valueOf(dongDuLieu[1]),
+                                                                String.valueOf(dongDuLieu[2]),
+                                                                String.valueOf(dongDuLieu[3]),
+                                                                DinhDang.doc(
+                                                                        String.valueOf(
+                                                                                dongDuLieu[4])),
+                                                                DinhDang.doc(
+                                                                        String.valueOf(
+                                                                                dongDuLieu[5])),
+                                                                String.valueOf(dongDuLieu[6]),
+                                                                String.valueOf(dongDuLieu[7]),
+                                                                String.valueOf(dongDuLieu[8])))
+                                        .toList();
+                        if (coTheDem) {
+                            khuyenMaiDem = ds;
+                            thoiDiemDemKmMs = System.currentTimeMillis();
+                        }
+                        return ds;
                     }
 
                     @Override

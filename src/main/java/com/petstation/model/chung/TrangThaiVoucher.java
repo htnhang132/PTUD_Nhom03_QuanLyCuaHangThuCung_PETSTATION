@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của mã giảm giá (voucher). Mapping tương ứng cột trang_thai trong bảng voucher:
  * 'CON_HAN', 'DA_DUNG', 'HET_HAN', 'DA_HUY'
  */
-public enum TrangThaiVoucher {
+public enum TrangThaiVoucher implements MaDBEnum {
     CON_HAN("CON_HAN", "Còn hạn sử dụng"),
     DA_DUNG("DA_DUNG", "Đã sử dụng"),
     HET_HAN("HET_HAN", "Hết hạn"),
@@ -27,12 +27,6 @@ public enum TrangThaiVoucher {
     }
 
     public static TrangThaiVoucher tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiVoucher t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiVoucher với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiVoucher.class, ma);
     }
 }

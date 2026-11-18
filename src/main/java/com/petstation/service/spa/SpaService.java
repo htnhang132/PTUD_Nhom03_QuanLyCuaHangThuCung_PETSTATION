@@ -267,11 +267,11 @@ public final class SpaService {
                             if (cacPhieuSpa.isEmpty()
                                     || !Set.of(
                                                     TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
-                                                    TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(),
-                                                    TrangThaiPhieuSpa.HOAN_TAT.maDB())
+                                                    TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())
                                             .contains(cacPhieuSpa.get(0).trangThai)) {
                                 throw new IllegalArgumentException(
-                                        "Chỉ có thể xóa dịch vụ trên phiếu Spa chưa thanh toán.");
+                                        "Chỉ có thể xóa dịch vụ trên phiếu Spa đang tiếp nhận hoặc"
+                                                + " đang thực hiện.");
                             }
                             List<SpaDTO.DongChiTietSpa> ds =
                                     new ArrayList<>(xuLySpaDAO.layPhieuSpaChiTiet(maPhieuSpa));

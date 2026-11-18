@@ -2,96 +2,488 @@ package com.petstation.gui.spa;
 
 import com.petstation.dto.GioHang;
 import com.petstation.dto.SpaDTO;
+import com.petstation.gui.chung.ChinhFrame;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
+import com.petstation.gui.chung.MucLocTrangThai;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.ThanhDanhSach;
+import com.petstation.gui.chung.thanhphan.BoChonNgay;
 import com.petstation.gui.luutru.NhatKyChamSocDialog;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.TrangThaiPhieuSpa;
+import com.petstation.model.khachhang.KhachHang;
+import com.petstation.model.khachhang.ThuCung;
+import com.petstation.model.nhansu.NhanVien;
+import com.petstation.model.spa.PhieuTiepNhanSpa;
 import com.petstation.service.hethong.PhienDangNhapService;
-import com.petstation.service.spa.PhieuSpaTreoService;
+import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Window;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
-// Màn hình: Tiếp nhận & Lập phiếu Spa (Mã: TIEP_NHAN_SPA)
-// Luồng xử lý: GUI -> TiepNhanSpaService, PhieuSpaTreoService -> PhieuTiepNhanSpaDAOImpl -> SQL
-// (phieu_tiep_nhan_spa)
-// Mô tả: Tiếp nhận thú cưng làm dịch vụ spa, chọn gói chăm sóc, cân nặng và ghi chú yêu cầu
-// Phân hệ: spa
 public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
-    private final PhieuSpaTreoService phieuSpaTreoService = new PhieuSpaTreoService();
+    private static final String TAT_CA = "Tất cả";
+
+    // 1. THUỘC TÍNH & HÀM KHỞI TẠO
+
     private final JTabbedPane tabWorkspace = new JTabbedPane();
+    private final Map<String, String> sdtTheoMaPhieu = new ConcurrentHashMap<>();
+    private final List<MucLocTrangThai> cacMucTrangThai =
+            List.of(
+                    new MucLocTrangThai(TAT_CA, TAT_CA),
+                    new MucLocTrangThai(TrangThaiPhieuSpa.TIEP_NHAN.maDB(), "Tiếp nhận"),
+                    new MucLocTrangThai(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(), "Đang thực hiện"),
+                    new MucLocTrangThai(TrangThaiPhieuSpa.HOAN_TAT.maDB(), "Hoàn tất"),
+                    new MucLocTrangThai(TrangThaiPhieuSpa.DA_THANH_TOAN.maDB(), "Đã thanh toán"),
+                    new MucLocTrangThai(TrangThaiPhieuSpa.DA_HUY.maDB(), "Đã hủy"));
+    private final JComboBox<MucLocTrangThai> cboTrangThai =
+            new JComboBox<>(cacMucTrangThai.toArray(MucLocTrangThai[]::new));
+    private final BoChonNgay oTuNgay = new BoChonNgay(LocalDate.now().minusDays(29));
+    private final BoChonNgay oDenNgay = new BoChonNgay(LocalDate.now());
+    private boolean dangDatLaiBoLoc;
+    private volatile boolean daKhoiTaoXong;
+
     private LapPhieuSpaPanel khungLapPhieu;
     private LichHenSpaPanel khungLichHen;
-    private DefaultTableModel moHinhPhieuTreo;
-    private JTable bangPhieuTreo;
+    private NutDinhDang btnBatDauLam;
+    private NutDinhDang btnHoanThanh;
+    private NutDinhDang btnThanhToan;
+    private NutDinhDang btnThemDichVu;
+    private NutDinhDang btnThaoTacKhac;
 
     public TiepNhanSpaPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        super(LoaiNghiepVu.TIEP_NHAN_SPA, banHang, dieuHuong);
-        cauHinhThanhTacVuVaSuKien(banHang, dieuHuong);
+        super(LoaiNghiepVu.PHIEU_SPA, banHang, dieuHuong);
+        cauHinhBoLocVaThanhTacVu();
+        xayDungCacTabSpa(banHang, dieuHuong);
+        thayBoLangNgheTimKiem(this::apDungBoLocBangSpa);
+        daKhoiTaoXong = true;
+        lamMoi();
     }
 
-    private void cauHinhThanhTacVuVaSuKien(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        themNut(
-                layKhungThaoTac(),
-                "Chi tiết dịch vụ",
-                NutDinhDang.KieuNut.TRONG_SUOT,
-                this::laySpaChiTiet);
-        themNut(layKhungThaoTac(), "Thêm dịch vụ", NutDinhDang.KieuNut.PHU, this::themDichVu);
-        themNut(layKhungThaoTac(), "Xóa dịch vụ", NutDinhDang.KieuNut.NGUY_HIEM, this::xoaDichVu);
-        themNut(
-                layKhungThaoTac(),
-                "Bắt đầu làm",
-                NutDinhDang.KieuNut.CHINH,
-                () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB()));
-        themNut(
-                layKhungThaoTac(),
-                "Hoàn thành",
-                NutDinhDang.KieuNut.THANH_CONG,
-                () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.HOAN_TAT.maDB()));
-        themNut(
-                layKhungThaoTac(),
-                "Thanh toán",
-                NutDinhDang.KieuNut.THANH_CONG,
-                () -> quyetToan("SPA"));
-        ganPhimTat(KeyEvent.VK_F4, () -> tabWorkspace.setSelectedIndex(1));
+    // 2. XÂY DỰNG GIAO DIỆN, NẠP DỮ LIỆU & BỘ LỌC
+
+    private void cauHinhBoLocVaThanhTacVu() {
+        ThanhDanhSach bar = (ThanhDanhSach) layKhungThaoTac();
+        layOTimKiem().setPreferredSize(new Dimension(200, MauUngDung.CAO_DAU_VAO));
+        oTuNgay.setPreferredSize(new Dimension(155, MauUngDung.CAO_DAU_VAO));
+        oDenNgay.setPreferredSize(new Dimension(155, MauUngDung.CAO_DAU_VAO));
+        oTuNgay.addPropertyChangeListener(
+                "date",
+                e -> {
+                    if (dangDatLaiBoLoc) return;
+                    LocalDate tu = oTuNgay.layNgayDuocChon();
+                    LocalDate den = oDenNgay.layNgayDuocChon();
+                    if (tu != null && den != null && tu.isAfter(den)) {
+                        dangDatLaiBoLoc = true;
+                        oDenNgay.datNgayDuocChon(tu);
+                        dangDatLaiBoLoc = false;
+                    }
+                    lamMoi();
+                });
+        oDenNgay.addPropertyChangeListener(
+                "date",
+                e -> {
+                    if (dangDatLaiBoLoc) return;
+                    LocalDate tu = oTuNgay.layNgayDuocChon();
+                    LocalDate den = oDenNgay.layNgayDuocChon();
+                    if (tu != null && den != null && den.isBefore(tu)) {
+                        dangDatLaiBoLoc = true;
+                        oTuNgay.datNgayDuocChon(den);
+                        dangDatLaiBoLoc = false;
+                    }
+                    lamMoi();
+                });
+        cboTrangThai.addActionListener(
+                e -> {
+                    if (!dangDatLaiBoLoc) {
+                        apDungBoLocBangSpa();
+                    }
+                });
+
+        bar.themBoLoc("Từ ngày:", oTuNgay);
+        bar.themBoLoc("Đến ngày:", oDenNgay);
+        bar.themBoLoc("Trạng thái:", cboTrangThai);
+
+        NutDinhDang btnLapPhieu = new NutDinhDang("+ Lập phiếu", NutDinhDang.KieuNut.CHINH);
+        btnLapPhieu.addActionListener(e -> tiepNhan());
+        bar.add(btnLapPhieu);
+        btnBatDauLam =
+                themNut(
+                        bar,
+                        "Bắt đầu làm",
+                        NutDinhDang.KieuNut.PHU,
+                        () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB()));
+        btnHoanThanh =
+                themNut(
+                        bar,
+                        "Hoàn thành",
+                        NutDinhDang.KieuNut.THANH_CONG,
+                        () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.HOAN_TAT.maDB()));
+        btnThanhToan =
+                themNut(bar, "Thanh toán", NutDinhDang.KieuNut.THANH_CONG, () -> quyetToan("SPA"));
+        btnThemDichVu = themNut(bar, "+ Dịch vụ", NutDinhDang.KieuNut.PHU, this::themDichVu);
+        btnThaoTacKhac =
+                themNut(
+                        bar,
+                        "Thao tác khác ▾",
+                        NutDinhDang.KieuNut.TRONG_SUOT,
+                        this::moMenuThaoTacKhac);
+
         ganSuKienDupChuot(this::xuLyDupChuotBangSpa);
         ganMenuChuotPhai(this::taoMenuChuotPhaiSpa);
-        xayDungCacTabSpa(banHang, dieuHuong);
+    }
+
+    private void xayDungCacTabSpa(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
+        Component compNorth = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.NORTH);
+        Component compCenter = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        removeAll();
+        setLayout(new BorderLayout());
+
+        JPanel khungDanhSach = new JPanel(new BorderLayout(0, 10));
+        khungDanhSach.setOpaque(true);
+        khungDanhSach.setBackground(MauUngDung.NEN_KEM);
+        khungDanhSach.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        if (compNorth != null) {
+            khungDanhSach.add(compNorth, BorderLayout.NORTH);
+        }
+        if (compCenter != null) {
+            khungDanhSach.add(compCenter, BorderLayout.CENTER);
+        }
+
+        khungLapPhieu = taoKhungLapPhieu();
+        khungLapPhieu.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        khungLichHen = taoKhungLichHen(banHang, dieuHuong);
+        khungLichHen.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        tabWorkspace.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        tabWorkspace.addTab("Điều phối phiếu Spa", khungDanhSach);
+        tabWorkspace.addTab("Lập phiếu mới", khungLapPhieu);
+        tabWorkspace.addTab("Lịch hẹn Spa", khungLichHen);
+        tabWorkspace.addChangeListener(e -> khiChuyenTabSpa());
+        add(tabWorkspace, BorderLayout.CENTER);
+        capNhatThaoTac();
+    }
+
+    private LapPhieuSpaPanel taoKhungLapPhieu() {
+        return new LapPhieuSpaPanel(
+                maPhieu -> {
+                    layBanHang().getQuyTrinh().chonSpa(maPhieu);
+                    chonTab(0);
+                    lamMoi();
+                },
+                () -> chonTab(2),
+                null);
+    }
+
+    private LichHenSpaPanel taoKhungLichHen(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
+        return new LichHenSpaPanel(
+                banHang,
+                dieuHuong,
+                maLichHen -> {
+                    khungLapPhieu.nhanLichHen(maLichHen);
+                    chonTab(1);
+                });
+    }
+
+    @Override
+    protected List<Object[]> layDuLieu() {
+        if (!daKhoiTaoXong || spaService == null || oTuNgay == null || oDenNgay == null) {
+            return List.of();
+        }
+        LocalDate homNay = LocalDate.now();
+        LocalDate tuNgay =
+                oTuNgay.layNgayDuocChon() == null
+                        ? homNay.minusDays(29)
+                        : oTuNgay.layNgayDuocChon();
+        LocalDate denNgay =
+                oDenNgay.layNgayDuocChon() == null ? homNay : oDenNgay.layNgayDuocChon();
+        List<SpaDTO.DongTimKiemSpa> ds = spaService.timKiem(tuNgay, denNgay, null);
+        List<Object[]> ketQua = new ArrayList<>(ds.size());
+        Map<String, String> sdtMoi = new HashMap<>(ds.size());
+        for (SpaDTO.DongTimKiemSpa d : ds) {
+            PhieuTiepNhanSpa p = d.getPhieuSpa();
+            KhachHang k = d.getKhachHang();
+            ThuCung tc = d.getThuCung();
+            NhanVien nv = d.getNhanVien();
+            if (k != null && k.getSoDienThoai() != null) {
+                sdtMoi.put(d.getMaKhoa(), k.getSoDienThoai());
+            }
+            ketQua.add(
+                    new Object[] {
+                        d.getMaKhoa(),
+                        p.getMaPhieu(),
+                        k != null ? k.getHoTen() : "",
+                        tc != null ? tc.getTen() : "",
+                        p.getCanNangThucTe(),
+                        nv != null ? nv.getHoTen() : "",
+                        p.getTongTien(),
+                        p.getTrangThai() != null ? p.getTrangThai().maDB() : "",
+                        DinhDang.ngayGio(p.getTaoLuc())
+                    });
+        }
+        Runnable capNhatMap =
+                () -> {
+                    sdtTheoMaPhieu.clear();
+                    sdtTheoMaPhieu.putAll(sdtMoi);
+                };
+        if (SwingUtilities.isEventDispatchThread()) {
+            capNhatMap.run();
+        } else {
+            SwingUtilities.invokeLater(capNhatMap);
+        }
+        return ketQua;
+    }
+
+    @Override
+    protected void sauKhiTaiLai() {
+        if (!daKhoiTaoXong) {
+            return;
+        }
+        capNhatSoLuongTrangThai();
+        apDungBoLocBangSpa();
+        capNhatThaoTac();
+    }
+
+    @Override
+    protected void datLaiBoLoc() {
+        dangDatLaiBoLoc = true;
+        oTuNgay.datNgayDuocChon(LocalDate.now().minusDays(29));
+        oDenNgay.datNgayDuocChon(LocalDate.now());
+        cboTrangThai.setSelectedIndex(0);
+        dangDatLaiBoLoc = false;
+        apDungBoLocBangSpa();
+    }
+
+    private void capNhatSoLuongTrangThai() {
+        capNhatSoLuongMucLoc(cacMucTrangThai, cboTrangThai, 7, TAT_CA);
+    }
+
+    private void apDungBoLocBangSpa() {
+        if (layBangDuLieu() == null
+                || !(layBangDuLieu().getRowSorter() instanceof TableRowSorter)) {
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        TableRowSorter<DefaultTableModel> sorter =
+                (TableRowSorter<DefaultTableModel>) layBangDuLieu().getRowSorter();
+        String tuKhoa =
+                layOTimKiem() == null
+                        ? ""
+                        : layOTimKiem().getText().trim().toLowerCase(Locale.ROOT);
+        MucLocTrangThai mucChon = (MucLocTrangThai) cboTrangThai.getSelectedItem();
+        String mucTrangThai = mucChon == null ? TAT_CA : mucChon.layMa();
+        sorter.setRowFilter(
+                new RowFilter<>() {
+                    @Override
+                    public boolean include(
+                            Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        if (!TAT_CA.equals(mucTrangThai)
+                                && !mucTrangThai.equalsIgnoreCase(entry.getStringValue(7))) {
+                            return false;
+                        }
+                        return khopTuKhoaDong(entry, tuKhoa);
+                    }
+                });
+    }
+
+    private boolean khopTuKhoaDong(
+            RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry, String tuKhoa) {
+        if (tuKhoa.isEmpty()) {
+            return true;
+        }
+        String sdt = sdtTheoMaPhieu.getOrDefault(entry.getStringValue(0), "");
+        if (sdt.toLowerCase(Locale.ROOT).contains(tuKhoa)) {
+            return true;
+        }
+        for (int c = 0; c < entry.getValueCount(); c++) {
+            if (entry.getStringValue(c).toLowerCase(Locale.ROOT).contains(tuKhoa)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected void capNhatThaoTac() {
+        super.capNhatThaoTac();
+        if (btnBatDauLam == null
+                || btnHoanThanh == null
+                || btnThanhToan == null
+                || btnThemDichVu == null
+                || btnThaoTacKhac == null
+                || layBangDuLieu() == null) {
+            return;
+        }
+        String trangThai = layTrangThaiDongChon();
+        boolean coChon = !trangThai.isEmpty();
+        boolean coDichVu = coChon && laDongCoDichVu();
+        boolean quyenThanhToan = coQuyenThanhToan();
+
+        btnBatDauLam.setEnabled(TrangThaiPhieuSpa.TIEP_NHAN.maDB().equals(trangThai) && coDichVu);
+        btnHoanThanh.setEnabled(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThai));
+        btnThanhToan.setEnabled(
+                TrangThaiPhieuSpa.HOAN_TAT.maDB().equals(trangThai) && quyenThanhToan);
+        btnThemDichVu.setEnabled(
+                Set.of(TrangThaiPhieuSpa.TIEP_NHAN.maDB(), TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())
+                        .contains(trangThai));
+        btnThaoTacKhac.setEnabled(coChon);
+        layKhungThaoTac().revalidate();
+        layKhungThaoTac().repaint();
+    }
+
+    private String layTrangThaiDongChon() {
+        int dong = layBangDuLieu().getSelectedRow();
+        if (dong < 0) {
+            return "";
+        }
+        return String.valueOf(
+                layMoHinh().getValueAt(layBangDuLieu().convertRowIndexToModel(dong), 7));
+    }
+
+    private boolean laDongCoDichVu() {
+        int dong = layBangDuLieu().getSelectedRow();
+        if (dong < 0) {
+            return false;
+        }
+        Object tong = layMoHinh().getValueAt(layBangDuLieu().convertRowIndexToModel(dong), 6);
+        if (tong instanceof Number so) {
+            return so.longValue() > 0;
+        }
+        return DinhDang.doc(String.valueOf(tong)) > 0;
+    }
+
+    private void moMenuThaoTacKhac() {
+        int dong = layBangDuLieu().getSelectedRow();
+        if (dong < 0) {
+            HopThoai.hienThiCanhBao(this, "Vui lòng chọn một phiếu Spa.");
+            return;
+        }
+        JPopupMenu menu = taoMenuThaoTacBoSung(layTrangThaiDongChon());
+        menu.show(btnThaoTacKhac, 0, btnThaoTacKhac.getHeight());
+    }
+
+    private JPopupMenu taoMenuThaoTacBoSung(String trangThai) {
+        JPopupMenu popup = new JPopupMenu();
+        popup.add(taoMucMenu("Chi tiết dịch vụ", this::laySpaChiTiet));
+        if (laDongCoDichVu()
+                && Set.of(
+                                TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
+                                TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(),
+                                TrangThaiPhieuSpa.HOAN_TAT.maDB())
+                        .contains(trangThai)) {
+            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
+        }
+        boolean daDong =
+                TrangThaiPhieuSpa.DA_THANH_TOAN.maDB().equals(trangThai)
+                        || TrangThaiPhieuSpa.DA_HUY.maDB().equals(trangThai);
+        popup.add(
+                taoMucMenu(
+                        daDong ? "Xem phiếu chăm sóc" : "Phiếu chăm sóc",
+                        () -> {
+                            NhatKyChamSocDialog.mo(this, "SPA", layDongChon(), !daDong);
+                            lamMoi();
+                        }));
+        return popup;
+    }
+
+    // 3. VÒNG ĐỜI & THANH CÔNG CỤ
+
+    @Override
+    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        int idx = tabWorkspace.getSelectedIndex();
+        return new KhaNangThanhCongCu(
+                idx != 2, false, idx == 0 || idx == 2, idx == 0 || idx == 2, false, true);
+    }
+
+    @Override
+    public void xuLyTaoMoi() {
+        chonTab(1);
+    }
+
+    @Override
+    public void xuLyTimKiem() {
+        int idx = tabWorkspace.getSelectedIndex();
+        if (idx == 0) {
+            super.xuLyTimKiem();
+        } else if (idx == 2 && khungLichHen != null) {
+            khungLichHen.xuLyTimKiem();
+        }
+    }
+
+    @Override
+    public void xuLyIn() {
+        int idx = tabWorkspace.getSelectedIndex();
+        if (idx == 0) {
+            super.xuLyIn();
+        } else if (idx == 2 && khungLichHen != null) {
+            khungLichHen.xuLyIn();
+        }
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        super.xuLyHienThi();
+        khiChuyenTabSpa();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        int idx = tabWorkspace.getSelectedIndex();
+        if (idx == 0) {
+            super.xuLyLamMoi();
+        } else if (idx == 1) {
+            khungLapPhieu.xuLyLamMoi();
+        } else if (idx == 2) {
+            khungLichHen.xuLyLamMoi();
+        }
+    }
+
+    // 4. TƯƠNG TÁC BẢNG & XỬ LÝ TRẠNG THÁI SPA
+
+    private void khiChuyenTabSpa() {
+        int idx = tabWorkspace.getSelectedIndex();
+        if (idx == 0) {
+            lamMoi();
+        } else if (idx == 1) {
+            khungLapPhieu.xuLyHienThi();
+        } else if (idx == 2) {
+            khungLichHen.xuLyHienThi();
+        }
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w instanceof ChinhFrame cf) {
+            cf.capNhatThanhCongCu();
+        }
     }
 
     private void xuLyDupChuotBangSpa() {
-        int row = layBangDuLieu().getSelectedRow();
-        if (row < 0) return;
-        String trangThai =
-                String.valueOf(
-                        layMoHinh().getValueAt(layBangDuLieu().convertRowIndexToModel(row), 7));
-        if (TrangThaiPhieuSpa.TIEP_NHAN.maDB().equals(trangThai)) {
-            capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB());
-        } else if (TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThai)) {
-            capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.HOAN_TAT.maDB());
-        } else if (TrangThaiPhieuSpa.HOAN_TAT.maDB().equals(trangThai)) {
-            quyetToan("SPA");
-        } else {
+        if (layBangDuLieu().getSelectedRow() >= 0) {
             laySpaChiTiet();
         }
     }
@@ -100,32 +492,43 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         String trangThai =
                 String.valueOf(
                         layMoHinh().getValueAt(layBangDuLieu().convertRowIndexToModel(row), 7));
+        boolean coDichVu = laDongCoDichVu();
+        boolean quyenThanhToan = coQuyenThanhToan();
         JPopupMenu popup = new JPopupMenu();
         if (TrangThaiPhieuSpa.TIEP_NHAN.maDB().equals(trangThai)) {
-            popup.add(
+            JMenuItem itemBatDau =
                     taoMucMenu(
                             "Bắt đầu làm",
-                            () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())));
-            popup.add(taoMucMenu("Thêm dịch vụ", this::themDichVu));
-            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
+                            () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB()));
+            itemBatDau.setEnabled(coDichVu);
+            popup.add(itemBatDau);
+            popup.add(taoMucMenu("+ Dịch vụ", this::themDichVu));
+            if (coDichVu) popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         } else if (TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThai)) {
             popup.add(
                     taoMucMenu(
-                            "Đánh dấu hoàn thành",
+                            "Hoàn thành",
                             () -> capNhatTrangThaiSpaNen(TrangThaiPhieuSpa.HOAN_TAT.maDB())));
-            popup.add(taoMucMenu("Thêm dịch vụ", this::themDichVu));
-            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
+            popup.add(taoMucMenu("+ Dịch vụ", this::themDichVu));
+            if (coDichVu) popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         } else if (TrangThaiPhieuSpa.HOAN_TAT.maDB().equals(trangThai)) {
-            popup.add(taoMucMenu("Thanh toán (POS)", () -> quyetToan("SPA")));
-            popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
+            JMenuItem itemThanhToan = taoMucMenu("Thanh toán", () -> quyetToan("SPA"));
+            itemThanhToan.setEnabled(quyenThanhToan);
+            popup.add(itemThanhToan);
+            if (coDichVu) popup.add(taoMucMenu("Xóa dịch vụ", this::xoaDichVu));
         }
-        if (popup.getComponentCount() > 0) popup.addSeparator();
+        if (popup.getComponentCount() > 0) {
+            popup.addSeparator();
+        }
+        boolean daDong =
+                TrangThaiPhieuSpa.DA_THANH_TOAN.maDB().equals(trangThai)
+                        || TrangThaiPhieuSpa.DA_HUY.maDB().equals(trangThai);
         popup.add(taoMucMenu("Chi tiết dịch vụ", this::laySpaChiTiet));
         popup.add(
                 taoMucMenu(
-                        "Phiếu chăm sóc",
+                        daDong ? "Xem phiếu chăm sóc" : "Phiếu chăm sóc",
                         () -> {
-                            NhatKyChamSocDialog.mo(this, "SPA", layDongChon());
+                            NhatKyChamSocDialog.mo(this, "SPA", layDongChon(), !daDong);
                             lamMoi();
                         }));
         return popup;
@@ -144,144 +547,13 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         return item;
     }
 
-    private void xayDungCacTabSpa(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
-        Component compNorth = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.NORTH);
-        Component compCenter = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
-        removeAll();
-        JPanel khungDanhSach = new JPanel(new BorderLayout(0, 12));
-        khungDanhSach.setOpaque(false);
-        if (compNorth != null) khungDanhSach.add(compNorth, BorderLayout.NORTH);
-        if (compCenter != null) khungDanhSach.add(compCenter, BorderLayout.CENTER);
-        khungLapPhieu =
-                new LapPhieuSpaPanel(
-                        maPhieu -> {
-                            layBanHang().getQuyTrinh().chonSpa(maPhieu);
-                            HopThoai.hienThiThanhCong(
-                                    this,
-                                    "Đã tạo phiếu tiếp nhận SPA #" + maPhieu + " thành công!");
-                            lamMoi();
-                            tabWorkspace.setSelectedIndex(0);
-                        },
-                        () -> tabWorkspace.setSelectedIndex(2),
-                        () -> {
-                            taiDanhSachPhieuTreo();
-                            tabWorkspace.setSelectedIndex(3);
-                        });
-        khungLichHen =
-                new LichHenSpaPanel(
-                        banHang,
-                        dieuHuong,
-                        maLichHen -> {
-                            khungLapPhieu.nhanLichHen(maLichHen);
-                            tabWorkspace.setSelectedIndex(1);
-                        });
-        tabWorkspace.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
-        tabWorkspace.addTab("Danh sách phiếu Spa", khungDanhSach);
-        tabWorkspace.addTab("Lập phiếu tiếp nhận mới (F4)", khungLapPhieu);
-        tabWorkspace.addTab("Lịch hẹn Spa", khungLichHen);
-        tabWorkspace.addTab("Phiếu Spa đang treo", taoVungPhieuTreo());
-        tabWorkspace.addChangeListener(e -> khiChuyenTabSpa());
-        add(tabWorkspace, BorderLayout.CENTER);
-    }
-
-    @Override
-    public void xuLyHienThi() {
-        khiChuyenTabSpa();
-    }
-
-    @Override
-    public void xuLyLamMoi() {
-        int idx = tabWorkspace.getSelectedIndex();
-        if (idx == 0) super.xuLyLamMoi();
-        else if (idx == 1) khungLapPhieu.xuLyLamMoi();
-        else if (idx == 2) khungLichHen.xuLyLamMoi();
-        else if (idx == 3) taiDanhSachPhieuTreo();
-    }
-
-    private void khiChuyenTabSpa() {
-        int idx = tabWorkspace.getSelectedIndex();
-        if (idx == 0) lamMoi();
-        else if (idx == 1) khungLapPhieu.xuLyHienThi();
-        else if (idx == 2) khungLichHen.xuLyHienThi();
-        else if (idx == 3) taiDanhSachPhieuTreo();
-    }
-
-    private JPanel taoVungPhieuTreo() {
-        JPanel khungTam = new JPanel(new BorderLayout(0, 10));
-        khungTam.setOpaque(false);
-        khungTam.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
-        moHinhPhieuTreo =
-                new DefaultTableModel(
-                        new String[] {
-                            "ID",
-                            "Mã phiếu treo",
-                            "Khách hàng",
-                            "Số điện thoại",
-                            "Thú cưng",
-                            "Dịch vụ",
-                            "Cập nhật lúc"
-                        },
-                        0) {
-                    @Override
-                    public boolean isCellEditable(int r, int c) {
-                        return false;
-                    }
-                };
-        JScrollPane scr = taoBangDinhDang(moHinhPhieuTreo);
-        bangPhieuTreo = layBang(scr);
-        bangPhieuTreo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        bangPhieuTreo.removeColumn(bangPhieuTreo.getColumnModel().getColumn(0));
-        bangPhieuTreo.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (e.getClickCount() == 2 && bangPhieuTreo.getSelectedRow() >= 0) {
-                            moLaiPhieuTreoChon();
-                        }
-                    }
-                });
-        JPanel khungThaoTacTreo = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        khungThaoTacTreo.setOpaque(false);
-        NutDinhDang btnMoLai =
-                new NutDinhDang("Mở lại phiếu trên biểu mẫu", NutDinhDang.KieuNut.CHINH);
-        btnMoLai.addActionListener(e -> moLaiPhieuTreoChon());
-        NutDinhDang btnXoa = new NutDinhDang("Xóa phiếu treo", NutDinhDang.KieuNut.NGUY_HIEM);
-        btnXoa.addActionListener(e -> xoaPhieuTreoChon());
-        khungThaoTacTreo.add(btnMoLai);
-        khungThaoTacTreo.add(btnXoa);
-        khungTam.add(khungThaoTacTreo, BorderLayout.NORTH);
-        khungTam.add(scr, BorderLayout.CENTER);
-        return khungTam;
-    }
-
-    private String layMaPhieuTreoChon(String thongBaoChon) {
-        int row = bangPhieuTreo.getSelectedRow();
-        if (row < 0) {
-            HopThoai.hienThiCanhBao(this, thongBaoChon);
-            return null;
-        }
-        return String.valueOf(
-                moHinhPhieuTreo.getValueAt(bangPhieuTreo.convertRowIndexToModel(row), 0));
-    }
-
-    private void moLaiPhieuTreoChon() {
-        String ma = layMaPhieuTreoChon("Vui lòng chọn một phiếu đang treo từ danh sách.");
-        if (ma == null) return;
-        khungLapPhieu.khoiPhucPhieu(ma);
-        tabWorkspace.setSelectedIndex(1);
-    }
-
     private void capNhatTrangThaiSpaNen(String trangThaiMoi) {
-        int dongChon = layBangDuLieu().getSelectedRow();
-        if (dongChon < 0) {
+        if (layBangDuLieu().getSelectedRow() < 0) {
             HopThoai.hienThiCanhBao(this, "Vui lòng chọn một phiếu Spa cần cập nhật.");
             return;
         }
         String ma = layDongChon();
-        String trangThaiHienTai =
-                String.valueOf(
-                        layMoHinh()
-                                .getValueAt(layBangDuLieu().convertRowIndexToModel(dongChon), 7));
+        String trangThaiHienTai = layTrangThaiDongChon();
         boolean batDauLam = TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB().equals(trangThaiMoi);
         String yeuCauHienTai =
                 batDauLam
@@ -295,11 +567,6 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
                             : "Chỉ phiếu Đang thực hiện mới có thể đánh dấu Hoàn thành.");
             return;
         }
-        String loiNhac =
-                batDauLam
-                        ? "Xác nhận bắt đầu thực hiện phiếu Spa #" + ma + "?"
-                        : "Xác nhận đã hoàn thành phiếu Spa #" + ma + "?";
-        if (!HopThoai.xacNhan(this, loiNhac)) return;
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chayCoPhien(
                 phien,
@@ -313,87 +580,14 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
                 ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
     }
 
-    private void xoaPhieuTreoChon() {
-        String ma = layMaPhieuTreoChon("Vui lòng chọn một phiếu đang treo để xóa.");
-        if (ma == null) return;
-        if (HopThoai.xacNhan(this, "Bạn có chắc muốn xóa phiếu Spa đang treo này không?")) {
-            var phien = PhienDangNhapService.macDinh().layPhienHienTai();
-            TacVuNen.chayCoPhien(
-                    phien,
-                    () -> true,
-                    () -> {
-                        phieuSpaTreoService.xoa(ma);
-                        return null;
-                    },
-                    null,
-                    v -> {
-                        taiDanhSachPhieuTreo();
-                        HopThoai.hienThiThanhCong(this, "Đã xóa phiếu treo.");
-                    },
-                    ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
-        }
-    }
-
-    private void taiDanhSachPhieuTreo() {
-        if (moHinhPhieuTreo == null) return;
-        moHinhPhieuTreo.setRowCount(0);
-        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
-        TacVuNen.chayCoPhien(
-                phien,
-                () -> true,
-                phieuSpaTreoService::danhSach,
-                null,
-                ds -> {
-                    moHinhPhieuTreo.setRowCount(0);
-                    for (SpaDTO.DongPhieuSpaTreo d : ds) {
-                        var p = d.getPhieuTreo();
-                        String maPhieu = p != null && p.getMaPhieu() != null ? p.getMaPhieu() : "";
-                        String hoTenKhach =
-                                p != null
-                                                && p.getKhachHang() != null
-                                                && p.getKhachHang().getHoTen() != null
-                                                && !p.getKhachHang().getHoTen().isBlank()
-                                        ? p.getKhachHang().getHoTen()
-                                        : "Chưa chọn khách";
-                        String sdt =
-                                p != null && p.getSoDienThoai() != null ? p.getSoDienThoai() : "";
-                        String tenThuCung =
-                                p != null
-                                                && p.getThuCung() != null
-                                                && p.getThuCung().getTen() != null
-                                                && !p.getThuCung().getTen().isBlank()
-                                        ? p.getThuCung().getTen()
-                                        : "Chưa chọn thú cưng";
-                        String tenGoi =
-                                p != null
-                                                && p.getGoiDichVu() != null
-                                                && p.getGoiDichVu().getTenGoi() != null
-                                                && !p.getGoiDichVu().getTenGoi().isBlank()
-                                        ? p.getGoiDichVu().getTenGoi()
-                                        : "Chưa chọn dịch vụ";
-                        moHinhPhieuTreo.addRow(
-                                new Object[] {
-                                    d.getMaKhoa(),
-                                    maPhieu,
-                                    hoTenKhach,
-                                    sdt,
-                                    tenThuCung,
-                                    tenGoi,
-                                    p != null ? p.getCapNhatLuc() : null
-                                });
-                    }
-                },
-                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
-    }
-
-    public void chonTab(int index) {
-        if (index >= 0 && index < tabWorkspace.getTabCount()) {
-            tabWorkspace.setSelectedIndex(index);
+    public void chonTab(int chiSo) {
+        if (chiSo >= 0 && chiSo < tabWorkspace.getTabCount()) {
+            tabWorkspace.setSelectedIndex(chiSo);
         }
     }
 
     @Override
     protected void tiepNhan() {
-        tabWorkspace.setSelectedIndex(1);
+        chonTab(1);
     }
 }

@@ -8,6 +8,8 @@ import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.nhansu.NhanVienService;
 import com.petstation.util.DinhDang;
 
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -43,7 +45,7 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                 String.valueOf(dong[3]),
                                                 String.valueOf(dong[5])))
                         .themThaoTacBoSungKhongLuu(
-                                "Đặt lại MK",
+                                "Đặt lại mật khẩu",
                                 dong -> {
                                     if ("Nghỉ việc".equals(String.valueOf(dong[6]))) {
                                         throw new IllegalStateException(
@@ -51,8 +53,11 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                         + " lại mật khẩu.");
                                     }
                                     String maNv = String.valueOf(dong[0]);
+                                    Window cha =
+                                            KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                                                    .getActiveWindow();
                                     if (!HopThoai.xacNhan(
-                                            null,
+                                            cha,
                                             "Xác nhận cấp/đặt lại mật khẩu mặc định cho nhân"
                                                     + " viên "
                                                     + dong[1]
@@ -74,7 +79,11 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                                     : tenDangNhap;
                                     NhanVienService.macDinh()
                                             .capNhatHoacTaoTaiKhoan(maNv, tenMoi, passMoi, vaiTro);
-                                    HopThoai.hienThiMatKhauTam(null, tenMoi, passMoi);
+                                    HopThoai.hienThiMatKhauTam(
+                                            KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                                                    .getActiveWindow(),
+                                            tenMoi,
+                                            passMoi);
                                     return "Đã cấp/đặt lại mật khẩu cho tài khoản " + tenMoi + ".";
                                 })
                         .datTrangThai(6, "Đang làm", "Nghỉ việc");

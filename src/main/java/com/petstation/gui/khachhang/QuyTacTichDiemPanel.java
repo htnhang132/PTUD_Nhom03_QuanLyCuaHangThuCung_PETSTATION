@@ -28,7 +28,7 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
-// Màn hình con (Tab 1) trong Danh mục > Điểm thưởng và voucher
+// Màn hình con (Tab 2) trong Danh mục > Voucher và điểm thưởng
 public final class QuyTacTichDiemPanel extends CoSoPanel {
 
     // 1. KHAI BÁO CÁC TRƯỜNG NHẬP LIỆU & DANH SÁCH HẠNG THÀNH VIÊN
@@ -50,7 +50,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         add(taoTieuDeManHinh("Quy tắc tích điểm và hạng thành viên"), BorderLayout.NORTH);
         BoGocPanel khungThe = new BoGocPanel(12, Color.WHITE, true);
         khungThe.setLayout(new GridBagLayout());
-        khungThe.setBorder(new EmptyBorder(18, 22, 18, 22));
+        khungThe.setBorder(new EmptyBorder(18, 20, 18, 20));
         GridBagConstraints giaTriDangXet = new GridBagConstraints();
         giaTriDangXet.insets = new Insets(6, 0, 6, 12);
         giaTriDangXet.anchor = GridBagConstraints.WEST;
@@ -69,8 +69,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 "200 điểm đổi voucher Spa (hạn 60 ngày)",
                 oDoiDiem,
                 "₫");
-        JLabel nhanDau = new JLabel("Hạng thành viên (theo tổng chi tiêu từ):");
-        nhanDau.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        JLabel nhanDau = taoTieuDeMuc("Hạng thành viên (theo tổng chi tiêu từ):");
         giaTriDangXet.gridx = 0;
         giaTriDangXet.gridy = toaDoDoc++;
         giaTriDangXet.gridwidth = 3;
@@ -200,19 +199,11 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         return so > 0 ? so : 1000L;
     }
 
-    private static long docTienTeHopLe(String vanBan) {
-        String raw = vanBan == null ? "" : vanBan.trim();
-        if (raw.isEmpty()) return -1;
-        String khongDonVi = raw.replaceAll("(?i)[₫đ\\s]+$", "").trim();
-        if (!khongDonVi.matches("\\d+(?:[.,]\\d{3})*")) return -1;
-        return DinhDang.doc(khongDonVi);
-    }
-
     private void luu() {
-        long tichDiemMoi = docTienTeHopLe(oTichDiem.getText());
+        long tichDiemMoi = DinhDang.docTienKhongAm(oTichDiem.getText());
         long[] cacMucHang = new long[4];
         for (int chiSo = 0; chiSo < 4; chiSo++) {
-            cacMucHang[chiSo] = docTienTeHopLe(cacHang[chiSo].getText());
+            cacMucHang[chiSo] = DinhDang.docTienKhongAm(cacHang[chiSo].getText());
         }
         if (tichDiemMoi <= 0) {
             HopThoai.hienThiCanhBao(this, "Số đồng cho 1 điểm phải là số nguyên dương.");
@@ -220,9 +211,12 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
             return;
         }
         for (int chiSo = 0; chiSo < 4; chiSo++) {
-            if (cacMucHang[chiSo] < 0) {
+            if (chiSo == 0 ? cacMucHang[chiSo] <= 0 : cacMucHang[chiSo] < 0) {
                 HopThoai.hienThiCanhBao(
-                        this, "Ngưỡng hạng " + HANG_CAC_TEN[chiSo] + " không hợp lệ.");
+                        this,
+                        chiSo == 0
+                                ? "Ngưỡng hạng Bạc phải lớn hơn 0₫."
+                                : "Ngưỡng hạng " + HANG_CAC_TEN[chiSo] + " không hợp lệ.");
                 cacHang[chiSo].requestFocusInWindow();
                 return;
             }
@@ -252,7 +246,10 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
                 () -> {
                     nap();
                     hienThiThongBaoTam("Đã lưu quy tắc.");
-                });
+                },
+                ex ->
+                        HopThoai.hienThiLoi(
+                                this, "Không thể lưu quy tắc: " + TacVuNen.thongDiepLoi(ex)));
     }
 
     private void hienThiThongBaoTam(String vanBan) {

@@ -15,6 +15,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,9 +35,12 @@ public final class BoChonKhachHang extends JPanel {
 
     private final JTextField oDauVao = new JTextField();
 
-    private final JPanel khungNhan = new BoGocPanel(10, MauUngDung.mau(0xEEF5FF), true);
+    private final JPanel khungNhan = new BoGocPanel(10, MauUngDung.KEM_NEN_NHAN, true);
 
     private final JLabel nhanVanBanNhan = new JLabel();
+
+    private final NutDinhDang btnDoiVoucher =
+            new NutDinhDang("Đổi voucher", NutDinhDang.KieuNut.TRONG_SUOT);
 
     private final TichDiemService tichDiemService = new TichDiemService();
 
@@ -54,9 +59,9 @@ public final class BoChonKhachHang extends JPanel {
         JPanel khungDong = new JPanel(new BorderLayout(6, 0));
         khungDong.setOpaque(false);
         khungDong.setAlignmentX(Component.LEFT_ALIGNMENT);
-        khungDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        khungDong.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_DAU_VAO));
         oDauVao.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oDauVao.setPreferredSize(new Dimension(180, 34));
+        oDauVao.setPreferredSize(new Dimension(180, MauUngDung.CAO_DAU_VAO));
         oDauVao.putClientProperty("JTextField.placeholderText", "SĐT, mã hoặc tên khách...");
         oDauVao.getAccessibleContext().setAccessibleName("Tìm khách hàng");
         oDauVao.addActionListener(suKien -> timKiem());
@@ -71,7 +76,17 @@ public final class BoChonKhachHang extends JPanel {
         khungNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         nhanVanBanNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         NutDinhDang btnXoa = new NutDinhDang("Bỏ chọn", NutDinhDang.KieuNut.TRONG_SUOT);
+        Dimension kichThuocNutXoa = new Dimension(86, MauUngDung.CAO_NUT);
+        btnXoa.setPreferredSize(kichThuocNutXoa);
+        btnXoa.setMinimumSize(kichThuocNutXoa);
+        btnXoa.setMaximumSize(kichThuocNutXoa);
         btnXoa.addActionListener(suKien -> xoa());
+        JPanel bocNutXoa = new JPanel(new GridBagLayout());
+        bocNutXoa.setOpaque(false);
+        GridBagConstraints gbcNutXoa = new GridBagConstraints();
+        gbcNutXoa.anchor = GridBagConstraints.CENTER;
+        gbcNutXoa.fill = GridBagConstraints.NONE;
+        bocNutXoa.add(btnXoa, gbcNutXoa);
         JPanel khungSuDungDiem = new JPanel();
         khungSuDungDiem.setOpaque(false);
         khungSuDungDiem.setLayout(new BoxLayout(khungSuDungDiem, BoxLayout.Y_AXIS));
@@ -80,7 +95,6 @@ public final class BoChonKhachHang extends JPanel {
         nhanNhanSuDung.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungSuDungDiem.add(nhanNhanSuDung);
         khungSuDungDiem.add(Box.createVerticalStrut(4));
-        NutDinhDang btnDoiVoucher = new NutDinhDang("Đổi voucher", NutDinhDang.KieuNut.TRONG_SUOT);
         btnDoiVoucher.addActionListener(e -> doiVoucher());
         JPanel khungDongDoiVoucher = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         khungDongDoiVoucher.setOpaque(false);
@@ -94,7 +108,7 @@ public final class BoChonKhachHang extends JPanel {
         khungVanBan.add(Box.createVerticalStrut(5));
         khungVanBan.add(khungSuDungDiem);
         khungNhan.add(khungVanBan, BorderLayout.CENTER);
-        khungNhan.add(btnXoa, BorderLayout.EAST);
+        khungNhan.add(bocNutXoa, BorderLayout.EAST);
         khungNhan.setVisible(false);
         add(Box.createVerticalStrut(4));
         add(khungNhan);
@@ -113,21 +127,25 @@ public final class BoChonKhachHang extends JPanel {
             return;
         if (khoaDoiVoucher == null) khoaDoiVoucher = "DOI-" + UUID.randomUUID();
         String khoaTam = khoaDoiVoucher;
+        btnDoiVoucher.setEnabled(false);
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
                 () -> tichDiemService.doiVoucher(maKh, khoaTam),
                 ma -> {
+                    btnDoiVoucher.setEnabled(true);
                     khoaDoiVoucher = null;
-                    banHang.setKhachHang(
-                            banHang.getMaKhachHang(),
-                            banHang.getTenKhachHang(),
-                            banHang.getKhachHangDiem() - 200);
+                    banHang.capNhatDiemKhachHang(banHang.getKhachHangDiem() - 200);
                     dongBo();
                     khiThayDoi.run();
                     HopThoai.hienThiThongTin(
                             this,
                             "Voucher: " + ma + "\nDùng tại thanh toán Spa của khách hàng này.");
+                },
+                ex -> {
+                    btnDoiVoucher.setEnabled(true);
+                    HopThoai.hienThiLoi(
+                            this, "Không thể đổi voucher: " + TacVuNen.thongDiepLoi(ex));
                 });
     }
 
@@ -245,12 +263,7 @@ public final class BoChonKhachHang extends JPanel {
             TacVuNen.chayCoPhien(
                     this,
                     () -> luot == luotDongBo && maKh.equals(banHang.getMaKhachHang()),
-                    () -> {
-                        for (Object[] dongDuLieu : DanhMucService.macDinh().layKhachHang()) {
-                            if (dongDuLieu[0].equals(maKh)) return String.valueOf(dongDuLieu[6]);
-                        }
-                        return "";
-                    },
+                    () -> tichDiemService.layHangKhachHang(maKh),
                     hang ->
                             nhanVanBanNhan.setText(
                                     banHang.getTenKhachHang()

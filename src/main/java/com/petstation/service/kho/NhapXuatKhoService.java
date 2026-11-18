@@ -47,10 +47,8 @@ public final class NhapXuatKhoService {
         PhienDangNhapService.macDinh().yeuCau(Quyen.NHAP_KHO);
         kiemTraDuong(soLuong);
         kiemTraDuong(giaNhap);
-        if (loHang == null
-                || loHang.isBlank()
-                || daTra < 0
-                || daTra > Math.multiplyExact((long) soLuong, giaNhap))
+        long tongTien = Math.multiplyExact((long) soLuong, giaNhap);
+        if (loHang == null || loHang.isBlank() || daTra < 0 || daTra > tongTien)
             throw new IllegalArgumentException("Số lô hoặc tiền đã trả không hợp lệ.");
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
@@ -71,7 +69,7 @@ public final class NhapXuatKhoService {
                                             taoMa("PNK"),
                                             nhaCungCap,
                                             PhienDangNhapService.macDinh().layMaNhanVien(),
-                                            soLuong * giaNhap,
+                                            tongTien,
                                             daTra);
                             Optional<LoHang> loHienCo = nhapXuatKhoDAO.timNhapKho(sanPham, loHang);
                             String maLo;
@@ -87,6 +85,13 @@ public final class NhapXuatKhoService {
                                 if (!Objects.equals(hanSuDung, cu))
                                     throw new IllegalArgumentException(
                                             "Lô đã tồn tại với hạn sử dụng khác.");
+                                if ("TAM_KHOA".equalsIgnoreCase(loCu.getTrangThai())
+                                        || "HET_HAN".equalsIgnoreCase(loCu.getTrangThai())
+                                        || (cu != null && cu.isBefore(LocalDate.now()))) {
+                                    throw new IllegalArgumentException(
+                                            "Không thể nhập thêm vào lô hàng đang tạm khóa hoặc đã"
+                                                    + " hết hạn.");
+                                }
                                 nhapXuatKhoDAO.capNhatNhapKho(soLuong, maLo);
                             }
                             nhapXuatKhoDAO.themChiTietNhapKho(
@@ -151,7 +156,7 @@ public final class NhapXuatKhoService {
                             if (loTim.isEmpty() || loTim.get().getSoLuongTon() < soLuong)
                                 throw new IllegalStateException("Không đủ tồn lô.");
                             LoHang lo = loTim.get();
-                            long giaNhap = lo.getGiaNhap() * soLuong;
+                            long giaNhap = Math.multiplyExact(lo.getGiaNhap(), (long) soLuong);
                             String maPhieuXuat =
                                     nhapXuatKhoDAO.themXuatHuy(
                                             taoMa("PXK"),

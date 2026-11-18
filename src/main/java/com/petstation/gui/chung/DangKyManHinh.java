@@ -27,13 +27,11 @@ import com.petstation.gui.kho.TimKiemTonTheoLoPanel;
 import com.petstation.gui.kho.XuatHuyKhoPanel;
 import com.petstation.gui.luutru.DanhMucPhongHotelPanel;
 import com.petstation.gui.luutru.LuuTruHotelPanel;
-import com.petstation.gui.luutru.TraCuuPhongHotelPanel;
 import com.petstation.gui.nhansu.DanhMucNhanVienPanel;
 import com.petstation.gui.nhansu.LichTuanPanel;
 import com.petstation.gui.pheduyet.TrungTamPheDuyetPanel;
 import com.petstation.gui.spa.DanhMucDichVuSpaPanel;
 import com.petstation.gui.spa.TiepNhanSpaPanel;
-import com.petstation.gui.spa.TraCuuPhieuSpaPanel;
 import com.petstation.gui.thongke.ThongKeCongNoPanel;
 import com.petstation.gui.thongke.ThongKeDoanhThuPanel;
 import com.petstation.gui.thongke.ThongKeHangHoaPanel;
@@ -173,8 +171,8 @@ public final class DangKyManHinh {
                 Quyen.QUAN_LY_KHUYEN_MAI);
         dangKy(
                 MaManHinh.TICH_DIEM_VOUCHER,
-                "Điểm thưởng và voucher",
-                "Quy tắc điểm, hạng thành viên và voucher.",
+                "Voucher và điểm thưởng",
+                "Voucher, quy tắc điểm và hạng thành viên.",
                 Quyen.QUAN_LY_KHACH_HANG);
     }
 
@@ -194,16 +192,6 @@ public final class DangKyManHinh {
                 "Tồn kho theo lô",
                 "Số lô, hạn dùng, tồn. Vàng: sắp hết hạn, đỏ: hết hạn.",
                 Quyen.QUAN_LY_SAN_PHAM);
-        dangKy(
-                MaManHinh.TRA_CUU_LICH_SPA,
-                "Phiếu Spa",
-                "Lọc theo ngày và trạng thái. Mở phiếu để sang Xử lý.",
-                Quyen.QUAN_LY_SPA);
-        dangKy(
-                MaManHinh.SO_DO_PHONG_LUU_TRU,
-                "Sơ đồ phòng lưu trú",
-                "Lưới phòng theo trạng thái. Phòng quá hạn trả tô đỏ.",
-                Quyen.QUAN_LY_LUU_TRU);
         dangKy(
                 MaManHinh.TRA_CUU_LICH_LAM_VIEC,
                 "Lịch làm việc",
@@ -239,8 +227,8 @@ public final class DangKyManHinh {
     private void dangKySpaVaLuuTru() {
         dangKy(
                 MaManHinh.QUAN_LY_SPA,
-                "Lập phiếu Spa",
-                "Tiếp nhận thú cưng, lập phiếu và thực hiện dịch vụ theo từng bước.",
+                "Quản lý Spa",
+                "Tra cứu, tiếp nhận, lập phiếu nhiều dịch vụ, theo dõi tiến độ và thanh toán Spa.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.DAT_LICH_HEN_SPA,
@@ -270,7 +258,7 @@ public final class DangKyManHinh {
         dangKy(
                 MaManHinh.QUAN_LY_LUU_TRU,
                 "Quản lý lưu trú",
-                "Danh sách thú đang lưu trú. Bấm + Đặt phòng để bắt đầu.",
+                "Sơ đồ phòng trực quan, đặt phòng, thu cọc, chăm sóc và trả phòng.",
                 Quyen.QUAN_LY_LUU_TRU);
         dangKy(
                 MaManHinh.DAT_PHONG_LUU_TRU,
@@ -398,8 +386,6 @@ public final class DangKyManHinh {
             case TIM_KIEM_HOA_DON,
                             TRA_CUU_KHACH_HANG,
                             TRA_CUU_LO_HANG,
-                            TRA_CUU_LICH_SPA,
-                            SO_DO_PHONG_LUU_TRU,
                             TRA_CUU_LICH_LAM_VIEC,
                             LICH_CA_NHAN ->
                     taoManHinhTraCuu(id);
@@ -466,8 +452,6 @@ public final class DangKyManHinh {
             case TIM_KIEM_HOA_DON -> new TimKiemHoaDonPanel(banHang, boDieuHuong);
             case TRA_CUU_KHACH_HANG -> new LichSuKhachHangPanel();
             case TRA_CUU_LO_HANG -> new TimKiemTonTheoLoPanel(banHang, boDieuHuong);
-            case TRA_CUU_LICH_SPA -> new TraCuuPhieuSpaPanel(banHang, boDieuHuong);
-            case SO_DO_PHONG_LUU_TRU -> new TraCuuPhongHotelPanel(banHang, boDieuHuong);
             case TRA_CUU_LICH_LAM_VIEC ->
                     new LichTuanPanel(LichTuanPanel.CheDo.HIEN_THI_TAT_CA, maNhanVienHienTai());
             case LICH_CA_NHAN ->

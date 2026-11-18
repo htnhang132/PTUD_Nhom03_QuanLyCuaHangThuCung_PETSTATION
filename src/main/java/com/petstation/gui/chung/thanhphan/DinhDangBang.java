@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -48,13 +49,23 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 public final class DinhDangBang {
+    // 1. HẰNG SỐ & HÀM KHỞI TẠO
+
+    private static final EmptyBorder LE_RONG = new EmptyBorder(0, 10, 0, 10);
+    private static final EmptyBorder LE_GON = new EmptyBorder(0, 4, 0, 4);
+    private static final String CO_DA_AP_DUNG = "petstation.bangDaApDung";
+    private static final String CO_DA_GAN_SU_KIEN_TIEU_DE = "petstation.tieuDeDaGan";
+    private static final String CO_CHO_CAN_CHINH_COT = "petstation.choCanChinhCot";
+
     private DinhDangBang() {}
+
+    // 2. RENDERER & CẤU HÌNH BẢNG
 
     public static void apDung(JTable bangBang) {
         ToolTipManager.sharedInstance().setInitialDelay(250);
         ToolTipManager.sharedInstance().setDismissDelay(10000);
         bangBang.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        bangBang.setRowHeight(38);
+        bangBang.setRowHeight(MauUngDung.CAO_DONG_BANG);
         bangBang.setGridColor(MauUngDung.VIEN);
         bangBang.setBackground(MauUngDung.THE_NEN);
         bangBang.setSelectionBackground(MauUngDung.DO_NHAT);
@@ -65,14 +76,23 @@ public final class DinhDangBang {
         bangBang.setFillsViewportHeight(true);
         bangBang.setAutoCreateRowSorter(true);
         cauHinhSapXepBang(bangBang);
-        bangBang.addPropertyChangeListener(
-                "model", e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
-        bangBang.addPropertyChangeListener(
-                "rowSorter", e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
+        if (bangBang.getClientProperty(CO_DA_AP_DUNG) == null) {
+            bangBang.putClientProperty(CO_DA_AP_DUNG, true);
+            bangBang.addPropertyChangeListener(
+                    "model", e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
+            bangBang.addPropertyChangeListener(
+                    "rowSorter",
+                    e -> SwingUtilities.invokeLater(() -> cauHinhSapXepBang(bangBang)));
+        }
         bangBang.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         bangBang.setFocusable(true);
         bangBang.getAccessibleContext().setAccessibleName("Bảng dữ liệu");
-        bangBang.setDefaultRenderer(Object.class, taoTrinhVeOBang());
+        DefaultTableCellRenderer trinhVe = taoTrinhVeOBang();
+        bangBang.setDefaultRenderer(Object.class, trinhVe);
+        bangBang.setDefaultRenderer(Number.class, trinhVe);
+        bangBang.setDefaultRenderer(Date.class, trinhVe);
+        bangBang.setDefaultRenderer(LocalDate.class, trinhVe);
+        bangBang.setDefaultRenderer(LocalDateTime.class, trinhVe);
         cauHinhTieuDeBang(bangBang);
         canChinhDoRongCot(bangBang);
         dangKyTuDongCanChinh(bangBang);
@@ -91,8 +111,7 @@ public final class DinhDangBang {
                 super.getTableCellRendererComponent(
                         bangGiaTriTam, giaTri, daChon, false, dong, cot);
                 boolean laBangGon = Boolean.TRUE.equals(bangGiaTriTam.getClientProperty("bangGon"));
-                int demNgang = laBangGon ? 4 : 10;
-                setBorder(new EmptyBorder(0, demNgang, 0, demNgang));
+                setBorder(laBangGon ? LE_GON : LE_RONG);
                 String giaTriGoc = giaTri == null ? "" : giaTri.toString();
                 setBackground(
                         daChon
@@ -192,14 +211,17 @@ public final class DinhDangBang {
                         }
                     });
         }
-        tieuDeBang.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mousePressed(MouseEvent e) {
-                        if (tieuDeBang.getResizingColumn() != null)
-                            bangBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-                    }
-                });
+        if (tieuDeBang.getClientProperty(CO_DA_GAN_SU_KIEN_TIEU_DE) == null) {
+            tieuDeBang.putClientProperty(CO_DA_GAN_SU_KIEN_TIEU_DE, true);
+            tieuDeBang.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mousePressed(MouseEvent e) {
+                            if (tieuDeBang.getResizingColumn() != null)
+                                bangBang.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                        }
+                    });
+        }
     }
 
     private static void dangKyTuDongCanChinh(JTable bangBang) {
@@ -208,7 +230,18 @@ public final class DinhDangBang {
             bangBang.putClientProperty("modelResizeListener", true);
             bangBang.getModel()
                     .addTableModelListener(
-                            e -> SwingUtilities.invokeLater(() -> canChinhDoRongCot(bangBang)));
+                            e -> {
+                                if (Boolean.TRUE.equals(
+                                        bangBang.getClientProperty(CO_CHO_CAN_CHINH_COT))) {
+                                    return;
+                                }
+                                bangBang.putClientProperty(CO_CHO_CAN_CHINH_COT, true);
+                                SwingUtilities.invokeLater(
+                                        () -> {
+                                            bangBang.putClientProperty(CO_CHO_CAN_CHINH_COT, null);
+                                            canChinhDoRongCot(bangBang);
+                                        });
+                            });
         }
         Runnable resize =
                 () -> {
@@ -266,6 +299,8 @@ public final class DinhDangBang {
                     "bảng giá",
                     "điều khoản",
                     "chương trình");
+
+    // 3. CĂN CHỈNH ĐỘ RỘNG CỘT
 
     public static void canChinhDoRongCot(JTable bangBang) {
         if (bangBang == null || bangBang.getColumnCount() == 0) return;
@@ -338,18 +373,27 @@ public final class DinhDangBang {
         return (tenThuong.contains("ngày")
                         || tenThuong.contains("hết hạn")
                         || tenThuong.contains("hạn dùng")
-                        || tenThuong.contains("thời gian"))
+                        || tenThuong.contains("thời gian")
+                        || tenThuong.contains("lúc")
+                        || tenThuong.contains("bắt đầu")
+                        || tenThuong.contains("kết thúc"))
                 && !tenThuong.contains("ghi chú");
     }
 
     private static int canChinhMotCot(
             JTable bangBang, TableColumn cot, int chiSo, FontMetrics hfm, FontMetrics cfm) {
+        Object coDinhObj = bangBang.getClientProperty("cotDoRongCoDinh");
+        if (coDinhObj instanceof Set<?> cotCoDinh
+                && cotCoDinh.contains(cot.getModelIndex())
+                && cot.getPreferredWidth() > 0) {
+            return cot.getMinWidth();
+        }
         boolean laBangGon = Boolean.TRUE.equals(bangBang.getClientProperty("bangGon"));
         int buChu = laBangGon ? 12 : 24;
         String tieuDe = String.valueOf(cot.getHeaderValue()).trim();
         String ten = tieuDe.toLowerCase(Locale.ROOT);
         int rongTieuDe = hfm != null ? hfm.stringWidth(tieuDe) + buChu : 84;
-        int rongDuLieu = doRongDuLieuCot(bangBang, chiSo, cot.getModelIndex(), ten, cfm);
+        int rongDuLieu = doRongDuLieuCot(bangBang, chiSo, cot.getModelIndex(), cfm);
         if (laCotNgayCoDinh(ten)) {
             int rongNgay = cfm != null ? cfm.stringWidth("30/12/2099") + (laBangGon ? 22 : 28) : 90;
             rongDuLieu = Math.max(rongDuLieu, rongNgay);
@@ -371,8 +415,7 @@ public final class DinhDangBang {
         return toiThieu;
     }
 
-    private static int doRongDuLieuCot(
-            JTable bangBang, int chiSo, int modelCol, String ten, FontMetrics cfm) {
+    private static int doRongDuLieuCot(JTable bangBang, int chiSo, int modelCol, FontMetrics cfm) {
         int bu = Boolean.TRUE.equals(bangBang.getClientProperty("bangGon")) ? 12 : 22;
         TableModel model = bangBang.getModel();
         int soDong = model == null ? 0 : Math.min(model.getRowCount(), 25);
@@ -440,6 +483,8 @@ public final class DinhDangBang {
                 if (soA != null && soB != null) return Double.compare(soA, soB);
                 return a.toString().compareToIgnoreCase(b.toString());
             };
+
+    // 4. SẮP XẾP & XUẤT DỮ LIỆU BẢNG
 
     private static void cauHinhSapXepBang(JTable bangBang) {
         if (bangBang == null || bangBang.getModel() == null) return;
@@ -619,6 +664,8 @@ public final class DinhDangBang {
                     Map.entry("NGHI_PHEP", "Nghỉ phép"),
                     Map.entry("DA_GHI_SO", "Đã ghi sổ"));
 
+    // 5. NHÃN TRẠNG THÁI & TIỆN ÍCH TABLE MODEL
+
     public static String tenTrangThai(String s) {
         if (s == null) return "";
         String trimmed = s.trim();
@@ -732,6 +779,15 @@ public final class DinhDangBang {
         if (dongHienThi >= 0 && dongHienThi < bang.getRowCount()) {
             bang.setRowSelectionInterval(dongHienThi, dongHienThi);
             bang.scrollRectToVisible(bang.getCellRect(dongHienThi, 0, true));
+        }
+    }
+
+    public static void thayTheDuLieu(DefaultTableModel moHinh, List<Object[]> cacDong) {
+        moHinh.setRowCount(0);
+        if (cacDong != null) {
+            for (Object[] dong : cacDong) {
+                moHinh.addRow(dong);
+            }
         }
     }
 

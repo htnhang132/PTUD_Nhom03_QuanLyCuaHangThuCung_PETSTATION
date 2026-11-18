@@ -18,7 +18,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.time.LocalDate;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -27,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 
 public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
@@ -90,14 +88,14 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
     private JPanel taoVungNhapTiemPhong() {
         cboLoai.setEditable(true);
         cboLoai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        cboLoai.setPreferredSize(new Dimension(140, 30));
+        cboLoai.setPreferredSize(new Dimension(140, MauUngDung.CAO_DAU_VAO));
         oNgayTiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oNgayTiem.setPreferredSize(new Dimension(95, 30));
+        oNgayTiem.setPreferredSize(new Dimension(95, MauUngDung.CAO_DAU_VAO));
         oNgayHan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oNgayHan.setPreferredSize(new Dimension(95, 30));
+        oNgayHan.setPreferredSize(new Dimension(95, MauUngDung.CAO_DAU_VAO));
         oNgayHan.putClientProperty("JTextField.placeholderText", "dd/MM/yyyy");
         oGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oGhiChu.setPreferredSize(new Dimension(140, 30));
+        oGhiChu.setPreferredSize(new Dimension(140, MauUngDung.CAO_DAU_VAO));
         oGhiChu.putClientProperty("JTextField.placeholderText", "Ghi chú / Phòng khám...");
         JPanel nhap = new JPanel(new GridBagLayout());
         nhap.setOpaque(false);
@@ -124,10 +122,6 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
                 DinhDangBang.taoHangNhap(
                         "Hết hạn (tùy chọn)", taoOTruongCoNutLich(oNgayHan, btnLichNgayHan), 2, 12),
                 gbc);
-        Border viNut = BorderFactory.createEmptyBorder(3, 8, 3, 8);
-        btnThem.setBorder(viNut);
-        btnSua.setBorder(viNut);
-        btnXoa.setBorder(viNut);
         JPanel nut = new JPanel(new GridLayout(1, 3, 6, 0));
         nut.setOpaque(false);
         nut.add(btnThem);
@@ -141,7 +135,7 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
     }
 
     private static JPanel taoOTruongCoNutLich(JTextField oNgay, JButton btnLich) {
-        btnLich.setPreferredSize(new Dimension(32, 32));
+        btnLich.setPreferredSize(new Dimension(MauUngDung.CAO_NUT, MauUngDung.CAO_NUT));
         JPanel khungTam = new JPanel(new BorderLayout(4, 0));
         khungTam.setOpaque(false);
         khungTam.add(oNgay, BorderLayout.CENTER);

@@ -1,8 +1,5 @@
 package com.petstation.model.chung;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 public enum Quyen {
     XEM_TONG_QUAN,
     QUAN_LY_TAI_KHOAN,
@@ -27,20 +24,6 @@ public enum Quyen {
     XEM_NHAT_KY,
     XEM_BAO_CAO_CHUNG,
     XEM_BAO_CAO_CA;
-
-    public static Set<Quyen> docDanhSachTuCSDL(String giaTri) {
-        Set<Quyen> ketQua = EnumSet.noneOf(Quyen.class);
-        if (giaTri == null || giaTri.isBlank()) {
-            return ketQua;
-        }
-        for (String sub : giaTri.split("[,;]")) {
-            Quyen q = docTuCSDL(sub);
-            if (q != null) {
-                ketQua.add(q);
-            }
-        }
-        return ketQua;
-    }
 
     public static Quyen docTuCSDL(String giaTri) {
         if (giaTri == null || giaTri.isBlank()) {

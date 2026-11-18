@@ -68,6 +68,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         bang.getSelectionModel()
                 .addListSelectionListener(
                         e -> {
+                            capNhatTrangThaiNut();
                             if (e.getValueIsAdjusting() || bang.getSelectedRow() < 0) return;
                             int r = bang.convertRowIndexToModel(bang.getSelectedRow());
                             loai.setSelectedItem(model.getValueAt(r, 0));
@@ -79,7 +80,14 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                                             DinhDang.doc(String.valueOf(model.getValueAt(r, 2)))));
                         });
         this.cuon = cuon;
+        capNhatTrangThaiNut();
         capNhatKichThuocBang();
+    }
+
+    private void capNhatTrangThaiNut() {
+        boolean coChon = bang.getSelectedRow() >= 0;
+        sua.setEnabled(coChon);
+        xoa.setEnabled(coChon);
     }
 
     private final JPanel dau;
@@ -98,7 +106,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         taoNhanh.setBorder(viNut);
         sua.setBorder(viNut);
         xoa.setBorder(viNut);
-        JPanel nut = new JPanel(new GridLayout(1, 4, 4, 0));
+        JPanel nut = new JPanel(new GridLayout(2, 2, 6, 6));
         nut.setOpaque(false);
         nut.add(them);
         nut.add(taoNhanh);
@@ -129,6 +137,22 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
             return;
         }
         Object loaiChon = loai.getSelectedItem();
+        boolean coMocCu = false;
+        for (int i = 0; i < model.getRowCount(); i++) {
+            if (loaiChon.equals(model.getValueAt(i, 0))) {
+                coMocCu = true;
+                break;
+            }
+        }
+        if (coMocCu
+                && !HopThoai.xacNhanNguyHiem(
+                        panel,
+                        "Loài \""
+                                + loaiChon
+                                + "\" đã có bảng giá. Thay thế toàn bộ bằng 4 mốc cân mới?",
+                        "Thay thế bảng giá")) {
+            return;
+        }
         for (int i = model.getRowCount() - 1; i >= 0; i--) {
             if (loaiChon.equals(model.getValueAt(i, 0))) {
                 model.removeRow(i);
@@ -142,13 +166,14 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         gia.setText("");
         tuKg.setText("0");
         denKg.setText("5");
+        capNhatTrangThaiNut();
         capNhatKichThuocBang();
     }
 
     @Override
     public boolean xacNhanDangNhap() {
-        if (dau.isVisible() && !gia.getText().isBlank() && bang.getSelectedRow() < 0) {
-            return capNhat(false);
+        if (dau.isVisible() && !gia.getText().isBlank()) {
+            return capNhat(bang.getSelectedRow() >= 0);
         }
         return true;
     }

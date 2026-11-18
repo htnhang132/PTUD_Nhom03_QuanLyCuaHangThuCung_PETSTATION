@@ -140,7 +140,7 @@ public final class GioHang {
         }
 
         public long docSoTien() {
-            return donGia * soLuong;
+            return Math.multiplyExact(donGia, soLuong);
         }
 
         @Override
@@ -565,6 +565,11 @@ public final class GioHang {
         thongBaoThayDoi();
     }
 
+    public void capNhatDiemKhachHang(long diem) {
+        this.khachHangDiem = Math.max(0, diem);
+        thongBaoThayDoi();
+    }
+
     public long getGiaTriDiem() {
         return 0;
     }
@@ -574,6 +579,7 @@ public final class GioHang {
     }
 
     public KhuyenMai getKhuyenMaiTotNhat() {
+        if ("DOI_HANG".equals(kieuNguon)) return null;
         KhuyenMai totNhat = null;
         long tamTinh = tinhTamTinh();
         for (MucKhuyenMai muc : chinhSach.layKhuyenMai()) {

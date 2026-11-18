@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của phiên làm việc (ca thu ngân). Mapping tương ứng cột trang_thai trong bảng
  * phien_lam_viec: 'DANG_MO', 'DA_KHOA', 'DA_BAN_GIAO', 'CHO_DUYET', 'DA_DOI_SOAT'
  */
-public enum TrangThaiPhienLamViec {
+public enum TrangThaiPhienLamViec implements MaDBEnum {
     DANG_MO("DANG_MO", "Đang mở"),
     DA_KHOA("DA_KHOA", "Đã khóa"),
     DA_BAN_GIAO("DA_BAN_GIAO", "Đã bàn giao"),
@@ -28,12 +28,6 @@ public enum TrangThaiPhienLamViec {
     }
 
     public static TrangThaiPhienLamViec tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiPhienLamViec t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiPhienLamViec với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiPhienLamViec.class, ma);
     }
 }

@@ -3,20 +3,24 @@ package com.petstation.service.banhang;
 import com.petstation.dao.banhang.PhienLamViecDAO;
 import com.petstation.dao.banhang.impl.PhienLamViecDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
+import com.petstation.database.ThaoTacSQL;
+import com.petstation.dto.TomTatCaLamViec;
 import com.petstation.model.banhang.PhienLamViec;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.nhansu.NhanVien;
 import com.petstation.service.chung.BoLangNgheSuKien;
+import com.petstation.service.chung.PhatSuKien;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class CaThuNganService {
+    // 1. INSTANCE MẶC ĐỊNH, PHỤ THUỘC & HÀM KHỞI TẠO
+
     private static final CaThuNganService MAC_DINH = new CaThuNganService();
 
     public static CaThuNganService macDinh() {
@@ -33,15 +37,42 @@ public final class CaThuNganService {
         this.caThuNganDAO = Objects.requireNonNull(caThuNganDAO);
     }
 
-    private final List<BoLangNgheSuKien<CaThuNganService>> cacBoLangNghe =
-            new CopyOnWriteArrayList<>();
+    private static final long THOI_HAN_DEM_MS = 1500L;
+
+    private final PhatSuKien<CaThuNganService> phatSuKien = new PhatSuKien<>();
 
     private String tieuDeDangCho = "", cuoiCungBanGiao = "";
+    private volatile String maNhanVienDem;
+    private volatile PhienLamViec phienDem;
+    private volatile long thoiDiemDemMs;
+
+    public void xoaBoDem() {
+        maNhanVienDem = null;
+        phienDem = null;
+        thoiDiemDemMs = 0L;
+    }
 
     private PhienLamViec layHienTai() {
-        if (PhienDangNhapService.macDinh().layPhienHienTai() == null) return null;
-        return caThuNganDAO.timHienTai(PhienDangNhapService.macDinh().layMaNhanVien()).orElse(null);
+        if (PhienDangNhapService.macDinh().layPhienHienTai() == null) {
+            xoaBoDem();
+            return null;
+        }
+        String maNv = PhienDangNhapService.macDinh().layMaNhanVien();
+        if (ThaoTacSQL.dangTrongGiaoDich()) {
+            return caThuNganDAO.timHienTai(maNv).orElse(null);
+        }
+        long bayGio = System.currentTimeMillis();
+        if (Objects.equals(maNv, maNhanVienDem) && bayGio - thoiDiemDemMs < THOI_HAN_DEM_MS) {
+            return phienDem;
+        }
+        PhienLamViec kq = caThuNganDAO.timHienTai(maNv).orElse(null);
+        maNhanVienDem = maNv;
+        phienDem = kq;
+        thoiDiemDemMs = System.currentTimeMillis();
+        return kq;
     }
+
+    // 2. TRUY VẤN CA HIỆN TẠI & DOANH THU
 
     public String layMaPhien() {
         PhienLamViec phien = layHienTai();
@@ -53,19 +84,12 @@ public final class CaThuNganService {
     }
 
     public static boolean caDangMo() {
-        return new CaThuNganService().kiemTraMo();
+        return MAC_DINH.kiemTraMo();
     }
 
     public String layTenCa() {
         PhienLamViec phien = layHienTai();
         return phien == null || phien.getTenCa() == null ? "" : phien.getTenCa();
-    }
-
-    public LocalTime layGioMoCa() {
-        PhienLamViec phien = layHienTai();
-        return phien == null || phien.getMoLuc() == null
-                ? null
-                : phien.getMoLuc().toLocalTime().withNano(0);
     }
 
     public long layTienDauCa() {
@@ -118,17 +142,11 @@ public final class CaThuNganService {
         return kiemTraMo() ? "Đang mở – " + layTenCa() : "Chưa mở ca";
     }
 
-    public String layTieuDeDangCho() {
-        return tieuDeDangCho;
-    }
-
     public void datTieuDeDangCho(String tieuDe) {
         tieuDeDangCho = tieuDe == null ? "" : tieuDe;
     }
 
-    public String layBanGiaoGanNhat() {
-        return cuoiCungBanGiao;
-    }
+    // 3. MỞ CA, ĐÓNG CA & BÀN GIAO THU NGÂN
 
     public void mo(String ten, long soTien) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_CA_THU_NGAN);
@@ -148,6 +166,7 @@ public final class CaThuNganService {
     }
 
     public void ghiNhanBanHang(PhuongThuc phuongThuc, long soTien) {
+        xoaBoDem();
         thongBao();
     }
 
@@ -174,10 +193,6 @@ public final class CaThuNganService {
             this.nhanVien = nv;
         }
 
-        public NhanVien nhanVien() {
-            return nhanVien;
-        }
-
         public String maNhanVien() {
             return nhanVien != null && nhanVien.getMaNhanVien() != null
                     ? nhanVien.getMaNhanVien()
@@ -191,6 +206,44 @@ public final class CaThuNganService {
             String ma = maNhanVien();
             return ma.isBlank() ? hoTen : hoTen + " (" + ma + ")";
         }
+    }
+
+    public TomTatCaLamViec layTomTatVaNguoiNhan() {
+        xoaBoDem();
+        PhienLamViec phien = layHienTai();
+        if (phien == null) {
+            return new TomTatCaLamViec(
+                    false, "", null, 0L, 0L, 0L, 0L, 0L, cuoiCungBanGiao, tieuDeDangCho, List.of());
+        }
+        String maPhien = phien.getMaPhien() == null ? "" : phien.getMaPhien();
+        long tienDauCa = phien.getTienDauCa();
+        long doanhThuTm = caThuNganDAO.demBanHang(maPhien, PhuongThuc.TIEN_MAT);
+        long doanhThuCkVaThe =
+                caThuNganDAO.demBanHang(maPhien, PhuongThuc.CHUYEN_KHOAN)
+                        + caThuNganDAO.demBanHang(maPhien, PhuongThuc.THE_NGAN_HANG)
+                        + caThuNganDAO.layCocHotel(maPhien, PhuongThuc.CHUYEN_KHOAN.name())
+                        + caThuNganDAO.layCocHotel(maPhien, PhuongThuc.THE_NGAN_HANG.name());
+        long cocHotelTm = caThuNganDAO.layTongCocDaNhan(maPhien);
+        long duKien = tienDauCa + doanhThuTm + cocHotelTm - caThuNganDAO.demDuKienTienMat(maPhien);
+        List<NhanVien> nguoiNhan = List.of();
+        if (PhienDangNhapService.macDinh().layPhienHienTai() != null
+                && PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.QUAN_LY_CA_THU_NGAN)) {
+            nguoiNhan = caThuNganDAO.layNguoiNhan(PhienDangNhapService.macDinh().layMaNhanVien());
+        }
+        LocalTime gioMo =
+                phien.getMoLuc() == null ? null : phien.getMoLuc().toLocalTime().withNano(0);
+        return new TomTatCaLamViec(
+                true,
+                phien.getTenCa(),
+                gioMo,
+                tienDauCa,
+                doanhThuTm,
+                doanhThuCkVaThe,
+                cocHotelTm,
+                duKien,
+                cuoiCungBanGiao,
+                tieuDeDangCho,
+                nguoiNhan);
     }
 
     public List<NguoiNhan> layNguoiNhan() {
@@ -258,14 +311,14 @@ public final class CaThuNganService {
         thongBao();
     }
 
+    // 4. ĐĂNG KÝ & PHÁT SỰ KIỆN CA
+
     public void themBoLangNghe(BoLangNgheSuKien<CaThuNganService> boLangNghe) {
-        if (boLangNghe != null && !cacBoLangNghe.contains(boLangNghe)) {
-            cacBoLangNghe.add(boLangNghe);
-        }
+        phatSuKien.them(boLangNghe);
     }
 
     public void xoaBoLangNghe(BoLangNgheSuKien<CaThuNganService> boLangNghe) {
-        cacBoLangNghe.remove(boLangNghe);
+        phatSuKien.xoa(boLangNghe);
     }
 
     public void thongBaoThayDoi() {
@@ -273,8 +326,7 @@ public final class CaThuNganService {
     }
 
     private void thongBao() {
-        for (BoLangNgheSuKien<CaThuNganService> boLangNghe : cacBoLangNghe) {
-            boLangNghe.khiThayDoi(this);
-        }
+        xoaBoDem();
+        phatSuKien.phat(this);
     }
 }

@@ -357,7 +357,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
             net.drawString(chu.vanBan, (float) ngang, (float) (doc + chu.doc));
         }
         if (khoi.gach) {
-            net.setColor(MauUngDung.mau(0xBEB4AA));
+            net.setColor(MauUngDung.KEM_VIEN);
             net.setStroke(new BasicStroke(.35f));
             net.drawLine(
                     0, (int) (doc + khoi.cao - 1), (int) RONG_NOI_DUNG, (int) (doc + khoi.cao - 1));

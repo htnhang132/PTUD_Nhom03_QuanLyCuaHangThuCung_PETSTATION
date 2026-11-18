@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của phiếu nhập kho. Mapping tương ứng cột trang_thai trong bảng phieu_nhap_kho:
  * 'CHO_NHAP', 'DA_NHAP', 'DA_HUY'
  */
-public enum TrangThaiPhieuNhap {
+public enum TrangThaiPhieuNhap implements MaDBEnum {
     CHO_NHAP("CHO_NHAP", "Chờ nhập kho"),
     DA_NHAP("DA_NHAP", "Đã nhập kho"),
     DA_HUY("DA_HUY", "Đã hủy");
@@ -26,12 +26,6 @@ public enum TrangThaiPhieuNhap {
     }
 
     public static TrangThaiPhieuNhap tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiPhieuNhap t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiPhieuNhap với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiPhieuNhap.class, ma);
     }
 }

@@ -143,7 +143,12 @@ public final class ChinhFrame extends JFrame {
                     }
                 };
         manHinhBoDangKy.layCaLamViec().themBoLangNghe(boLangNgheCaLamViec);
-        dieuHuong(MaManHinh.TONG_QUAN);
+        if (phienDangNhap.getTaiKhoan() != null
+                && phienDangNhap.getTaiKhoan().isBatBuocDoiMatKhau()) {
+            dieuHuong(MaManHinh.DOI_MAT_KHAU);
+        } else {
+            dieuHuong(MaManHinh.TONG_QUAN);
+        }
     }
 
     private void chuyenBuoc(MaManHinh dich) {
@@ -158,8 +163,13 @@ public final class ChinhFrame extends JFrame {
     private void quayLaiTuThanhToan(MaManHinh dich) {
         var gio = manHinhBoDangKy.layGioHang();
         String nguon = gio.getKieuNguon();
-        boolean quayLaiHotel = "HOTEL".equals(nguon) && dich == MaManHinh.TRA_PHONG_LUU_TRU;
-        boolean quayLaiSpa = "SPA".equals(nguon) && dich == MaManHinh.HOAN_TAT_SPA;
+        boolean quayLaiHotel =
+                "HOTEL".equals(nguon)
+                        && (dich == MaManHinh.TRA_PHONG_LUU_TRU
+                                || dich == MaManHinh.QUAN_LY_LUU_TRU);
+        boolean quayLaiSpa =
+                "SPA".equals(nguon)
+                        && (dich == MaManHinh.HOAN_TAT_SPA || dich == MaManHinh.QUAN_LY_SPA);
         boolean quayLaiBanHang =
                 !"HOTEL".equals(nguon) && !"SPA".equals(nguon) && dich == MaManHinh.LAP_HOA_DON;
         if (hienTai != MaManHinh.THANH_TOAN || !(quayLaiHotel || quayLaiSpa || quayLaiBanHang)) {
@@ -174,6 +184,13 @@ public final class ChinhFrame extends JFrame {
     public void dieuHuong(MaManHinh id) {
         if (manHinhBoDangKy.layGioHang().isDangGhiThanhToan()) {
             HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
+            return;
+        }
+        if (id != MaManHinh.DOI_MAT_KHAU
+                && phienDangNhap.getTaiKhoan() != null
+                && phienDangNhap.getTaiKhoan().isBatBuocDoiMatKhau()) {
+            HopThoai.hienThiCanhBao(
+                    this, "Vui lòng đổi mật khẩu lần đầu trước khi sử dụng các chức năng khác.");
             return;
         }
         DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(id);
@@ -301,11 +318,20 @@ public final class ChinhFrame extends JFrame {
     }
 
     private void diQuayLai() {
+        if (manHinhBoDangKy.layGioHang().isDangGhiThanhToan()) {
+            HopThoai.hienThiCanhBao(this, "Đang ghi thanh toán, vui lòng chờ.");
+            return;
+        }
         if (!kiemTraCoTheRoiManHinhHienTai()) return;
         while (!lichSu.isEmpty()) {
             MaManHinh truocDo = lichSu.pop();
             DinhNghiaManHinh dinhNghia = manHinhBoDangKy.layDinhNghia(truocDo);
             if (dinhNghia != null && manHinhBoDangKy.coTheTruyCap(truocDo)) {
+                if (manHinhBoDangKy.yeuCauMoCaLamViec(truocDo)
+                        && !manHinhBoDangKy.layCaLamViec().kiemTraMo()) {
+                    nhacNhapMoCaLamViec(truocDo, dinhNghia);
+                    return;
+                }
                 hienThi(truocDo, dinhNghia, false);
                 return;
             }
@@ -444,6 +470,15 @@ public final class ChinhFrame extends JFrame {
         if (!kiemTraCoTheRoiManHinhHienTai()) return;
         if (HopThoai.xacNhanDongY(this, "Bạn có chắc muốn đăng xuất?", "Xác nhận đăng xuất")) {
             var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+            Runnable hoanTatDangXuat =
+                    () -> {
+                        manHinhBoDangKy.layCaLamViec().xoaBoDem();
+                        manHinhBoDangKy.layGioHang().xoa();
+                        manHinhBoDangKy.layGioHang().getQuyTrinh().xoa();
+                        PhienDangNhapService.macDinh().datPhienDangNhap(null);
+                        dispose();
+                        new DangNhapFrame(nguCanh).setVisible(true);
+                    };
             TacVuNen.chayCoPhien(
                     phien,
                     () -> true,
@@ -452,13 +487,8 @@ public final class ChinhFrame extends JFrame {
                         return null;
                     },
                     null,
-                    v -> {},
-                    loi -> {});
-            manHinhBoDangKy.layGioHang().xoa();
-            manHinhBoDangKy.layGioHang().getQuyTrinh().xoa();
-            PhienDangNhapService.macDinh().datPhienDangNhap(null);
-            dispose();
-            SwingUtilities.invokeLater(() -> new DangNhapFrame(nguCanh).setVisible(true));
+                    v -> hoanTatDangXuat.run(),
+                    loi -> hoanTatDangXuat.run());
         }
     }
 

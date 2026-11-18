@@ -12,6 +12,7 @@ import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.banhang.DoiTraService;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.chung.DanhMucService;
+import com.petstation.service.chung.PhatSuKien;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.kho.KiemKeService;
@@ -27,9 +28,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class PheDuyetService {
+    // 1. HẰNG SỐ, KIỂU DỮ LIỆU & HÀM KHỞI TẠO
+
     public static final String TIEN_TO_DOI_CA = "DOI_CA|";
     private final YeuCauPheDuyetDAO pheDuyetDAO;
 
@@ -159,8 +161,7 @@ public final class PheDuyetService {
         }
     }
 
-    private static final List<BoLangNgheSuKien<String>> CAC_BO_LANG_NGHE =
-            new CopyOnWriteArrayList<>();
+    private static final PhatSuKien<String> PHAT_SU_KIEN = new PhatSuKien<>();
 
     public YeuCau guiThaoTac(
             Loai loai,
@@ -216,6 +217,8 @@ public final class PheDuyetService {
                 .orElseThrow();
     }
 
+    // 2. GỬI, TRA CỨU & XỬ LÝ YÊU CẦU PHÊ DUYỆT
+
     public List<YeuCau> layTatCa() {
         List<YeuCau> ketQua = new ArrayList<>();
         for (YeuCauPheDuyetDAO.ThongTinYeuCau dongDuLieu : pheDuyetDAO.timTatCa())
@@ -269,6 +272,10 @@ public final class PheDuyetService {
                                                                     "Yêu cầu đã xử lý."));
                             String loaiDoiTuong = dongDuLieu.loaiDoiTuong();
                             String maDoiTuong = dongDuLieu.maDoiTuong();
+                            pheDuyetDAO.danhDauYeuCauTuChoi(
+                                    PhienDangNhapService.macDinh().layMaNhanVien(),
+                                    lyDo,
+                                    yeuCau.id);
                             if ("DOI_TRA".equals(loaiDoiTuong)
                                     || "PHIEU_DOI_TRA".equals(loaiDoiTuong))
                                 pheDuyetDAO.tuChoiPhieuDoiTra(maDoiTuong);
@@ -278,12 +285,10 @@ public final class PheDuyetService {
                             if ("KIEM_KE".equals(loaiDoiTuong)
                                     || "BIEN_BAN_KIEM_KE".equals(loaiDoiTuong))
                                 pheDuyetDAO.tuChoiBienBanKiemKe(maDoiTuong);
-                            if ("DOI_GIA".equals(loaiDoiTuong) || "SAN_PHAM".equals(loaiDoiTuong))
+                            if ("DOI_GIA".equals(loaiDoiTuong)
+                                    || "SAN_PHAM".equals(loaiDoiTuong)
+                                    || "DE_XUAT_GIA".equals(loaiDoiTuong))
                                 new DeXuatGiaService().tuChoi(maDoiTuong);
-                            pheDuyetDAO.danhDauYeuCauTuChoi(
-                                    PhienDangNhapService.macDinh().layMaNhanVien(),
-                                    lyDo,
-                                    yeuCau.id);
                             NhatKyHeThongService.macDinh()
                                     .ghiNhatKy("Từ chối", yeuCau.id + " / " + lyDo);
                             return null;
@@ -294,14 +299,18 @@ public final class PheDuyetService {
         thongBao("TU_CHOI:" + yeuCau.id);
     }
 
+    // 3. QUẢN LÝ SỰ KIỆN THAY ĐỔI
+
     public static void themBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        if (boLangNghe != null && !CAC_BO_LANG_NGHE.contains(boLangNghe)) {
-            CAC_BO_LANG_NGHE.add(boLangNghe);
-        }
+        PHAT_SU_KIEN.them(boLangNghe);
     }
 
     public static void xoaBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        CAC_BO_LANG_NGHE.remove(boLangNghe);
+        PHAT_SU_KIEN.xoa(boLangNghe);
+    }
+
+    public static void xoaBoLangNghe() {
+        PHAT_SU_KIEN.xoaTatCa();
     }
 
     public static void thongBaoCapNhatNgoai(String suKien) {
@@ -309,10 +318,10 @@ public final class PheDuyetService {
     }
 
     private static void thongBao(String suKien) {
-        for (BoLangNgheSuKien<String> boLangNghe : CAC_BO_LANG_NGHE) {
-            boLangNghe.khiThayDoi(suKien);
-        }
+        PHAT_SU_KIEN.phat(suKien);
     }
+
+    // 4. ĐỀ XUẤT HÓA ĐƠN, ĐỔI CA & ÁP DỤNG NGHIỆP VỤ SAU DUYỆT
 
     public void layHoaDonYeuCau(String hoaDon, boolean huy, String lyDo, String thayDoi) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.BAN_HANG);
@@ -446,10 +455,6 @@ public final class PheDuyetService {
             throw new IllegalArgumentException(
                     "Dữ liệu ngày nghỉ phép không hợp lệ: " + noiDungXuLy, ex);
         }
-    }
-
-    public static void xoaBoLangNghe() {
-        CAC_BO_LANG_NGHE.clear();
     }
 
     public void yeuCauBoSung(String ma, String noiDung) {

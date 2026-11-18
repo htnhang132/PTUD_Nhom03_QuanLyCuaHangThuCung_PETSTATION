@@ -4,12 +4,10 @@ import com.petstation.dao.pheduyet.DeXuatGiaDAO;
 import com.petstation.dao.pheduyet.impl.DeXuatGiaDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.model.chung.Quyen;
-import com.petstation.model.pheduyet.DeXuatGia;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.util.Objects;
-import java.util.Optional;
 
 public final class DeXuatGiaService {
     private final DeXuatGiaDAO deXuatGiaDAO;
@@ -82,26 +80,36 @@ public final class DeXuatGiaService {
 
     public void apDung(String maDoiTuongHoacYeuCau) {
         phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
-        DeXuatGiaDAO.ThongTinDeXuat d =
-                deXuatGiaDAO
-                        .timChoDuyet(maDoiTuongHoacYeuCau)
-                        .orElseThrow(() -> new IllegalStateException("Đề xuất giá đã xử lý."));
-        if (d.giaCu() != d.giaHienTai())
-            throw new IllegalArgumentException(
-                    "Giá hiện tại đã thay đổi. Hãy từ chối và gửi đề xuất mới.");
-        deXuatGiaDAO.apDung(
-                maDoiTuongHoacYeuCau, d.maSanPham(), d.giaMoi(), phienService.layMaNhanVien());
-        nhatKyService.ghiNhatKy(
-                "Áp dụng giá đề xuất", d.maSanPham() + " / " + d.giaCu() + " → " + d.giaMoi());
+        String maNv = phienService.layMaNhanVien();
+        DeXuatGiaDAO.ThongTinDeXuat daApDung =
+                QuanLyGiaoDich.macDinh()
+                        .thucThi(
+                                ketNoi -> {
+                                    DeXuatGiaDAO.ThongTinDeXuat d =
+                                            deXuatGiaDAO
+                                                    .timChoDuyet(maDoiTuongHoacYeuCau)
+                                                    .orElseThrow(
+                                                            () ->
+                                                                    new IllegalStateException(
+                                                                            "Đề xuất giá đã xử"
+                                                                                    + " lý."));
+                                    if (d.giaCu() != d.giaHienTai()) {
+                                        throw new IllegalArgumentException(
+                                                "Giá hiện tại đã thay đổi. Hãy từ chối và gửi đề"
+                                                        + " xuất mới.");
+                                    }
+                                    deXuatGiaDAO.apDung(
+                                            maDoiTuongHoacYeuCau, d.maSanPham(), d.giaMoi(), maNv);
+                                    nhatKyService.ghiNhatKy(
+                                            "Áp dụng giá đề xuất",
+                                            d.maSanPham() + " / " + d.giaCu() + " → " + d.giaMoi());
+                                    return d;
+                                });
+        Objects.requireNonNull(daApDung);
     }
 
     public void tuChoi(String maDoiTuongHoacYeuCau) {
         phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
         deXuatGiaDAO.tuChoi(maDoiTuongHoacYeuCau);
-    }
-
-    public Optional<DeXuatGia> timDeXuat(String maYeuCau) {
-        phienService.yeuCauMotTrong(Quyen.DUYET_GIA, Quyen.XU_LY_PHE_DUYET);
-        return deXuatGiaDAO.timDeXuatTheoMa(maYeuCau);
     }
 }

@@ -86,6 +86,22 @@ public final class PhieuSpaTreoService {
             double canNang,
             String tinhTrang,
             String yeuCau) {
+        if (maGoi == null || maGoi.isBlank()) {
+            throw new IllegalArgumentException("Cần chọn dịch vụ.");
+        }
+        return taoPhieuNhieuDichVu(
+                maPhieuTreo, maThu, List.of(maGoi), maHen, canNang, tinhTrang, yeuCau, false);
+    }
+
+    public String taoPhieuNhieuDichVu(
+            String maPhieuTreo,
+            String maThu,
+            List<String> dsMaGoi,
+            String maHen,
+            double canNang,
+            String tinhTrang,
+            String yeuCau,
+            boolean batDauNgay) {
         phienDangNhap.yeuCau(Quyen.QUAN_LY_SPA);
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
@@ -94,8 +110,8 @@ public final class PhieuSpaTreoService {
                                 yeuCauConTonTai(maPhieuTreo);
                                 dao.xoa(maPhieuTreo);
                             }
-                            return lapPhieuSpaService.luu(
-                                    maThu, maGoi, maHen, canNang, tinhTrang, yeuCau);
+                            return lapPhieuSpaService.luuNhieuDichVu(
+                                    maThu, dsMaGoi, maHen, canNang, tinhTrang, yeuCau, batDauNgay);
                         });
     }
 }

@@ -20,13 +20,13 @@ public final class BieuMauPanel extends JPanel {
 
     public static void dinhDangDauVao(JComponent truongDangXet) {
         truongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        truongDangXet.setPreferredSize(new Dimension(160, 36));
+        truongDangXet.setPreferredSize(new Dimension(160, MauUngDung.CAO_DAU_VAO));
     }
 
     public static <KieuDuLieu> JComboBox<KieuDuLieu> layHopChon(KieuDuLieu[] cacMuc) {
         JComboBox<KieuDuLieu> cboHop = new JComboBox<>(cacMuc);
         cboHop.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        cboHop.setPreferredSize(new Dimension(160, 36));
+        cboHop.setPreferredSize(new Dimension(160, MauUngDung.CAO_DAU_VAO));
         cboHop.setBackground(Color.WHITE);
         return cboHop;
     }

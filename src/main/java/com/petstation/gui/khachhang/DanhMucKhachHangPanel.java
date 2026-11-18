@@ -10,6 +10,7 @@ import com.petstation.service.khachhang.KhachHangService;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.KeyboardFocusManager;
 import java.util.List;
 
 import javax.swing.JDialog;
@@ -53,9 +54,9 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
         hopThoai.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         bieuMau.batCheDoThuGon(hopThoai::dispose);
         hopThoai.setContentPane(bieuMau);
-        hopThoai.setSize(520, 480);
-        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         bieuMau.moTaoMoi();
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 500, 360);
+        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         hopThoai.setVisible(true);
         return ketQua[0];
     }
@@ -71,8 +72,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                         dong -> {
                             Object[] thuMoi =
                                     DanhMucThuCungPanel.moThem(
-                                            java.awt.KeyboardFocusManager
-                                                    .getCurrentKeyboardFocusManager()
+                                            KeyboardFocusManager.getCurrentKeyboardFocusManager()
                                                     .getActiveWindow(),
                                             dong[0] + " - " + dong[1]);
                             return thuMoi != null

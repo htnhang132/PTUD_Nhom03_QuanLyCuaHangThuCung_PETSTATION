@@ -1,7 +1,6 @@
 package com.petstation.gui.chung;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -77,12 +76,7 @@ public final class ThanhDanhSach extends JPanel {
     @Override
     public void doLayout() {
         int caoMoi = sapXep(true);
-        for (Component c : getComponents()) {
-            if (c instanceof Container cont) {
-                cont.doLayout();
-            }
-        }
-        if (caoMoi != chieuCaoDaTinh || (getHeight() > 0 && Math.abs(getHeight() - caoMoi) > 2)) {
+        if (caoMoi != chieuCaoDaTinh) {
             chieuCaoDaTinh = caoMoi;
             SwingUtilities.invokeLater(
                     () -> {

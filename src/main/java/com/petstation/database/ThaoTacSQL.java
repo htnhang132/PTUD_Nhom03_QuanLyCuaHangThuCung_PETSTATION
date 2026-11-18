@@ -11,8 +11,10 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -25,7 +27,7 @@ public final class ThaoTacSQL {
 
     private static KetNoiCSDL csdl;
     private static final ThreadLocal<Connection> HIEN_TAI = new ThreadLocal<>();
-    private static final ThreadLocal<List<Runnable>> SAU_COMMIT = new ThreadLocal<>();
+    private static final ThreadLocal<Deque<List<Runnable>>> SAU_COMMIT = new ThreadLocal<>();
 
     public static boolean dangTrongGiaoDich() {
         return HIEN_TAI.get() != null;
@@ -37,18 +39,38 @@ public final class ThaoTacSQL {
             tacVu.run();
             return;
         }
-        List<Runnable> ds = SAU_COMMIT.get();
-        if (ds == null) {
-            ds = new ArrayList<>();
-            SAU_COMMIT.set(ds);
+        Deque<List<Runnable>> nganXep = SAU_COMMIT.get();
+        if (nganXep == null || nganXep.isEmpty()) {
+            nganXep = new ArrayDeque<>();
+            nganXep.push(new ArrayList<>());
+            SAU_COMMIT.set(nganXep);
         }
-        ds.add(tacVu);
+        nganXep.peek().add(tacVu);
+    }
+
+    private static void dayKhungSauCommit() {
+        Deque<List<Runnable>> nganXep = SAU_COMMIT.get();
+        if (nganXep == null) {
+            nganXep = new ArrayDeque<>();
+            SAU_COMMIT.set(nganXep);
+        }
+        nganXep.push(new ArrayList<>());
+    }
+
+    private static void gopKhungSauCommit(boolean thanhCong) {
+        Deque<List<Runnable>> nganXep = SAU_COMMIT.get();
+        if (nganXep == null || nganXep.isEmpty()) return;
+        List<Runnable> khungCon = nganXep.pop();
+        if (thanhCong && !nganXep.isEmpty() && !khungCon.isEmpty()) {
+            nganXep.peek().addAll(khungCon);
+        }
     }
 
     static List<Runnable> layVaXoaSauCommit() {
-        List<Runnable> ds = SAU_COMMIT.get();
+        Deque<List<Runnable>> nganXep = SAU_COMMIT.get();
         SAU_COMMIT.remove();
-        return ds;
+        if (nganXep == null || nganXep.isEmpty()) return List.of();
+        return nganXep.pop();
     }
 
     static void chaySauCommit(List<Runnable> ds) {
@@ -82,9 +104,13 @@ public final class ThaoTacSQL {
             } catch (SQLException loi) {
                 throw taoLoi(loi);
             }
+            dayKhungSauCommit();
             try {
-                return lamViec.chay(hienCo);
+                KieuDuLieu kq = lamViec.chay(hienCo);
+                gopKhungSauCommit(true);
+                return kq;
             } catch (Exception loi) {
+                gopKhungSauCommit(false);
                 try {
                     hienCo.rollback(diemLuu);
                 } catch (SQLException hoanTacGiaoDich) {
@@ -98,13 +124,18 @@ public final class ThaoTacSQL {
         try (Connection ketNoi = csdl.mo()) {
             ketNoi.setAutoCommit(false);
             HIEN_TAI.set(ketNoi);
+            dayKhungSauCommit();
             try {
                 KieuDuLieu ketQua = lamViec.chay(ketNoi);
                 ketNoi.commit();
                 sauCommit = layVaXoaSauCommit();
                 return ketQua;
             } catch (Exception loi) {
-                ketNoi.rollback();
+                try {
+                    ketNoi.rollback();
+                } catch (SQLException hoanTac) {
+                    loi.addSuppressed(hoanTac);
+                }
                 throw taoLoi(loi);
             } finally {
                 SAU_COMMIT.remove();
@@ -222,7 +253,8 @@ public final class ThaoTacSQL {
         }
     }
 
-    private static PreparedStatement chuanBi(Connection ketNoi, String sql, Object... cacDoiSo)
+    private static PreparedStatement chuanBi(
+            Connection ketNoi, String sql, boolean layKhoaTuDong, Object... cacDoiSo)
             throws SQLException {
         Object[] doiSoChuanHoa = chuanHoaCacDoiSo(cacDoiSo);
         int soThamSoYeuCau = demSoThamSo(sql);
@@ -233,11 +265,11 @@ public final class ThaoTacSQL {
                             + " nhưng chỉ truyền "
                             + doiSoChuanHoa.length);
         }
-        PreparedStatement cauLenh = ketNoi.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-        int soLuong =
-                soThamSoYeuCau > 0
-                        ? Math.min(doiSoChuanHoa.length, soThamSoYeuCau)
-                        : doiSoChuanHoa.length;
+        PreparedStatement cauLenh =
+                layKhoaTuDong
+                        ? ketNoi.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)
+                        : ketNoi.prepareStatement(sql);
+        int soLuong = Math.min(doiSoChuanHoa.length, soThamSoYeuCau);
         for (int chiSo = 0; chiSo < soLuong; chiSo++) {
             ganThamSo(cauLenh, chiSo + 1, doiSoChuanHoa[chiSo]);
         }
@@ -247,7 +279,7 @@ public final class ThaoTacSQL {
     public static List<Object[]> truyVan(String sql, Object... cacDoiSo) {
         return dungKetNoiDoc(
                 ketNoi -> {
-                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, cacDoiSo);
+                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, false, cacDoiSo);
                             ResultSet tapKetQua = cauLenh.executeQuery()) {
                         List<Object[]> cacDong = new ArrayList<>();
                         int kichThuoc = tapKetQua.getMetaData().getColumnCount();
@@ -275,7 +307,7 @@ public final class ThaoTacSQL {
     public static int capNhat(String sql, Object... cacDoiSo) {
         return dungKetNoi(
                 ketNoi -> {
-                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, cacDoiSo)) {
+                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, false, cacDoiSo)) {
                         return cauLenh.executeUpdate();
                     }
                 });
@@ -284,7 +316,7 @@ public final class ThaoTacSQL {
     public static long them(String sql, Object... cacDoiSo) {
         return dungKetNoi(
                 ketNoi -> {
-                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, cacDoiSo)) {
+                    try (PreparedStatement cauLenh = chuanBi(ketNoi, sql, true, cacDoiSo)) {
                         int dong = cauLenh.executeUpdate();
                         try (ResultSet cacKhoa = cauLenh.getGeneratedKeys()) {
                             if (cacKhoa.next()) {

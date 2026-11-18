@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái kinh doanh của sản phẩm. Mapping tương ứng cột trang_thai trong bảng san_pham:
  * 'DANG_BAN', 'NGUNG_BAN'
  */
-public enum TrangThaiSanPham {
+public enum TrangThaiSanPham implements MaDBEnum {
     DANG_BAN("DANG_BAN", "Đang kinh doanh"),
     NGUNG_BAN("NGUNG_BAN", "Ngừng kinh doanh");
 
@@ -29,12 +29,6 @@ public enum TrangThaiSanPham {
     }
 
     public static TrangThaiSanPham tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiSanPham t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiSanPham với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiSanPham.class, ma);
     }
 }

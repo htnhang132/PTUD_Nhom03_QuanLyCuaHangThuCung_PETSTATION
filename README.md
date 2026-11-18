@@ -29,12 +29,12 @@ Tài khoản ứng dụng mẫu sau khi nạp SQL mới:
 
 | Tài khoản | Vai trò |
 | --- | --- |
-| `demo.admin` | Quản lý |
+| `admin` | Cửa hàng trưởng |
 | `demo.sales` | Bán hàng |
 | `demo.stock` | Kho |
 | `demo.spa` | Spa–Hotel |
 
-Mật khẩu mẫu: **`PetStation@123`**; phải đổi khi đăng nhập lần đầu. Đây là tài khoản ứng dụng, khác tài khoản đăng nhập SQL Server. Bộ mẫu cũng giữ tài khoản quản lý `admin` với cùng mật khẩu ban đầu.
+Mật khẩu mẫu: **`PetStation@123`**; phải đổi khi đăng nhập lần đầu. Đây là tài khoản ứng dụng, khác tài khoản đăng nhập SQL Server. Bộ dữ liệu mẫu có duy nhất 1 tài khoản Cửa hàng trưởng là `admin`.
 
 ## Tài liệu
 

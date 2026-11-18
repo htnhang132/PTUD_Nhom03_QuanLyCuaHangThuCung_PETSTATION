@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái hiện tại của phòng Pet Hotel. Mapping tương ứng cột trang_thai trong bảng phong_hotel:
  * 'TRONG', 'DANG_O', 'DANG_DON', 'BAO_TRI'
  */
-public enum TrangThaiPhongHotel {
+public enum TrangThaiPhongHotel implements MaDBEnum {
     TRONG("TRONG", "Trống"),
     DANG_O("DANG_O", "Có thú cưng ở"),
     DANG_DON("DANG_DON", "Đang dọn dẹp"),
@@ -27,12 +27,6 @@ public enum TrangThaiPhongHotel {
     }
 
     public static TrangThaiPhongHotel tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiPhongHotel t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiPhongHotel với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiPhongHotel.class, ma);
     }
 }

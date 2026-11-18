@@ -21,8 +21,6 @@ public enum MaManHinh {
     TIM_KIEM_HOA_DON,
     TRA_CUU_KHACH_HANG,
     TRA_CUU_LO_HANG,
-    TRA_CUU_LICH_SPA,
-    SO_DO_PHONG_LUU_TRU,
     TRA_CUU_LICH_LAM_VIEC,
     LICH_CA_NHAN,
 

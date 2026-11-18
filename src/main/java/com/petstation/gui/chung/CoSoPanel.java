@@ -1,6 +1,9 @@
 package com.petstation.gui.chung;
 
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
+import com.petstation.model.chung.Quyen;
+import com.petstation.service.hethong.PhienDangNhapService;
+import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -8,18 +11,21 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.LayoutManager;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.print.Printable;
 import java.awt.print.PrinterJob;
 import java.text.MessageFormat;
-import java.util.regex.Pattern;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -31,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.RowFilter;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -163,7 +170,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return layChiSoThe(nhan, giaTri, null, MauUngDung.VAN_BAN_TOI);
     }
 
-    protected JLabel taoTieuDeMuc(String vanBan) {
+    public static JLabel taoTieuDeMuc(String vanBan) {
         JLabel nhanDongDangXet = new JLabel(vanBan);
         nhanDongDangXet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 15));
         nhanDongDangXet.setForeground(MauUngDung.NAU);
@@ -175,13 +182,55 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         return taoBangDinhDang(moHinh);
     }
 
+    public static JLabel taoNhanTruong(String tenTruong, boolean batBuoc) {
+        JLabel nhan = new JLabel(tenTruong + (batBuoc ? " *" : ""));
+        nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        nhan.setForeground(MauUngDung.NAU);
+        return nhan;
+    }
+
+    public static void ganHienThiTrangThaiRong(
+            JScrollPane scrCuon, JTable bangBang, TableModel moHinh) {
+        if (scrCuon == null || bangBang == null) return;
+        JViewport khungXem =
+                new JViewport() {
+                    @Override
+                    public void paint(Graphics g) {
+                        super.paint(g);
+                        veTrangThaiRong(g, this, bangBang, moHinh);
+                    }
+                };
+        khungXem.setBackground(MauUngDung.THE_NEN);
+        khungXem.setView(bangBang);
+        scrCuon.setViewport(khungXem);
+    }
+
+    private static void veTrangThaiRong(
+            Graphics g, JViewport khungXem, JTable bangBang, TableModel moHinh) {
+        if (bangBang.getRowCount() > 0) return;
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 13));
+        g2.setColor(MauUngDung.VAN_BAN_XAM);
+        String thongBao =
+                moHinh == null || moHinh.getRowCount() == 0
+                        ? "Chưa có dữ liệu để hiển thị."
+                        : "Không tìm thấy kết quả phù hợp.";
+        FontMetrics fm = g2.getFontMetrics();
+        int x = Math.max(12, (khungXem.getWidth() - fm.stringWidth(thongBao)) / 2);
+        int y = Math.max(fm.getAscent() + 20, khungXem.getHeight() / 2);
+        g2.drawString(thongBao, x, y);
+        g2.dispose();
+    }
+
     protected JScrollPane taoBangDinhDang(TableModel moHinh) {
         JTable bangBang = new JTable(moHinh);
         DinhDangBang.apDung(bangBang);
         JScrollPane scrKhungCuon = new JScrollPane(bangBang);
         scrKhungCuon.setColumnHeaderView(bangBang.getTableHeader());
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN, 1));
-        scrKhungCuon.getViewport().setBackground(MauUngDung.THE_NEN);
+        ganHienThiTrangThaiRong(scrKhungCuon, bangBang, moHinh);
         if (bangChinhBang == null) bangChinhBang = bangBang;
         if (oChuaRangBuocTimKiem != null) {
             lienKetBoLoc(oChuaRangBuocTimKiem, bangBang);
@@ -192,6 +241,26 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     protected static JTable layBang(JScrollPane scrCuon) {
         return (JTable) scrCuon.getViewport().getView();
+    }
+
+    public static String boDauTiengViet(String vanBan) {
+        return DinhDang.boDauTiengViet(vanBan);
+    }
+
+    public static boolean khopTimKiem(String giaTri, String tuKhoa) {
+        if (tuKhoa == null || tuKhoa.isBlank()) return true;
+        if (giaTri == null || giaTri.isEmpty()) return false;
+        String thuong = giaTri.toLowerCase(Locale.ROOT);
+        String tuKhoaThuong = tuKhoa.trim().toLowerCase(Locale.ROOT);
+        if (thuong.contains(tuKhoaThuong)) return true;
+        String khongDauKhoa = boDauTiengViet(tuKhoaThuong);
+        return tuKhoaThuong.equals(khongDauKhoa) && boDauTiengViet(thuong).contains(khongDauKhoa);
+    }
+
+    /** Kiểm tra nhanh phiên đăng nhập hiện tại có quyền {@link Quyen#THANH_TOAN} hay không. */
+    protected static boolean coQuyenThanhToan() {
+        var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+        return phien != null && phien.kiemTraCo(Quyen.THANH_TOAN);
     }
 
     protected void lienKetBoLoc(JTextField oTimKiem, JTable bangBang) {
@@ -206,7 +275,19 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                     boSapXep.setRowFilter(
                             tuKhoa.isEmpty()
                                     ? null
-                                    : RowFilter.regexFilter("(?iu)" + Pattern.quote(tuKhoa)));
+                                    : new RowFilter<TableModel, Integer>() {
+                                        @Override
+                                        public boolean include(
+                                                Entry<? extends TableModel, ? extends Integer>
+                                                        entry) {
+                                            for (int c = 0; c < entry.getValueCount(); c++) {
+                                                if (khopTimKiem(entry.getStringValue(c), tuKhoa)) {
+                                                    return true;
+                                                }
+                                            }
+                                            return false;
+                                        }
+                                    });
                 });
     }
 
@@ -252,7 +333,7 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         JTextField oTruongDangXet = new JTextField();
         oTruongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTruongDangXet.setForeground(MauUngDung.VAN_BAN_TOI);
-        oTruongDangXet.setPreferredSize(new Dimension(220, 34));
+        oTruongDangXet.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
         oTruongDangXet.putClientProperty("JTextField.placeholderText", goiYNhap);
         oTruongDangXet.putClientProperty("JTextField.showClearButton", true);
         oTruongDangXet.getAccessibleContext().setAccessibleName(goiYNhap);
@@ -336,7 +417,14 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                                 .setBlockIncrement(
                                         Math.max(buoc, cuon.getViewport().getHeight() - buoc));
                     };
-            cuon.getViewport().addChangeListener(e -> capNhat.run());
+            cuon.getViewport()
+                    .addComponentListener(
+                            new ComponentAdapter() {
+                                @Override
+                                public void componentResized(ComponentEvent e) {
+                                    capNhat.run();
+                                }
+                            });
             cuon.addHierarchyListener(e -> capNhat.run());
             capNhat.run();
         }

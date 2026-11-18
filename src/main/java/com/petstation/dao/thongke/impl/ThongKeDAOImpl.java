@@ -453,29 +453,28 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
 
     @Override
     public List<DemTrangThai> layLichHen(LocalDate tu, LocalDate denNgay, String maNhanVien) {
-        return truyVanDanhSach(
-                "SELECT trang_thai,COUNT(*) FROM lich_hen WHERE bat_dau>=? AND bat_dau<?"
-                        + " AND (? IS NULL OR ma_nhan_vien = ?)"
-                        + " GROUP BY trang_thai ORDER BY trang_thai",
-                ThongKeDAOImpl::taoDemTrangThai,
-                tu,
-                denNgay,
-                maNhanVien,
-                maNhanVien);
+        return demTrangThaiTheoKhoang("lich_hen", "bat_dau", tu, denNgay, maNhanVien);
     }
 
     @Override
     public List<DemTrangThai> layPhieuSpaTheoTrangThai(
             LocalDate tu, LocalDate denNgay, String maNhanVien) {
+        return demTrangThaiTheoKhoang("phieu_tiep_nhan_spa", "tao_luc", tu, denNgay, maNhanVien);
+    }
+
+    private List<DemTrangThai> demTrangThaiTheoKhoang(
+            String bang, String cotNgay, LocalDate tu, LocalDate denNgay, String maNhanVien) {
+        String sql =
+                "SELECT trang_thai,COUNT(*) FROM "
+                        + bang
+                        + " WHERE "
+                        + cotNgay
+                        + ">=? AND "
+                        + cotNgay
+                        + "<? AND (? IS NULL OR ma_nhan_vien = ?) GROUP BY trang_thai ORDER BY"
+                        + " trang_thai";
         return truyVanDanhSach(
-                "SELECT trang_thai,COUNT(*) FROM phieu_tiep_nhan_spa WHERE tao_luc>=? AND"
-                        + " tao_luc<? AND (? IS NULL OR ma_nhan_vien = ?) GROUP BY trang_thai"
-                        + " ORDER BY trang_thai",
-                ThongKeDAOImpl::taoDemTrangThai,
-                tu,
-                denNgay,
-                maNhanVien,
-                maNhanVien);
+                sql, ThongKeDAOImpl::taoDemTrangThai, tu, denNgay, maNhanVien, maNhanVien);
     }
 
     // 4. THỐNG KÊ LƯU TRÚ HOTEL

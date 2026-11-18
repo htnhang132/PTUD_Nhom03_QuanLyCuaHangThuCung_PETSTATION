@@ -354,9 +354,12 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                         return null;
                     },
                     null,
-                    v -> {
+                    maPhieu -> {
                         HopThoai.hienThiThanhCong(
-                                cha, "Đã lưu phiếu. Phiếu vượt ngưỡng sẽ chờ phê duyệt.");
+                                cha,
+                                "Đã lập phiếu xuất hủy "
+                                        + maPhieu
+                                        + ". Phiếu vượt ngưỡng tự động chuyển Chờ phê duyệt.");
                         if (sauKhiLuu != null) sauKhiLuu.run();
                     },
                     ex -> HopThoai.hienThiCanhBao(cha, TacVuNen.thongDiepLoi(ex)));

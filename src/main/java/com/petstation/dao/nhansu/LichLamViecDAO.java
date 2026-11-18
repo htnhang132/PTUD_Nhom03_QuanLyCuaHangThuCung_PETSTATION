@@ -30,4 +30,8 @@ public interface LichLamViecDAO {
     long demThangSoGio(String maNhanVien, LocalDate tu, LocalDate den);
 
     int khoaLichKhoang(LocalDate tu, LocalDate den);
+
+    default long demLichBiKhoa(LocalDate tu, LocalDate den) {
+        return 0L;
+    }
 }

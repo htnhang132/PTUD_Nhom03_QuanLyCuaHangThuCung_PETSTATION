@@ -6,6 +6,7 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
@@ -14,12 +15,14 @@ import com.petstation.model.chung.TrangThaiBienBanKiemKe;
 import com.petstation.service.hethong.CaiDatService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.kho.KiemKeService;
+import com.petstation.util.DuLieu;
 
 import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
@@ -37,7 +40,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -62,6 +64,8 @@ import javax.swing.table.TableColumn;
 // tế, ghi nhận chênh lệch
 // Phân hệ: kho
 public final class KiemKePanel extends NghiepVuKhoPanel {
+    // 1. THUỘC TÍNH & HÀM KHỞI TẠO
+
     private final KiemKeService kiemKeService = new KiemKeService();
     private DefaultTableModel moHinhChiTiet;
     private JTable bangChiTiet;
@@ -80,11 +84,12 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 NutDinhDang.KieuNut.CHINH,
                 this::moKhongGianKiemKe);
         btnCanBang = taoNutCanBangKho();
-        ganSuKienDupChuot(this::xemChiTietBienBan);
         JScrollPane scrChiTiet = taoBangChiTietKiemKe();
         ganVungChiTietKiemKe(scrChiTiet);
         dangKyChonDongBienBan(btnCanBang);
     }
+
+    // 2. XEM CHI TIẾT BIÊN BẢN & CÂN BẰNG KHO
 
     private NutDinhDang taoNutCanBangKho() {
         if (!PhienDangNhapService.macDinh().layPhien().kiemTraCo(Quyen.XU_LY_PHE_DUYET)) {
@@ -313,13 +318,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 });
     }
 
-    private void xemChiTietBienBan() {
-        if (bienBanHienTaiMa == null || bienBanHienTaiMa.isBlank()) {
-            HopThoai.hienThiCanhBao(this, "Vui lòng chọn một biên bản kiểm kê để xem chi tiết.");
-            return;
-        }
-        taiChiTietBienBan(bienBanHienTaiMa);
-    }
+    // 3. KHÔNG GIAN LẬP BIÊN BẢN KIỂM KÊ (DIALOG)
 
     private static final class DuLieuKhoiTaoKiemKe {
         final List<Object[]> dsBanDau;
@@ -370,8 +369,6 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                         (Frame) SwingUtilities.getWindowAncestor(this),
                         "WORKSPACE KIỂM KÊ TỒN KHO THEO ĐỢT",
                         true);
-        dlg.setSize(1120, 680);
-        HopThoai.chuanHoaCuaSo(dlg, dlg.getOwner());
         dlg.setLayout(new BorderLayout(0, 10));
         JTextField oKyKiemKe =
                 new JTextField(
@@ -402,6 +399,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         JTable bangLamViec = taoBangKiemKe(moHinhWs);
         JScrollPane scrWs = new JScrollPane(bangLamViec);
         scrWs.setBorder(new EmptyBorder(0, 14, 0, 14));
+        ganHienThiTrangThaiRong(scrWs, bangLamViec, moHinhWs);
         dlg.add(scrWs, BorderLayout.CENTER);
         JLabel nhanThongKeKhongGian = new JLabel("Tổng mặt hàng: 0 | Chênh lệch: 0");
         NutDinhDang btnLuu = new NutDinhDang("Lưu biên bản & Hoàn tất", NutDinhDang.KieuNut.CHINH);
@@ -435,6 +433,9 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 hopChonKiemDemMu.isSelected(),
                 capNhatThongKe);
         apDungCheDoKiemKeMu(bangLamViec, hopChonKiemDemMu.isSelected());
+        bangLamViec.setPreferredScrollableViewportSize(new Dimension(960, 380));
+        HopThoai.canChinhKichThuocVuaManHinh(dlg, 920, 540);
+        HopThoai.chuanHoaCuaSo(dlg, dlg.getOwner());
         dlg.setVisible(true);
     }
 
@@ -447,36 +448,36 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             JCheckBox hopChonKiemDemMu,
             JTextField oMaVach,
             JLabel nhanTrangThaiQuetMa) {
-        JPanel khungDauTrangChinh = new JPanel();
-        khungDauTrangChinh.setLayout(new BoxLayout(khungDauTrangChinh, BoxLayout.Y_AXIS));
+        JPanel khungDauTrangChinh = new JPanel(new BorderLayout(0, 8));
+        khungDauTrangChinh.setOpaque(false);
         khungDauTrangChinh.setBorder(new EmptyBorder(12, 14, 6, 14));
-        JPanel khungHang1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        khungHang1.add(new JLabel("Kỳ kiểm kê:"));
-        khungHang1.add(oKyKiemKe);
-        khungHang1.add(new JLabel("Nhóm hàng:"));
-        khungHang1.add(cboNhomHang);
+        oKyKiemKe.setPreferredSize(new Dimension(160, MauUngDung.CAO_DAU_VAO));
+        oTuKhoa.setPreferredSize(new Dimension(170, MauUngDung.CAO_DAU_VAO));
+        oMaVach.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
+        ThanhDanhSach khungHang1 = new ThanhDanhSach();
+        khungHang1.themBoLoc("Kỳ kiểm kê:", oKyKiemKe);
+        khungHang1.themBoLoc("Nhóm hàng:", cboNhomHang);
         oTuKhoa.setToolTipText("Lọc theo mã SP, tên SP hoặc số lô");
-        khungHang1.add(new JLabel("Tìm nhanh:"));
-        khungHang1.add(oTuKhoa);
+        khungHang1.themBoLoc("Tìm nhanh:", oTuKhoa);
         khungHang1.add(chkSapHetHan);
         khungHang1.add(btnTaiDanhSach);
         hopChonKiemDemMu.setToolTipText(
                 "Ẩn cột Tồn hệ thống và Chênh lệch để nhân viên đếm khách" + " quan");
         khungHang1.add(hopChonKiemDemMu);
-        BoGocPanel khungHang2 = new BoGocPanel(10, Color.WHITE, true);
+        BoGocPanel khungHang2 = new BoGocPanel(MauUngDung.BAN_KINH_THE, Color.WHITE, true);
         khungHang2.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 6));
-        khungHang2.setBorder(new EmptyBorder(4, 10, 4, 10));
+        khungHang2.setBorder(new EmptyBorder(6, 12, 6, 12));
         JLabel nhanQuetNhanh = new JLabel("Quét Barcode:");
         nhanQuetNhanh.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         nhanQuetNhanh.setForeground(MauUngDung.NAU);
-        oMaVach.setFont(new Font("Consolas", Font.PLAIN, 14));
+        oMaVach.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         nhanTrangThaiQuetMa.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 12));
         nhanTrangThaiQuetMa.setForeground(MauUngDung.XAM_PHU);
         khungHang2.add(nhanQuetNhanh);
         khungHang2.add(oMaVach);
         khungHang2.add(nhanTrangThaiQuetMa);
-        khungDauTrangChinh.add(khungHang1);
-        khungDauTrangChinh.add(khungHang2);
+        khungDauTrangChinh.add(khungHang1, BorderLayout.NORTH);
+        khungDauTrangChinh.add(khungHang2, BorderLayout.CENTER);
         return khungDauTrangChinh;
     }
 
@@ -503,10 +504,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
 
     private JTable taoBangKiemKe(DefaultTableModel moHinhWs) {
         JTable bangLamViec = new JTable(moHinhWs);
-        bangLamViec.setRowHeight(30);
-        bangLamViec.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        bangLamViec.getTableHeader().setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-        bangLamViec.getTableHeader().setBackground(MauUngDung.XAM_NEN_NHAT);
+        DinhDangBang.apDung(bangLamViec);
         bangLamViec.removeColumn(bangLamViec.getColumnModel().getColumn(0));
         JComboBox<String> cboLyDo =
                 new JComboBox<>(
@@ -575,7 +573,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         khungChanHopThoai.add(nhanThongKeKhongGian, BorderLayout.WEST);
         JPanel khungNutChanTrang = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         khungNutChanTrang.setOpaque(false);
-        NutDinhDang btnHuy = new NutDinhDang("Hủy bỏ", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         btnHuy.addActionListener(e -> dlg.dispose());
         khungNutChanTrang.add(btnHuy);
         khungNutChanTrang.add(btnLuu);
@@ -785,11 +783,11 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
                 int tonMoi = (tonHienTai == null ? 0 : tonHienTai) + 1;
                 moHinhWs.setValueAt(tonMoi, dongMucTieu, 7);
                 chonVaCuonDong(bangLamViec, dongMucTieu);
-                String tenSP = moHinhWs.getValueAt(dongMucTieu, 2).toString();
-                String soLo = moHinhWs.getValueAt(dongMucTieu, 4).toString();
+                String tenSP = Objects.toString(moHinhWs.getValueAt(dongMucTieu, 2), "");
+                String soLo = Objects.toString(moHinhWs.getValueAt(dongMucTieu, 4), "");
                 nhanTrangThaiQuetMa.setText(
                         "[OK] " + tenSP + " - Lô " + soLo + " (Tồn TT: " + tonMoi + ")");
-                nhanTrangThaiQuetMa.setForeground(MauUngDung.mau(0x16A34A));
+                nhanTrangThaiQuetMa.setForeground(MauUngDung.XANH_LA);
             }
         };
     }
@@ -799,8 +797,8 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         int viewRow = bangLamViec.getSelectedRow();
         int modelSel = viewRow >= 0 ? bangLamViec.convertRowIndexToModel(viewRow) : -1;
         for (int i = 0; i < moHinhWs.getRowCount(); i++) {
-            String barcode = moHinhWs.getValueAt(i, 3).toString();
-            String maSP = moHinhWs.getValueAt(i, 1).toString();
+            String barcode = Objects.toString(moHinhWs.getValueAt(i, 3), "").trim();
+            String maSP = Objects.toString(moHinhWs.getValueAt(i, 1), "").trim();
             if (code.equalsIgnoreCase(barcode) || code.equalsIgnoreCase(maSP)) {
                 if (i == modelSel) return i;
                 khop.add(i);
@@ -876,14 +874,14 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
             JDialog dlg, DefaultTableModel moHinhWs, JTable bangLamViec) {
         List<KiemKeService.DongKiemKe> danhSach = new ArrayList<>();
         for (int i = 0; i < moHinhWs.getRowCount(); i++) {
-            String maLo = String.valueOf(moHinhWs.getValueAt(i, 0));
-            String maSP = moHinhWs.getValueAt(i, 1).toString();
-            String tenSP = moHinhWs.getValueAt(i, 2).toString();
-            String barcode = moHinhWs.getValueAt(i, 3).toString();
-            String soLo = moHinhWs.getValueAt(i, 4).toString();
-            String hsdStr = moHinhWs.getValueAt(i, 5).toString();
-            LocalDate hsd = "-".equals(hsdStr) ? null : LocalDate.parse(hsdStr);
-            int tonHT = Integer.parseInt(moHinhWs.getValueAt(i, 6).toString());
+            String maLo = Objects.toString(moHinhWs.getValueAt(i, 0), "").trim();
+            String maSP = Objects.toString(moHinhWs.getValueAt(i, 1), "").trim();
+            String tenSP = Objects.toString(moHinhWs.getValueAt(i, 2), "").trim();
+            String barcode = Objects.toString(moHinhWs.getValueAt(i, 3), "").trim();
+            String soLo = Objects.toString(moHinhWs.getValueAt(i, 4), "").trim();
+            String hsdStr = Objects.toString(moHinhWs.getValueAt(i, 5), "").trim();
+            LocalDate hsd = DuLieu.docNgayLinhHoat(hsdStr);
+            int tonHT = Integer.parseInt(Objects.toString(moHinhWs.getValueAt(i, 6), "0").trim());
             Integer tonTTObj = docTonThucTe(moHinhWs.getValueAt(i, 7));
             if (tonTTObj == null || tonTTObj < 0) {
                 HopThoai.hienThiCanhBao(

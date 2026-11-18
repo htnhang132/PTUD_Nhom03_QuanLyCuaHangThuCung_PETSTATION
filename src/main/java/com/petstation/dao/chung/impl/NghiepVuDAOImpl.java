@@ -263,21 +263,25 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                         "ID",
                         "Mã phiếu",
                         "Hóa đơn gốc",
+                        "Hóa đơn thay thế",
                         "Thu chênh lệch / lịch sử hoàn",
                         "Lý do",
+                        "Nhân viên lập",
                         "Trạng thái",
                         "Ngày tạo"
                     },
-                    "SELECT p.ma_phieu AS ma_khoa, p.ma_phieu, h.ma_hoa_don, p.chenh_lech,"
-                            + " p.ly_do, CASE WHEN p.loai_phieu='DOI_HANG' AND"
-                            + " p.trang_thai='HOAN_TAT' THEN N'Hoàn tất đổi hàng' WHEN"
+                    "SELECT p.ma_phieu AS ma_khoa, p.ma_phieu, h.ma_hoa_don,"
+                            + " COALESCE(p.ma_hoa_don_thay_the, N'—'), p.chenh_lech, p.ly_do,"
+                            + " COALESCE(nv.ho_ten, N'Thu ngân'), CASE WHEN p.loai_phieu='DOI_HANG'"
+                            + " AND p.trang_thai='HOAN_TAT' THEN N'Hoàn tất đổi hàng' WHEN"
                             + " p.loai_phieu='DOI_HANG' AND p.trang_thai='CHO_XU_LY' THEN N'Chờ"
                             + " xử lý đổi hàng' WHEN p.loai_phieu='DOI_HANG' AND"
                             + " p.trang_thai='DA_HUY' THEN N'Đã hủy đổi hàng' WHEN"
                             + " p.loai_phieu='TRA_HANG_CU' THEN N'Lịch sử hoàn tiền' ELSE"
                             + " CONCAT(p.loai_phieu, N': ', p.trang_thai) END, p.tao_luc FROM"
-                            + " phieu_doi_tra p JOIN hoa_don h ON h.ma_hoa_don = p.ma_hoa_don"
-                            + " ORDER BY p.ma_phieu DESC");
+                            + " phieu_doi_tra p JOIN hoa_don h ON h.ma_hoa_don = p.ma_hoa_don LEFT"
+                            + " JOIN nhan_vien nv ON nv.ma_nhan_vien = p.ma_nhan_vien ORDER BY"
+                            + " p.ma_phieu DESC");
         }
         return new KieuHienThi(
                 "Đơn đang treo",

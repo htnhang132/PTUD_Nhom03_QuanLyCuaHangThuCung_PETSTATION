@@ -46,7 +46,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
                 """
                 SELECT ten_dang_nhap, ma_nhan_vien, mat_khau_hash, vai_tro, quyen, trang_thai,
                        so_lan_dang_nhap_sai, khoa_den, bat_buoc_doi_mat_khau
-                FROM tai_khoan
+                FROM tai_khoan WITH(UPDLOCK,HOLDLOCK)
                 WHERE LOWER(ten_dang_nhap) = LOWER(?)
                 """;
         try (PreparedStatement cauLenh = ketNoi.prepareStatement(sql)) {

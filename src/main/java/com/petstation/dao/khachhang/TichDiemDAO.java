@@ -4,6 +4,8 @@ import com.petstation.model.khachhang.Voucher;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 // Giao diện DAO phục vụ nghiệp vụ Tích điểm thành viên & Quản lý/Áp dụng Voucher.
 public interface TichDiemDAO {
@@ -93,4 +95,12 @@ public interface TichDiemDAO {
 
     // Tạo mới voucher Spa 150.000đ và trừ 200 điểm tích lũy của khách hàng
     String taoVoucher(String maKhachHang, String khoa);
+
+    default Optional<Set<String>> layTapMaVoucherDoiDiem() {
+        return Optional.empty();
+    }
+
+    default Optional<String> layHangKhachHang(String maKhachHang) {
+        return Optional.empty();
+    }
 }

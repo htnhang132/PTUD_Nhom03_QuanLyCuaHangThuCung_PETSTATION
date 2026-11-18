@@ -3,7 +3,6 @@ package com.petstation.dao.luutru;
 import com.petstation.dto.HotelDTO;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.model.luutru.HopDongLuuTru;
-import com.petstation.model.luutru.LichSuThuCocHotel;
 import com.petstation.model.luutru.PhongHotel;
 
 import java.time.LocalDateTime;
@@ -100,8 +99,6 @@ public interface HopDongLuuTruDAO {
             PhuongThuc phuongThuc,
             long soTien,
             long khachDua);
-
-    List<LichSuThuCocHotel> layLichSuTheoHopDong(String maHopDong);
 
     final class ThongTinPhongDat {
         public final String maPhong;

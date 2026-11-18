@@ -17,7 +17,8 @@ public final class YeuCauPheDuyetDAOImpl implements YeuCauPheDuyetDAO {
     @Override
     public long demSoLuongDangCho() {
         return ThaoTacSQL.laySo(
-                "SELECT COUNT(*) FROM yeu_cau_phe_duyet WHERE trang_thai='CHO_DUYET'");
+                "SELECT COUNT(*) FROM yeu_cau_phe_duyet WHERE trang_thai IN"
+                        + " ('CHO_DUYET','CAN_THEM_THONG_TIN')");
     }
 
     @Override

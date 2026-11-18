@@ -102,9 +102,9 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         hopThoai.setResizable(true);
         bieuMau.batCheDoThuGon(hopThoai::dispose);
         hopThoai.setContentPane(bieuMau);
-        hopThoai.setSize(580, 700);
-        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         bieuMau.moTaoMoi();
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 560, 460);
+        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         hopThoai.setVisible(true);
         return ketQua[0];
     }
@@ -132,9 +132,9 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
         hopThoai.setResizable(true);
         bieuMau.batCheDoThuGon(hopThoai::dispose);
         hopThoai.setContentPane(bieuMau);
-        hopThoai.setSize(580, 700);
-        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         bieuMau.moSuaTheoKhoa(maThuCung);
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 560, 460);
+        HopThoai.chuanHoaCuaSo(hopThoai, cha);
         hopThoai.setVisible(true);
         return ketQua[0];
     }
@@ -167,7 +167,7 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> taoCacTruong(AtomicReference<List<String>> cacheChuNuoi) {
         return List.of(
-                TruongDuLieu.tao("Mã thú cưng", Kieu.VAN_BAN).chiDoc().kiemTraDuyNhat().batBuoc(),
+                TruongDuLieu.tao("Mã thú cưng", Kieu.VAN_BAN).chiDoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Tên thú cưng", Kieu.VAN_BAN).batBuoc(),
                 TruongDuLieu.tao("Loài", Kieu.HOP_CHON).datLuaChon("Chó", "Mèo").batBuoc(),
                 TruongDuLieu.tao("Giống", Kieu.VAN_BAN).batBuoc(),

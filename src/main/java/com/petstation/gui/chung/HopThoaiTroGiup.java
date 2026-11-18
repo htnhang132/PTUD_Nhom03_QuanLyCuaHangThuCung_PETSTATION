@@ -80,8 +80,8 @@ public final class HopThoaiTroGiup {
                         JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.getRootPane().setDefaultButton(btnDong);
         dialog.setContentPane(khungBao);
-        dialog.setMinimumSize(new Dimension(620, 460));
-        dialog.setSize(700, 560);
+        dialog.setMinimumSize(new Dimension(580, 380));
+        HopThoai.canChinhKichThuocVuaManHinh(dialog, 660, 480);
         dialog.setResizable(true);
         dialog.setLocationRelativeTo(win);
         dialog.setVisible(true);
@@ -249,15 +249,16 @@ public final class HopThoaiTroGiup {
                 "Màn hình dành cho thu ngân tạo đơn hàng nhanh bằng máy quét mã vạch, tìm kiếm từ"
                         + " khóa hoặc chọn sản phẩm trực quan.",
                 List.of(
-                        "<b>Thêm sản phẩm:</b> Quét mã vạch (Barcode), gõ mã/tên sản phẩm vào ô tìm"
-                                + " kiếm rồi nhấn <b>Enter</b>, hoặc bấm trực tiếp vào sản phẩm.",
-                        "<b>Chuyển chế độ hiển thị:</b> Chọn <b>Bảng nhanh (POS)</b> khi cửa hàng"
-                            + " có hàng nghìn sản phẩm để tra cứu tức thì không tốn RAM ảnh, hoặc"
-                            + " chọn <b>Thẻ hình ảnh</b> (tối đa 24 SP/trang).",
+                        "<b>Thêm sản phẩm:</b> Quét mã vạch (Barcode) bằng USB/điện thoại, gõ"
+                                + " mã/tên vào ô tìm (Ctrl+K) rồi nhấn <b>Enter</b>, hoặc bấm chọn"
+                                + " trong bảng.",
+                        "<b>Quản lý giỏ hàng:</b> Chỉnh nhanh số lượng hoặc xóa dòng ngay trên"
+                                + " bảng; dùng <b>Ctrl+N</b> / <b>Alt+X</b> để xóa giỏ hiện tại.",
                         "<b>Chọn khách & Khuyến mãi:</b> Nhập SĐT khách hàng ở khung bên phải rồi"
                                 + " nhấn <b>Enter</b> để tích điểm và tự động áp dụng khuyến mãi.",
-                        "<b>Hoàn tất:</b> Bấm <b>Thanh toán (F9)</b> để chuyển sang thu tiền, hoặc"
-                                + " <b>Lưu tạm (giỏ hàng)</b> nếu khách cần chờ."),
+                        "<b>Hoàn tất & Đơn tạm:</b> Bấm <b>Lưu đơn tạm (Ctrl+S)</b> hoặc <b>Mở đơn"
+                                + " tạm (F8)</b> khi khách cần chờ; bấm <b>Thanh toán (F9)</b> để"
+                                + " thu tiền (F7 để mở Đổi hàng phụ kiện)."),
                 List.of(
                         "Cần <b>Mở ca thu ngân</b> trước khi lập hóa đơn và thanh toán.",
                         "Chế độ thẻ tự động phân trang (24 SP/trang) và dùng bộ nhớ đệm ảnh để hệ"

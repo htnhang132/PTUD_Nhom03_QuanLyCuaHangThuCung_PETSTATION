@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.petstation.dto.MucLuaChon;
 import com.petstation.model.banhang.ChiTietDoiTra;
+import com.petstation.model.chung.MaDBEnum;
+import com.petstation.model.chung.TrangThaiPhongHotel;
+import com.petstation.model.chung.TrangThaiTaiKhoan;
 import com.petstation.model.kho.ChiTietPhieuNhap;
 import com.petstation.model.kho.ChiTietPhieuXuat;
 import com.petstation.model.kho.PhieuNhapKho;
@@ -15,6 +18,8 @@ import com.petstation.model.spa.PhieuTiepNhanSpa;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 // Kiểm thử đơn vị offline cho các sửa lỗi Batch 4 (tiện ích số/tiền, DTO, và model)
 class DuLieuDinhDangModelTest {
@@ -88,5 +93,37 @@ class DuLieuDinhDangModelTest {
         nk2.setMaNhatKy("NK01");
         assertThat(nk1).isEqualTo(nk2).hasSameHashCodeAs(nk2);
         assertThat(nk1.toString()).isEqualTo("NK01");
+    }
+
+    @Test
+    void tienIchDinhDangHtmlTienBoDauVaDocNgayLinhHoat() {
+        assertThat(DinhDang.thoatHtml("A & <B> \"C\" 'D'"))
+                .isEqualTo("A &amp; &lt;B&gt; &quot;C&quot; &#39;D&#39;");
+        assertThat(DinhDang.thoatHtml(null)).isEmpty();
+        assertThat(DinhDang.thoatHtmlXuongDong("Dòng 1\n<2>")).isEqualTo("Dòng 1<br>&lt;2&gt;");
+
+        assertThat(DinhDang.docTienKhongAm("150.000 ₫")).isEqualTo(150_000L);
+        assertThat(DinhDang.docTienKhongAm("0đ")).isZero();
+        assertThat(DinhDang.docTienKhongAm("-500")).isEqualTo(-1L);
+        assertThat(DinhDang.docTienKhongAm("abc")).isEqualTo(-1L);
+
+        assertThat(DinhDang.boDauTiengViet("Đặng Văn Đồng")).isEqualTo("Dang Van Dong");
+
+        LocalDate expected = LocalDate.of(2026, 11, 18);
+        assertThat(DuLieu.docNgayLinhHoat(expected)).isEqualTo(expected);
+        assertThat(DuLieu.docNgayLinhHoat(LocalDateTime.of(2026, 11, 18, 14, 30)))
+                .isEqualTo(expected);
+        assertThat(DuLieu.docNgayLinhHoat(new Date())).isEqualTo(LocalDate.now());
+        assertThat(DuLieu.docNgayLinhHoat("2026-11-18 14:30:00")).isEqualTo(expected);
+        assertThat(DuLieu.docNgayLinhHoat("18/11/2026 09:45")).isEqualTo(expected);
+        assertThat(DuLieu.docNgayLinhHoat("-")).isNull();
+        assertThat(DuLieu.docNgayLinhHoat("khong_hop_le")).isNull();
+
+        assertThat(MaDBEnum.tuMaDB(TrangThaiPhongHotel.class, " dang_o "))
+                .isEqualTo(TrangThaiPhongHotel.DANG_O);
+        assertThat(MaDBEnum.tuMaDB(TrangThaiPhongHotel.class, "  ")).isNull();
+        assertThatThrownBy(() -> MaDBEnum.tuMaDB(TrangThaiPhongHotel.class, "KHONG_CO"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(TrangThaiTaiKhoan.HOAT_DONG.maDB()).isEqualTo("HOAT_DONG");
     }
 }

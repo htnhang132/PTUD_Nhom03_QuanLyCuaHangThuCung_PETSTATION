@@ -47,8 +47,8 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
                         "SELECT l.ma_lo, p.ma_san_pham+N' - '+p.ten+CASE WHEN"
                             + " COALESCE(p.barcode,'')<>'' THEN N' ['+p.barcode+N']' ELSE N''"
                             + " END+N' / '+l.so_lo+N' / tồn '+CAST(l.so_luong_ton AS nvarchar(20))"
-                            + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham ORDER"
-                            + " BY p.ma_san_pham, l.ma_lo"));
+                            + " FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham WHERE"
+                            + " l.so_luong_ton > 0 ORDER BY p.ma_san_pham, l.ma_lo"));
     }
 
     @Override
@@ -75,18 +75,6 @@ public final class LuaChonNghiepVuDAOImpl implements LuaChonNghiepVuDAO {
                         "SELECT ma_san_pham, ma_san_pham+N' - '+ten+CASE WHEN"
                                 + " COALESCE(barcode,'')<>'' THEN N' ['+barcode+N']' ELSE N'' END"
                                 + " FROM san_pham ORDER BY ma_san_pham"));
-    }
-
-    @Override
-    public List<MucLuaChon> layLuaChonDongHang() {
-        return mapLuaChonChuoi(
-                ThaoTacSQL.truyVan(
-                        "SELECT i.ma_hoa_don + ':' + i.ma_san_pham,"
-                                + " h.ma_hoa_don+N' / '+COALESCE(i.ten_hang,p.ten)+N' / đã mua"
-                                + " '+CAST(i.so_luong AS nvarchar(20)) FROM chi_tiet_hoa_don i JOIN"
-                                + " hoa_don h ON h.ma_hoa_don=i.ma_hoa_don JOIN san_pham p ON"
-                                + " p.ma_san_pham=i.ma_san_pham WHERE h.trang_thai='DA_THANH_TOAN'"
-                                + " ORDER BY h.ma_hoa_don DESC, i.ma_san_pham"));
     }
 
     @Override

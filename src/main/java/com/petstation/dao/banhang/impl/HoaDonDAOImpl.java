@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 public final class HoaDonDAOImpl implements HoaDonDAO {
+    // 1. HÀM KHỞI TẠO & TRA CỨU NGUỒN BIÊN LAI
+
     public HoaDonDAOImpl() {}
 
     @Override
@@ -145,7 +147,12 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     @Override
     public int capNhatHuyHoaDon(int soLuong, String maLo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+? WHERE ma_lo=?", soLuong, maLo);
+                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+?, trang_thai=CASE WHEN"
+                        + " trang_thai='HET_HANG' AND (han_su_dung IS NULL OR"
+                        + " han_su_dung>=CAST(GETDATE() AS DATE)) THEN 'SAN_SANG' ELSE trang_thai"
+                        + " END WHERE ma_lo=?",
+                soLuong,
+                maLo);
     }
 
     @Override
@@ -166,6 +173,8 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     public int danhDauHuyDonHang(String maHoaDon) {
         return 1;
     }
+
+    // 2. XỬ LÝ THANH TOÁN, TỒN LÔ FEFO & TÍCH ĐIỂM
 
     @Override
     public Optional<String> layMaPhienDangMo(String tenHoacMaNhanVien) {
@@ -277,7 +286,10 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     @Override
     public int truTonLo(int soLuong, String maLo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton=so_luong_ton-? WHERE ma_lo=? AND so_luong_ton>=?",
+                "UPDATE lo_hang SET so_luong_ton=so_luong_ton-?, trang_thai=CASE WHEN"
+                        + " so_luong_ton-?<=0 THEN 'HET_HANG' ELSE trang_thai END WHERE ma_lo=? AND"
+                        + " so_luong_ton>=?",
+                soLuong,
                 soLuong,
                 maLo,
                 soLuong);
@@ -430,7 +442,7 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     public List<ChiTietHoaDon> layDongBienLai(String maHoaDon) {
         return ThaoTacSQL.truyVanDanhSach(
                 "SELECT"
-                    + " p.ma_san_pham,c.ma_dich_vu,COALESCE(c.ten_hang,p.ten),c.don_gia,SUM(c.so_luong)"
+                    + " p.ma_san_pham,c.ma_dich_vu,COALESCE(c.ten_hang,p.ten),c.don_gia,SUM(c.so_luong),MAX(COALESCE(c.thue_gtgt,0))"
                     + " FROM chi_tiet_hoa_don c LEFT JOIN san_pham p ON p.ma_san_pham=c.ma_san_pham"
                     + " WHERE c.ma_hoa_don=? GROUP BY"
                     + " p.ma_san_pham,c.ma_dich_vu,COALESCE(c.ten_hang,p.ten),c.don_gia",
@@ -456,10 +468,13 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                     ct.setTenHang(r[2] != null ? r[2].toString() : null);
                     ct.setDonGia(r[3] != null ? ((Number) r[3]).longValue() : 0L);
                     ct.setSoLuong(r[4] != null ? ((Number) r[4]).intValue() : 0);
+                    ct.setThueGtgt(r[5] != null ? ((Number) r[5]).doubleValue() : 0.0);
                     return ct;
                 },
                 maHoaDon);
     }
+
+    // 3. GIỎ HÀNG TREO & ĐƠN ĐỔI TREO
 
     @Override
     public String themTreo(
@@ -560,6 +575,8 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 nv,
                 nv);
     }
+
+    // 4. QUYẾT TOÁN SPA / HOTEL & HỦY HÓA ĐƠN
 
     @Override
     public long demQuyetToan(String maPhieuSpa) {

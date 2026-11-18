@@ -13,13 +13,10 @@ import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.hethong.CaiDatService;
 import com.petstation.service.kho.NhapXuatKhoService;
 import com.petstation.util.DinhDang;
+import com.petstation.util.DuLieu;
 
 import java.awt.Component;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -157,13 +154,14 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
     }
 
     private boolean laLoHetHan(int dongMoHinh) {
-        LocalDate han = docNgay(layMoHinh().getValueAt(dongMoHinh, 4));
+        LocalDate han = DuLieu.docNgayLinhHoat(layMoHinh().getValueAt(dongMoHinh, 4));
+        long ton = docSoNguyen(layMoHinh().getValueAt(dongMoHinh, 5));
         String maTt = chuoiTrangThai(layMoHinh().getValueAt(dongMoHinh, 6));
-        return laHetHan(maTt, han, LocalDate.now());
+        return ton > 0 && laHetHan(maTt, han, ton, LocalDate.now());
     }
 
     private boolean laLoSapHetHan(int dongMoHinh) {
-        LocalDate han = docNgay(layMoHinh().getValueAt(dongMoHinh, 4));
+        LocalDate han = DuLieu.docNgayLinhHoat(layMoHinh().getValueAt(dongMoHinh, 4));
         long ton = docSoNguyen(layMoHinh().getValueAt(dongMoHinh, 5));
         String maTt = chuoiTrangThai(layMoHinh().getValueAt(dongMoHinh, 6));
         return laSapHetHan(maTt, han, ton, LocalDate.now());
@@ -205,7 +203,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
             String ttChon,
             LocalDate homNay) {
         if ("Tất cả".equals(ttChon)) return true;
-        LocalDate han = docNgay(e.getValue(4));
+        LocalDate han = DuLieu.docNgayLinhHoat(e.getValue(4));
         long ton = docSoNguyen(e.getValue(5));
         String maTt = chuoiTrangThai(e.getValue(6));
         String tenTt = DinhDangBang.tenTrangThai(maTt);
@@ -215,7 +213,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
                             || "Sẵn sàng".equalsIgnoreCase(tenTt);
             case "Còn hạn" -> laConHan(maTt, han, ton, homNay);
             case "Sắp hết hạn" -> laSapHetHan(maTt, han, ton, homNay);
-            case "Hết hạn" -> laHetHan(maTt, han, homNay);
+            case "Hết hạn" -> laHetHan(maTt, han, ton, homNay);
             case "Tạm khóa" -> laTamKhoa(maTt, tenTt);
             case "Hết hàng" -> laHetHang(maTt, tenTt);
             default -> ttChon.equalsIgnoreCase(maTt) || ttChon.equalsIgnoreCase(tenTt);
@@ -232,7 +230,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
             if (val == null) continue;
             if (val.toString().toLowerCase(Locale.ROOT).contains(tuKhoa)) return true;
             if (i == 4) {
-                LocalDate han = docNgay(val);
+                LocalDate han = DuLieu.docNgayLinhHoat(val);
                 if (han != null && DinhDang.ngay(han).toLowerCase(Locale.ROOT).contains(tuKhoa)) {
                     return true;
                 }
@@ -241,7 +239,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
                 if (tenTt.toLowerCase(Locale.ROOT).contains(tuKhoa)) return true;
                 if (laSapHetHan(
                                 val.toString().trim(),
-                                docNgay(e.getValue(4)),
+                                DuLieu.docNgayLinhHoat(e.getValue(4)),
                                 docSoNguyen(e.getValue(5)),
                                 homNay)
                         && "sắp hết hạn".contains(tuKhoa)) {
@@ -266,17 +264,19 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
                 || "Hết hàng".equalsIgnoreCase(tenTt);
     }
 
-    private static boolean laHetHan(String maTt, LocalDate han, LocalDate homNay) {
+    private static boolean laHetHan(String maTt, LocalDate han, long ton, LocalDate homNay) {
         String tenTt = DinhDangBang.tenTrangThai(maTt);
-        return TrangThaiLoHang.HET_HAN.maDB().equalsIgnoreCase(maTt)
-                || "Hết hạn".equalsIgnoreCase(tenTt)
-                || (han != null && han.isBefore(homNay));
+        boolean ttHetHan =
+                TrangThaiLoHang.HET_HAN.maDB().equalsIgnoreCase(maTt)
+                        || "Hết hạn".equalsIgnoreCase(tenTt);
+        if (ton <= 0) return ttHetHan;
+        return ttHetHan || (han != null && han.isBefore(homNay));
     }
 
     private boolean laSapHetHan(String maTt, LocalDate han, long ton, LocalDate homNay) {
         String tenTt = DinhDangBang.tenTrangThai(maTt);
         if (ton <= 0 || han == null) return false;
-        if (laHetHan(maTt, han, homNay) || laTamKhoa(maTt, tenTt) || laHetHang(maTt, tenTt)) {
+        if (laHetHan(maTt, han, ton, homNay) || laTamKhoa(maTt, tenTt) || laHetHang(maTt, tenTt)) {
             return false;
         }
         return !han.isAfter(homNay.plusDays(nguongCanhBao()));
@@ -285,7 +285,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
     private static boolean laConHan(String maTt, LocalDate han, long ton, LocalDate homNay) {
         String tenTt = DinhDangBang.tenTrangThai(maTt);
         if (ton <= 0) return false;
-        if (laHetHan(maTt, han, homNay) || laTamKhoa(maTt, tenTt) || laHetHang(maTt, tenTt)) {
+        if (laHetHan(maTt, han, ton, homNay) || laTamKhoa(maTt, tenTt) || laHetHang(maTt, tenTt)) {
             return false;
         }
         return han == null || !han.isBefore(homNay);
@@ -299,27 +299,5 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
         } catch (NumberFormatException ignored) {
             return 0L;
         }
-    }
-
-    private static LocalDate docNgay(Object val) {
-        if (val == null) return null;
-        if (val instanceof LocalDate d) return d;
-        if (val instanceof LocalDateTime dt) return dt.toLocalDate();
-        if (val instanceof Date d) {
-            return Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-        }
-        String chuoi = val.toString().trim();
-        if (chuoi.isEmpty()) return null;
-        try {
-            if (chuoi.length() >= 10 && chuoi.charAt(4) == '-') {
-                return LocalDate.parse(chuoi.substring(0, 10));
-            }
-            if (chuoi.length() >= 10 && chuoi.charAt(2) == '/') {
-                return LocalDate.parse(chuoi.substring(0, 10), DinhDang.NGAY);
-            }
-        } catch (RuntimeException ignored) {
-            return null;
-        }
-        return null;
     }
 }

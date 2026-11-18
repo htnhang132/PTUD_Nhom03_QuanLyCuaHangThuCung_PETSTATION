@@ -17,7 +17,5 @@ public interface LuaChonNghiepVuDAO {
 
     List<MucLuaChon> layLuaChonSanPham();
 
-    List<MucLuaChon> layLuaChonDongHang();
-
     List<MucLuaChon> layLuaChonNhanVien();
 }

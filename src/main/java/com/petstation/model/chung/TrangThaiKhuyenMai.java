@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của chương trình khuyến mãi. Mapping tương ứng cột trang_thai trong bảng
  * chuong_trinh_khuyen_mai: 'HOAT_DONG', 'NGUNG_HOAT_DONG'
  */
-public enum TrangThaiKhuyenMai {
+public enum TrangThaiKhuyenMai implements MaDBEnum {
     HOAT_DONG("HOAT_DONG", "Đang áp dụng"),
     NGUNG_HOAT_DONG("NGUNG_HOAT_DONG", "Ngừng áp dụng");
 
@@ -25,12 +25,6 @@ public enum TrangThaiKhuyenMai {
     }
 
     public static TrangThaiKhuyenMai tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiKhuyenMai t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiKhuyenMai với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiKhuyenMai.class, ma);
     }
 }

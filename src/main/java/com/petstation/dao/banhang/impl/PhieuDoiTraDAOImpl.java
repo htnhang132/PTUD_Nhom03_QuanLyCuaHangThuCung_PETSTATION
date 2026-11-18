@@ -5,11 +5,13 @@ import com.petstation.database.ThaoTacSQL;
 import com.petstation.model.banhang.ChiTietDoiTra;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
+import com.petstation.model.banhang.PhieuDoiTra;
 import com.petstation.model.chung.TrangThaiLoHang;
 import com.petstation.model.chung.TrangThaiPhieuDoiTra;
 import com.petstation.model.khachhang.KhachHang;
 import com.petstation.model.kho.LoHang;
 import com.petstation.model.kho.SanPham;
+import com.petstation.model.nhansu.NhanVien;
 import com.petstation.util.DuLieu;
 
 import java.util.ArrayList;
@@ -40,20 +42,22 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
         List<Object[]> rows =
                 ThaoTacSQL.truyVan(
                         "SELECT COALESCE(b.ma_lo, (SELECT TOP 1 ma_lo FROM lo_hang WHERE"
-                            + " ma_san_pham=b.ma_san_pham ORDER BY ngay_nhap ASC), (SELECT TOP 1"
-                            + " ma_lo FROM lo_hang ORDER BY ngay_nhap ASC), 'LO-DEFAULT'),"
+                            + " ma_san_pham=b.ma_san_pham ORDER BY ngay_nhap ASC)),"
                             + " b.so_luong-COALESCE((SELECT SUM(c.so_luong) FROM chi_tiet_doi_tra c"
                             + " JOIN phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
                             + " c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
                             + " (c.ma_lo=b.ma_lo OR b.ma_lo IS NULL) AND p.trang_thai IN"
                             + " ('CHO_XU_LY','HOAN_TAT')),0) FROM chi_tiet_hoa_don b WHERE"
-                            + " b.ma_hoa_don=? AND b.ma_san_pham=? ORDER BY b.ma_san_pham",
+                            + " b.ma_hoa_don=? AND b.ma_san_pham=? AND (b.ma_lo IS NOT NULL OR"
+                            + " EXISTS (SELECT 1 FROM lo_hang l WHERE l.ma_san_pham=b.ma_san_pham))"
+                            + " ORDER BY b.ma_san_pham",
                         maHoaDon,
                         maSanPham);
         List<LoHang> ketQua = new ArrayList<>();
         for (Object[] r : rows) {
+            if (r[0] == null) continue;
             LoHang lo = new LoHang();
-            lo.setMaLo(r[0] != null ? r[0].toString() : null);
+            lo.setMaLo(r[0].toString());
             int conDuocDoi = r[1] != null ? ((Number) r[1]).intValue() : 0;
             lo.setSoLuongTon(Math.max(0, conDuocDoi));
             ketQua.add(lo);
@@ -82,15 +86,49 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
 
     @Override
     public List<HoaDon> timHoaDon(String tuKhoa) {
+        if (tuKhoa == null || tuKhoa.isBlank()) {
+            return timHoaDonGanDay(3);
+        }
+        String mau = "%" + tuKhoa.trim() + "%";
         List<Object[]> rows =
                 ThaoTacSQL.truyVan(
-                        "SELECT h.ma_hoa_don AS ma_khoa, h.ma_hoa_don,COALESCE(k.ho_ten, N'Khách"
-                            + " lẻ'),h.tao_luc, h.tong_tien FROM hoa_don h LEFT JOIN khach_hang k"
-                            + " ON k.ma_khach_hang=h.ma_khach_hang WHERE"
-                            + " h.trang_thai='DA_THANH_TOAN' AND (h.ma_hoa_don=? OR"
-                            + " k.so_dien_thoai=?) ORDER BY h.tao_luc DESC, h.ma_hoa_don DESC",
-                        tuKhoa,
-                        tuKhoa);
+                        "SELECT TOP 60 h.ma_hoa_don AS ma_khoa, h.ma_hoa_don, COALESCE(k.ho_ten,"
+                                + " N'Khách lẻ'), h.thanh_toan_luc, h.tong_tien FROM hoa_don h LEFT"
+                                + " JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                                + " h.trang_thai='DA_THANH_TOAN' AND (h.ma_hoa_don LIKE ? OR"
+                                + " k.so_dien_thoai LIKE ? OR k.ho_ten LIKE ?) ORDER BY"
+                                + " h.thanh_toan_luc DESC, h.ma_hoa_don DESC",
+                        mau,
+                        mau,
+                        mau);
+        return docDanhSachHoaDon(rows);
+    }
+
+    @Override
+    public List<HoaDon> timHoaDonGanDay(int soNgay) {
+        int soGio = Math.max(1, soNgay) * 24;
+        List<Object[]> rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT TOP 40 h.ma_hoa_don AS ma_khoa, h.ma_hoa_don, COALESCE(k.ho_ten,"
+                            + " N'Khách lẻ'), h.thanh_toan_luc, h.tong_tien FROM hoa_don h LEFT"
+                            + " JOIN khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
+                            + " h.trang_thai='DA_THANH_TOAN' AND"
+                            + " h.thanh_toan_luc>=DATEADD(hour,-?,SYSDATETIME()) AND NOT EXISTS"
+                            + " (SELECT 1 FROM phieu_doi_tra x WHERE"
+                            + " x.ma_hoa_don_thay_the=h.ma_hoa_don AND x.trang_thai IN"
+                            + " ('HOAN_TAT','CHO_XU_LY')) AND EXISTS (SELECT 1 FROM"
+                            + " chi_tiet_hoa_don c JOIN san_pham p ON p.ma_san_pham=c.ma_san_pham"
+                            + " WHERE c.ma_hoa_don=h.ma_hoa_don AND p.nhom_hang=N'Phụ kiện' AND"
+                            + " c.so_luong>COALESCE((SELECT SUM(d.so_luong) FROM chi_tiet_doi_tra d"
+                            + " JOIN phieu_doi_tra pt ON pt.ma_phieu=d.ma_phieu WHERE"
+                            + " d.ma_hoa_don=c.ma_hoa_don AND d.ma_san_pham=c.ma_san_pham AND"
+                            + " pt.trang_thai IN ('CHO_XU_LY','HOAN_TAT')),0)) ORDER BY"
+                            + " h.thanh_toan_luc DESC, h.ma_hoa_don DESC",
+                        soGio);
+        return docDanhSachHoaDon(rows);
+    }
+
+    private static List<HoaDon> docDanhSachHoaDon(List<Object[]> rows) {
         List<HoaDon> ketQua = new ArrayList<>();
         for (Object[] r : rows) {
             KhachHang kh = new KhachHang();
@@ -273,9 +311,107 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
     public boolean laHoaDonThayThe(String maHoaDon) {
         return ThaoTacSQL.laySo(
                         "SELECT COUNT(*) FROM phieu_doi_tra WHERE ma_hoa_don_thay_the=? AND"
-                                + " trang_thai=?",
+                                + " trang_thai IN (?,?)",
                         maHoaDon,
-                        TrangThaiPhieuDoiTra.HOAN_TAT.maDB())
+                        TrangThaiPhieuDoiTra.HOAN_TAT.maDB(),
+                        TrangThaiPhieuDoiTra.CHO_XU_LY.maDB())
                 > 0;
+    }
+
+    @Override
+    public Optional<HoaDon> layThongTinHoaDonDoi(String maHoaDon) {
+        List<Object[]> rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT ma_hoa_don, trang_thai, thanh_toan_luc FROM hoa_don WHERE"
+                                + " ma_hoa_don=?",
+                        maHoaDon);
+        if (rows.isEmpty()) return Optional.empty();
+        Object[] r = rows.get(0);
+        HoaDon hd = new HoaDon();
+        hd.setMaHoaDon(r[0] != null ? r[0].toString() : null);
+        hd.setTrangThai(r[1] != null ? r[1].toString() : null);
+        hd.setThanhToanLuc(DuLieu.chuyenLocalDateTime(r[2]));
+        return Optional.of(hd);
+    }
+
+    @Override
+    public Optional<PhieuDoiTra> layPhieuDoi(String maPhieu) {
+        List<Object[]> rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT p.ma_phieu, p.ma_hoa_don, p.ma_hoa_don_thay_the, p.loai_phieu,"
+                                + " p.trang_thai, p.gia_tri_duoc_doi, p.chenh_lech, p.ly_do,"
+                                + " p.tao_luc, COALESCE(n.ho_ten, N'Thu ngân') FROM phieu_doi_tra p"
+                                + " LEFT JOIN nhan_vien n ON n.ma_nhan_vien=p.ma_nhan_vien WHERE"
+                                + " p.ma_phieu=?",
+                        maPhieu);
+        if (rows.isEmpty()) return Optional.empty();
+        Object[] r = rows.get(0);
+        PhieuDoiTra pt = new PhieuDoiTra();
+        pt.setMaPhieu(r[0] != null ? r[0].toString() : null);
+        if (r[1] != null) pt.setHoaDonGoc(new HoaDon(r[1].toString()));
+        if (r[2] != null && !r[2].toString().isBlank())
+            pt.setHoaDonThayThe(new HoaDon(r[2].toString()));
+        pt.setLoaiPhieu(r[3] != null ? r[3].toString() : null);
+        pt.setTrangThai(r[4] != null ? r[4].toString() : null);
+        pt.setGiaTriDuocDoi(r[5] != null ? ((Number) r[5]).longValue() : 0L);
+        pt.setChenhLech(r[6] != null ? ((Number) r[6]).longValue() : 0L);
+        pt.setLyDo(r[7] != null ? r[7].toString() : "");
+        pt.setTaoLuc(DuLieu.chuyenLocalDateTime(r[8]));
+        NhanVien nv = new NhanVien();
+        nv.setHoTen(r[9] != null ? r[9].toString() : "");
+        pt.setNguoiLap(nv);
+        return Optional.of(pt);
+    }
+
+    @Override
+    public List<ChiTietDoiTra> layChiTietPhieuDoi(String maPhieu) {
+        List<Object[]> rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT c.ma_san_pham, COALESCE(p.ten, c.ma_san_pham), c.ma_lo, c.so_luong,"
+                                + " c.tien_hoan FROM chi_tiet_doi_tra c LEFT JOIN san_pham p ON"
+                                + " p.ma_san_pham=c.ma_san_pham WHERE c.ma_phieu=? ORDER BY"
+                                + " c.ma_san_pham",
+                        maPhieu);
+        List<ChiTietDoiTra> ds = new ArrayList<>();
+        for (Object[] r : rows) {
+            SanPham sp = new SanPham();
+            sp.setMaSanPham(r[0] != null ? r[0].toString() : "");
+            sp.setTenSanPham(r[1] != null ? r[1].toString() : "");
+            ChiTietHoaDon ctHd = new ChiTietHoaDon();
+            ctHd.setSanPham(sp);
+            LoHang lo = new LoHang();
+            lo.setMaLo(r[2] != null ? r[2].toString() : "");
+            ChiTietDoiTra ctDt = new ChiTietDoiTra();
+            ctDt.setChiTietHoaDon(ctHd);
+            ctDt.setLoHang(lo);
+            ctDt.setSoLuong(r[3] != null ? ((Number) r[3]).intValue() : 0);
+            ctDt.setTienHoan(r[4] != null ? ((Number) r[4]).longValue() : 0L);
+            ds.add(ctDt);
+        }
+        return ds;
+    }
+
+    @Override
+    public List<ChiTietHoaDon> layHangThayTheCuaPhieu(String maHoaDonThayThe) {
+        if (maHoaDonThayThe == null || maHoaDonThayThe.isBlank()) return List.of();
+        List<Object[]> rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT c.ma_san_pham, COALESCE(c.ten_hang, p.ten), SUM(c.so_luong),"
+                                + " c.don_gia FROM chi_tiet_hoa_don c LEFT JOIN san_pham p ON"
+                                + " p.ma_san_pham=c.ma_san_pham WHERE c.ma_hoa_don=? GROUP BY"
+                                + " c.ma_san_pham, COALESCE(c.ten_hang, p.ten), c.don_gia",
+                        maHoaDonThayThe);
+        List<ChiTietHoaDon> ds = new ArrayList<>();
+        for (Object[] r : rows) {
+            SanPham sp = new SanPham();
+            sp.setMaSanPham(r[0] != null ? r[0].toString() : "");
+            ChiTietHoaDon ct = new ChiTietHoaDon();
+            ct.setSanPham(sp);
+            ct.setTenHang(r[1] != null ? r[1].toString() : "");
+            ct.setSoLuong(r[2] != null ? ((Number) r[2]).intValue() : 0);
+            ct.setDonGia(r[3] != null ? ((Number) r[3]).longValue() : 0L);
+            ds.add(ct);
+        }
+        return ds;
     }
 }

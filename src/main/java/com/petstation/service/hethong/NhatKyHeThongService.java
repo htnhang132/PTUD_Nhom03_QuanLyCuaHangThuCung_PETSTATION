@@ -8,6 +8,7 @@ import com.petstation.model.chung.Quyen;
 import com.petstation.model.hethong.NhatKyHeThong;
 import com.petstation.model.nhansu.NhanVien;
 import com.petstation.service.chung.BoLangNgheSuKien;
+import com.petstation.service.chung.PhatSuKien;
 import com.petstation.util.DuLieu;
 
 import java.sql.Connection;
@@ -17,14 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class NhatKyHeThongService {
     private static final NhatKyHeThongService MAC_DINH = new NhatKyHeThongService();
 
     private final NhatKyHeThongDAO nhatKyHeThongDAO;
     private final PhienDangNhapService phienService;
-    private final List<BoLangNgheSuKien<String>> cacBoLangNghe = new CopyOnWriteArrayList<>();
+    private final PhatSuKien<String> phatSuKien = new PhatSuKien<>();
 
     public NhatKyHeThongService() {
         this(new NhatKyHeThongDAOImpl(), PhienDangNhapService.macDinh());
@@ -86,12 +86,7 @@ public final class NhatKyHeThongService {
                 doiTuong,
                 kieu,
                 ketQua);
-        QuanLyGiaoDich.sauKhiCommit(
-                () -> {
-                    for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
-                        boLangNghe.khiThayDoi(thaoTac);
-                    }
-                });
+        QuanLyGiaoDich.sauKhiCommit(() -> phatSuKien.phat(thaoTac));
     }
 
     private static String layKieuCua(String thaoTac, String doiTuong) {
@@ -225,16 +220,14 @@ public final class NhatKyHeThongService {
     }
 
     public void themBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        if (boLangNghe != null && !cacBoLangNghe.contains(boLangNghe)) {
-            cacBoLangNghe.add(boLangNghe);
-        }
+        phatSuKien.them(boLangNghe);
     }
 
     public void xoaBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        cacBoLangNghe.remove(boLangNghe);
+        phatSuKien.xoa(boLangNghe);
     }
 
     public void xoaBoLangNghe() {
-        cacBoLangNghe.clear();
+        phatSuKien.xoaTatCa();
     }
 }

@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của lịch hẹn làm dịch vụ Spa. Mapping tương ứng cột trang_thai trong bảng lich_hen:
  * 'DA_XAC_NHAN', 'DANG_THUC_HIEN', 'HOAN_TAT', 'DA_HUY'
  */
-public enum TrangThaiLichHen {
+public enum TrangThaiLichHen implements MaDBEnum {
     DA_XAC_NHAN("DA_XAC_NHAN", "Đã xác nhận hẹn"),
     DANG_THUC_HIEN("DANG_THUC_HIEN", "Đang thực hiện"),
     HOAN_TAT("HOAN_TAT", "Hoàn tất"),
@@ -27,12 +27,6 @@ public enum TrangThaiLichHen {
     }
 
     public static TrangThaiLichHen tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiLichHen t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiLichHen với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiLichHen.class, ma);
     }
 }

@@ -1,5 +1,6 @@
 package com.petstation.util;
 
+import java.text.Normalizer;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,9 +69,6 @@ public final class DinhDang {
     public static final DateTimeFormatter NGAY_THANG_GIO_PHUT =
             DateTimeFormatter.ofPattern("dd/MM HH:mm");
 
-    public static final DateTimeFormatter NGAY_THANG_GIO_GIAY =
-            DateTimeFormatter.ofPattern("dd/MM HH:mm:ss");
-
     public static final DateTimeFormatter THANG_NAM = DateTimeFormatter.ofPattern("MM/yyyy");
 
     public static final DateTimeFormatter MA_NGAY = DateTimeFormatter.ofPattern("yyMMdd");
@@ -118,5 +116,40 @@ public final class DinhDang {
 
     public static String gio(LocalTime t) {
         return t == null ? "" : t.format(GIO_PHUT);
+    }
+
+    /** Thoát các ký tự HTML đặc biệt để hiển thị an toàn trong JLabel / JEditorPane. */
+    public static String thoatHtml(String giaTri) {
+        if (giaTri == null) return "";
+        return giaTri.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    /** Thoát ký tự HTML đặc biệt và chuyển dấu xuống dòng thành thẻ {@code <br>}. */
+    public static String thoatHtmlXuongDong(Object giaTri) {
+        return thoatHtml(giaTri == null ? "" : giaTri.toString()).replace("\n", "<br>");
+    }
+
+    /**
+     * Phân tích chuỗi tiền tệ nguyên không âm (bỏ ký hiệu đ/₫), trả về {@code -1} nếu không hợp lệ.
+     */
+    public static long docTienKhongAm(String vanBan) {
+        if (vanBan == null) return -1;
+        String sach = vanBan.trim().replaceAll("(?i)[₫đ\\s]+$", "").trim();
+        if (!sach.matches("\\d+(?:[.,]\\d{3})*")) return -1;
+        long ketQua = doc(sach);
+        return ketQua < 0 ? -1 : ketQua;
+    }
+
+    /** Loại bỏ dấu tiếng Việt (kể cả chữ đ/Đ) phục vụ tìm kiếm không phân biệt dấu. */
+    public static String boDauTiengViet(String vanBan) {
+        if (vanBan == null) return "";
+        return Normalizer.normalize(vanBan, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .replace('đ', 'd')
+                .replace('Đ', 'D');
     }
 }

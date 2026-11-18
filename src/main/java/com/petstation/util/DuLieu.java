@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -114,6 +115,29 @@ public final class DuLieu {
             return Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         }
         return null;
+    }
+
+    public static LocalDate docNgayLinhHoat(Object giaTri) {
+        LocalDate ngay = chuyenLocalDate(giaTri);
+        if (ngay != null) return ngay;
+        if (giaTri == null) return null;
+        String chuoi = giaTri.toString().trim();
+        if (chuoi.isEmpty() || "-".equals(chuoi)) return null;
+        try {
+            if (chuoi.length() >= 10 && chuoi.charAt(4) == '-') {
+                return LocalDate.parse(chuoi.substring(0, 10), DinhDang.NGAY_ISO);
+            }
+            if (chuoi.length() >= 10 && chuoi.charAt(2) == '/') {
+                return LocalDate.parse(chuoi.substring(0, 10), DinhDang.NGAY_U);
+            }
+            return LocalDate.parse(chuoi, DinhDang.NGAY_ISO);
+        } catch (DateTimeParseException ignored) {
+            try {
+                return LocalDate.parse(chuoi, DinhDang.NGAY_U);
+            } catch (DateTimeParseException ignored2) {
+                return null;
+            }
+        }
     }
 
     public static LocalDateTime chuyenLocalDateTime(Object giaTri) {

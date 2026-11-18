@@ -108,6 +108,15 @@ public class BoChonNgay extends JPanel {
         add(btnNutLich, BorderLayout.EAST);
     }
 
+    @Override
+    public void removeNotify() {
+        if (lichHopThoai != null) {
+            lichHopThoai.dispose();
+            lichHopThoai = null;
+        }
+        super.removeNotify();
+    }
+
     private void hienThiLich() {
         if (oTruongVanBan == null || !oTruongVanBan.isShowing()) {
             return;

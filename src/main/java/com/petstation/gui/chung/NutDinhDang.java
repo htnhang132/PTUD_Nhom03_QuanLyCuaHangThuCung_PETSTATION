@@ -2,6 +2,7 @@ package com.petstation.gui.chung;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -12,7 +13,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.SwingConstants;
 
 public class NutDinhDang extends JButton {
     public enum KieuNut {
@@ -31,7 +34,7 @@ public class NutDinhDang extends JButton {
 
     private Color mauVien;
 
-    private final int banKinh = 10;
+    private final int banKinh = MauUngDung.BAN_KINH_NUT;
 
     public NutDinhDang(String vanBan, KieuNut kieu) {
         super(vanBan);
@@ -79,13 +82,13 @@ public class NutDinhDang extends JButton {
                 mauVien = MauUngDung.VAN_BAN_NGUY_HIEM;
             }
             case THANH_CONG -> {
-                mauNen = MauUngDung.mau(0xD1FAE5);
-                mauReChuot = MauUngDung.mau(0xA7F3D0);
-                mauVanBan = MauUngDung.mau(0x065942);
+                mauNen = MauUngDung.THANH_CONG_NEN;
+                mauReChuot = MauUngDung.THANH_CONG_HOVER;
+                mauVanBan = MauUngDung.THANH_CONG_CHU;
             }
             case TRONG_SUOT -> {
-                mauNen = MauUngDung.XAM_NEN_TRUNG;
-                mauReChuot = MauUngDung.XAM_VIEN_THE;
+                mauNen = MauUngDung.THE_NEN;
+                mauReChuot = MauUngDung.KEM_NEN_NHAN;
                 mauVanBan = MauUngDung.VAN_BAN_TOI;
                 mauVien = MauUngDung.VIEN;
             }
@@ -119,8 +122,54 @@ public class NutDinhDang extends JButton {
     }
 
     @Override
+    public void setText(String vanBan) {
+        if (vanBan != null && (vanBan.endsWith(" ▾") || vanBan.endsWith(" ▴"))) {
+            boolean xuong = vanBan.endsWith(" ▾");
+            super.setText(vanBan.substring(0, vanBan.length() - 2));
+            setIcon(new IconMuiTen(xuong));
+            setHorizontalTextPosition(SwingConstants.LEADING);
+            setIconTextGap(6);
+            return;
+        }
+        if (getIcon() instanceof IconMuiTen) {
+            setIcon(null);
+        }
+        super.setText(vanBan);
+    }
+
+    @Override
     public Dimension getPreferredSize() {
         Dimension ngayDangXet = super.getPreferredSize();
-        return new Dimension(ngayDangXet.width + 12, Math.max(ngayDangXet.height, 34));
+        return new Dimension(
+                ngayDangXet.width + 12, Math.max(ngayDangXet.height, MauUngDung.CAO_NUT));
+    }
+
+    private static final class IconMuiTen implements Icon {
+        private final boolean xuong;
+
+        private IconMuiTen(boolean xuong) {
+            this.xuong = xuong;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c.getForeground());
+            int[] xs = {x, x + 8, x + 4};
+            int[] ys = xuong ? new int[] {y + 1, y + 1, y + 6} : new int[] {y + 6, y + 6, y + 1};
+            g2.fillPolygon(xs, ys, 3);
+            g2.dispose();
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 8;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 7;
+        }
     }
 }

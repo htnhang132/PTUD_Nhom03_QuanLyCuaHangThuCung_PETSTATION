@@ -11,7 +11,6 @@ import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.TrangThaiLichHen;
-import com.petstation.model.chung.TrangThaiPhieuSpa;
 import com.petstation.util.DinhDang;
 
 import org.slf4j.LoggerFactory;
@@ -68,10 +67,9 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                             new String[] {
                                 "Tất cả",
                                 TrangThaiLichHen.DA_XAC_NHAN.maDB(),
-                                TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
+                                TrangThaiLichHen.DANG_THUC_HIEN.maDB(),
                                 TrangThaiLichHen.HOAN_TAT.maDB(),
-                                TrangThaiLichHen.DA_HUY.maDB(),
-                                "KHONG_DEN"
+                                TrangThaiLichHen.DA_HUY.maDB()
                             });
     private final BoChonNgay ngay = new BoChonNgay();
     private final JPanel lich = new JPanel();
@@ -151,7 +149,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                                             .getValueAt(
                                                     layBangDuLieu().convertRowIndexToModel(row),
                                                     8));
-                    if (TrangThaiLichHen.DA_XAC_NHAN.maDB().equals(tt)) tiepNhan();
+                    if (TrangThaiLichHen.DA_XAC_NHAN.maDB().equals(tt)) suaLich();
                 });
         thayBoLangNgheTimKiem(this::loc);
         trangThai.setRenderer(
@@ -202,8 +200,13 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         nhanVien.removeAllItems();
         nhanVien.addItem("Tất cả");
         Set<String> names = new TreeSet<>();
-        for (int r = 0; r < layMoHinh().getRowCount(); r++)
-            names.add(String.valueOf(layMoHinh().getValueAt(r, 5)));
+        for (int r = 0; r < layMoHinh().getRowCount(); r++) {
+            Object val = layMoHinh().getValueAt(r, 5);
+            if (val != null) {
+                String ten = val.toString().trim();
+                if (!ten.isEmpty()) names.add(ten);
+            }
+        }
         for (String n : names) nhanVien.addItem(n);
         if (selected != null && names.contains(selected)) nhanVien.setSelectedItem(selected);
         dangNap = false;
@@ -240,6 +243,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
     private void loc() {
         if (dangNap) return;
         String mode = String.valueOf(cheDo.getSelectedItem());
+        ngay.setEnabled(!"Danh sách".equals(mode));
         LocalDate date = ngay.layNgayDuocChon();
         if (date == null) return;
         LocalDate start =
@@ -248,7 +252,9 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
         apDungBoLocBangLichHen(mode, start, end);
         ((CardLayout) content.getLayout())
                 .show(content, mode.equals("Danh sách") ? "Danh sách" : "Lịch");
-        dungLichTuanNgay(mode, start, end);
+        if (!"Danh sách".equals(mode)) {
+            dungLichTuanNgay(mode, start, end);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -320,6 +326,8 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                 chuyenThoiGian(layMoHinh().getValueAt(r, 6)).toLocalTime()
                         + "–"
                         + chuyenThoiGian(layMoHinh().getValueAt(r, 7)).toLocalTime();
+        String trangThaiTen =
+                DinhDangBang.tenTrangThai(String.valueOf(layMoHinh().getValueAt(r, 8)));
         String text =
                 chuyenThoiGian
                         + " · "
@@ -329,7 +337,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                         + " · "
                         + layMoHinh().getValueAt(r, 5)
                         + " · "
-                        + layMoHinh().getValueAt(r, 8);
+                        + trangThaiTen;
         JButton card =
                 new JButton(
                         "<html><b>"
@@ -341,7 +349,7 @@ public final class LichHenSpaPanel extends NghiepVuSpaPanel {
                                 + "<br>"
                                 + esc(layMoHinh().getValueAt(r, 5))
                                 + "<br>"
-                                + esc(layMoHinh().getValueAt(r, 8))
+                                + esc(trangThaiTen)
                                 + "</html>");
         card.setHorizontalAlignment(SwingConstants.LEFT);
         card.setToolTipText(text);

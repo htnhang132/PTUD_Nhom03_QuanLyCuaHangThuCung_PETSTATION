@@ -32,7 +32,7 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                         .datTienTo("P")
                         .themBoLoc("Loại phòng", d -> String.valueOf(d[1]))
                         .timKiem("Tìm theo mã phòng, loại phòng...")
-                        .datTrangThai(5, "Trống", "Ngừng hoạt động")
+                        .datTrangThai(5, "Trống", "Bảo trì")
                         .datBoKiemTra(
                                 dong -> {
                                     if (DinhDang.doc(String.valueOf(dong[2])) <= 0) {
@@ -44,18 +44,27 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                                     return null;
                                 })
                         .datDieuKienXoa(
-                                dongDuLieu -> {
-                                    String trangThai = String.valueOf(dongDuLieu[5]);
-                                    return "Có thú".equals(trangThai)
-                                                    || "Đang dọn".equals(trangThai)
-                                            ? "Phòng "
-                                                    + dongDuLieu[0]
-                                                    + " đang \""
-                                                    + trangThai
-                                                    + "\", chưa thể ngừng hoạt động."
-                                            : null;
-                                });
+                                dongDuLieu -> "Chuyển trạng thái sang Bảo trì thay vì xóa phòng.");
         return cauHinh;
+    }
+
+    @Override
+    protected boolean hoTroXoaBanGhi() {
+        return false;
+    }
+
+    @Override
+    protected boolean coTheSuaBanGhi(Object[] dong) {
+        if (dong == null || dong.length <= 5) {
+            return false;
+        }
+        String tt = String.valueOf(dong[5]);
+        return "Trống".equals(tt) || "Bảo trì".equals(tt);
+    }
+
+    @Override
+    protected String lyDoKhongChoSua(Object[] dong) {
+        return coTheSuaBanGhi(dong) ? null : "Không thể sửa phòng khi đang Có thú hoặc Đang dọn.";
     }
 
     private static List<TruongDuLieu> taoCacTruong() {
@@ -72,10 +81,6 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Ghi chú", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Trống", "Bảo trì")
-                        .choSuaKhi(
-                                giaTri ->
-                                        giaTri.equals("Trống")
-                                                || giaTri.equals("Bảo trì")
-                                                || giaTri.equals("Ngừng hoạt động")));
+                        .choSuaKhi(giaTri -> "Trống".equals(giaTri) || "Bảo trì".equals(giaTri)));
     }
 }

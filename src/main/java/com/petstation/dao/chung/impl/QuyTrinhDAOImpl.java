@@ -138,11 +138,12 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
                         "SELECT h.ma_phong, h.ma_hop_dong, t.ma_thu_cung, t.ten,"
                                 + " k.ma_khach_hang, k.ho_ten, h.ngay_vao,"
                                 + " h.ngay_ra_du_kien, h.trang_thai,"
-                                + " COALESCE(k.so_dien_thoai, '') FROM hop_dong_luu_tru h"
-                                + " JOIN thu_cung t ON t.ma_thu_cung=h.ma_thu_cung JOIN"
-                                + " khach_hang k ON k.ma_khach_hang=h.ma_khach_hang WHERE"
-                                + " h.trang_thai IN('DA_DAT','DANG_O') ORDER BY"
-                                + " h.ngay_vao, h.ma_hop_dong")
+                                + " COALESCE(k.so_dien_thoai, ''), COALESCE(h.tien_coc, 0),"
+                                + " COALESCE(h.da_nhan_coc, 0), COALESCE(h.gia_dem_ap_dung, 0)"
+                                + " FROM hop_dong_luu_tru h JOIN thu_cung t ON"
+                                + " t.ma_thu_cung=h.ma_thu_cung JOIN khach_hang k ON"
+                                + " k.ma_khach_hang=h.ma_khach_hang WHERE h.trang_thai"
+                                + " IN('DA_DAT','DANG_O') ORDER BY h.ngay_vao, h.ma_hop_dong")
                 .stream()
                 .map(
                         r -> {
@@ -150,6 +151,11 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
                             phong.setMaPhong(DuLieu.chuyenThanhChuoi(r[0]));
                             HopDongLuuTru hd = new HopDongLuuTru();
                             hd.setMaHopDong(DuLieu.chuyenThanhChuoi(r[1]));
+                            hd.setTienCoc(r[10] != null ? ((Number) r[10]).longValue() : 0L);
+                            hd.setDaNhanCoc(
+                                    Boolean.TRUE.equals(r[11])
+                                            || (r[11] instanceof Number n && n.intValue() != 0));
+                            hd.setGiaDem(r[12] != null ? ((Number) r[12]).longValue() : 0L);
                             ThuCung tc = new ThuCung(DuLieu.chuyenThanhChuoi(r[2]));
                             tc.setTen(DuLieu.chuyenThanhChuoi(r[3]));
                             KhachHang kh = new KhachHang(DuLieu.chuyenThanhChuoi(r[4]));

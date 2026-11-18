@@ -34,6 +34,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class BanHangService {
+    // 1. HẰNG SỐ, HÀM KHỞI TẠO & NGUỒN BIÊN LAI
+
     private static final Map<String, ThongTinTreoTam> THONG_TIN_TREO_TAM =
             new ConcurrentHashMap<>();
 
@@ -127,6 +129,8 @@ public final class BanHangService {
                         ? chuyenThanhChuoi(nguon.getHoaDonGoc().getMaHoaDon())
                         : "");
     }
+
+    // 2. THANH TOÁN, TỒN KHO FEFO & TÍCH ĐIỂM
 
     public GioHang.BienLai thanhToan(
             GioHang banHang, PhuongThuc phuongThuc, long daNhan, String thuNgan) {
@@ -367,6 +371,8 @@ public final class BanHangService {
                 vatPhanTram);
     }
 
+    // 3. TREO ĐƠN TẠM & MỞ LẠI GIỎ HÀNG
+
     public String treo(GioHang banHang) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.BAN_HANG);
         if (LoaiPhieuDoiTra.DOI_HANG.maDB().equals(banHang.getKieuNguon()))
@@ -486,6 +492,8 @@ public final class BanHangService {
                             return null;
                         });
     }
+
+    // 4. QUYẾT TOÁN SPA / HOTEL, HỦY HÓA ĐƠN & CHI TIẾT BIÊN LAI
 
     public void quyetToan(String loai, String ma, GioHang banHang) {
         List<GioHang.DongHang> cacDong = new ArrayList<>();

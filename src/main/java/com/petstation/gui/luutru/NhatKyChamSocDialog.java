@@ -18,12 +18,15 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
 import java.awt.print.PrinterJob;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -38,6 +41,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
@@ -46,19 +50,25 @@ import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public final class NhatKyChamSocDialog {
+    // 1. HÀM KHỞI TẠO & API CÔNG KHAI
+
     private NhatKyChamSocDialog() {}
 
     public static void mo(Component cha, String loai, String ma) {
+        mo(cha, loai, ma, true);
+    }
+
+    public static void mo(Component cha, String loai, String ma, boolean choPhepChinhSua) {
         JDialog dialog =
                 new JDialog(
                         SwingUtilities.getWindowAncestor(cha),
-                        "Phiếu chăm sóc",
+                        choPhepChinhSua ? "Phiếu chăm sóc" : "Phiếu chăm sóc (Chỉ xem)",
                         Dialog.ModalityType.APPLICATION_MODAL);
         dialog.getContentPane().setBackground(MauUngDung.NEN_KEM);
         JPanel khungChinh = new JPanel(new BorderLayout(14, 14));
         khungChinh.setBackground(MauUngDung.NEN_KEM);
         khungChinh.setBorder(new EmptyBorder(14, 14, 14, 14));
-        khungChinh.add(taoTieuDeHopThoai(), BorderLayout.NORTH);
+        khungChinh.add(taoTieuDeHopThoai(loai, choPhepChinhSua), BorderLayout.NORTH);
         JTextArea health = taoTextArea(3);
         JTextArea food = taoTextArea(2);
         JTextArea medicine = taoTextArea(2);
@@ -71,6 +81,8 @@ public final class NhatKyChamSocDialog {
                 taoFormTrai(
                         dialog,
                         chamSocService,
+                        loai,
+                        choPhepChinhSua,
                         health,
                         food,
                         medicine,
@@ -81,9 +93,10 @@ public final class NhatKyChamSocDialog {
         DefaultListModel<String> model = new DefaultListModel<>();
         JList<String> list = new JList<>(model);
         JEditorPane preview = new JEditorPane("text/html", "");
-        NutDinhDang btnIn = new NutDinhDang("In / Xuất phiếu PDF…", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnIn = new NutDinhDang("In / Xuất phiếu PDF…", NutDinhDang.KieuNut.TRONG_SUOT);
         btnIn.setEnabled(false);
         final List<NhatKyChamSoc> data = new ArrayList<>();
+        final Map<String, String> uriAnh = new HashMap<>();
         JPanel khungPhai = taoKhungLichSuPhai(dialog, list, preview, data, btnIn);
         Runnable load =
                 () ->
@@ -93,11 +106,12 @@ public final class NhatKyChamSocDialog {
                                 loai,
                                 ma,
                                 data,
+                                uriAnh,
                                 model,
                                 list,
                                 preview,
                                 btnIn);
-        list.addListSelectionListener(e -> capNhatXemTruoc(list, data, preview));
+        list.addListSelectionListener(e -> capNhatXemTruoc(list, data, uriAnh, preview));
         btnLuu.addActionListener(
                 e ->
                         luuPhieuChamSoc(
@@ -113,28 +127,80 @@ public final class NhatKyChamSocDialog {
                                 nhanAnhDaChon,
                                 btnLuu,
                                 load));
+        JPanel khungNoiDung = taoKhungNoiDungChinh(choPhepChinhSua, khungBieuMauTrai, khungPhai);
+        khungChinh.add(khungNoiDung, BorderLayout.CENTER);
+        hienThiHopThoai(dialog, cha, khungChinh, choPhepChinhSua, load);
+    }
+
+    // 2. XÂY DỰNG KHUNG HỘP THOẠI & BIỂU MẪU TRÁI
+
+    private static JPanel taoKhungNoiDungChinh(
+            boolean choPhepChinhSua, JPanel khungBieuMauTrai, JPanel khungPhai) {
+        if (!choPhepChinhSua) {
+            return khungPhai;
+        }
         JPanel khungNoiDung = new JPanel(new GridLayout(1, 2, 14, 0));
         khungNoiDung.setOpaque(false);
-        khungNoiDung.add(new JScrollPane(khungBieuMauTrai));
+        khungNoiDung.add(taoCuonForm(khungBieuMauTrai));
         khungNoiDung.add(khungPhai);
-        khungChinh.add(khungNoiDung, BorderLayout.CENTER);
+        return khungNoiDung;
+    }
+
+    private static void hienThiHopThoai(
+            JDialog dialog,
+            Component cha,
+            JPanel khungChinh,
+            boolean choPhepChinhSua,
+            Runnable load) {
+        khungChinh.add(taoThanhChanHopThoai(dialog), BorderLayout.SOUTH);
         dialog.setContentPane(khungChinh);
-        dialog.setSize(1020, 680);
+        dialog.getRootPane()
+                .registerKeyboardAction(
+                        e -> dialog.dispose(),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
+        HopThoai.canChinhKichThuocVuaManHinh(
+                dialog, choPhepChinhSua ? 940 : 660, choPhepChinhSua ? 580 : 500);
         HopThoai.chuanHoaCuaSo(dialog, cha);
         load.run();
         dialog.setVisible(true);
     }
 
-    private static JPanel taoTieuDeHopThoai() {
+    private static JScrollPane taoCuonForm(JPanel khung) {
+        JScrollPane cuon = new JScrollPane(khung);
+        cuon.setBorder(null);
+        cuon.getVerticalScrollBar().setUnitIncrement(16);
+        return cuon;
+    }
+
+    private static JPanel taoThanhChanHopThoai(JDialog dialog) {
+        JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        chan.setOpaque(false);
+        NutDinhDang btnDong = new NutDinhDang("Đóng", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnDong.addActionListener(e -> dialog.dispose());
+        chan.add(btnDong);
+        return chan;
+    }
+
+    private static JPanel taoTieuDeHopThoai(String loai, boolean choPhepChinhSua) {
         JPanel khungDauTrangChinh = new JPanel(new BorderLayout());
         khungDauTrangChinh.setOpaque(false);
-        JLabel nhanTieuDe = new JLabel("PHIẾU CHĂM SÓC THÚ CƯNG");
+        boolean laSpa = "SPA".equalsIgnoreCase(loai);
+        JLabel nhanTieuDe =
+                new JLabel(laSpa ? "PHIẾU CHĂM SÓC SPA THÚ CƯNG" : "PHIẾU CHĂM SÓC THÚ CƯNG");
         nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 16));
         nhanTieuDe.setForeground(MauUngDung.DO_THUONG_HIEU);
+        String moTaMacDinh =
+                laSpa
+                        ? "Theo dõi tình trạng tiếp nhận, sản phẩm dùng và quá trình chăm sóc tại"
+                                + " Spa"
+                        : "Theo dõi tình trạng sức khỏe, dinh dưỡng, thuốc dùng và việc chăm sóc"
+                                + " qua từng ca";
         JLabel nhanPhuDe =
                 new JLabel(
-                        "Theo dõi tình trạng sức khỏe, dinh dưỡng, thuốc dùng và việc chăm sóc qua"
-                                + " từng ca");
+                        choPhepChinhSua
+                                ? moTaMacDinh
+                                : moTaMacDinh + " (Phiếu đã đóng — chế độ chỉ xem)");
         nhanPhuDe.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhanPhuDe.setForeground(MauUngDung.VAN_BAN_XAM);
         khungDauTrangChinh.add(nhanTieuDe, BorderLayout.NORTH);
@@ -145,6 +211,8 @@ public final class NhatKyChamSocDialog {
     private static JPanel taoFormTrai(
             JDialog dialog,
             ChamSocService chamSocService,
+            String loai,
+            boolean choPhepChinhSua,
             JTextArea health,
             JTextArea food,
             JTextArea medicine,
@@ -152,56 +220,114 @@ public final class NhatKyChamSocDialog {
             Path[] images,
             JLabel[] nhanAnhDaChon,
             NutDinhDang btnLuu) {
+        boolean laSpa = "SPA".equalsIgnoreCase(loai);
         JPanel khungBieuMauTrai = new BoGocPanel(12, Color.WHITE);
         khungBieuMauTrai.setLayout(new BoxLayout(khungBieuMauTrai, BoxLayout.Y_AXIS));
         khungBieuMauTrai.setBorder(new EmptyBorder(14, 16, 14, 16));
-        JLabel nhanTieuDeBieuMauChinh = new JLabel("Ghi nhận chăm sóc mới");
+        JLabel nhanTieuDeBieuMauChinh =
+                new JLabel(
+                        choPhepChinhSua ? "Ghi nhận chăm sóc mới" : "Thông tin biểu mẫu (Chỉ xem)");
         nhanTieuDeBieuMauChinh.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         nhanTieuDeBieuMauChinh.setForeground(MauUngDung.DO_THUONG_HIEU);
         themPhanTu(khungBieuMauTrai, nhanTieuDeBieuMauChinh);
         khungBieuMauTrai.add(Box.createVerticalStrut(10));
         themTruong(khungBieuMauTrai, "Tình trạng sức khỏe khi nhận *", taoCuon(health, 60));
-        themPhanTu(
-                khungBieuMauTrai,
+        JPanel tagSucKhoe =
                 taoThanhQuickTag(
                         health,
                         "Khỏe mạnh, tỉnh táo",
                         "Ăn uống tốt",
                         "Hơi nhút nhát",
-                        "Cần theo dõi thêm"));
-        themTruong(khungBieuMauTrai, "Hướng dẫn ăn uống & khẩu phần", taoCuon(food, 50));
-        themTruong(khungBieuMauTrai, "Thuốc & chỉ định từ chủ nuôi", taoCuon(medicine, 50));
-        themTruong(khungBieuMauTrai, "Việc đã thực hiện trong ca", taoCuon(tasks, 60));
-        themPhanTu(
+                        "Cần theo dõi thêm");
+        tagSucKhoe.setVisible(choPhepChinhSua);
+        themPhanTu(khungBieuMauTrai, tagSucKhoe);
+        themTruong(
                 khungBieuMauTrai,
-                taoThanhQuickTag(
-                        tasks,
-                        "Ăn hết suất",
-                        "Uống nước bình thường",
-                        "Vận động vui vẻ",
-                        "Tắm / vệ sinh sạch",
-                        "Ngủ ngoan"));
-        themPhanTu(khungBieuMauTrai, taoHangChonAnh(dialog, chamSocService, images, nhanAnhDaChon));
+                laSpa ? "Ghi chú chăm sóc / ăn uống nhẹ" : "Hướng dẫn ăn uống & khẩu phần",
+                taoCuon(food, 50));
+        themTruong(
+                khungBieuMauTrai,
+                laSpa ? "Sản phẩm sử dụng / lưu ý da lông" : "Thuốc & chỉ định từ chủ nuôi",
+                taoCuon(medicine, 50));
+        themTruong(khungBieuMauTrai, "Việc đã thực hiện trong ca", taoCuon(tasks, 60));
+        JPanel tagCongViec =
+                laSpa
+                        ? taoThanhQuickTag(
+                                tasks,
+                                "Tắm gội sạch",
+                                "Sấy khô & chải lông",
+                                "Cắt tỉa gọn gàng",
+                                "Vệ sinh tai / móng",
+                                "Hoạt bát, hợp tác")
+                        : taoThanhQuickTag(
+                                tasks,
+                                "Ăn hết suất",
+                                "Uống nước bình thường",
+                                "Vận động vui vẻ",
+                                "Tắm / vệ sinh sạch",
+                                "Ngủ ngoan");
+        tagCongViec.setVisible(choPhepChinhSua);
+        themPhanTu(khungBieuMauTrai, tagCongViec);
+        themAnhVaChanForm(
+                khungBieuMauTrai,
+                dialog,
+                chamSocService,
+                choPhepChinhSua,
+                health,
+                food,
+                medicine,
+                tasks,
+                images,
+                nhanAnhDaChon,
+                btnLuu);
+        return khungBieuMauTrai;
+    }
+
+    private static void themAnhVaChanForm(
+            JPanel khungBieuMauTrai,
+            JDialog dialog,
+            ChamSocService chamSocService,
+            boolean choPhepChinhSua,
+            JTextArea health,
+            JTextArea food,
+            JTextArea medicine,
+            JTextArea tasks,
+            Path[] images,
+            JLabel[] nhanAnhDaChon,
+            NutDinhDang btnLuu) {
+        JPanel khungAnh =
+                taoHangChonAnh(dialog, chamSocService, choPhepChinhSua, images, nhanAnhDaChon);
+        khungAnh.setVisible(choPhepChinhSua);
+        themPhanTu(khungBieuMauTrai, khungAnh);
         khungBieuMauTrai.add(Box.createVerticalStrut(6));
         JLabel sharedHint =
                 new JLabel(
-                        "<html><i>* Ảnh được lưu vào thư mục mạng UNC đã cấu hình để các máy cùng"
-                                + " xem.</i></html>");
+                        "<html><i>"
+                                + (choPhepChinhSua
+                                        ? "* Ảnh được lưu vào thư mục mạng UNC đã cấu hình để các"
+                                                + " máy cùng xem."
+                                        : "Phiếu đã đóng — chọn một bản ghi ở cột Lịch sử bên phải"
+                                                + " để xem chi tiết.")
+                                + "</i></html>");
         sharedHint.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
         sharedHint.setForeground(MauUngDung.VAN_BAN_XAM);
         themPhanTu(khungBieuMauTrai, sharedHint);
         khungBieuMauTrai.add(Box.createVerticalStrut(10));
-        btnLuu.setMaximumSize(new Dimension(Short.MAX_VALUE, 38));
-        btnLuu.setPreferredSize(new Dimension(280, 38));
+        health.setEditable(choPhepChinhSua);
+        food.setEditable(choPhepChinhSua);
+        medicine.setEditable(choPhepChinhSua);
+        tasks.setEditable(choPhepChinhSua);
+        btnLuu.setEnabled(choPhepChinhSua);
+        btnLuu.setVisible(choPhepChinhSua);
+        btnLuu.setMaximumSize(new Dimension(Short.MAX_VALUE, MauUngDung.CAO_NUT));
+        btnLuu.setPreferredSize(new Dimension(280, MauUngDung.CAO_NUT));
         khungBieuMauTrai.add(btnLuu);
-        return khungBieuMauTrai;
     }
 
     private static JPanel taoThanhQuickTag(JTextArea mucTieu, String... tags) {
-        JPanel thanhTag = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 3));
+        JPanel thanhTag = new JPanel(new GridLayout(0, 2, 6, 6));
         thanhTag.setOpaque(false);
         thanhTag.setAlignmentX(Component.LEFT_ALIGNMENT);
-        thanhTag.setMaximumSize(new Dimension(Short.MAX_VALUE, 64));
         for (String tag : tags) {
             NutDinhDang btnTag = new NutDinhDang("+ " + tag, NutDinhDang.KieuNut.TRONG_SUOT);
             btnTag.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
@@ -213,14 +339,20 @@ public final class NhatKyChamSocDialog {
                     });
             thanhTag.add(btnTag);
         }
+        thanhTag.setMaximumSize(
+                new Dimension(Integer.MAX_VALUE, thanhTag.getPreferredSize().height + 2));
         return thanhTag;
     }
 
     private static JPanel taoHangChonAnh(
-            JDialog dialog, ChamSocService chamSocService, Path[] images, JLabel[] nhanAnhDaChon) {
+            JDialog dialog,
+            ChamSocService chamSocService,
+            boolean choPhepChinhSua,
+            Path[] images,
+            JLabel[] nhanAnhDaChon) {
         JPanel khungAnh = new JPanel(new GridLayout(1, 2, 10, 0));
         khungAnh.setOpaque(false);
-        khungAnh.setMaximumSize(new Dimension(Short.MAX_VALUE, 58));
+        khungAnh.setMaximumSize(new Dimension(Short.MAX_VALUE, 68));
         for (int i = 0; i < 2; i++) {
             final int k = i;
             JPanel khungMucAnh = new JPanel(new BorderLayout(4, 4));
@@ -229,7 +361,10 @@ public final class NhatKyChamSocDialog {
                     new NutDinhDang(
                             i == 0 ? "Chọn ảnh trước" : "Chọn ảnh sau", NutDinhDang.KieuNut.PHU);
             btnChonAnh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-            btnChonAnh.setPreferredSize(new Dimension(130, 32));
+            btnChonAnh.setEnabled(choPhepChinhSua);
+            NutDinhDang btnXoaAnh = new NutDinhDang("Xóa", NutDinhDang.KieuNut.TRONG_SUOT);
+            btnXoaAnh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
+            btnXoaAnh.setEnabled(false);
             JLabel nhanTenAnh = new JLabel("Chưa chọn");
             nhanTenAnh.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 11));
             nhanTenAnh.setForeground(MauUngDung.VAN_BAN_XAM);
@@ -254,14 +389,29 @@ public final class NhatKyChamSocDialog {
                                             : tenFile);
                             nhanTenAnh.setForeground(MauUngDung.XANH_LA);
                             nhanTenAnh.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
+                            btnXoaAnh.setEnabled(true);
                         }
                     });
-            khungMucAnh.add(btnChonAnh, BorderLayout.NORTH);
+            btnXoaAnh.addActionListener(
+                    e -> {
+                        images[k] = null;
+                        nhanTenAnh.setText("Chưa chọn");
+                        nhanTenAnh.setForeground(MauUngDung.VAN_BAN_XAM);
+                        nhanTenAnh.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 11));
+                        btnXoaAnh.setEnabled(false);
+                    });
+            JPanel hangNutAnh = new JPanel(new BorderLayout(4, 0));
+            hangNutAnh.setOpaque(false);
+            hangNutAnh.add(btnChonAnh, BorderLayout.CENTER);
+            hangNutAnh.add(btnXoaAnh, BorderLayout.EAST);
+            khungMucAnh.add(hangNutAnh, BorderLayout.NORTH);
             khungMucAnh.add(nhanTenAnh, BorderLayout.CENTER);
             khungAnh.add(khungMucAnh);
         }
         return khungAnh;
     }
+
+    // 3. LỊCH SỬ CHĂM SÓC & XEM TRƯỚC HTML
 
     private static JPanel taoKhungLichSuPhai(
             JDialog dialog,
@@ -287,13 +437,14 @@ public final class NhatKyChamSocDialog {
         preview.setBackground(Color.WHITE);
         preview.setBorder(new EmptyBorder(8, 8, 8, 8));
         JScrollPane spPreview = new JScrollPane(preview);
+        spPreview.setPreferredSize(new Dimension(460, 320));
         spPreview.setBorder(new LineBorder(MauUngDung.VIEN, 1, true));
         JPanel khungXemChiTiet = new JPanel(new BorderLayout(6, 6));
         khungXemChiTiet.setOpaque(false);
         khungXemChiTiet.add(spList, BorderLayout.NORTH);
         khungXemChiTiet.add(spPreview, BorderLayout.CENTER);
         btnIn.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        btnIn.setPreferredSize(new Dimension(180, 36));
+        btnIn.setPreferredSize(new Dimension(180, MauUngDung.CAO_NUT));
         btnIn.addActionListener(
                 e -> {
                     if (data.isEmpty() || list.getSelectedIndex() < 0) {
@@ -330,13 +481,28 @@ public final class NhatKyChamSocDialog {
             String loai,
             String ma,
             List<NhatKyChamSoc> data,
+            Map<String, String> uriAnh,
             DefaultListModel<String> model,
             JList<String> list,
             JEditorPane preview,
             NutDinhDang btnIn) {
         TacVuNen.chay(
-                () -> chamSocService.lay(loai, ma),
-                ketQua -> {
+                () -> {
+                    List<NhatKyChamSoc> ds = chamSocService.lay(loai, ma);
+                    Map<String, String> uris = new HashMap<>();
+                    for (NhatKyChamSoc r : ds) {
+                        kiemTraTepAnh(uris, r.getAnhTruoc());
+                        kiemTraTepAnh(uris, r.getAnhSau());
+                    }
+                    return new Object[] {ds, uris};
+                },
+                kq -> {
+                    @SuppressWarnings("unchecked")
+                    List<NhatKyChamSoc> ketQua = (List<NhatKyChamSoc>) kq[0];
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> uris = (Map<String, String>) kq[1];
+                    uriAnh.clear();
+                    uriAnh.putAll(uris);
                     data.clear();
                     data.addAll(ketQua);
                     model.clear();
@@ -367,8 +533,23 @@ public final class NhatKyChamSocDialog {
                 ex -> HopThoai.hienThiCanhBao(dialog, TacVuNen.thongDiepLoi(ex)));
     }
 
+    private static void kiemTraTepAnh(Map<String, String> uris, String duongDan) {
+        if (duongDan == null || duongDan.isBlank()) return;
+        String key = duongDan.trim();
+        if (uris.containsKey(key)) return;
+        try {
+            Path p = Path.of(key);
+            uris.put(key, Files.isRegularFile(p) ? p.toUri().toString() : "");
+        } catch (InvalidPathException ex) {
+            uris.put(key, null);
+        }
+    }
+
     private static void capNhatXemTruoc(
-            JList<String> list, List<NhatKyChamSoc> data, JEditorPane preview) {
+            JList<String> list,
+            List<NhatKyChamSoc> data,
+            Map<String, String> uriAnh,
+            JEditorPane preview) {
         int i = list.getSelectedIndex();
         if (i < 0 || i >= data.size()) return;
         NhatKyChamSoc r = data.get(i);
@@ -385,9 +566,9 @@ public final class NhatKyChamSocDialog {
                 r.getNhanVien() != null && r.getNhanVien().getHoTen() != null
                         ? r.getNhanVien().getHoTen()
                         : "";
-        h.append(escape(tg))
+        h.append(DinhDang.thoatHtmlXuongDong(tg))
                 .append("</b> | Nhân viên: <b>")
-                .append(escape(tenNv))
+                .append(DinhDang.thoatHtmlXuongDong(tenNv))
                 .append("</b></span></div>");
         String[] labels = {
             "Tình trạng sức khỏe", "Chế độ ăn uống", "Thuốc & lưu ý", "Việc đã thực hiện"
@@ -396,7 +577,7 @@ public final class NhatKyChamSocDialog {
             r.getTinhTrang(), r.getAnUong(), r.getHuongDanThuoc(), r.getDaThucHien()
         };
         for (int j = 0; j < labels.length; j++) {
-            String val = escape(noiDung[j]);
+            String val = DinhDang.thoatHtmlXuongDong(noiDung[j]);
             if (val.isBlank()) val = "<i>(Không có)</i>";
             h.append("<div style='margin-bottom:8px;'><div style='font-weight:bold;")
                     .append(" font-size:12px; color:#991B1B;'>")
@@ -406,12 +587,13 @@ public final class NhatKyChamSocDialog {
                     .append(val)
                     .append("</div></div>");
         }
-        themHtmlHinhAnh(h, r.getAnhTruoc(), r.getAnhSau());
+        themHtmlHinhAnh(h, uriAnh, r.getAnhTruoc(), r.getAnhSau());
         preview.setText(h.append("</body></html>").toString());
         preview.setCaretPosition(0);
     }
 
-    private static void themHtmlHinhAnh(StringBuilder h, String anhTruoc, String anhSau) {
+    private static void themHtmlHinhAnh(
+            StringBuilder h, Map<String, String> uriAnh, String anhTruoc, String anhSau) {
         if (anhTruoc == null && anhSau == null) return;
         String[] anh = {anhTruoc, anhSau};
         h.append(
@@ -425,23 +607,26 @@ public final class NhatKyChamSocDialog {
                     .append(j == 0 ? "Trước khi làm" : "Sau khi làm")
                     .append("</div>");
             if (anh[j] != null && !anh[j].isBlank()) {
-                try {
-                    Path path = Path.of(anh[j].trim());
-                    if (Files.isRegularFile(path)) {
-                        h.append(
-                                        "<img style='border:1px solid #ccc; border-radius:4px;"
-                                                + " margin-top:4px;' width='200' src='")
-                                .append(path.toUri())
-                                .append("'>");
-                    } else {
-                        h.append(
-                                "<div style='color:#999; font-size:11px; padding:20px; border:1px"
-                                        + " dashed #ccc;'>Không tìm thấy tệp ảnh</div>");
-                    }
-                } catch (InvalidPathException ex) {
+                String key = anh[j].trim();
+                String uri = uriAnh.get(key);
+                if (!uriAnh.containsKey(key)) {
+                    h.append(
+                            "<div style='color:#999; font-size:11px; padding:20px; border:1px"
+                                    + " dashed #ccc;'>Đang kiểm tra ảnh...</div>");
+                } else if (uri == null) {
                     h.append(
                             "<div style='color:#999; font-size:11px; padding:20px; border:1px"
                                     + " dashed #ccc;'>Đường dẫn ảnh không hợp lệ</div>");
+                } else if (uri.isEmpty()) {
+                    h.append(
+                            "<div style='color:#999; font-size:11px; padding:20px; border:1px"
+                                    + " dashed #ccc;'>Không tìm thấy tệp ảnh</div>");
+                } else {
+                    h.append(
+                                    "<img style='border:1px solid #ccc; border-radius:4px;"
+                                            + " margin-top:4px;' width='200' src='")
+                            .append(uri)
+                            .append("'>");
                 }
             } else {
                 h.append(
@@ -452,6 +637,8 @@ public final class NhatKyChamSocDialog {
         }
         h.append("</tr></table>");
     }
+
+    // 4. LƯU NHẬT KÝ & TIỆN ÍCH NỘI BỘ
 
     private static void luuPhieuChamSoc(
             JDialog dialog,
@@ -500,6 +687,7 @@ public final class NhatKyChamSocDialog {
                     for (JLabel nhanChu : nhanAnhDaChon) {
                         nhanChu.setText("Chưa chọn");
                         nhanChu.setForeground(MauUngDung.VAN_BAN_XAM);
+                        nhanChu.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 11));
                     }
                     HopThoai.hienThiThanhCong(dialog, "Đã lưu phiếu chăm sóc thành công.");
                     load.run();
@@ -543,15 +731,5 @@ public final class NhatKyChamSocDialog {
         sp.setMaximumSize(new Dimension(Short.MAX_VALUE, height + 10));
         sp.setBorder(BorderFactory.createEmptyBorder());
         return sp;
-    }
-
-    private static String escape(Object s) {
-        return s == null
-                ? ""
-                : s.toString()
-                        .replace("&", "&amp;")
-                        .replace("<", "&lt;")
-                        .replace(">", "&gt;")
-                        .replace("\n", "<br>");
     }
 }

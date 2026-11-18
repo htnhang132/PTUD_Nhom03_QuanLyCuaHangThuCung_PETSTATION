@@ -7,6 +7,7 @@ import com.petstation.model.chung.LoaiLichLamViec;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.nhansu.LichLamViec;
 import com.petstation.service.chung.BoLangNgheSuKien;
+import com.petstation.service.chung.PhatSuKien;
 import com.petstation.service.hethong.PhienDangNhapService;
 
 import org.slf4j.LoggerFactory;
@@ -18,17 +19,18 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
 
 public final class LichLamViecService {
     private static final LichLamViecService MAC_DINH = new LichLamViecService();
 
     private final LichLamViecDAO lichLamViecDAO;
     private final PhienDangNhapService phienService;
-    private final List<BoLangNgheSuKien<String>> cacBoLangNghe = new CopyOnWriteArrayList<>();
+    private final PhatSuKien<String> phatSuKien = new PhatSuKien<>();
 
     public static final String[] CAC_CA_LAM_VIEC = {"Ca sáng", "Ca chiều"};
 
@@ -151,6 +153,9 @@ public final class LichLamViecService {
 
     public String phanCong(LocalDate ngay, int caLamViec, String ma) {
         phienService.yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
+        if (ngay != null && lichLamViecDAO.demLichBiKhoa(ngay, ngay.plusDays(1)) > 0) {
+            return "Lịch ngày " + ngay + " đã khóa, không thể phân ca trực tiếp.";
+        }
         return ganCaTrongGiaoDich(ngay, caLamViec, ma);
     }
 
@@ -176,6 +181,10 @@ public final class LichLamViecService {
         phienService.yeuCau(Quyen.QUAN_LY_LICH_LAM_VIEC);
         if (muc == null || muc.caLamViec < 0 || muc.caLamViec >= CAC_MA.length)
             throw new IllegalArgumentException("Ca làm việc không hợp lệ.");
+        if (muc.ngay != null && lichLamViecDAO.demLichBiKhoa(muc.ngay, muc.ngay.plusDays(1)) > 0) {
+            throw new IllegalStateException(
+                    "Lịch ngày " + muc.ngay + " đã khóa, không thể xóa ca.");
+        }
         lichLamViecDAO.capNhatXoa(muc.maNhanVien, muc.ngay, CAC_MA[muc.caLamViec]);
         thongBao("XOA_LICH");
     }
@@ -199,11 +208,6 @@ public final class LichLamViecService {
         return (int) lichLamViecDAO.demThangSoGio(ma, dauTien, dauTien.plusMonths(1));
     }
 
-    public int tinhGioTrongTuan(String ma, LocalDate thuHai) {
-        phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
-        return (int) lichLamViecDAO.demThangSoGio(ma, thuHai, thuHai.plusDays(7));
-    }
-
     public Map<String, Integer> tinhGioTatCaTrongTuan(LocalDate thuHai) {
         phienService.yeuCau(Quyen.XEM_LICH_LAM_VIEC);
         return lichLamViecDAO.layGioTheoNhanVienKhoang(thuHai, thuHai.plusDays(7));
@@ -215,15 +219,35 @@ public final class LichLamViecService {
         return QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
+                            if (lichLamViecDAO.demLichBiKhoa(denTuan, denTuan.plusDays(7)) > 0) {
+                                return "Tuần đích đã được khóa lịch, không thể sao chép đè.";
+                            }
                             List<Muc> danhSachCu = layLichTrongTuan(tuTuan);
                             if (danhSachCu.isEmpty())
                                 return "Tuần trước chưa có lịch làm việc để sao chép.";
+                            Set<String> daCo = new HashSet<>();
+                            for (Muc hienTai : layLichTrongTuan(denTuan)) {
+                                String k =
+                                        hienTai.ngay
+                                                + "|"
+                                                + hienTai.maNhanVien
+                                                + "|"
+                                                + (hienTai.kiemTraNghiPhep()
+                                                        ? "NGHI"
+                                                        : hienTai.caLamViec);
+                                daCo.add(k);
+                            }
                             int daChep = 0;
                             for (Muc m : danhSachCu) {
                                 if (m.kiemTraNghiPhep()) continue;
                                 long offsetDays = ChronoUnit.DAYS.between(tuTuan, m.ngay);
                                 LocalDate ngayMoi = denTuan.plusDays(offsetDays);
-                                String loi = phanCong(ngayMoi, m.caLamViec, m.maNhanVien);
+                                if (daCo.contains(ngayMoi + "|" + m.maNhanVien + "|NGHI")
+                                        || daCo.contains(
+                                                ngayMoi + "|" + m.maNhanVien + "|" + m.caLamViec)) {
+                                    continue;
+                                }
+                                String loi = ganCaTrongGiaoDich(ngayMoi, m.caLamViec, m.maNhanVien);
                                 if (loi == null) daChep++;
                             }
                             thongBao("SAO_CHEP_TUAN");
@@ -325,25 +349,18 @@ public final class LichLamViecService {
     }
 
     public void themBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        if (boLangNghe != null && !cacBoLangNghe.contains(boLangNghe)) {
-            cacBoLangNghe.add(boLangNghe);
-        }
+        phatSuKien.them(boLangNghe);
     }
 
     public void xoaBoLangNghe(BoLangNgheSuKien<String> boLangNghe) {
-        cacBoLangNghe.remove(boLangNghe);
+        phatSuKien.xoa(boLangNghe);
     }
 
     private void thongBao(String suKien) {
-        QuanLyGiaoDich.sauKhiCommit(
-                () -> {
-                    for (BoLangNgheSuKien<String> boLangNghe : cacBoLangNghe) {
-                        boLangNghe.khiThayDoi(suKien);
-                    }
-                });
+        QuanLyGiaoDich.sauKhiCommit(() -> phatSuKien.phat(suKien));
     }
 
     public void xoaBoLangNghe() {
-        cacBoLangNghe.clear();
+        phatSuKien.xoaTatCa();
     }
 }

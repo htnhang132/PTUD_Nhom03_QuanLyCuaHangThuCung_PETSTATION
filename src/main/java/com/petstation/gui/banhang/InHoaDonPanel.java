@@ -67,7 +67,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         khungGoc.setOpaque(false);
         nhanBieuNgu.setOpaque(true);
         nhanBieuNgu.setBackground(MauUngDung.XANH_LA_NEN_NHAT);
-        nhanBieuNgu.setForeground(MauUngDung.mau(0x155724));
+        nhanBieuNgu.setForeground(MauUngDung.THANH_CONG_CHU);
         nhanBieuNgu.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         nhanBieuNgu.setBorder(new EmptyBorder(10, 14, 10, 14));
         JScrollPane scrCuon =
@@ -156,6 +156,7 @@ public final class InHoaDonPanel extends CoSoPanel {
             return;
         }
         cacThe.show(khungGoc, "receipt");
+        khungHoaDon.datDuLieu(null);
         String thayDoi =
                 dongDuLieu.getPhuongThuc() == PhuongThuc.TIEN_MAT
                         ? "  ·  Tiền thừa " + DinhDang.dinhDang(dongDuLieu.getThayDoi())

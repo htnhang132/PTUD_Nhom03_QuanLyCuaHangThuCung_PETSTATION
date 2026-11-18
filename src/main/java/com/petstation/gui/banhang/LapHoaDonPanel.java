@@ -87,6 +87,8 @@ import javax.swing.table.TableRowSorter;
 // hình, tính tiền và in bill
 // Phân hệ: banhang
 public class LapHoaDonPanel extends CoSoPanel {
+    // 1. KIỂU DỮ LIỆU & THUỘC TÍNH POS
+
     private static final class SanPham {
         final String ma;
         final String ten;
@@ -141,6 +143,8 @@ public class LapHoaDonPanel extends CoSoPanel {
     private final Deque<ThaoTacGioHang> lichSuThem = new ArrayDeque<>();
     private List<SanPham> danhSachSanPhamCache;
     private int luotTaiSanPham = 0;
+    private boolean dangTaiSanPham;
+    private final List<Consumer<List<SanPham>>> choSanPhamCallbacks = new ArrayList<>();
 
     private enum VungO {
         GIAM,
@@ -183,45 +187,69 @@ public class LapHoaDonPanel extends CoSoPanel {
     private final NutDinhDang btnNutThanhToan =
             new NutDinhDang("TIẾN HÀNH THANH TOÁN (F9)", NutDinhDang.KieuNut.CHINH);
     private final NutDinhDang btnNutTreo =
-            new NutDinhDang("Lưu đơn nháp (Ctrl+S)", NutDinhDang.KieuNut.PHU);
+            new NutDinhDang("Lưu đơn tạm (Ctrl+S)", NutDinhDang.KieuNut.PHU);
     private final NutDinhDang btnNutLay =
-            new NutDinhDang("Mở đơn nháp (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("Mở đơn tạm (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
+    private Consumer<GioHang> boLangNgheGioHang;
+
+    // 2. HÀM KHỞI TẠO
 
     public LapHoaDonPanel(GioHang banHang, Consumer<MaManHinh> boDieuHuong) {
         this.banHang = banHang;
         this.boDieuHuong = boDieuHuong;
         this.khungBoChon = new BoChonKhachHang(banHang, this::capNhatCacTong);
         dangKyLangNgheGioHang();
-        setBorder(new EmptyBorder(14, 16, 14, 16));
-        setLayout(new BorderLayout(16, 0));
+        setLayout(new BorderLayout(0, 12));
+        add(
+                taoTieuDeManHinh(
+                        "Lập hóa đơn (POS)",
+                        "Quét mã vạch hoặc tìm sản phẩm, chọn khách hàng và chuyển sang thanh"
+                                + " toán."),
+                BorderLayout.NORTH);
         khoiTaoBangVaTimKiemPos();
         JPanel khungTrai = taoVungTrongSuot(new BorderLayout(0, 12));
         khungTrai.add(taoKhuVucQuet(), BorderLayout.NORTH);
         khungTrai.add(taoBangGioHang(), BorderLayout.CENTER);
-        add(khungTrai, BorderLayout.CENTER);
         BoGocPanel khungPhai = taoKhungThanhToan();
         khungPhai.setPreferredSize(new Dimension(390, 0));
         khungPhai.setMinimumSize(new Dimension(340, 0));
-        add(khungPhai, BorderLayout.EAST);
+        JPanel khungChinh = taoVungTrongSuot(new BorderLayout(16, 0));
+        khungChinh.add(khungTrai, BorderLayout.CENTER);
+        khungChinh.add(khungPhai, BorderLayout.EAST);
+        add(khungChinh, BorderLayout.CENTER);
         lamMoiGioHang();
         dangKyPhimTatVaBarcodePos();
         napDanhSachSanPhamNen(null);
     }
 
+    // 3. NẠP SẢN PHẨM & XÂY DỰNG GIAO DIỆN
+
     private void napDanhSachSanPhamNen(Consumer<List<SanPham>> khiXong) {
+        if (khiXong != null) {
+            choSanPhamCallbacks.add(khiXong);
+        }
+        if (dangTaiSanPham) return;
+        dangTaiSanPham = true;
         int luot = ++luotTaiSanPham;
         TacVuNen.chayCoPhien(
                 this,
                 () -> luot == luotTaiSanPham,
                 LapHoaDonPanel::laySanPham,
                 ds -> {
+                    dangTaiSanPham = false;
                     this.danhSachSanPhamCache = ds;
-                    if (khiXong != null) khiXong.accept(ds);
+                    List<Consumer<List<SanPham>>> dsGoi = new ArrayList<>(choSanPhamCallbacks);
+                    choSanPhamCallbacks.clear();
+                    for (Consumer<List<SanPham>> cb : dsGoi) {
+                        cb.accept(ds);
+                    }
                 },
-                loi ->
-                        capNhatTrangThaiQuet(
-                                "Lỗi tải sản phẩm: " + loi.getMessage(),
-                                MauUngDung.VAN_BAN_NGUY_HIEM));
+                loi -> {
+                    dangTaiSanPham = false;
+                    choSanPhamCallbacks.clear();
+                    capNhatTrangThaiQuet(
+                            "Lỗi tải sản phẩm: " + loi.getMessage(), MauUngDung.VAN_BAN_NGUY_HIEM);
+                });
     }
 
     private void layHoacNapSanPham(Consumer<List<SanPham>> khiSanSang) {
@@ -481,11 +509,9 @@ public class LapHoaDonPanel extends CoSoPanel {
         // Cụm nút điều khiển ở đáy
         JPanel khungDay = taoVungTrongSuot(new BorderLayout(0, 8));
         JPanel khungNutNho = taoVungTrongSuot(new GridLayout(1, 2, 8, 0));
-        btnNutTreo.setPreferredSize(new Dimension(0, 36));
-        btnNutTreo.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
+        btnNutTreo.setPreferredSize(new Dimension(0, MauUngDung.CAO_NUT));
         btnNutTreo.addActionListener(e -> treoGioHangHienTai());
-        btnNutLay.setPreferredSize(new Dimension(0, 36));
-        btnNutLay.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+        btnNutLay.setPreferredSize(new Dimension(0, MauUngDung.CAO_NUT));
         btnNutLay.addActionListener(e -> hienThiTreoCacGioHang());
         khungNutNho.add(btnNutTreo);
         khungNutNho.add(btnNutLay);
@@ -500,10 +526,10 @@ public class LapHoaDonPanel extends CoSoPanel {
 
     private JPanel taoKhungGhiChuDon() {
         JPanel khung = taoVungTrongSuot(new BorderLayout(0, 4));
-        JLabel nhan = new JLabel("Ghi chú đơn hàng (phân biệt khi lưu nháp)");
+        JLabel nhan = new JLabel("Ghi chú đơn hàng (phân biệt khi lưu tạm)");
         nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhan.setForeground(MauUngDung.VAN_BAN_XAM);
-        oGhiChu.setPreferredSize(new Dimension(0, 32));
+        oGhiChu.setPreferredSize(new Dimension(0, MauUngDung.CAO_DAU_VAO));
         khung.add(nhan, BorderLayout.NORTH);
         khung.add(oGhiChu, BorderLayout.CENTER);
         khung.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
@@ -521,6 +547,8 @@ public class LapHoaDonPanel extends CoSoPanel {
         khungDong.add(nhanGiaTri, BorderLayout.EAST);
         return khungDong;
     }
+
+    // 4. TÌM KIẾM, BARCODE & GỢI Ý SẢN PHẨM
 
     private void dangKyPhimTat(String khoa, String ten, ActionListener thaoTac) {
         KeyStroke phim = KeyStroke.getKeyStroke(khoa);
@@ -693,6 +721,8 @@ public class LapHoaDonPanel extends CoSoPanel {
                 });
         return danhSachGoiY;
     }
+
+    // 5. QUẢN LÝ GIỎ HÀNG, TÍNH TIỀN & TREO ĐƠN
 
     private void themSanPhamVaoGio(SanPham sanPham, int soLuong) {
         if (sanPham.tonKho <= 0) {
@@ -980,6 +1010,8 @@ public class LapHoaDonPanel extends CoSoPanel {
         boDieuHuong.accept(MaManHinh.HOA_DON_CHO);
     }
 
+    // 6. VÒNG ĐỜI PANEL, THANH CÔNG CỤ & KẾT NỐI USB
+
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
         return new KhaNangThanhCongCu(true, true, true, false, true, true);
@@ -1008,10 +1040,26 @@ public class LapHoaDonPanel extends CoSoPanel {
             return;
         }
         if (chenhLechHoanTac > 0) {
-            gioHang.add(new GioHang.DongHang(buoc.ma, buoc.ten, buoc.donGia, chenhLechHoanTac));
-            lamMoiGioHang();
-            chonDongTheoMoHinh(gioHang.size() - 1);
-            capNhatTrangThaiQuet("Đã khôi phục dòng: " + buoc.ten, MauUngDung.NAU);
+            layHoacNapSanPham(
+                    ds -> {
+                        int tonKho = layTonKhoSanPham(buoc.ma, ds);
+                        if (chenhLechHoanTac > tonKho) {
+                            capNhatTrangThaiQuet(
+                                    "Không thể hoàn tác: "
+                                            + buoc.ten
+                                            + " vượt tồn kho ("
+                                            + tonKho
+                                            + ").",
+                                    MauUngDung.VAN_BAN_NGUY_HIEM);
+                            return;
+                        }
+                        gioHang.add(
+                                new GioHang.DongHang(
+                                        buoc.ma, buoc.ten, buoc.donGia, chenhLechHoanTac));
+                        lamMoiGioHang();
+                        chonDongTheoMoHinh(gioHang.size() - 1);
+                        capNhatTrangThaiQuet("Đã khôi phục dòng: " + buoc.ten, MauUngDung.NAU);
+                    });
         }
     }
 
@@ -1021,7 +1069,13 @@ public class LapHoaDonPanel extends CoSoPanel {
         lamMoiGioHang();
         dongBoGhiChu();
         khungBoChon.dongBo();
-        if (gioHang.isEmpty()) {
+        if (!banHang.kiemTraTrong() && !banHang.getKieuNguon().isBlank()) {
+            capNhatTrangThaiQuet(
+                    "Giỏ hiện tại đang giữ giao dịch "
+                            + banHang.getKieuNguon()
+                            + ". Hãy thanh toán hoặc xóa trước khi bán lẻ mới.",
+                    MauUngDung.CAM);
+        } else if (gioHang.isEmpty()) {
             datLaiTrangThaiQuetMacDinh();
             oTimKiem.setText("");
             spnSoLuong.setValue(1);
@@ -1088,8 +1142,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         themTheoQuet();
     }
 
-    private Consumer<GioHang> boLangNgheGioHang;
-
     @Override
     public void addNotify() {
         super.addNotify();
@@ -1102,6 +1154,8 @@ public class LapHoaDonPanel extends CoSoPanel {
         banHang.xoaBoLangNghe(boLangNgheGioHang);
         super.removeNotify();
     }
+
+    // 7. TƯƠNG TÁC CHUỘT & RENDERER BẢNG
 
     private void capNhatTrangThaiQuet(String noiDung, Color mau) {
         nhanTrangThaiQuet.setText(noiDung);

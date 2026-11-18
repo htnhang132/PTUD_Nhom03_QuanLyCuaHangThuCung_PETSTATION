@@ -6,6 +6,7 @@ import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BoSoanThaoTruong;
 import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.khachhang.KhachHangService;
+import com.petstation.util.DinhDang;
 
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -59,7 +59,7 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         this.nguonLuaChon = nguonLuaChon;
         khungChinh.setOpaque(false);
         oTimKiem.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        oTimKiem.setPreferredSize(new Dimension(0, 32));
+        oTimKiem.setPreferredSize(new Dimension(0, MauUngDung.CAO_DAU_VAO));
         oTimKiem.putClientProperty("JTextField.padding", new Insets(4, 8, 4, 8));
         oTimKiem.putClientProperty(
                 "JTextField.placeholderText", "Tìm mã, tên hoặc SĐT khách hàng...");
@@ -212,12 +212,7 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
     }
 
     private static String boDau(String chuoi) {
-        if (chuoi == null || chuoi.isEmpty()) return "";
-        String chuan = Normalizer.normalize(chuoi, Normalizer.Form.NFD);
-        return chuan.replaceAll("\\p{M}+", "")
-                .replace('đ', 'd')
-                .replace('Đ', 'D')
-                .toLowerCase(Locale.ROOT);
+        return DinhDang.boDauTiengViet(chuoi).toLowerCase(Locale.ROOT);
     }
 
     @Override

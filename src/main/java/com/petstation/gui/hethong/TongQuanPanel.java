@@ -2,6 +2,7 @@ package com.petstation.gui.hethong;
 
 import com.petstation.dto.ChiTietBaoCao.DoanhThuTheoNgay;
 import com.petstation.dto.ChiTietBaoCao.SanPhamBanChay;
+import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
@@ -101,15 +102,11 @@ public final class TongQuanPanel extends CoSoPanel {
         khungTren.add(khungCacPhimTat, BorderLayout.CENTER);
         khungTren.add(khungCacChiSo, BorderLayout.SOUTH);
         add(khungTren, BorderLayout.NORTH);
-        JPanel khungBieuDoThe = new JPanel(new BorderLayout(0, 6));
-        khungBieuDoThe.setBackground(Color.WHITE);
-        khungBieuDoThe.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.VIEN),
-                        new EmptyBorder(12, 14, 10, 14)));
-        JLabel nhanKieuCot = new JLabel("Doanh thu 7 ngày qua");
-        nhanKieuCot.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
-        khungBieuDoThe.add(nhanKieuCot, BorderLayout.NORTH);
+        BoGocPanel khungBieuDoThe =
+                new BoGocPanel(MauUngDung.BAN_KINH_THE, MauUngDung.THE_NEN, true);
+        khungBieuDoThe.setLayout(new BorderLayout(0, 8));
+        khungBieuDoThe.setBorder(new EmptyBorder(12, 14, 12, 14));
+        khungBieuDoThe.add(taoTieuDeMuc("Doanh thu 7 ngày qua"), BorderLayout.NORTH);
         khungBieuDoThe.add(bieuDo, BorderLayout.CENTER);
         bangBang = new JTable(trenMoHinh);
         DinhDangBang.apDung(bangBang);
@@ -119,10 +116,7 @@ public final class TongQuanPanel extends CoSoPanel {
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         scrKhungCuon.getViewport().setBackground(Color.WHITE);
         JPanel khungTrenThe = layThe(new BorderLayout(0, 8));
-        JLabel nhanGoiY = new JLabel("Sản phẩm bán chạy");
-        nhanGoiY.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
-        nhanGoiY.setForeground(MauUngDung.NAU);
-        khungTrenThe.add(nhanGoiY, BorderLayout.NORTH);
+        khungTrenThe.add(taoTieuDeMuc("Sản phẩm bán chạy"), BorderLayout.NORTH);
         khungTrenThe.add(scrKhungCuon, BorderLayout.CENTER);
         JPanel khungGiua = new JPanel(new GridLayout(1, 2, 14, 0));
         khungGiua.setOpaque(false);
@@ -134,10 +128,16 @@ public final class TongQuanPanel extends CoSoPanel {
 
     private final BoLangNgheSuKien<CaThuNganService> boLangNgheCa =
             ca -> {
+                Runnable capNhat =
+                        () -> {
+                            if (isShowing()) {
+                                lamMoi();
+                            }
+                        };
                 if (SwingUtilities.isEventDispatchThread()) {
-                    lamMoi();
+                    capNhat.run();
                 } else {
-                    SwingUtilities.invokeLater(this::lamMoi);
+                    SwingUtilities.invokeLater(capNhat);
                 }
             };
 
@@ -207,7 +207,9 @@ public final class TongQuanPanel extends CoSoPanel {
     }
 
     private void lamMoi() {
-        capNhatCacPhimTat(0);
+        if (khungCacPhimTat.getComponentCount() == 0) {
+            capNhatCacPhimTat(0, false);
+        }
         PheDuyetService pheDuyetService = new PheDuyetService();
         int luot = ++luotTai;
         var phien = PhienDangNhapService.macDinh().layPhienHienTai();
@@ -241,15 +243,13 @@ public final class TongQuanPanel extends CoSoPanel {
         khungCacChiSo.repaint();
     }
 
-    private void capNhatCacPhimTat(long dangChoSoBo) {
+    private void capNhatCacPhimTat(long dangChoSoBo, boolean moCa) {
         khungCacPhimTat.removeAll();
         themPhimTat("Lập hóa đơn (F2)", MaManHinh.LAP_HOA_DON, NutDinhDang.KieuNut.CHINH);
         themPhimTat("Tạo lịch hẹn Spa", MaManHinh.DAT_LICH_HEN_SPA, NutDinhDang.KieuNut.PHU);
         themPhimTat("Đặt phòng Hotel", MaManHinh.DAT_PHONG_LUU_TRU, NutDinhDang.KieuNut.PHU);
         themPhimTat(
-                caLamViec.kiemTraMo() ? "Kết ca" : "Mở ca",
-                MaManHinh.CA_THU_NGAN,
-                NutDinhDang.KieuNut.TRONG_SUOT);
+                moCa ? "Kết ca" : "Mở ca", MaManHinh.CA_THU_NGAN, NutDinhDang.KieuNut.TRONG_SUOT);
         themPhimTat("Lập phiếu nhập kho", MaManHinh.NHAP_KHO, NutDinhDang.KieuNut.TRONG_SUOT);
         themPhimTat(
                 dangChoSoBo > 0 ? "Phê duyệt (" + dangChoSoBo + ")" : "Phê duyệt",
@@ -314,7 +314,7 @@ public final class TongQuanPanel extends CoSoPanel {
     }
 
     private void hienThiDuLieuTongQuan(DuLieuTongQuan d) {
-        capNhatCacPhimTat(d.dangCho);
+        capNhatCacPhimTat(d.dangCho, d.moCa);
         khungCacChiSo.removeAll();
         String tieuDeDoanhThu;
         String giaTriDoanhThu;

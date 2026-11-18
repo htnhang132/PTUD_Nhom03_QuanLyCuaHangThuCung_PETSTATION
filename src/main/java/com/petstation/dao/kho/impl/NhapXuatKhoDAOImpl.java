@@ -74,8 +74,8 @@ public final class NhapXuatKhoDAOImpl implements NhapXuatKhoDAO {
     public Optional<LoHang> timNhapKho(String maSanPham, String maHoacSoLo) {
         List<Object[]> rows =
                 ThaoTacSQL.truyVan(
-                        "SELECT ma_lo, han_su_dung FROM lo_hang WITH(UPDLOCK,HOLDLOCK) WHERE"
-                                + " ma_san_pham = ? AND (so_lo = ? OR ma_lo = ?)",
+                        "SELECT ma_lo, han_su_dung, trang_thai FROM lo_hang WITH(UPDLOCK,HOLDLOCK)"
+                                + " WHERE ma_san_pham = ? AND (so_lo = ? OR ma_lo = ?)",
                         maSanPham,
                         maHoacSoLo,
                         maHoacSoLo);
@@ -86,6 +86,7 @@ public final class NhapXuatKhoDAOImpl implements NhapXuatKhoDAO {
         LoHang lo = new LoHang();
         lo.setMaLo(r[0] != null ? r[0].toString() : null);
         lo.setHanSuDung(DuLieu.chuyenLocalDate(r[1]));
+        lo.setTrangThai(r[2] != null ? r[2].toString() : null);
         return Optional.of(lo);
     }
 
@@ -109,8 +110,12 @@ public final class NhapXuatKhoDAOImpl implements NhapXuatKhoDAO {
         return ThaoTacSQL.capNhat(
                 "UPDATE lo_hang SET so_luong_ton = so_luong_ton + ?,"
                         + " so_luong_nhap = COALESCE(so_luong_nhap, 0) + ?,"
-                        + " trang_thai = CASE WHEN so_luong_ton + ? > 0 THEN 'SAN_SANG' ELSE"
-                        + " trang_thai END WHERE ma_lo = ?",
+                        + " trang_thai = CASE"
+                        + " WHEN trang_thai IN ('TAM_KHOA', 'HET_HAN') THEN trang_thai"
+                        + " WHEN han_su_dung IS NOT NULL"
+                        + " AND han_su_dung < CAST(GETDATE() AS DATE) THEN 'HET_HAN'"
+                        + " WHEN so_luong_ton + ? > 0 THEN 'SAN_SANG'"
+                        + " ELSE trang_thai END WHERE ma_lo = ?",
                 soLuong,
                 soLuong,
                 soLuong,

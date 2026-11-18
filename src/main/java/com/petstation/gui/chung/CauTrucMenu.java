@@ -91,7 +91,7 @@ public final class CauTrucMenu {
                                     layMuc("Phòng lưu trú", MaManHinh.DANH_MUC_PHONG_LUU_TRU),
                                     layMuc("Nhà cung cấp", MaManHinh.DANH_MUC_NHA_CUNG_CAP),
                                     layMuc("Khuyến mãi", MaManHinh.DANH_MUC_KHUYEN_MAI),
-                                    layMuc("Điểm thưởng và voucher", MaManHinh.TICH_DIEM_VOUCHER))),
+                                    layMuc("Voucher và điểm thưởng", MaManHinh.TICH_DIEM_VOUCHER))),
                     new Nhom(
                             'T',
                             "Tìm kiếm",
@@ -99,8 +99,6 @@ public final class CauTrucMenu {
                                     layMuc("Hóa đơn", MaManHinh.TIM_KIEM_HOA_DON, "F3"),
                                     layMuc("Lịch sử khách hàng", MaManHinh.TRA_CUU_KHACH_HANG),
                                     layMuc("Tồn kho theo lô", MaManHinh.TRA_CUU_LO_HANG),
-                                    layMuc("Phiếu Spa", MaManHinh.TRA_CUU_LICH_SPA),
-                                    layMuc("Sơ đồ phòng lưu trú", MaManHinh.SO_DO_PHONG_LUU_TRU),
                                     PHAN_CACH,
                                     layMuc("Lịch làm việc", MaManHinh.TRA_CUU_LICH_LAM_VIEC),
                                     layMuc("Lịch làm việc cá nhân", MaManHinh.LICH_CA_NHAN))),
@@ -110,7 +108,7 @@ public final class CauTrucMenu {
                             List.of(
                                     layMuc("Lập hóa đơn", MaManHinh.LAP_HOA_DON, "F2"),
                                     layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA, "F7"),
-                                    layMuc("Lập phiếu Spa", MaManHinh.QUAN_LY_SPA, "F4"),
+                                    layMuc("Quản lý Spa", MaManHinh.QUAN_LY_SPA, "F4"),
                                     layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU, "F6"),
                                     PHAN_CACH,
                                     layMuc("Lập phiếu nhập kho", MaManHinh.NHAP_KHO),

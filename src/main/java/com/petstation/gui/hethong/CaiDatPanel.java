@@ -49,6 +49,8 @@ import javax.swing.border.EmptyBorder;
 // vận hành
 // Phân hệ: hethong
 public final class CaiDatPanel extends CoSoPanel {
+    // 1. THUỘC TÍNH & CẤU HÌNH
+
     private final Map<String, JTextField> cacDauVao = new LinkedHashMap<>();
     private final JCheckBox hopChonMacDinhKiemDemMu =
             new JCheckBox("Mặc định bật chế độ kiểm kê mù (Blind Count) cho nhân viên kho");
@@ -88,6 +90,8 @@ public final class CaiDatPanel extends CoSoPanel {
     private boolean kiemDemMuDaNap;
     private boolean daNapXong;
     private int luotTai;
+
+    // 2. HÀM KHỞI TẠO & XÂY DỰNG CÁC TAB
 
     public CaiDatPanel(boolean coTheSua) {
         this.coTheSua = coTheSua;
@@ -141,7 +145,7 @@ public final class CaiDatPanel extends CoSoPanel {
                 "Thuế suất GTGT áp dụng chung (0 - 100%)");
         cboMayIn.addItem("Đang tải danh sách máy in...");
         cboMayIn.setEnabled(false);
-        cboMayIn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        cboMayIn.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_DAU_VAO));
         cboMayIn.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel nhanMayIn = new JLabel("Máy in hóa đơn mặc định");
         nhanMayIn.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
@@ -270,12 +274,8 @@ public final class CaiDatPanel extends CoSoPanel {
 
     private JPanel taoThanhThaoTacCaiDat() {
         JPanel khungCacThaoTac = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 10, 8));
-        NutDinhDang btnTaiLai = new NutDinhDang("Làm mới", NutDinhDang.KieuNut.TRONG_SUOT);
-        btnTaiLai.setToolTipText("Đọc lại cài đặt đã lưu trong SQL Server");
-        btnTaiLai.addActionListener(suKien -> xuLyLamMoi());
-        khungCacThaoTac.add(btnTaiLai);
         btnLuu = new NutDinhDang("Lưu cài đặt", NutDinhDang.KieuNut.CHINH);
-        btnLuu.setEnabled(coTheSua);
+        btnLuu.setEnabled(false);
         btnLuu.addActionListener(suKien -> xuLyLuu());
         khungCacThaoTac.add(btnLuu);
         return khungCacThaoTac;
@@ -316,6 +316,8 @@ public final class CaiDatPanel extends CoSoPanel {
         return khungTam;
     }
 
+    // 3. THAO TÁC TRÊN FORM & IN THỬ
+
     private void themChonNganHangVietQR(JPanel khungTam) {
         JLabel nhanNganHang = new JLabel("Ngân hàng nhận tiền (VietQR)");
         nhanNganHang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
@@ -328,7 +330,7 @@ public final class CaiDatPanel extends CoSoPanel {
         }
         cboNganHangVietQR.setEnabled(coTheSua);
         cboNganHangVietQR.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cboNganHangVietQR.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        cboNganHangVietQR.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_DAU_VAO));
         cboNganHangVietQR.addActionListener(
                 e -> {
                     int idx = cboNganHangVietQR.getSelectedIndex();
@@ -374,8 +376,8 @@ public final class CaiDatPanel extends CoSoPanel {
         oNhapLieu.setToolTipText(tooltip);
         oNhapLieu.setEnabled(coTheSua);
         oNhapLieu.setAlignmentX(Component.LEFT_ALIGNMENT);
-        oNhapLieu.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        oNhapLieu.setPreferredSize(new Dimension(280, 36));
+        oNhapLieu.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_DAU_VAO));
+        oNhapLieu.setPreferredSize(new Dimension(280, MauUngDung.CAO_DAU_VAO));
         cacDauVao.put(khoa, oNhapLieu);
         khungTam.add(oNhapLieu);
         khungTam.add(Box.createVerticalStrut(10));
@@ -390,7 +392,7 @@ public final class CaiDatPanel extends CoSoPanel {
         khungTam.add(Box.createVerticalStrut(4));
         JPanel khungDuongKe = new JPanel(new BorderLayout(8, 0));
         khungDuongKe.setAlignmentX(Component.LEFT_ALIGNMENT);
-        khungDuongKe.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        khungDuongKe.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_DAU_VAO));
         khungDuongKe.setOpaque(false);
         JTextField oNhapLieu = new JTextField(24);
         oNhapLieu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -503,6 +505,8 @@ public final class CaiDatPanel extends CoSoPanel {
         if (oNhap != null) oNhap.setText(giaTri);
     }
 
+    // 4. NẠP DỮ LIỆU & ĐỒNG BỘ TRẠNG THÁI
+
     private static final class DuLieuCaiDat {
         private final Map<String, String> giaTri;
         private final List<String> mayIn;
@@ -596,6 +600,7 @@ public final class CaiDatPanel extends CoSoPanel {
         }
         ghiNhanDaNap();
         daNapXong = true;
+        if (btnLuu != null) btnLuu.setEnabled(coTheSua);
     }
 
     private boolean coThayDoiChuaLuu() {
@@ -614,6 +619,8 @@ public final class CaiDatPanel extends CoSoPanel {
         kiemDemMuDaNap = hopChonMacDinhKiemDemMu.isSelected();
     }
 
+    // 5. KIỂM TRA, LƯU & VÒNG ĐỜI PANEL
+
     @Override
     public void xuLyLuu() {
         if (!coTheSua || !kiemTraHopLeTruocKhiLuu()) return;
@@ -622,6 +629,9 @@ public final class CaiDatPanel extends CoSoPanel {
                 (khoa, truong) -> {
                     String val = truong.getText().trim();
                     if ("HAN_MUC_XUAT_HUY_CAN_DUYET".equals(khoa)
+                            || "SO_GIO_TOI_DA_MOI_TUAN".equals(khoa)
+                            || "SO_GIO_BAO_TRUOC_DOI_CA".equals(khoa)
+                            || "SO_NGAY_DOI_TRA".equals(khoa)
                             || "PHI_TRA_PHONG_TRE".equals(khoa)) {
                         val = chuanHoaChuoiSo(val);
                     }

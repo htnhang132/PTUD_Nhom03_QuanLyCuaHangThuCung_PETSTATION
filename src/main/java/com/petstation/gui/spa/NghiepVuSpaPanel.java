@@ -13,25 +13,18 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong.TruongDuLieu;
-import com.petstation.gui.luutru.NhatKyChamSocDialog;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
-import com.petstation.model.chung.Quyen;
-import com.petstation.model.chung.TrangThaiPhieuSpa;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.chung.QuyTrinhService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.spa.SpaService;
 import com.petstation.util.DinhDang;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-
-import javax.swing.JButton;
 
 public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
     protected final SpaService spaService = new SpaService();
@@ -40,58 +33,6 @@ public abstract class NghiepVuSpaPanel extends BangNghiepVuPanel {
 
     protected NghiepVuSpaPanel(LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
-        if (kieu != LoaiNghiepVu.LICH_HEN && kieu != LoaiNghiepVu.PHIEU_SPA)
-            themNut(
-                    layKhungThaoTac(),
-                    "Phiếu chăm sóc",
-                    () -> NhatKyChamSocDialog.mo(this, "SPA", layDongChon()));
-    }
-
-    @Override
-    protected void capNhatThaoTac() {
-        if (layBangDuLieu() == null || layKhungThaoTac() == null) return;
-        String trangThai = "";
-        boolean coDichVu = false;
-        if (layBangDuLieu().getSelectedRow() >= 0 && layKieuNghiepVu() != LoaiNghiepVu.LICH_HEN) {
-            int dong = layBangDuLieu().convertRowIndexToModel(layBangDuLieu().getSelectedRow());
-            trangThai = String.valueOf(layMoHinh().getValueAt(dong, 7));
-            coDichVu = ((Number) layMoHinh().getValueAt(dong, 6)).longValue() > 0;
-        }
-        for (Component thanhPhan : layKhungThaoTac().getComponents())
-            if (thanhPhan instanceof JButton btn) {
-                switch (btn.getText()) {
-                    case "Thêm dịch vụ" ->
-                            btn.setEnabled(
-                                    Set.of(
-                                                    TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
-                                                    TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB())
-                                            .contains(trangThai));
-                    case "Xóa dịch vụ" ->
-                            btn.setEnabled(
-                                    coDichVu
-                                            && Set.of(
-                                                            TrangThaiPhieuSpa.TIEP_NHAN.maDB(),
-                                                            TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB(),
-                                                            TrangThaiPhieuSpa.HOAN_TAT.maDB())
-                                                    .contains(trangThai));
-                    case "Bắt đầu làm" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiPhieuSpa.TIEP_NHAN.maDB())
-                                            && coDichVu);
-                    case "Hoàn thành" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB()));
-                    case "Thanh toán" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiPhieuSpa.HOAN_TAT.maDB())
-                                            && PhienDangNhapService.macDinh()
-                                                    .layPhien()
-                                                    .kiemTraCo(Quyen.THANH_TOAN));
-                    case "Chi tiết dịch vụ", "Phiếu chăm sóc" ->
-                            btn.setEnabled(layBangDuLieu().getSelectedRow() >= 0);
-                    default -> {}
-                }
-            }
     }
 
     protected void datLichHen() {

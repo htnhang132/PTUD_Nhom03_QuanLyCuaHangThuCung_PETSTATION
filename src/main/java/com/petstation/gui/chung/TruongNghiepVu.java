@@ -3,13 +3,9 @@ package com.petstation.gui.chung;
 import com.petstation.dto.MucLuaChon;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong.LuaChon;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong.TruongDuLieu;
+import com.petstation.service.chung.DanhMucService;
 import com.petstation.service.chung.NghiepVuService;
-import com.petstation.util.DinhDang;
 
-import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -54,41 +50,19 @@ public final class TruongNghiepVu {
         }
     }
 
-    public static LocalDateTime docThoiGian(Map<String, String> giaTri, String khoa) {
-        String s = giaTri == null ? null : giaTri.get(khoa);
-        if (s == null || s.isBlank())
-            throw new IllegalArgumentException(
-                    "Vui lòng nhập thời gian theo định dạng dd/MM/yyyy HH:mm.");
-        String val = s.trim();
-        for (var fmt : new DateTimeFormatter[] {DinhDang.NGAY_GIO_U, DinhDang.NGAY_GIO_ISO_U}) {
-            try {
-                return LocalDateTime.parse(val, fmt);
-            } catch (Exception ex) {
-                LoggerFactory.getLogger(TruongNghiepVu.class)
-                        .debug(
-                                "Chuỗi thời gian '{}' chưa khớp định dạng {}: {}",
-                                val,
-                                fmt,
-                                ex.getMessage());
-            }
-        }
-        throw new IllegalArgumentException(
-                "Thời gian không hợp lệ (định dạng chuẩn: dd/MM/yyyy HH:mm).");
-    }
-
-    public static String layThoiGianHienTai() {
-        return LocalDateTime.now().withSecond(0).format(DinhDang.NGAY_GIO_U);
-    }
-
     public static TruongDuLieu layThuCung() {
         return taoLuaChonMuc("pet", "Thú cưng", new NghiepVuService().layLuaChonThuCung());
     }
 
-    public static TruongDuLieu layCacGoiDichVu() {
-        return taoLuaChonMuc("package", "Dịch vụ", new NghiepVuService().layLuaChonGoiDichVu());
-    }
-
-    public static TruongDuLieu layCacLoHang() {
-        return taoLuaChonMuc("batch", "Lô hàng", new NghiepVuService().layLuaChonLoHang());
+    /** Nạp danh sách lựa chọn khách hàng đang hoạt động cho các hộp thoại đặt lịch / đặt phòng. */
+    public static List<LuaChon> taiLuaChonKhachHoatDong() {
+        return DanhMucService.macDinh().layKhachHang().stream()
+                .filter(k -> "Đang hoạt động".equals(k[8]))
+                .map(
+                        k ->
+                                new LuaChon(
+                                        String.valueOf(k[0]),
+                                        k[0] + " — " + k[1] + " (" + k[2] + ")"))
+                .toList();
     }
 }

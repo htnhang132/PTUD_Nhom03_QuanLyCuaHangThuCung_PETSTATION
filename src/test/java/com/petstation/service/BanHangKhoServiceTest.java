@@ -9,6 +9,8 @@ import com.petstation.dao.banhang.PhieuDoiTraDAO;
 import com.petstation.dao.kho.KiemKeDAO;
 import com.petstation.dao.kho.NhapXuatKhoDAO;
 import com.petstation.dao.kho.SanPhamDAO;
+import com.petstation.dto.ChiTietXemTruocPhieuDoi;
+import com.petstation.dto.DieuKienDoiHoaDon;
 import com.petstation.dto.DonDoiTreo;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.PhienDangNhap;
@@ -19,6 +21,7 @@ import com.petstation.model.banhang.PhienLamViec;
 import com.petstation.model.banhang.PhieuDoiTra;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.model.chung.Quyen;
+import com.petstation.model.chung.TrangThaiHoaDon;
 import com.petstation.model.chung.TrangThaiLoHang;
 import com.petstation.model.chung.VaiTro;
 import com.petstation.model.hethong.TaiKhoan;
@@ -875,5 +878,229 @@ class BanHangKhoServiceTest {
 
         DonDoiTreoService donDoiTreoService = new DonDoiTreoService(fakeHoaDonDao);
         assertThat(donDoiTreoService.lay("TREO001").timHoaDon()).isEqualTo("HD0010");
+    }
+
+    @Test
+    void doiTraServiceKiemTraDieuKienDoiHoaDonVaXemTruocPhieu() {
+        SanPham phuKien = new SanPham();
+        phuKien.setMaSanPham("SP_PK");
+        phuKien.setTenSanPham("Vòng cổ da");
+        phuKien.setNhomHang("Phụ kiện");
+
+        SanPham thucAn = new SanPham();
+        thucAn.setMaSanPham("SP_TA");
+        thucAn.setTenSanPham("Hạt chó");
+        thucAn.setNhomHang("Thức ăn");
+
+        HoaDon hdHopLe = new HoaDon("HD0101");
+        hdHopLe.setTrangThai(TrangThaiHoaDon.DA_THANH_TOAN.maDB());
+        hdHopLe.setThanhToanLuc(LocalDateTime.now().minusHours(6));
+
+        HoaDon hdHetHan = new HoaDon("HD0102");
+        hdHetHan.setTrangThai(TrangThaiHoaDon.DA_THANH_TOAN.maDB());
+        hdHetHan.setThanhToanLuc(LocalDateTime.now().minusDays(10));
+
+        HoaDon hdKhongPhuKien = new HoaDon("HD0103");
+        hdKhongPhuKien.setTrangThai(TrangThaiHoaDon.DA_THANH_TOAN.maDB());
+        hdKhongPhuKien.setThanhToanLuc(LocalDateTime.now().minusHours(2));
+
+        HoaDon hdThayThe = new HoaDon("HD0104");
+        hdThayThe.setTrangThai(TrangThaiHoaDon.DA_THANH_TOAN.maDB());
+        hdThayThe.setThanhToanLuc(LocalDateTime.now().minusHours(2));
+
+        PhieuDoiTra phieuDoi = new PhieuDoiTra("DT0009");
+        phieuDoi.setHoaDonGoc(hdHopLe);
+        phieuDoi.setHoaDonThayThe(hdThayThe);
+        phieuDoi.setLyDo("Đổi size L");
+        phieuDoi.setTrangThai("HOAN_TAT");
+
+        PhieuDoiTraDAO fakeDao =
+                new PhieuDoiTraDAO() {
+                    @Override
+                    public List<HoaDon> timHoaDon(String tuKhoa) {
+                        return List.of();
+                    }
+
+                    @Override
+                    public List<HoaDon> timHoaDonGanDay(int soNgay) {
+                        return List.of(hdHopLe);
+                    }
+
+                    @Override
+                    public Optional<HoaDon> layThongTinHoaDonDoi(String maHoaDon) {
+                        return switch (maHoaDon) {
+                            case "HD0101" -> Optional.of(hdHopLe);
+                            case "HD0102" -> Optional.of(hdHetHan);
+                            case "HD0103" -> Optional.of(hdKhongPhuKien);
+                            case "HD0104" -> Optional.of(hdThayThe);
+                            default -> Optional.empty();
+                        };
+                    }
+
+                    @Override
+                    public List<ChiTietDoiTra> layDongHoaDon(String maHoaDon) {
+                        if ("HD0101".equals(maHoaDon)) {
+                            ChiTietHoaDon ct = new ChiTietHoaDon();
+                            ct.setSanPham(phuKien);
+                            ct.setSoLuong(2);
+                            return List.of(new ChiTietDoiTra(null, ct, null, 0, 0L));
+                        }
+                        if ("HD0103".equals(maHoaDon)) {
+                            ChiTietHoaDon ct = new ChiTietHoaDon();
+                            ct.setSanPham(thucAn);
+                            ct.setSoLuong(2);
+                            return List.of(new ChiTietDoiTra(null, ct, null, 0, 0L));
+                        }
+                        return List.of();
+                    }
+
+                    @Override
+                    public List<SanPham> timPhuKien(String tuKhoa) {
+                        return List.of();
+                    }
+
+                    @Override
+                    public Optional<ChiTietHoaDon> timDongGoc(String maHoaDon, String maSanPham) {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public Optional<SanPham> timThayThe(String ma) {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public String taoPhieu(
+                            String maHoaDon,
+                            String maNhanVien,
+                            long chenhLech,
+                            String lyDo,
+                            long giaTri,
+                            String khoa) {
+                        return "DT0009";
+                    }
+
+                    @Override
+                    public void hoanTat(String maPhieu, String maHoaDonThayThe) {}
+
+                    @Override
+                    public long layChenhLechTruoc(String maHoaDon) {
+                        return 0L;
+                    }
+
+                    @Override
+                    public boolean laHoaDonThayThe(String maHoaDon) {
+                        return "HD0104".equals(maHoaDon);
+                    }
+
+                    @Override
+                    public int capNhatApDungDoiTra(int soLuong, String maLo) {
+                        return 0;
+                    }
+
+                    @Override
+                    public long demDoiTraMuc(String maHoaDon, String maSanPham) {
+                        return 0L;
+                    }
+
+                    @Override
+                    public List<LoHang> laySoLuongLoConDuocDoi(String maHoaDon, String maSanPham) {
+                        return List.of();
+                    }
+
+                    @Override
+                    public int capNhatDoiTraMuc(
+                            String maPhieu,
+                            String maHoaDon,
+                            String maSanPham,
+                            String maLo,
+                            int soLuong,
+                            long tienHoan) {
+                        return 0;
+                    }
+
+                    @Override
+                    public Optional<PhieuDoiTra> layPhieuDoi(String maPhieu) {
+                        return "DT0009".equals(maPhieu) ? Optional.of(phieuDoi) : Optional.empty();
+                    }
+
+                    @Override
+                    public List<ChiTietDoiTra> layChiTietPhieuDoi(String maPhieu) {
+                        ChiTietHoaDon goc = new ChiTietHoaDon();
+                        goc.setSanPham(phuKien);
+                        goc.setSoLuong(2);
+                        return List.of(new ChiTietDoiTra(null, goc, null, 1, 120_000L));
+                    }
+
+                    @Override
+                    public List<ChiTietHoaDon> layHangThayTheCuaPhieu(String maHdThayThe) {
+                        ChiTietHoaDon moi = new ChiTietHoaDon();
+                        moi.setSanPham(phuKien);
+                        moi.setSoLuong(1);
+                        moi.setDonGia(150_000L);
+                        return List.of(moi);
+                    }
+                };
+
+        DoiTraService service = new DoiTraService(fakeDao);
+        assertThat(service.timHoaDon("")).hasSize(1);
+
+        DieuKienDoiHoaDon hopLe = service.kiemTraDieuKienDoiHoaDon("HD0101");
+        assertThat(hopLe.isHopLe()).isTrue();
+        assertThat(hopLe.getTongConDuocDoi()).isEqualTo(2L);
+
+        assertThat(service.kiemTraDieuKienDoiHoaDon("HD0102").isHopLe()).isFalse();
+        assertThat(service.kiemTraDieuKienDoiHoaDon("HD0103").isHopLe()).isFalse();
+        assertThat(service.kiemTraDieuKienDoiHoaDon("HD0104").isHopLe()).isFalse();
+        assertThat(service.kiemTraDieuKienDoiHoaDon("   ").isHopLe()).isFalse();
+
+        ChiTietXemTruocPhieuDoi preview = service.layChiTietXemTruocPhieu("DT0009").orElseThrow();
+        assertThat(preview.getPhieu().getMaPhieu()).isEqualTo("DT0009");
+        assertThat(preview.getHangTra()).hasSize(1);
+        assertThat(preview.getHangThayThe()).hasSize(1);
+    }
+
+    @Test
+    void sanPhamServiceTuChoiBarcodeTrungSanPhamKhac() {
+        SanPham spKhac = new SanPham();
+        spKhac.setMaSanPham("SP0099");
+
+        SanPhamDAO fakeDao =
+                new SanPhamDAO() {
+                    @Override
+                    public List<SanPham> layTatCa() {
+                        return List.of(spKhac);
+                    }
+
+                    @Override
+                    public SanPham timTheoMa(String maSanPham) {
+                        return "8930000000991".equals(maSanPham) ? spKhac : null;
+                    }
+
+                    @Override
+                    public List<SanPham> layDanhSachSanPham() {
+                        return List.of(spKhac);
+                    }
+
+                    @Override
+                    public int capNhatBarcode(String maSanPham, String barcode) {
+                        return 1;
+                    }
+
+                    @Override
+                    public boolean kiemTraSanPhamCoGiaoDich(String maSanPham) {
+                        return false;
+                    }
+
+                    @Override
+                    public int ngungKinhDoanhSanPham(String maSanPham) {
+                        return 1;
+                    }
+                };
+
+        SanPhamService service = new SanPhamService(fakeDao);
+        assertThatThrownBy(() -> service.capNhatBarcode("SP0001", "8930000000991"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("SP0099");
     }
 }

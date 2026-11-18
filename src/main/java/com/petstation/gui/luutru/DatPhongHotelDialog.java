@@ -6,6 +6,7 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.TruongNghiepVu;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgayGio;
 import com.petstation.gui.khachhang.DanhMucKhachHangPanel;
@@ -38,6 +39,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -47,11 +50,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 public final class DatPhongHotelDialog {
+    // 1. THUỘC TÍNH & CẤU TRÚC DỮ LIỆU
+
     private final LuuTruService luuTruService = new LuuTruService();
     private final String maHopDong;
     private final JDialog hopThoai;
@@ -66,10 +72,11 @@ public final class DatPhongHotelDialog {
     private List<Object[]> tatCaThuCung = List.of();
     private final BoChonNgayGio spNgayVao;
     private final BoChonNgayGio spNgayRa;
-    private final JTextArea oGhiChu = new JTextArea(3, 24);
+    private final JTextArea oGhiChu = new JTextArea(2, 24);
     private final JLabel nhanSoNgay = new JLabel("—");
     private final JLabel nhanTongTien = new JLabel("—");
     private final JLabel nhanCoc = new JLabel("—");
+    private JPanel hangCocDuKien;
     private final JLabel nhanThongTinCoc = new JLabel(" ");
     private final JLabel nhanTrangThai = new JLabel(" ");
     private final JLabel nhanTieuDeHopThoai = new JLabel("THÔNG TIN ĐẶT PHÒNG");
@@ -96,17 +103,6 @@ public final class DatPhongHotelDialog {
             this.phong = phong;
             this.thongTinSua = thongTinSua;
         }
-    }
-
-    private static List<BieuMauTruong.LuaChon> taiDanhSachKhach() {
-        return DanhMucService.macDinh().layKhachHang().stream()
-                .filter(k -> "Đang hoạt động".equals(k[8]))
-                .map(
-                        k ->
-                                new BieuMauTruong.LuaChon(
-                                        String.valueOf(k[0]),
-                                        k[0] + " — " + k[1] + " (" + k[2] + ")"))
-                .toList();
     }
 
     private static String dinhDangTenPhong(String raw, String maTrangThai) {
@@ -145,17 +141,28 @@ public final class DatPhongHotelDialog {
         }
     }
 
+    // 2. HÀM KHỞI TẠO & API CÔNG KHAI
+
     private DatPhongHotelDialog(Component parent, String maHopDong, String maPhongMacDinh) {
         this.maHopDong = maHopDong != null && !maHopDong.isBlank() ? maHopDong : null;
         this.hopThoai =
                 new JDialog(
-                        SwingUtilities.getWindowAncestor(parent),
+                        parent == null ? null : SwingUtilities.getWindowAncestor(parent),
                         this.maHopDong == null ? "Đặt phòng Pet Hotel" : "Sửa đặt phòng Pet Hotel",
                         Dialog.ModalityType.APPLICATION_MODAL);
         oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
-        oTimKhach.setPreferredSize(new Dimension(130, 32));
+        oTimKhach.setPreferredSize(new Dimension(130, 34));
+        cboKhachHang.setPrototypeDisplayValue(
+                new BieuMauTruong.LuaChon("KH", "KH000001 — Khách hàng mẫu (0901234567)"));
+        cboKhachHang.setPreferredSize(new Dimension(340, 34));
         cboThuCung = new JComboBox<>();
+        cboThuCung.setPrototypeDisplayValue(
+                new BieuMauTruong.LuaChon("TC", "TC000001 — Thú cưng mẫu (Giống mẫu)"));
+        cboThuCung.setPreferredSize(new Dimension(360, 34));
         cboPhong = new JComboBox<>();
+        cboPhong.setPrototypeDisplayValue(
+                new BieuMauTruong.LuaChon("P", "P001 — Tiêu chuẩn / 150.000₫ (Trống)"));
+        cboPhong.setPreferredSize(new Dimension(360, 34));
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
         spNgayVao = new BoChonNgayGio(now);
         spNgayRa = new BoChonNgayGio(now.plusDays(1));
@@ -171,8 +178,7 @@ public final class DatPhongHotelDialog {
         spNgayVao.addChangeListener(this::capNhatDuKien);
         spNgayRa.addChangeListener(this::capNhatDuKien);
         hopThoai.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        hopThoai.setSize(700, 645);
-        hopThoai.setMinimumSize(new Dimension(640, 580));
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 760, 640);
         HopThoai.chuanHoaCuaSo(hopThoai, hopThoai.getOwner());
         taiDuLieuBanDau(maPhongMacDinh);
     }
@@ -182,7 +188,7 @@ public final class DatPhongHotelDialog {
                 hopThoai,
                 () -> true,
                 () -> {
-                    List<BieuMauTruong.LuaChon> khach = taiDanhSachKhach();
+                    List<BieuMauTruong.LuaChon> khach = TruongNghiepVu.taiLuaChonKhachHoatDong();
                     List<Object[]> thu = DanhMucService.macDinh().layThuCung();
                     NghiepVuService nghiepVuService = new NghiepVuService();
                     Map<String, String> trangThaiPhong = luuTruService.layTrangThaiTatCaPhong();
@@ -242,12 +248,11 @@ public final class DatPhongHotelDialog {
     }
 
     private void locKhachHang(String tuKhoa) {
-        String k = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
         BieuMauTruong.LuaChon dangChon = (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
         cboKhachHang.removeAllItems();
         List<BieuMauTruong.LuaChon> hopLe =
                 tatCaKhachHang.stream()
-                        .filter(item -> k.isEmpty() || item.nhan().toLowerCase().contains(k))
+                        .filter(item -> CoSoPanel.khopTimKiem(item.nhan(), tuKhoa))
                         .toList();
         for (var khach : hopLe) {
             cboKhachHang.addItem(khach);
@@ -265,7 +270,7 @@ public final class DatPhongHotelDialog {
         cboThuCung.removeAllItems();
         BieuMauTruong.LuaChon khachDangChon =
                 (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
-        if (khachDangChon == null) {
+        if (khachDangChon == null || tatCaThuCung == null) {
             btnThemThuCung.setEnabled(false);
             return;
         }
@@ -302,7 +307,7 @@ public final class DatPhongHotelDialog {
         TacVuNen.chayCoPhien(
                 phien,
                 hopThoai::isDisplayable,
-                DatPhongHotelDialog::taiDanhSachKhach,
+                TruongNghiepVu::taiLuaChonKhachHoatDong,
                 null,
                 dsKhach -> {
                     tatCaKhachHang = dsKhach;
@@ -342,9 +347,11 @@ public final class DatPhongHotelDialog {
         return form.ketQua;
     }
 
+    // 3. XÂY DỰNG GIAO DIỆN HỘP THOẠI
+
     private void taoGiaoDien() {
-        JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(MauUngDung.mau(0xFAF6F0));
+        JPanel root = new JPanel(new BorderLayout(0, 12));
+        root.setBackground(MauUngDung.NEN_KEM);
         root.setBorder(new EmptyBorder(16, 20, 16, 20));
         nhanTieuDeHopThoai.setText(
                 maHopDong == null ? "THÔNG TIN ĐẶT PHÒNG" : "CẬP NHẬT ĐẶT PHÒNG");
@@ -352,15 +359,14 @@ public final class DatPhongHotelDialog {
         nhanTieuDeHopThoai.setForeground(MauUngDung.NAU);
         root.add(nhanTieuDeHopThoai, BorderLayout.NORTH);
 
-        // Khung thông tin đặt phòng - Thẻ trắng bo góc viền mảnh
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
         form.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.KEM_VIEN_NHE, 1, true),
-                        new EmptyBorder(16, 16, 16, 16)));
+                        BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
+                        new EmptyBorder(12, 16, 12, 16)));
         GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(7, 6, 7, 6);
+        gc.insets = new Insets(5, 6, 5, 6);
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.anchor = GridBagConstraints.WEST;
         int dong = 0;
@@ -381,22 +387,22 @@ public final class DatPhongHotelDialog {
         oGhiChu.setLineWrap(true);
         oGhiChu.setWrapStyleWord(true);
         JScrollPane scrGhiChu = new JScrollPane(oGhiChu);
-        scrGhiChu.setBorder(BorderFactory.createLineBorder(MauUngDung.KEM_VIEN));
+        scrGhiChu.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         themDong(form, gc, dong++, "Ghi chú", scrGhiChu);
 
-        // Khung dự kiến chi phí - Thẻ trắng bo góc viền mảnh (bỏ TitledBorder mặc định)
         JPanel theDuKien = taoKhungDuKienChiPhi();
-        JPanel khungDuoi = taoPhanDuoiHopThoai(theDuKien);
         JPanel khungGiua = new JPanel(new BorderLayout(0, 10));
         khungGiua.setOpaque(false);
         khungGiua.add(form, BorderLayout.NORTH);
-        khungGiua.add(khungDuoi, BorderLayout.CENTER);
+        khungGiua.add(taoKhoiThongBaoVaDuKien(theDuKien), BorderLayout.CENTER);
         JScrollPane scrChinh = new JScrollPane(khungGiua);
         scrChinh.setBorder(null);
         scrChinh.setOpaque(false);
         scrChinh.getViewport().setOpaque(false);
+        scrChinh.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrChinh.getVerticalScrollBar().setUnitIncrement(16);
         root.add(scrChinh, BorderLayout.CENTER);
+        root.add(taoThanhChanHopThoai(), BorderLayout.SOUTH);
         hopThoai.setContentPane(root);
         hopThoai.getRootPane().setDefaultButton(btnLuu);
         hopThoai.getRootPane()
@@ -407,90 +413,94 @@ public final class DatPhongHotelDialog {
     }
 
     private JPanel taoKhungDuKienChiPhi() {
-        JPanel theDuKien = new JPanel(new BorderLayout(0, 10));
+        JPanel theDuKien = new JPanel(new BorderLayout(0, 8));
         theDuKien.setBackground(Color.WHITE);
         theDuKien.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(MauUngDung.KEM_VIEN_NHE, 1, true),
-                        new EmptyBorder(14, 16, 14, 16)));
+                        BorderFactory.createLineBorder(MauUngDung.VIEN, 1, true),
+                        new EmptyBorder(12, 16, 12, 16)));
         JLabel nhanTieuDePhi = new JLabel("Dự kiến chi phí");
         nhanTieuDePhi.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         nhanTieuDePhi.setForeground(MauUngDung.NAU);
         theDuKien.add(nhanTieuDePhi, BorderLayout.NORTH);
-        JPanel luoiDuKien = new JPanel(new GridLayout(3, 2, 16, 8));
+        JPanel luoiDuKien = new JPanel();
+        luoiDuKien.setLayout(new BoxLayout(luoiDuKien, BoxLayout.Y_AXIS));
         luoiDuKien.setOpaque(false);
-        Color mauNhanPhi = MauUngDung.mau(0x57534E);
-        themDongChiPhi(
-                luoiDuKien,
-                "Số ngày tính phí:",
-                mauNhanPhi,
-                Font.PLAIN,
-                nhanSoNgay,
-                13,
-                MauUngDung.VAN_BAN_TOI);
-        themDongChiPhi(
-                luoiDuKien,
-                "Tổng tiền phòng:",
-                mauNhanPhi,
-                Font.PLAIN,
-                nhanTongTien,
-                14,
-                MauUngDung.VAN_BAN_TOI);
-        themDongChiPhi(
-                luoiDuKien,
-                "Tiền cọc yêu cầu (50%):",
-                MauUngDung.DO_SAU,
-                Font.BOLD,
-                nhanCoc,
-                16,
-                MauUngDung.DO_NHAN_MANH);
+        luoiDuKien.add(
+                themDongChiPhi(
+                        "Số ngày tính phí:",
+                        MauUngDung.VAN_BAN_XAM,
+                        Font.PLAIN,
+                        nhanSoNgay,
+                        13,
+                        MauUngDung.VAN_BAN_TOI));
+        luoiDuKien.add(Box.createVerticalStrut(6));
+        luoiDuKien.add(
+                themDongChiPhi(
+                        "Tổng tiền phòng:",
+                        MauUngDung.VAN_BAN_XAM,
+                        Font.PLAIN,
+                        nhanTongTien,
+                        14,
+                        MauUngDung.VAN_BAN_TOI));
+        hangCocDuKien =
+                themDongChiPhi(
+                        "Tiền cọc yêu cầu (50%):",
+                        MauUngDung.NAU, Font.BOLD, nhanCoc, 16, MauUngDung.DO_THUONG_HIEU);
+        hangCocDuKien.setBorder(new EmptyBorder(6, 0, 0, 0));
+        luoiDuKien.add(hangCocDuKien);
         theDuKien.add(luoiDuKien, BorderLayout.CENTER);
         return theDuKien;
     }
 
-    private static void themDongChiPhi(
-            JPanel luoi,
+    private static JPanel themDongChiPhi(
             String nhan,
             Color mauNhan,
             int kieuNhan,
             JLabel nhanGiaTri,
             int coChuGiaTri,
             Color mauGiaTri) {
+        JPanel hang = new JPanel(new GridLayout(1, 2, 16, 0));
+        hang.setOpaque(false);
+        hang.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel nhanChu = new JLabel(nhan);
         nhanChu.setForeground(mauNhan);
         nhanChu.setFont(MauUngDung.taoPhongChu(kieuNhan, 13));
         nhanGiaTri.setHorizontalAlignment(SwingConstants.RIGHT);
         nhanGiaTri.setFont(MauUngDung.taoPhongChu(Font.BOLD, coChuGiaTri));
         nhanGiaTri.setForeground(mauGiaTri);
-        luoi.add(nhanChu);
-        luoi.add(nhanGiaTri);
+        hang.add(nhanChu);
+        hang.add(nhanGiaTri);
+        return hang;
     }
 
-    private JPanel taoPhanDuoiHopThoai(JPanel theDuKien) {
-        JPanel khungDuoi = new JPanel(new BorderLayout(8, 10));
+    private JPanel taoKhoiThongBaoVaDuKien(JPanel theDuKien) {
+        JPanel khungDuoi = new JPanel(new BorderLayout(8, 8));
         khungDuoi.setOpaque(false);
         khungDuoi.add(theDuKien, BorderLayout.NORTH);
-        nhanThongTinCoc.setForeground(MauUngDung.mau(0x065F46));
+        nhanThongTinCoc.setForeground(MauUngDung.XANH_LA);
         nhanThongTinCoc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        nhanTrangThai.setForeground(MauUngDung.mau(0x962823));
+        nhanTrangThai.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
         nhanTrangThai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         JPanel khungThongBao = new JPanel(new GridLayout(2, 1, 0, 2));
         khungThongBao.setOpaque(false);
         khungThongBao.add(nhanThongTinCoc);
         khungThongBao.add(nhanTrangThai);
         khungDuoi.add(khungThongBao, BorderLayout.CENTER);
+        return khungDuoi;
+    }
 
+    private JPanel taoThanhChanHopThoai() {
         JPanel khungThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         khungThaoTac.setOpaque(false);
-        NutDinhDang btnHuy = new NutDinhDang("Đóng", NutDinhDang.KieuNut.PHU);
-        btnHuy.setPreferredSize(new Dimension(90, 36));
+        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnHuy.setPreferredSize(new Dimension(96, MauUngDung.CAO_NUT));
         btnHuy.addActionListener(e -> hopThoai.dispose());
-        btnLuu.setPreferredSize(new Dimension(140, 36));
+        btnLuu.setPreferredSize(new Dimension(148, MauUngDung.CAO_NUT));
         btnLuu.addActionListener(e -> luu());
         khungThaoTac.add(btnHuy);
         khungThaoTac.add(btnLuu);
-        khungDuoi.add(khungThaoTac, BorderLayout.SOUTH);
-        return khungDuoi;
+        return khungThaoTac;
     }
 
     private static void themDong(
@@ -499,7 +509,7 @@ public final class DatPhongHotelDialog {
         gc.gridx = 0;
         gc.weightx = 0;
         gc.gridwidth = 1;
-        khungBang.add(new JLabel(nhan), gc);
+        khungBang.add(CoSoPanel.taoNhanTruong(nhan, false), gc);
         gc.gridx = 1;
         gc.weightx = 1;
         khungBang.add(thanhPhan, gc);
@@ -550,6 +560,9 @@ public final class DatPhongHotelDialog {
         cheDoGiaHan = TrangThaiHopDong.DANG_O.maDB().equals(duLieu.getTrangThai());
         ngayRaCu = duLieu.getNgayRaDuKien();
         if (cheDoGiaHan) {
+            if (hangCocDuKien != null) {
+                hangCocDuKien.setVisible(false);
+            }
             hopThoai.setTitle("Gia hạn / Đổi ngày trả Pet Hotel");
             nhanTieuDeHopThoai.setText("GIA HẠN / ĐỔI NGÀY TRẢ PHÒNG");
             oTimKhach.setEnabled(false);
@@ -582,8 +595,12 @@ public final class DatPhongHotelDialog {
                             : " ");
             btnLuu.setText("Lưu thay đổi");
         }
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 680, cheDoGiaHan ? 440 : 500);
+        HopThoai.chuanHoaCuaSo(hopThoai, hopThoai.getOwner());
         nhanTrangThai.setText(" ");
     }
+
+    // 4. DỰ KIẾN CHI PHÍ & LƯU ĐẶT PHÒNG
 
     private void capNhatDuKien() {
         if (dangTaiDuLieu) return;

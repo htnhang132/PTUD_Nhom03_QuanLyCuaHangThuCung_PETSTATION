@@ -6,12 +6,14 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.model.chung.TrangThaiPheDuyet;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.hethong.NhatKyHeThongService;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.pheduyet.PheDuyetService;
 import com.petstation.service.pheduyet.PheDuyetService.YeuCau;
+import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -21,6 +23,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +31,7 @@ import java.util.Locale;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,7 +40,9 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -47,6 +53,8 @@ import javax.swing.table.DefaultTableModel;
 // hủy hàng
 // Phân hệ: pheduyet
 public final class TrungTamPheDuyetPanel extends CoSoPanel {
+    // 1. THUỘC TÍNH & HÀM KHỞI TẠO
+
     private final PheDuyetService pheDuyetService = new PheDuyetService();
     private final DefaultTableModel moHinh =
             new DefaultTableModel(
@@ -66,7 +74,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     private final JComboBox<String> cboLoaiYeuCau = taoComboLoaiYeuCau();
 
-    private final JTextField oTimKiem = new JTextField(16);
+    private final JTextField oTimKiem = taoOTimKiem("Tìm mã, người gửi...");
 
     private final JCheckBox btnDangChoChi = new JCheckBox("Chỉ hiện yêu cầu chờ duyệt", true);
 
@@ -87,24 +95,27 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     public TrungTamPheDuyetPanel() {
         setLayout(new BorderLayout(0, 10));
-        JPanel khungTren = taoVungTrongSuot(new BorderLayout(10, 0));
-        khungTren.add(taoTieuDeManHinh("Trung tâm phê duyệt"), BorderLayout.WEST);
-        JPanel khungPhai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        khungPhai.setOpaque(false);
+        JPanel khungTren = taoVungTrongSuot(new BorderLayout(0, 8));
         nhanBoDem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         nhanBoDem.setForeground(MauUngDung.CAM);
-        oTimKiem.putClientProperty("JTextField.placeholderText", "Tìm mã, người gửi...");
-        oTimKiem.setPreferredSize(new Dimension(170, 30));
-        themBoLangNgheTaiLieu(oTimKiem, this::apDungBoLoc);
+        khungTren.add(
+                ThanhDanhSach.tieuDe(taoTieuDeManHinh("Trung tâm phê duyệt"), nhanBoDem),
+                BorderLayout.NORTH);
+
+        oTimKiem.setPreferredSize(new Dimension(200, MauUngDung.CAO_DAU_VAO));
+        Timer henGioTim = new Timer(150, e -> apDungBoLoc());
+        henGioTim.setRepeats(false);
+        themBoLangNgheTaiLieu(oTimKiem, henGioTim::restart);
+        cboLoaiYeuCau.setPreferredSize(new Dimension(170, MauUngDung.CAO_DAU_VAO));
         cboLoaiYeuCau.addActionListener(suKien -> apDungBoLoc());
         btnDangChoChi.setOpaque(false);
         btnDangChoChi.addActionListener(suKien -> taiLai());
-        khungPhai.add(nhanBoDem);
-        khungPhai.add(new JLabel("Loại:"));
-        khungPhai.add(cboLoaiYeuCau);
-        khungPhai.add(oTimKiem);
-        khungPhai.add(btnDangChoChi);
-        khungTren.add(khungPhai, BorderLayout.EAST);
+
+        ThanhDanhSach thanhCongCu = new ThanhDanhSach();
+        thanhCongCu.add(oTimKiem);
+        thanhCongCu.themBoLoc("Loại:", cboLoaiYeuCau);
+        thanhCongCu.themBoLoc(btnDangChoChi);
+        khungTren.add(thanhCongCu, BorderLayout.CENTER);
         add(khungTren, BorderLayout.NORTH);
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         bangBang = layBang(scrCuon);
@@ -124,7 +135,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         khungChiTiet.setBorder(new EmptyBorder(16, 18, 16, 18));
         JPanel khungVungChua = new JPanel(new BorderLayout());
         khungVungChua.setOpaque(false);
-        khungVungChua.setPreferredSize(new Dimension(420, 0));
+        khungVungChua.setPreferredSize(new Dimension(396, 0));
         khungVungChua.add(khungChiTiet);
         JSplitPane tach = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrCuon, khungVungChua);
         tach.setResizeWeight(1.0);
@@ -145,6 +156,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                                         && PhienDangNhapService.macDinh().layPhienHienTai() != null)
                                     taiLai();
                             });
+
+    // 2. TẢI DỮ LIỆU, LỌC & VÒNG ĐỜI PANEL
 
     @Override
     public void addNotify() {
@@ -238,7 +251,15 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                         dongDuLieu.layTenTrangThai()
                     });
         }
-        int chiSo = giu == null ? -1 : daHienThi.indexOf(giu);
+        int chiSo = -1;
+        if (giu != null) {
+            for (int i = 0; i < daHienThi.size(); i++) {
+                if (giu.layId().equals(daHienThi.get(i).layId())) {
+                    chiSo = i;
+                    break;
+                }
+            }
+        }
         int viewRow = chiSo < 0 ? -1 : bangBang.convertRowIndexToView(chiSo);
         if (viewRow >= 0) bangBang.setRowSelectionInterval(viewRow, viewRow);
         else {
@@ -246,6 +267,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
             hienThiChiTiet();
         }
     }
+
+    // 3. XÂY DỰNG KHUNG CHI TIẾT YÊU CẦU
 
     private void hienThiChiTiet() {
         khungChiTiet.removeAll();
@@ -309,7 +332,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                     if (noiDung == null) return;
                     thucHienXuLyPheDuyet(
                             () -> pheDuyetService.yeuCauBoSung(dongDuLieu.layId(), noiDung),
-                            false,
+                            true,
                             "Đã gửi yêu cầu bổ sung cho " + dongDuLieu.layId() + ".");
                 });
         NutDinhDang btnDuyet = new NutDinhDang("Duyệt", NutDinhDang.KieuNut.THANH_CONG);
@@ -327,24 +350,18 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
     }
 
     private static JLabel layDong(String khoaDangXet, String giaTri) {
+        String mauXam = String.format("#%06X", MauUngDung.VAN_BAN_XAM.getRGB() & 0xFFFFFF);
         JLabel nhanDongDangXet =
                 new JLabel(
-                        "<html><span style='color:#7a7a7a'>"
-                                + thoatHtml(khoaDangXet)
+                        "<html><span style='color:"
+                                + mauXam
+                                + "'>"
+                                + DinhDang.thoatHtml(khoaDangXet)
                                 + ":</span> "
-                                + thoatHtml(giaTri)
+                                + DinhDang.thoatHtml(giaTri)
                                 + "</html>");
         nhanDongDangXet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         return nhanDongDangXet;
-    }
-
-    private static String thoatHtml(String giaTri) {
-        if (giaTri == null) return "";
-        return giaTri.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 
     private static JPanel layHop(String tieuDe, String vanBan, Color nen) {
@@ -364,6 +381,8 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         khungVungDangXet.add(new JScrollPane(oGiaTriDau), BorderLayout.CENTER);
         return khungVungDangXet;
     }
+
+    // 4. PHÊ DUYỆT, TỪ CHỐI & THAO TÁC PHỤ
 
     private void duyet(YeuCau dongDuLieu) {
         if (!HopThoai.xacNhan(
@@ -398,13 +417,14 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         Window cha = SwingUtilities.getWindowAncestor(this);
         JDialog dlg = new JDialog(cha, tieuDe, Dialog.ModalityType.APPLICATION_MODAL);
         JTextField oNhap = new JTextField(26);
+        oNhap.setPreferredSize(new Dimension(280, MauUngDung.CAO_DAU_VAO));
         String[] ketQua = {null};
         JPanel noiDung = new JPanel(new GridLayout(0, 1, 0, 6));
         noiDung.setBorder(new EmptyBorder(14, 16, 6, 16));
-        noiDung.add(new JLabel(nhan));
+        noiDung.add(taoNhanTruong(nhan, false));
         noiDung.add(oNhap);
         JButton nutOk = new NutDinhDang("Xác nhận", NutDinhDang.KieuNut.CHINH);
-        JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.PHU);
+        JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         nutOk.addActionListener(
                 e -> {
                     String vanBan = oNhap.getText() == null ? "" : oNhap.getText().trim();
@@ -421,11 +441,16 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         chan.add(nutHuy);
         chan.add(nutOk);
         dlg.getRootPane().setDefaultButton(nutOk);
+        dlg.getRootPane()
+                .registerKeyboardAction(
+                        e -> dlg.dispose(),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
         dlg.setLayout(new BorderLayout(8, 8));
         dlg.add(noiDung, BorderLayout.CENTER);
         dlg.add(chan, BorderLayout.SOUTH);
         dlg.pack();
-        dlg.setLocationRelativeTo(this);
+        HopThoai.chuanHoaCuaSo(dlg, cha);
         dlg.setVisible(true);
         return ketQua[0];
     }
@@ -451,6 +476,14 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
                         taiLai();
                     }
                 });
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        oTimKiem.setText("");
+        cboLoaiYeuCau.setSelectedIndex(0);
+        btnDangChoChi.setSelected(true);
+        taiLai();
     }
 
     @Override

@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của biên bản kiểm kê kho. Mapping tương ứng cột trang_thai trong bảng
  * bien_ban_kiem_ke: 'DANG_KIEM', 'CHO_DUYET', 'DA_DUYET', 'TU_CHOI'
  */
-public enum TrangThaiBienBanKiemKe {
+public enum TrangThaiBienBanKiemKe implements MaDBEnum {
     DANG_KIEM("DANG_KIEM", "Đang kiểm đếm"),
     CHO_DUYET("CHO_DUYET", "Chờ quản lý duyệt"),
     DA_DUYET("DA_DUYET", "Đã duyệt điều chỉnh"),
@@ -31,12 +31,6 @@ public enum TrangThaiBienBanKiemKe {
     }
 
     public static TrangThaiBienBanKiemKe tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiBienBanKiemKe t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiBienBanKiemKe với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiBienBanKiemKe.class, ma);
     }
 }

@@ -17,7 +17,6 @@ import com.petstation.model.chung.TrangThaiPhongHotel;
 import com.petstation.model.chung.TrangThaiTaiKhoan;
 import com.petstation.model.chung.VaiTro;
 import com.petstation.model.khachhang.ThuCung;
-import com.petstation.model.luutru.HopDongLuuTru;
 import com.petstation.model.luutru.PhongHotel;
 import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.hethong.CaiDatService;
@@ -31,11 +30,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public final class LuuTruService {
+    // 1. PHỤ THUỘC & HÀM KHỞI TẠO
+
     private final HoaDonDAO banHangDAO;
     private final HopDongLuuTruDAO luuTruDAO;
 
@@ -47,6 +47,8 @@ public final class LuuTruService {
         this.banHangDAO = Objects.requireNonNull(banHangDAO, "banHangDAO không được null");
         this.luuTruDAO = Objects.requireNonNull(luuTruDAO, "luuTruDAO không được null");
     }
+
+    // 2. ĐẶT PHÒNG & GIỮ PHÒNG
 
     public String datPhong(
             String maThuCung,
@@ -160,6 +162,8 @@ public final class LuuTruService {
                             return maHopDong;
                         });
     }
+
+    // 3. QUẢN LÝ TIỀN CỌC & TÍNH GIÁ PHÒNG
 
     public List<HotelDTO.DongLichSuCoc> layCoc(String maHopDong) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
@@ -286,15 +290,6 @@ public final class LuuTruService {
         return new long[] {soNgay, tong, coc, gia};
     }
 
-    public HotelDTO.ThongTinDatPhong layThongTinDatPhong(String maHopDong) {
-        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
-        List<HotelDTO.ThongTinDatPhong> dong = luuTruDAO.layDatPhongSua(maHopDong);
-        if (dong.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hợp đồng lưu trú.");
-        if (!TrangThaiHopDong.DA_DAT.maDB().equals(dong.get(0).getTrangThai()))
-            throw new IllegalArgumentException("Chỉ sửa được hợp đồng đang chờ nhận phòng.");
-        return dong.get(0);
-    }
-
     public HotelDTO.ThongTinDatPhong layThongTinChinhSua(String maHopDong) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
         List<HotelDTO.ThongTinDatPhong> dong = luuTruDAO.layDatPhongSua(maHopDong);
@@ -306,6 +301,8 @@ public final class LuuTruService {
                     "Chỉ sửa hoặc gia hạn hợp đồng đang chờ nhận phòng hoặc đang lưu trú.");
         return dong.get(0);
     }
+
+    // 4. SỬA HỢP ĐỒNG, GIA HẠN & HỦY ĐẶT PHÒNG
 
     public void giaHanLuuTru(String maHopDong, LocalDateTime ngayRaMoi, String ghiChu) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
@@ -550,6 +547,8 @@ public final class LuuTruService {
                         });
     }
 
+    // 5. NHẬN PHÒNG, NHẬT KÝ & BẢO TRÌ PHÒNG
+
     public void kiemTraVao(String maHopDong) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
         QuanLyGiaoDich.macDinh()
@@ -653,10 +652,5 @@ public final class LuuTruService {
     public List<HotelDTO.DongNhatKyChiTiet> layNhatKyChiTiet(String maHopDong) {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
         return luuTruDAO.layNhatKyChiTiet(maHopDong);
-    }
-
-    public Optional<HopDongLuuTru> timHopDong(String maHopDong) {
-        PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
-        return luuTruDAO.timTheoMa(maHopDong);
     }
 }

@@ -1,6 +1,8 @@
 package com.petstation.gui.nhansu;
 
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.BoChonNgay;
@@ -12,19 +14,22 @@ import com.petstation.util.DinhDang;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 public final class ThaoTacNhanh {
@@ -44,8 +49,13 @@ public final class ThaoTacNhanh {
         hopThoai.setLayout(new BorderLayout(8, 8));
         hopThoai.add(khungForm, BorderLayout.CENTER);
         hopThoai.add(khungNut, BorderLayout.SOUTH);
+        hopThoai.getRootPane()
+                .registerKeyboardAction(
+                        e -> hopThoai.dispose(),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
         hopThoai.pack();
-        hopThoai.setLocationRelativeTo(cha);
+        HopThoai.chuanHoaCuaSo(hopThoai, cuaSoCha);
         hopThoai.setVisible(true);
         if (!xacNhan[0]) return;
 
@@ -85,9 +95,12 @@ public final class ThaoTacNhanh {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.WEST;
+        chonTuNgay.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        chonDenNgay.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        oLyDo.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        khung.add(new JLabel("Từ ngày:"), gbc);
+        khung.add(CoSoPanel.taoNhanTruong("Từ ngày", true), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -96,7 +109,7 @@ public final class ThaoTacNhanh {
         gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
-        khung.add(new JLabel("Đến ngày:"), gbc);
+        khung.add(CoSoPanel.taoNhanTruong("Đến ngày", true), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -105,7 +118,7 @@ public final class ThaoTacNhanh {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
-        khung.add(new JLabel("Lý do:"), gbc);
+        khung.add(CoSoPanel.taoNhanTruong("Lý do", true), gbc);
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -120,7 +133,7 @@ public final class ThaoTacNhanh {
             JTextField oLyDo,
             boolean[] xacNhan) {
         JButton nutGui = new NutDinhDang("Gửi yêu cầu", NutDinhDang.KieuNut.CHINH);
-        JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.PHU);
+        JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         nutGui.addActionListener(
                 e -> {
                     LocalDate tuNgay = chonTuNgay.layNgayDuocChon();

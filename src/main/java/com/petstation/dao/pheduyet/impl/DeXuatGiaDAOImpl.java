@@ -5,20 +5,11 @@ import static com.petstation.database.ThaoTacSQL.laySo;
 import static com.petstation.database.ThaoTacSQL.truyVan;
 
 import com.petstation.dao.pheduyet.DeXuatGiaDAO;
-import com.petstation.model.chung.TrangThaiPheDuyet;
-import com.petstation.model.kho.SanPham;
-import com.petstation.model.nhansu.NhanVien;
-import com.petstation.model.pheduyet.DeXuatGia;
 import com.petstation.util.DuLieu;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
-    private static final Logger LOG = LoggerFactory.getLogger(DeXuatGiaDAOImpl.class);
-
     public DeXuatGiaDAOImpl() {}
 
     @Override
@@ -66,7 +57,7 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                 truyVan(
                         "SELECT y.ma_doi_tuong, CAST(y.noi_dung_truoc AS NVARCHAR(MAX)),"
                                 + " CAST(y.noi_dung_sau AS NVARCHAR(MAX)), p.gia_ban FROM"
-                                + " yeu_cau_phe_duyet y JOIN san_pham p ON"
+                                + " yeu_cau_phe_duyet y WITH(UPDLOCK,HOLDLOCK) JOIN san_pham p ON"
                                 + " p.ma_san_pham=y.ma_doi_tuong WHERE y.loai_doi_tuong='DOI_GIA'"
                                 + " AND (y.ma_yeu_cau=? OR y.ma_doi_tuong=?) AND"
                                 + " y.trang_thai IN ('CHO_DUYET','CAN_THEM_THONG_TIN') ORDER BY"
@@ -76,9 +67,13 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
         if (dong.isEmpty()) return Optional.empty();
         Object[] d = dong.get(0);
         String truocStr = String.valueOf(d[1]);
-        if (truocStr.contains(":")) truocStr = truocStr.substring(truocStr.indexOf(":") + 1).trim();
+        if (truocStr.contains(":")) {
+            truocStr = truocStr.substring(truocStr.lastIndexOf(':') + 1).trim();
+        }
         String sauStr = String.valueOf(d[2]);
-        if (sauStr.contains(":")) sauStr = sauStr.substring(sauStr.indexOf(":") + 1).trim();
+        if (sauStr.contains(":")) {
+            sauStr = sauStr.substring(sauStr.lastIndexOf(':') + 1).trim();
+        }
         long giaHienTai = (long) Double.parseDouble(truocStr);
         long giaDeXuat = (long) Double.parseDouble(sauStr);
         String spMa = DuLieu.chuyenThanhChuoi(d[0]);
@@ -111,51 +106,5 @@ public final class DeXuatGiaDAOImpl implements DeXuatGiaDAO {
                         + " ('CHO_DUYET','CAN_THEM_THONG_TIN')",
                 maDoiTuongHoacYeuCau,
                 maDoiTuongHoacYeuCau);
-    }
-
-    @Override
-    public Optional<DeXuatGia> timDeXuatTheoMa(String maYeuCau) {
-        var dong =
-                truyVan(
-                        "SELECT ma_yeu_cau, ma_doi_tuong, CAST(noi_dung_truoc AS NVARCHAR(MAX)),"
-                                + " CAST(noi_dung_sau AS NVARCHAR(MAX)), ly_do, ma_nhan_vien_gui,"
-                                + " trang_thai, gui_luc FROM yeu_cau_phe_duyet WHERE loai_doi_tuong"
-                                + " = 'DOI_GIA' AND ma_yeu_cau = ?",
-                        maYeuCau);
-        if (dong.isEmpty()) return Optional.empty();
-        Object[] d = dong.get(0);
-        DeXuatGia dx = new DeXuatGia();
-        dx.setMaYeuCau(DuLieu.chuyenThanhChuoi(d[0]));
-        String maSp = DuLieu.chuyenThanhChuoi(d[1]);
-        if (!maSp.isBlank()) {
-            SanPham sp = new SanPham();
-            sp.setMaSanPham(maSp);
-            dx.setSanPham(sp);
-        }
-        String truocStr = DuLieu.chuyenThanhChuoi(d[2]);
-        if (truocStr.contains(":")) truocStr = truocStr.substring(truocStr.indexOf(':') + 1).trim();
-        String sauStr = DuLieu.chuyenThanhChuoi(d[3]);
-        if (sauStr.contains(":")) sauStr = sauStr.substring(sauStr.indexOf(':') + 1).trim();
-        try {
-            if (!truocStr.isBlank()) dx.setGiaCu((long) Double.parseDouble(truocStr));
-            if (!sauStr.isBlank()) dx.setGiaMoi((long) Double.parseDouble(sauStr));
-        } catch (NumberFormatException ex) {
-            LOG.warn(
-                    "Đề xuất giá {} có giá trị không phải số ('{}' -> '{}').",
-                    dx.getMaYeuCau(),
-                    truocStr,
-                    sauStr,
-                    ex);
-        }
-        dx.setLyDo(DuLieu.chuyenThanhChuoi(d[4]));
-        String maNvGui = DuLieu.chuyenThanhChuoi(d[5]);
-        if (!maNvGui.isBlank()) {
-            NhanVien nvGui = new NhanVien();
-            nvGui.setMaNhanVien(maNvGui);
-            dx.setNguoiGui(nvGui);
-        }
-        dx.setTrangThai(TrangThaiPheDuyet.tuMaDB(DuLieu.chuyenThanhChuoi(d[6])));
-        dx.setGuiLuc(DuLieu.chuyenLocalDateTime(d[7]));
-        return Optional.of(dx);
     }
 }

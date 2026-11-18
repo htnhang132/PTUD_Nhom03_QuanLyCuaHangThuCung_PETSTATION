@@ -146,8 +146,13 @@ public final class KiemKeDAOImpl implements KiemKeDAO {
     public int capNhatApDungKiemKe(int tonThucTe, String maLo, int tonHeThong) {
         return ThaoTacSQL.capNhat(
                 "UPDATE lo_hang SET so_luong_ton=?,"
-                        + " trang_thai = CASE WHEN ? <= 0 THEN 'HET_HANG' WHEN"
-                        + " trang_thai='HET_HANG' THEN 'SAN_SANG' ELSE trang_thai END"
+                        + " trang_thai = CASE"
+                        + " WHEN trang_thai IN ('TAM_KHOA', 'HET_HAN') THEN trang_thai"
+                        + " WHEN han_su_dung IS NOT NULL"
+                        + " AND han_su_dung < CAST(GETDATE() AS DATE) THEN 'HET_HAN'"
+                        + " WHEN ? <= 0 THEN 'HET_HANG'"
+                        + " WHEN trang_thai='HET_HANG' THEN 'SAN_SANG'"
+                        + " ELSE trang_thai END"
                         + " WHERE ma_lo = ? AND so_luong_ton=?",
                 tonThucTe,
                 tonThucTe,

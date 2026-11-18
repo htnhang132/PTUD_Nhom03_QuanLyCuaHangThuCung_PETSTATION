@@ -18,7 +18,7 @@ import com.petstation.model.chung.TrangThaiSanPham;
 import com.petstation.model.chung.TrangThaiTaiKhoan;
 import com.petstation.model.chung.TrangThaiVoucher;
 import com.petstation.model.chung.VaiTro;
-import com.petstation.util.DinhDang;
+import com.petstation.util.DuLieu;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -306,7 +306,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
             case NHAN_VIEN -> luuNhanVien(khoa, giaTri2);
             case TAI_KHOAN ->
                     luuTaiKhoan(khoa, truoc, giaTri, giaTri2, nguoiThucHien, nguoiThucHienVaiTro);
-            case SAN_PHAM -> luuSanPham(khoa, giaTri2, nguoiThucHien);
+            case SAN_PHAM -> luuSanPham(khoa, giaTri2);
             case NHA_CUNG_CAP -> luuNhaCungCap(khoa, giaTri2);
             case KHUYEN_MAI -> luuKhuyenMai(khoa, giaTri2);
             case VOUCHER -> luuVoucher(khoa, giaTri2);
@@ -492,7 +492,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
         }
     }
 
-    private void luuSanPham(String khoa, Object[] giaTri2, String nguoiThucHien) {
+    private void luuSanPham(String khoa, Object[] giaTri2) {
         BigDecimal giaBanMoi = docSoThapPhan(giaTri2[4]);
         if (giaBanMoi == null || giaBanMoi.signum() <= 0) {
             throw new IllegalArgumentException("Giá bán sản phẩm phải lớn hơn 0.");
@@ -636,7 +636,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
                 },
                 giaTri2[0],
                 docSoThapPhan(giaTri2[1]),
-                hieuLucDen.plusDays(1).atStartOfDay(),
+                hieuLucDen.atTime(23, 59, 59),
                 Integer.parseInt(chuyenThanhChuoi(giaTri2[3])),
                 docSoThapPhan(giaTri2[5]),
                 trangThaiVoucher,
@@ -837,9 +837,7 @@ public final class DanhMucDAOImpl implements DanhMucDAO {
     }
 
     private static LocalDate docNgay(Object giaTri) {
-        return chuyenThanhChuoi(giaTri).isBlank()
-                ? null
-                : LocalDate.parse(chuyenThanhChuoi(giaTri), DinhDang.NGAY_U);
+        return DuLieu.docNgayLinhHoat(giaTri);
     }
 
     private static BigDecimal docSoThapPhan(Object giaTri) {

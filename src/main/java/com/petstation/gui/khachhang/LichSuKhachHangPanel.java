@@ -37,6 +37,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -89,9 +90,9 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                 () -> luot == luotTai,
                 () -> DanhMucService.macDinh().layKhachHang(),
                 cacKhachHang -> {
-                    moHinh.setRowCount(0);
+                    List<Object[]> cacHang = new ArrayList<>(cacKhachHang.size());
                     for (Object[] dongDuLieu : cacKhachHang) {
-                        moHinh.addRow(
+                        cacHang.add(
                                 new Object[] {
                                     dongDuLieu[0],
                                     dongDuLieu[1],
@@ -104,6 +105,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                                                     DinhDang.doc(String.valueOf(dongDuLieu[7]))))
                                 });
                     }
+                    DinhDangBang.thayTheDuLieu(moHinh, cacHang);
                     lamMoiLuaChonHangThe();
                     apDungBoLoc();
                 });
@@ -203,7 +205,9 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
         bangBang = layBang(scrCuon);
         DinhDangBang.apDung(bangBang);
         cauHinhSapXepBangKhach();
-        thayBoLangNgheTaiLieu(oTimKiem, this::apDungBoLoc);
+        Timer henGioTim = new Timer(150, e -> apDungBoLoc());
+        henGioTim.setRepeats(false);
+        thayBoLangNgheTaiLieu(oTimKiem, henGioTim::restart);
         bangBang.getRowSorter().addRowSorterListener(e -> capNhatSoKetQua());
         capNhatSoKetQua();
         bangBang.getSelectionModel()

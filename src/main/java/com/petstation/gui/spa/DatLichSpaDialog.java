@@ -7,6 +7,7 @@ import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.TruongNghiepVu;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.gui.chung.thanhphan.BoChonNgayGio;
 import com.petstation.gui.khachhang.DanhMucKhachHangPanel;
@@ -29,6 +30,7 @@ import java.awt.Insets;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -36,6 +38,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -50,7 +53,7 @@ public final class DatLichSpaDialog {
     private final JComboBox<BieuMauTruong.LuaChon> cboGoiDichVu;
     private final JComboBox<BieuMauTruong.LuaChon> cboNhanVien;
     private final BoChonNgayGio spThoiGian;
-    private final JTextField oGhiChu;
+    private final JTextArea oGhiChu;
     private final JButton btnThemKhach;
     private final JButton btnThemThuCung;
     private final NutDinhDang btnLuu;
@@ -88,7 +91,7 @@ public final class DatLichSpaDialog {
     }
 
     private static Object[] taiDuLieuBanDau() {
-        List<BieuMauTruong.LuaChon> dsKhach = taiDanhSachKhach();
+        List<BieuMauTruong.LuaChon> dsKhach = TruongNghiepVu.taiLuaChonKhachHoatDong();
         List<Object[]> dsThu = DanhMucService.macDinh().layThuCung();
         NghiepVuService nghiepVuService = new NghiepVuService();
         return new Object[] {
@@ -97,17 +100,6 @@ public final class DatLichSpaDialog {
             nghiepVuService.layLuaChonGoiDichVu(),
             nghiepVuService.layLuaChonNhanVien()
         };
-    }
-
-    private static List<BieuMauTruong.LuaChon> taiDanhSachKhach() {
-        return DanhMucService.macDinh().layKhachHang().stream()
-                .filter(k -> "Đang hoạt động".equals(k[8]))
-                .map(
-                        k ->
-                                new BieuMauTruong.LuaChon(
-                                        String.valueOf(k[0]),
-                                        k[0] + " — " + k[1] + " (" + k[2] + ")"))
-                .toList();
     }
 
     private DatLichSpaDialog(
@@ -126,22 +118,27 @@ public final class DatLichSpaDialog {
         oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
         oTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTimKhach.setPreferredSize(new Dimension(140, 34));
+        BieuMauTruong.LuaChon mauCombo =
+                new BieuMauTruong.LuaChon("MA", "Chọn thông tin phù hợp...");
         cboKhachHang = new JComboBox<>();
-        cboKhachHang.setPreferredSize(new Dimension(220, 34));
+        cboKhachHang.setPrototypeDisplayValue(mauCombo);
+        cboKhachHang.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
         cboThuCung = new JComboBox<>();
-        cboThuCung.setPreferredSize(new Dimension(220, 34));
+        cboThuCung.setPrototypeDisplayValue(mauCombo);
+        cboThuCung.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
         cboGoiDichVu = new JComboBox<>();
-        cboGoiDichVu.setPreferredSize(new Dimension(220, 34));
+        cboGoiDichVu.setPrototypeDisplayValue(mauCombo);
+        cboGoiDichVu.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
         cboNhanVien = new JComboBox<>();
-        cboNhanVien.setPreferredSize(new Dimension(220, 34));
-        oGhiChu = new JTextField();
-        oGhiChu.setPreferredSize(new Dimension(220, 34));
-        btnThemKhach = new NutDinhDang("+ Thêm khách", NutDinhDang.KieuNut.PHU);
-        btnThemKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        btnThemKhach.setPreferredSize(new Dimension(115, 34));
-        btnThemThuCung = new NutDinhDang("+ Thêm thú cưng", NutDinhDang.KieuNut.PHU);
-        btnThemThuCung.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
-        btnThemThuCung.setPreferredSize(new Dimension(130, 34));
+        cboNhanVien.setPrototypeDisplayValue(mauCombo);
+        cboNhanVien.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
+        oGhiChu = new JTextArea(2, 24);
+        oGhiChu.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        oGhiChu.setLineWrap(true);
+        oGhiChu.setWrapStyleWord(true);
+        oGhiChu.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        btnThemKhach = new NutDinhDang("+ Khách", NutDinhDang.KieuNut.PHU);
+        btnThemThuCung = new NutDinhDang("+ Thú cưng", NutDinhDang.KieuNut.PHU);
         LocalDateTime macDau =
                 lichHenSua != null && lichHenSua.getBatDau() != null
                         ? lichHenSua.getBatDau()
@@ -151,7 +148,7 @@ public final class DatLichSpaDialog {
                 new NutDinhDang(
                         maLichHenSua == null ? "Đặt lịch hẹn" : "Lưu thay đổi",
                         NutDinhDang.KieuNut.CHINH);
-        btnHuy = new NutDinhDang("Hủy bỏ (ESC)", NutDinhDang.KieuNut.PHU);
+        btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         napDuLieu(duLieu);
         if (lichHenSua != null) {
             dienDuLieuSua(lichHenSua);
@@ -169,6 +166,15 @@ public final class DatLichSpaDialog {
         } else if (lichHen.getThuCung() != null && lichHen.getThuCung().getKhachHang() != null) {
             maKhach = lichHen.getThuCung().getKhachHang().getMaKhachHang();
             tenKhach = lichHen.getThuCung().getKhachHang().getHoTen();
+        } else if (lichHen.getThuCung() != null) {
+            String maThuSua = lichHen.getThuCung().getMaThuCung();
+            for (Object[] thu : tatCaThuCung) {
+                if (maThuSua != null && maThuSua.equals(String.valueOf(thu[0]))) {
+                    maKhach = DanhMucService.layMaTuLuaChon(thu[8]);
+                    tenKhach = String.valueOf(thu[8]);
+                    break;
+                }
+            }
         }
         if (maKhach != null && !maKhach.isBlank()) {
             chonHoacThemLuaChon(
@@ -232,12 +238,12 @@ public final class DatLichSpaDialog {
     }
 
     private void locKhachHang(String tuKhoa) {
-        String k = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+        String k = tuKhoa == null ? "" : tuKhoa.trim();
         BieuMauTruong.LuaChon dangChon = (BieuMauTruong.LuaChon) cboKhachHang.getSelectedItem();
         cboKhachHang.removeAllItems();
         List<BieuMauTruong.LuaChon> hopLe =
                 tatCaKhachHang.stream()
-                        .filter(item -> k.isEmpty() || item.nhan().toLowerCase().contains(k))
+                        .filter(item -> k.isEmpty() || CoSoPanel.khopTimKiem(item.nhan(), k))
                         .toList();
         for (var khach : hopLe) {
             cboKhachHang.addItem(khach);
@@ -302,15 +308,19 @@ public final class DatLichSpaDialog {
         root.add(scrBieuMau, BorderLayout.CENTER);
         root.add(taoChanHopThoai(), BorderLayout.SOUTH);
         hopThoai.setContentPane(root);
-        hopThoai.pack();
-        hopThoai.setSize(Math.max(hopThoai.getWidth(), 700), 490);
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 680, 400);
+        hopThoai.getRootPane().setDefaultButton(btnLuu);
         HopThoai.chuanHoaCuaSo(hopThoai, parent);
     }
 
     private JPanel taoPhanDauHopThoai() {
         JPanel khungTieuDe = new JPanel(new BorderLayout(0, 4));
         khungTieuDe.setOpaque(false);
-        JLabel nhanTieuDe = new JLabel("Đặt lịch hẹn dịch vụ Spa");
+        JLabel nhanTieuDe =
+                new JLabel(
+                        maLichHenSua == null
+                                ? "Đặt lịch hẹn dịch vụ Spa"
+                                : "Cập nhật lịch hẹn Spa #" + maLichHenSua);
         nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
         nhanTieuDe.setForeground(MauUngDung.NAU);
         JLabel nhanPhu =
@@ -338,7 +348,9 @@ public final class DatLichSpaDialog {
         themHangRong(khungBieuMauNhap, gbc, 2, "Gói dịch vụ Spa:", cboGoiDichVu);
         themHangRong(khungBieuMauNhap, gbc, 3, "Thợ phụ trách:", cboNhanVien);
         themHangRong(khungBieuMauNhap, gbc, 4, "Thời gian hẹn:", spThoiGian);
-        themHangRong(khungBieuMauNhap, gbc, 5, "Ghi chú:", oGhiChu);
+        JScrollPane scrGhiChu = new JScrollPane(oGhiChu);
+        scrGhiChu.setPreferredSize(new Dimension(220, 62));
+        themHangRong(khungBieuMauNhap, gbc, 5, "Ghi chú:", scrGhiChu);
         return khungBieuMauNhap;
     }
 
@@ -402,7 +414,7 @@ public final class DatLichSpaDialog {
                         TacVuNen.chayCoPhien(
                                 phien,
                                 hopThoai::isDisplayable,
-                                DatLichSpaDialog::taiDanhSachKhach,
+                                TruongNghiepVu::taiLuaChonKhachHoatDong,
                                 null,
                                 dsKhach -> {
                                     tatCaKhachHang = dsKhach;

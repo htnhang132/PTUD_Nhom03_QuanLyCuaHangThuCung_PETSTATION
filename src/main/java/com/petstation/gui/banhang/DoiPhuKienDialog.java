@@ -3,6 +3,7 @@ package com.petstation.gui.banhang;
 import com.petstation.dto.DonDoiTreo;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BoGocPanel;
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
@@ -11,6 +12,7 @@ import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.service.banhang.DoiTraService;
 import com.petstation.service.banhang.DonDoiTreoService;
+import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.util.DinhDang;
 
@@ -20,6 +22,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -49,9 +53,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public final class DoiPhuKienDialog extends JDialog {
+    // 1. THUỘC TÍNH & DỮ LIỆU HỘP THOẠI
+
     private final DoiTraService doiTraService = new DoiTraService();
     private final DonDoiTreoService donDoiTreoService = new DonDoiTreoService();
     private final GioHang gio;
@@ -63,10 +70,15 @@ public final class DoiPhuKienDialog extends JDialog {
     private final JSpinner soLuongMoi = new JSpinner(new SpinnerNumberModel(1, 1, 100000, 1));
     private final JCheckBox tem = new JCheckBox("Nguyên tem mác và bao bì");
     private final JCheckBox chuaDung = new JCheckBox("Chưa qua sử dụng, không rách bẩn");
-    private final JLabel trangThai = new JLabel("Nhập mã hóa đơn hoặc SĐT để bắt đầu.");
+    private final JLabel trangThai = new JLabel("Chọn hóa đơn hoặc nhập mã hóa đơn / SĐT.");
     private final JLabel tongKet = new JLabel("Chưa chọn hàng đổi và hàng thay thế.");
+    private final JLabel nhanHanDoi =
+            goiY(
+                    "Đổi phụ kiện trong thời hạn quy định • Hàng thay thế giá bằng hoặc cao hơn •"
+                            + " Không hoàn tiền");
     private final NutDinhDang tiepTuc =
             new NutDinhDang("Tiếp tục thanh toán", NutDinhDang.KieuNut.CHINH);
+    private int soNgayHanDoi = 3;
     private final DefaultTableModel moHinhHoaDon =
             model("Hóa đơn", "Khách hàng", "Ngày lập", "Tổng tiền");
     private final DefaultTableModel moHinhDong =
@@ -87,6 +99,8 @@ public final class DoiPhuKienDialog extends JDialog {
     private long phien;
     private long giaTriCu = -1;
 
+    // 2. API CÔNG KHAI & HÀM KHỞI TẠO
+
     public boolean daXuLyXong() {
         return xuLyXong;
     }
@@ -101,11 +115,8 @@ public final class DoiPhuKienDialog extends JDialog {
 
     public static void moVoiHoaDon(
             Component cha, GioHang gio, Consumer<MaManHinh> dieuHuong, String maHoaDon) {
-        DoiPhuKienDialog hopThoai = new DoiPhuKienDialog(cha, gio, dieuHuong);
-        if (maHoaDon != null && !maHoaDon.isBlank()) {
-            hopThoai.timHoaDon.setText(maHoaDon.trim());
-            hopThoai.timHoaDon();
-        }
+        String ma = maHoaDon == null ? "" : maHoaDon.trim();
+        DoiPhuKienDialog hopThoai = new DoiPhuKienDialog(cha, gio, dieuHuong, "", null, ma);
         hopThoai.setVisible(true);
     }
 
@@ -115,33 +126,46 @@ public final class DoiPhuKienDialog extends JDialog {
             Consumer<MaManHinh> dieuHuong,
             String maDonTreo,
             DonDoiTreo nhap) {
+        this(cha, gio, dieuHuong, maDonTreo, nhap, "");
+    }
+
+    private DoiPhuKienDialog(
+            Component cha,
+            GioHang gio,
+            Consumer<MaManHinh> dieuHuong,
+            String maDonTreo,
+            DonDoiTreo nhap,
+            String maHoaDonBanDau) {
         super(
-                SwingUtilities.getWindowAncestor(cha),
+                cha == null ? null : SwingUtilities.getWindowAncestor(cha),
                 "Đổi phụ kiện — không hoàn tiền",
                 ModalityType.APPLICATION_MODAL);
         this.gio = gio;
         this.dieuHuong = dieuHuong;
         this.maDonTreo = maDonTreo == null ? "" : maDonTreo;
+        if (maHoaDonBanDau != null && !maHoaDonBanDau.isBlank()) {
+            this.timHoaDon.setText(maHoaDonBanDau);
+        }
         getContentPane().setBackground(MauUngDung.NEN_KEM);
         add(taoPhanDauHopThoai(), BorderLayout.NORTH);
         cauHinhTruongNhapDoi();
         add(taoNoiDungChinhHopThoai(), BorderLayout.CENTER);
         add(taoChanHopThoai(), BorderLayout.SOUTH);
-        ganSuKienHopThoai(nhap);
+        ganSuKienHopThoai(nhap, maHoaDonBanDau);
         thietLapKichThuocHopThoai();
     }
+
+    // 3. XÂY DỰNG GIAO DIỆN & SỰ KIỆN
 
     private JPanel taoPhanDauHopThoai() {
         JPanel dau = new JPanel(new BorderLayout(0, 4));
         dau.setOpaque(false);
-        dau.setBorder(BorderFactory.createEmptyBorder(16, 20, 12, 20));
+        dau.setBorder(BorderFactory.createEmptyBorder(12, 20, 8, 20));
         JLabel tieuDe = new JLabel("Đổi phụ kiện");
-        tieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 21));
+        tieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 20));
         tieuDe.setForeground(MauUngDung.NAU);
         dau.add(tieuDe, BorderLayout.NORTH);
-        dau.add(
-                goiY("Đổi trong 72 giờ • Hàng thay thế có giá bằng hoặc cao hơn • Không hoàn tiền"),
-                BorderLayout.SOUTH);
+        dau.add(nhanHanDoi, BorderLayout.SOUTH);
         return dau;
     }
 
@@ -153,30 +177,80 @@ public final class DoiPhuKienDialog extends JDialog {
         timHoaDon.getAccessibleContext().setAccessibleName("Tìm hóa đơn gốc");
         timHang.getAccessibleContext().setAccessibleName("Tìm phụ kiện thay thế");
         lyDo.getAccessibleContext().setAccessibleName("Lý do đổi hàng");
-        for (JTextField o : new JTextField[] {timHoaDon, timHang, lyDo}) {
+        for (JTextField o : new JTextField[] {timHoaDon, timHang}) {
             o.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-            o.setPreferredSize(new Dimension(200, 34));
+            o.setPreferredSize(new Dimension(180, 34));
         }
-        soLuong.setPreferredSize(new Dimension(90, 34));
-        soLuongMoi.setPreferredSize(new Dimension(90, 34));
+        lyDo.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        lyDo.setPreferredSize(new Dimension(220, 34));
+        soLuong.setPreferredSize(new Dimension(80, 34));
+        soLuongMoi.setPreferredSize(new Dimension(80, 34));
         tem.setOpaque(false);
         chuaDung.setOpaque(false);
         trangThai.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         trangThai.setForeground(MauUngDung.VAN_BAN_XAM);
     }
 
-    private JScrollPane taoNoiDungChinhHopThoai() {
-        JPanel noiDung = new JPanel();
-        noiDung.setLayout(new BoxLayout(noiDung, BoxLayout.Y_AXIS));
-        noiDung.setBackground(MauUngDung.NEN_KEM);
-        noiDung.setBorder(BorderFactory.createEmptyBorder(0, 20, 12, 20));
-        noiDung.add(
+    private Component taoNoiDungChinhHopThoai() {
+        JPanel cotTrai = new JPanel(new GridBagLayout());
+        cotTrai.setOpaque(false);
+        GridBagConstraints gc1 = new GridBagConstraints();
+        gc1.gridx = 0;
+        gc1.gridy = 0;
+        gc1.weightx = 1.0;
+        gc1.weighty = 0.48;
+        gc1.fill = GridBagConstraints.BOTH;
+        gc1.insets = new Insets(0, 0, 8, 0);
+        cotTrai.add(
                 nhom(
                         "1. Chọn hóa đơn gốc",
                         thanhTim(timHoaDon, nut("Tìm hóa đơn", this::timHoaDon)),
-                        cuon(hoaDonBang, 150)));
-        noiDung.add(Box.createVerticalStrut(12));
-        JPanel thongTinDoi = new JPanel(new BorderLayout(16, 0));
+                        cuon(hoaDonBang, 118)),
+                gc1);
+
+        GridBagConstraints gc2 = new GridBagConstraints();
+        gc2.gridx = 0;
+        gc2.gridy = 1;
+        gc2.weightx = 1.0;
+        gc2.weighty = 0.52;
+        gc2.fill = GridBagConstraints.BOTH;
+        cotTrai.add(taoNhomHangCanDoi(), gc2);
+
+        JPanel cotPhai = new JPanel(new BorderLayout(0, 8));
+        cotPhai.setOpaque(false);
+        cotPhai.add(
+                nhom(
+                        "3. Chọn phụ kiện thay thế",
+                        thanhTim(timHang, nut("Tìm phụ kiện", this::timPhuKien)),
+                        cuon(hangBang, 275),
+                        hang(new JLabel("Số lượng thay thế"), soLuongMoi),
+                        goiY("Tổng tiền hàng thay thế phải bằng hoặc lớn hơn hàng trả.")),
+                BorderLayout.CENTER);
+
+        JPanel haiCot = new JPanel(new GridBagLayout());
+        haiCot.setBackground(MauUngDung.NEN_KEM);
+        haiCot.setBorder(BorderFactory.createEmptyBorder(0, 20, 8, 20));
+        GridBagConstraints gTrai = new GridBagConstraints();
+        gTrai.gridx = 0;
+        gTrai.gridy = 0;
+        gTrai.weightx = 0.52;
+        gTrai.weighty = 1.0;
+        gTrai.fill = GridBagConstraints.BOTH;
+        gTrai.insets = new Insets(0, 0, 0, 7);
+        haiCot.add(cotTrai, gTrai);
+        GridBagConstraints gPhai = new GridBagConstraints();
+        gPhai.gridx = 1;
+        gPhai.gridy = 0;
+        gPhai.weightx = 0.48;
+        gPhai.weighty = 1.0;
+        gPhai.fill = GridBagConstraints.BOTH;
+        gPhai.insets = new Insets(0, 7, 0, 0);
+        haiCot.add(cotPhai, gPhai);
+        return haiCot;
+    }
+
+    private JPanel taoNhomHangCanDoi() {
+        JPanel thongTinDoi = new JPanel(new BorderLayout(12, 0));
         thongTinDoi.setOpaque(false);
         thongTinDoi.add(hang(new JLabel("Số lượng đổi"), soLuong), BorderLayout.WEST);
         JPanel nhapLyDo = new JPanel(new BorderLayout(8, 0));
@@ -186,35 +260,16 @@ public final class DoiPhuKienDialog extends JDialog {
         nhapLyDo.add(nhanLyDo, BorderLayout.WEST);
         nhapLyDo.add(lyDo, BorderLayout.CENTER);
         thongTinDoi.add(nhapLyDo, BorderLayout.CENTER);
-        noiDung.add(
-                nhom(
-                        "2. Chọn hàng cần đổi",
-                        cuon(dongBang, 130),
-                        thongTinDoi,
-                        hang(tem, chuaDung)));
-        noiDung.add(Box.createVerticalStrut(12));
-        noiDung.add(
-                nhom(
-                        "3. Chọn phụ kiện thay thế",
-                        thanhTim(timHang, nut("Tìm phụ kiện", this::timPhuKien)),
-                        cuon(hangBang, 150),
-                        hang(new JLabel("Số lượng thay thế"), soLuongMoi),
-                        goiY("Tổng tiền hàng thay thế phải bằng hoặc lớn hơn hàng trả.")));
-        JScrollPane cuon = new JScrollPane(noiDung);
-        cuon.setBorder(BorderFactory.createEmptyBorder());
-        cuon.getViewport().setBackground(MauUngDung.NEN_KEM);
-        cuon.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        cuon.getVerticalScrollBar().setUnitIncrement(18);
-        return cuon;
+        return nhom("2. Chọn hàng cần đổi", cuon(dongBang, 112), thongTinDoi, hang(tem, chuaDung));
     }
 
     private JPanel taoChanHopThoai() {
-        JPanel chan = new JPanel(new BorderLayout(0, 10));
+        JPanel chan = new JPanel(new BorderLayout(0, 8));
         chan.setBackground(MauUngDung.NEN_KEM);
         chan.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(1, 0, 0, 0, MauUngDung.VIEN),
-                        BorderFactory.createEmptyBorder(12, 20, 14, 20)));
+                        BorderFactory.createEmptyBorder(10, 20, 12, 20)));
         tongKet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         tongKet.setForeground(MauUngDung.NAU);
         chan.add(
@@ -230,18 +285,20 @@ public final class DoiPhuKienDialog extends JDialog {
         trangThaiDong.add(trangThai, BorderLayout.NORTH);
         JPanel nutDong = new JPanel(new BorderLayout());
         nutDong.setOpaque(false);
-        nutDong.add(nut("Hủy", this::huy), BorderLayout.WEST);
-        nutDong.add(hang(nut("Treo đơn đổi", this::treoDon), tiepTuc), BorderLayout.EAST);
+        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        btnHuy.addActionListener(e -> huy());
+        nutDong.add(hang(btnHuy, nut("Treo đơn đổi", this::treoDon), tiepTuc), BorderLayout.EAST);
         trangThaiDong.add(nutDong, BorderLayout.CENTER);
         chan.add(trangThaiDong, BorderLayout.CENTER);
         return chan;
     }
 
-    private void ganSuKienHopThoai(DonDoiTreo nhap) {
+    private void ganSuKienHopThoai(DonDoiTreo nhap, String maHoaDonBanDau) {
         tiepTuc.setEnabled(false);
         tiepTuc.addActionListener(e -> chuyenThanhToan());
         timHoaDon.addActionListener(e -> timHoaDon());
         timHang.addActionListener(e -> timPhuKien());
+        apDungToMauDongKhongDoi();
         hoaDonBang
                 .getSelectionModel()
                 .addListSelectionListener(
@@ -253,10 +310,17 @@ public final class DoiPhuKienDialog extends JDialog {
                 .addListSelectionListener(
                         e -> {
                             if (!e.getValueIsAdjusting() && !dangKhoiPhuc) {
+                                capNhatGioiHanSoLuongDoi();
                                 voHieuGia();
                             }
                         });
-        hangBang.getSelectionModel().addListSelectionListener(e -> voHieuGia());
+        hangBang.getSelectionModel()
+                .addListSelectionListener(
+                        e -> {
+                            if (!e.getValueIsAdjusting() && !dangKhoiPhuc) {
+                                voHieuGia();
+                            }
+                        });
         soLuong.addChangeListener(
                 e -> {
                     if (!dangKhoiPhuc && dongBoSoLuongMoi) {
@@ -283,16 +347,151 @@ public final class DoiPhuKienDialog extends JDialog {
                         huy();
                     }
                 });
-        if (nhap != null) SwingUtilities.invokeLater(() -> khoiPhuc(nhap));
+        if (nhap != null) {
+            SwingUtilities.invokeLater(() -> khoiPhuc(nhap));
+        } else if (DieuKienTaiDuLieu.coTheTachLuong()
+                || PhienDangNhapService.macDinh().layPhienHienTai() != null) {
+            SwingUtilities.invokeLater(() -> napKhoiTaoMacDinh(maHoaDonBanDau));
+        }
+    }
+
+    private void apDungToMauDongKhongDoi() {
+        DefaultTableCellRenderer gocRenderer =
+                (DefaultTableCellRenderer) dongBang.getDefaultRenderer(Object.class);
+        dongBang.setDefaultRenderer(
+                Object.class,
+                new DefaultTableCellRenderer() {
+                    @Override
+                    public Component getTableCellRendererComponent(
+                            JTable table,
+                            Object value,
+                            boolean isSelected,
+                            boolean hasFocus,
+                            int row,
+                            int column) {
+                        Component c =
+                                gocRenderer.getTableCellRendererComponent(
+                                        table, value, isSelected, hasFocus, row, column);
+                        if (!isSelected && row >= 0 && row < dongs.size()) {
+                            Object[] d = dongs.get(row);
+                            boolean hopLe =
+                                    "Phụ kiện".equals(String.valueOf(d[2]))
+                                            && so(d[3]) - so(d[4]) > 0;
+                            if (!hopLe) {
+                                c.setForeground(MauUngDung.VAN_BAN_XAM);
+                            }
+                        }
+                        if (c instanceof JComponent jc && row >= 0 && row < dongs.size()) {
+                            Object[] d = dongs.get(row);
+                            boolean hopLe =
+                                    "Phụ kiện".equals(String.valueOf(d[2]))
+                                            && so(d[3]) - so(d[4]) > 0;
+                            jc.setToolTipText(
+                                    hopLe ? null : "Chỉ đổi được phụ kiện còn hạn mức đổi.");
+                        }
+                        return c;
+                    }
+                });
+    }
+
+    private void capNhatGioiHanSoLuongDoi() {
+        int i = dongBang.getSelectedRow();
+        if (i < 0 || i >= dongs.size()) return;
+        Object[] d = dongs.get(i);
+        long conDoi = Math.max(1L, so(d[3]) - so(d[4]));
+        int toiDa = (int) Math.min(100000L, conDoi);
+        if (soLuong.getModel() instanceof SpinnerNumberModel m) {
+            m.setMaximum(toiDa);
+            int hienTai = (Integer) soLuong.getValue();
+            if (hienTai > toiDa) {
+                soLuong.setValue(toiDa);
+            }
+        }
+    }
+
+    // 4. NẠP DỮ LIỆU, ĐƠN ĐỔI TREO & KHÔI PHỤC
+
+    private void napKhoiTaoMacDinh(String maHoaDonBanDau) {
+        if (dangChay) return;
+        String khoa = maHoaDonBanDau == null ? "" : maHoaDonBanDau.trim();
+        chayNen(
+                () -> {
+                    int soNgay = doiTraService.laySoNgayHanDoi();
+                    List<Object[]> hd = doiTraService.timHoaDon(khoa);
+                    List<Object[]> dong = List.of();
+                    int chon = -1;
+                    if (!khoa.isBlank() && !hd.isEmpty()) {
+                        dong = doiTraService.layDongHoaDon(String.valueOf(hd.get(0)[0]));
+                        chon = 0;
+                    }
+                    List<Object[]> hang = doiTraService.timPhuKien("");
+                    return new DuLieuNhap(hd, dong, hang, chon, soNgay);
+                },
+                dl -> {
+                    apDungHanDoi(dl.soNgayHanDoi);
+                    hoaDons = dl.hoaDon;
+                    dongs = dl.dong;
+                    hangs = dl.hang;
+                    moHinhHoaDon.setRowCount(0);
+                    moHinhDong.setRowCount(0);
+                    moHinhHang.setRowCount(0);
+                    for (Object[] h : hoaDons) {
+                        moHinhHoaDon.addRow(new Object[] {h[1], h[2], h[3], tien(h[4])});
+                    }
+                    for (Object[] d : dongs) {
+                        moHinhDong.addRow(
+                                new Object[] {
+                                    d[1], d[2], d[3], d[4], so(d[3]) - so(d[4]), tien(d[5])
+                                });
+                    }
+                    for (Object[] h : hangs) {
+                        moHinhHang.addRow(new Object[] {h[0], h[1], tien(h[2]), h[3]});
+                    }
+                    if (dl.chonHoaDon >= 0 && dl.chonHoaDon < moHinhHoaDon.getRowCount()) {
+                        hoaDonBang.setRowSelectionInterval(dl.chonHoaDon, dl.chonHoaDon);
+                    }
+                    if (hoaDons.isEmpty()) {
+                        trangThai.setText(
+                                khoa.isBlank()
+                                        ? "Không có hóa đơn đủ điều kiện đổi trong "
+                                                + (soNgayHanDoi * 24)
+                                                + " giờ gần đây."
+                                        : "Không tìm thấy hóa đơn phù hợp.");
+                    } else if (dl.chonHoaDon >= 0) {
+                        trangThai.setText(
+                                "Chọn phụ kiện đã mua và phụ kiện thay thế. Hạn đổi: "
+                                        + (soNgayHanDoi * 24)
+                                        + " giờ từ lúc thanh toán.");
+                    } else {
+                        trangThai.setText(
+                                "Đã tải "
+                                        + hoaDons.size()
+                                        + " hóa đơn gần đây đủ điều kiện đổi và "
+                                        + hangs.size()
+                                        + " phụ kiện đang bán.");
+                    }
+                });
+    }
+
+    private void apDungHanDoi(int soNgay) {
+        this.soNgayHanDoi = Math.max(1, soNgay);
+        int soGio = this.soNgayHanDoi * 24;
+        nhanHanDoi.setText(
+                "Đổi trong "
+                        + soGio
+                        + " giờ ("
+                        + this.soNgayHanDoi
+                        + " ngày) • Hàng thay thế giá bằng hoặc cao hơn • Không hoàn tiền");
     }
 
     private void thietLapKichThuocHopThoai() {
         Rectangle vung = getGraphicsConfiguration().getBounds();
         Insets le = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
-        setSize(
-                Math.min(1060, vung.width - le.left - le.right - 32),
-                Math.min(900, vung.height - le.top - le.bottom - 32));
-        setMinimumSize(new Dimension(820, 550));
+        HopThoai.canChinhKichThuocVuaManHinh(this, 1060, 680);
+        setMinimumSize(
+                new Dimension(
+                        Math.min(900, vung.width - le.left - le.right - 32),
+                        Math.min(580, vung.height - le.top - le.bottom - 32)));
         HopThoai.chuanHoaCuaSo(this, getOwner());
         getRootPane()
                 .registerKeyboardAction(
@@ -329,7 +528,7 @@ public final class DoiPhuKienDialog extends JDialog {
                         xuLyXong = true;
                         treoDonFlag = true;
                         dispose();
-                        dieuHuong.accept(MaManHinh.LAP_HOA_DON);
+                        dieuHuong.accept(MaManHinh.HOA_DON_CHO);
                         HopThoai.hienThiThanhCong(
                                 getOwner(),
                                 "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
@@ -344,13 +543,19 @@ public final class DoiPhuKienDialog extends JDialog {
         private final List<Object[]> dong;
         private final List<Object[]> hang;
         private final int chonHoaDon;
+        private final int soNgayHanDoi;
 
         private DuLieuNhap(
-                List<Object[]> hoaDon, List<Object[]> dong, List<Object[]> hang, int chonHoaDon) {
+                List<Object[]> hoaDon,
+                List<Object[]> dong,
+                List<Object[]> hang,
+                int chonHoaDon,
+                int soNgayHanDoi) {
             this.hoaDon = hoaDon;
             this.dong = dong;
             this.hang = hang;
             this.chonHoaDon = chonHoaDon;
+            this.soNgayHanDoi = soNgayHanDoi;
         }
     }
 
@@ -370,6 +575,7 @@ public final class DoiPhuKienDialog extends JDialog {
         }
         chayNen(
                 () -> {
+                    int soNgay = doiTraService.laySoNgayHanDoi();
                     var hd = doiTraService.timHoaDon(nhap.timHoaDon());
                     List<Object[]> dong = List.of();
                     int chon = -1;
@@ -392,47 +598,55 @@ public final class DoiPhuKienDialog extends JDialog {
                     var hang =
                             doiTraService.timPhuKien(
                                     nhap.maThayThe().isBlank() ? nhap.timHang() : nhap.maThayThe());
-                    return new DuLieuNhap(hd, dong, hang, chon);
+                    return new DuLieuNhap(hd, dong, hang, chon, soNgay);
                 },
-                dl -> {
-                    dangKhoiPhuc = true;
-                    try {
-                        hoaDons = dl.hoaDon;
-                        dongs = dl.dong;
-                        hangs = dl.hang;
-                        moHinhHoaDon.setRowCount(0);
-                        moHinhDong.setRowCount(0);
-                        moHinhHang.setRowCount(0);
-                        for (Object[] h : hoaDons)
-                            moHinhHoaDon.addRow(new Object[] {h[1], h[2], h[3], tien(h[4])});
-                        if (dl.chonHoaDon >= 0)
-                            hoaDonBang.setRowSelectionInterval(dl.chonHoaDon, dl.chonHoaDon);
-                        for (int i = 0; i < dongs.size(); i++) {
-                            Object[] d = dongs.get(i);
-                            moHinhDong.addRow(
-                                    new Object[] {
-                                        d[1], d[2], d[3], d[4], so(d[3]) - so(d[4]), tien(d[5])
-                                    });
-                            if (String.valueOf(d[0]).equals(nhap.dongGoc()))
-                                dongBang.setRowSelectionInterval(i, i);
-                        }
-                        for (int i = 0; i < hangs.size(); i++) {
-                            Object[] h = hangs.get(i);
-                            moHinhHang.addRow(new Object[] {h[0], h[1], tien(h[2]), h[3]});
-                            if (h[0].toString().equals(nhap.maThayThe()))
-                                hangBang.setRowSelectionInterval(i, i);
-                        }
-                        tem.setSelected(nhap.nguyenTem());
-                        chuaDung.setSelected(nhap.chuaDung());
-                        trangThai.setText(
-                                "Đã mở đơn đổi treo. Chọn hàng và kiểm tra lại chênh lệch trước khi"
-                                        + " thanh toán.");
-                        voHieuGia();
-                    } finally {
-                        dangKhoiPhuc = false;
-                    }
-                });
+                dl -> apDungDuLieuKhoiPhuc(nhap, dl));
     }
+
+    private void apDungDuLieuKhoiPhuc(DonDoiTreo nhap, DuLieuNhap dl) {
+        dangKhoiPhuc = true;
+        try {
+            apDungHanDoi(dl.soNgayHanDoi);
+            hoaDons = dl.hoaDon;
+            dongs = dl.dong;
+            hangs = dl.hang;
+            moHinhHoaDon.setRowCount(0);
+            moHinhDong.setRowCount(0);
+            moHinhHang.setRowCount(0);
+            for (Object[] h : hoaDons) {
+                moHinhHoaDon.addRow(new Object[] {h[1], h[2], h[3], tien(h[4])});
+            }
+            if (dl.chonHoaDon >= 0) {
+                hoaDonBang.setRowSelectionInterval(dl.chonHoaDon, dl.chonHoaDon);
+            }
+            for (int i = 0; i < dongs.size(); i++) {
+                Object[] d = dongs.get(i);
+                moHinhDong.addRow(
+                        new Object[] {d[1], d[2], d[3], d[4], so(d[3]) - so(d[4]), tien(d[5])});
+                if (String.valueOf(d[0]).equals(nhap.dongGoc())) {
+                    dongBang.setRowSelectionInterval(i, i);
+                }
+            }
+            for (int i = 0; i < hangs.size(); i++) {
+                Object[] h = hangs.get(i);
+                moHinhHang.addRow(new Object[] {h[0], h[1], tien(h[2]), h[3]});
+                if (h[0].toString().equals(nhap.maThayThe())) {
+                    hangBang.setRowSelectionInterval(i, i);
+                }
+            }
+            tem.setSelected(nhap.nguyenTem());
+            chuaDung.setSelected(nhap.chuaDung());
+            trangThai.setText(
+                    "Đã mở đơn đổi treo. Chọn hàng và kiểm tra lại chênh lệch trước khi thanh"
+                            + " toán.");
+        } finally {
+            dangKhoiPhuc = false;
+        }
+        capNhatGioiHanSoLuongDoi();
+        voHieuGia();
+    }
+
+    // 5. TÌM KIẾM, TÍNH CHÊNH LỆCH & CHUYỂN THANH TOÁN
 
     private void timHoaDon() {
         if (dangChay) return;
@@ -473,8 +687,9 @@ public final class DoiPhuKienDialog extends JDialog {
                                     d[1], d[2], d[3], d[4], so(d[3]) - so(d[4]), tien(d[5])
                                 });
                     trangThai.setText(
-                            "Chọn hàng và xác nhận tình trạng thực tế. Hạn đổi: 72 giờ từ ngày lập"
-                                    + " hóa đơn.");
+                            "Chọn hàng và xác nhận tình trạng thực tế. Hạn đổi: "
+                                    + (soNgayHanDoi * 24)
+                                    + " giờ từ lúc thanh toán.");
                 });
     }
 
@@ -659,7 +874,13 @@ public final class DoiPhuKienDialog extends JDialog {
 
     private void huy() {
         if (dangChay) return;
-        if (!timHoaDon.getText().isBlank() || !dongs.isEmpty() || !lyDo.getText().isBlank()) {
+        boolean coDuLieuDangNhap =
+                dongBang.getSelectedRow() >= 0
+                        || hangBang.getSelectedRow() >= 0
+                        || !lyDo.getText().isBlank()
+                        || tem.isSelected()
+                        || chuaDung.isSelected();
+        if (coDuLieuDangNhap) {
             String[] luaChon = {"Treo đơn đổi", "Bỏ thay đổi", "Tiếp tục nhập"};
             int chon =
                     HopThoai.tuyChon(
@@ -679,6 +900,8 @@ public final class DoiPhuKienDialog extends JDialog {
         }
         dispose();
     }
+
+    // 6. TÁC VỤ NỀN & TIỆN ÍCH TẠO THÀNH PHẦN
 
     private <T> void chayNen(Callable<T> viec, Consumer<T> xong) {
         if (dangChay) return;
@@ -736,7 +959,6 @@ public final class DoiPhuKienDialog extends JDialog {
         DinhDangBang.apDung(t);
         t.setAutoCreateRowSorter(false);
         t.setRowSorter(null);
-        t.setRowHeight(36);
         t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         t.setFillsViewportHeight(true);
         t.getTableHeader().setReorderingAllowed(false);
@@ -755,8 +977,8 @@ public final class DoiPhuKienDialog extends JDialog {
 
     private static JScrollPane cuon(JTable bang, int cao) {
         JScrollPane s = new JScrollPane(bang);
-        s.setPreferredSize(new Dimension(760, cao));
-        s.setMinimumSize(new Dimension(0, cao));
+        s.setPreferredSize(new Dimension(540, cao));
+        s.setMinimumSize(new Dimension(240, cao));
         s.setBorder(BorderFactory.createLineBorder(MauUngDung.VIEN));
         s.getViewport().setBackground(MauUngDung.THE_NEN);
         s.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -771,23 +993,24 @@ public final class DoiPhuKienDialog extends JDialog {
     }
 
     private static JPanel nhom(String ten, Component... cac) {
-        JPanel p = new BoGocPanel(14, MauUngDung.THE_NEN);
+        JPanel p = new BoGocPanel(MauUngDung.BAN_KINH_THE, MauUngDung.THE_NEN, true);
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        p.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
-        JLabel nhan = new JLabel(ten);
-        nhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
-        nhan.setForeground(MauUngDung.NAU);
+        p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        JLabel nhan = CoSoPanel.taoTieuDeMuc(ten);
         nhan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        nhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, nhan.getPreferredSize().height + 4));
         p.add(nhan);
         for (Component c : cac) {
-            p.add(Box.createVerticalStrut(8));
-            if (c instanceof JComponent j) {
+            p.add(Box.createVerticalStrut(6));
+            if (c instanceof JScrollPane cuonBang) {
+                cuonBang.setAlignmentX(Component.LEFT_ALIGNMENT);
+                cuonBang.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            } else if (c instanceof JComponent j) {
                 j.setAlignmentX(Component.LEFT_ALIGNMENT);
-                j.setMaximumSize(new Dimension(Integer.MAX_VALUE, j.getPreferredSize().height));
+                j.setMaximumSize(new Dimension(Integer.MAX_VALUE, j.getPreferredSize().height + 2));
             }
             p.add(c);
         }
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, p.getPreferredSize().height));
         p.setAlignmentX(Component.LEFT_ALIGNMENT);
         return p;
     }

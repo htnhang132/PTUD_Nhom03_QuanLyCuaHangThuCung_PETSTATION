@@ -45,17 +45,28 @@ public final class SanPhamService {
         if (barcode == null || barcode.isBlank()) {
             throw new IllegalArgumentException("Mã barcode không được để trống.");
         }
+        String maVach = barcode.trim();
+        xacNhanKhongTrungBarcode(maSanPham, maVach);
         QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
-                            if (sanPhamDAO.capNhatBarcode(maSanPham, barcode.trim()) != 1) {
+                            xacNhanKhongTrungBarcode(maSanPham, maVach);
+                            if (sanPhamDAO.capNhatBarcode(maSanPham, maVach) != 1) {
                                 throw new IllegalArgumentException(
                                         "Không tìm thấy sản phẩm để cập nhật mã vạch.");
                             }
                             NhatKyHeThongService.macDinh()
-                                    .ghiNhatKy("Cập nhật Barcode", maSanPham + " → " + barcode);
+                                    .ghiNhatKy("Cập nhật Barcode", maSanPham + " → " + maVach);
                             return null;
                         });
+    }
+
+    private void xacNhanKhongTrungBarcode(String maSanPham, String maVach) {
+        SanPham trung = sanPhamDAO.timTheoMa(maVach);
+        if (trung != null && !trung.getMaSanPham().equalsIgnoreCase(maSanPham)) {
+            throw new IllegalArgumentException(
+                    "Mã barcode đã được gán cho sản phẩm " + trung.getMaSanPham());
+        }
     }
 
     public static boolean laBarcodeHopLe(String barcode) {

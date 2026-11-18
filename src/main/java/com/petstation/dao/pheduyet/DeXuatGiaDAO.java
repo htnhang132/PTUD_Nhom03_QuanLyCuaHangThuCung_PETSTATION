@@ -1,12 +1,8 @@
 package com.petstation.dao.pheduyet;
 
-import com.petstation.model.pheduyet.DeXuatGia;
-
 import java.util.Optional;
 
 public interface DeXuatGiaDAO {
-    Optional<DeXuatGia> timDeXuatTheoMa(String maYeuCau);
-
     final class ThongTinSanPham {
         private final String maSanPham;
         private final long giaBan;

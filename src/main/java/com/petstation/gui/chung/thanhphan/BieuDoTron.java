@@ -122,12 +122,12 @@ public final class BieuDoTron extends JPanel {
                 public String getToolTipText(MouseEvent e) {
                     int index = timLat(e.getPoint());
                     if (index < 0) return null;
-                    String ten = escapeHtml(nhanHienThi.get(index));
+                    String ten = DinhDang.thoatHtml(nhanHienThi.get(index));
                     double phanTram = giaTri[index] / tong * 100.0;
                     return "<html><b>"
                             + ten
                             + "</b><br>Giá trị: "
-                            + escapeHtml(dinhDang(giaTri[index]))
+                            + DinhDang.thoatHtml(dinhDang(giaTri[index]))
                             + "<br>Tỷ trọng: "
                             + String.format(Locale.ROOT, "%.1f%%", phanTram)
                             + "</html>";
@@ -321,13 +321,5 @@ public final class BieuDoTron extends JPanel {
     private String dinhDang(double value) {
         if (tienTe) return DinhDang.dinhDang(Math.round(value));
         return String.format(Locale.ROOT, "%,.1f", value).replaceAll("\\.0$", "");
-    }
-
-    private static String escapeHtml(String value) {
-        return value.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
     }
 }

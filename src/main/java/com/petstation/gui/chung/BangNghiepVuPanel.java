@@ -14,22 +14,21 @@ import com.petstation.service.hethong.PhienDangNhapService;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.swing.AbstractAction;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -37,7 +36,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -126,7 +124,6 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                                 nhanSoLuong.setText(
                                         ThanhDanhSach.soKetQua(
                                                 bangBang.getRowCount(), moHinh.getRowCount())));
-        ganHienThiTrangThaiRong(scrCuon);
         add(scrCuon, BorderLayout.CENTER);
         NutDinhDang btnXuat = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuat.putClientProperty("luonCuoi", Boolean.TRUE);
@@ -172,38 +169,6 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                                 }
                             }
                         });
-    }
-
-    private void ganHienThiTrangThaiRong(JScrollPane scrCuon) {
-        JViewport khungXem =
-                new JViewport() {
-                    @Override
-                    public void paint(Graphics g) {
-                        super.paint(g);
-                        veTrangThaiRong(g, this);
-                    }
-                };
-        khungXem.setBackground(MauUngDung.THE_NEN);
-        khungXem.setView(bangBang);
-        scrCuon.setViewport(khungXem);
-    }
-
-    private void veTrangThaiRong(Graphics g, JViewport khungXem) {
-        if (bangBang.getRowCount() > 0) return;
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(
-                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setFont(MauUngDung.taoPhongChu(Font.ITALIC, 13));
-        g2.setColor(MauUngDung.VAN_BAN_XAM);
-        String thongBao =
-                moHinh.getRowCount() == 0
-                        ? "Chưa có dữ liệu để hiển thị."
-                        : "Không tìm thấy kết quả phù hợp.";
-        FontMetrics fm = g2.getFontMetrics();
-        int x = Math.max(12, (khungXem.getWidth() - fm.stringWidth(thongBao)) / 2);
-        int y = Math.max(fm.getAscent() + 20, khungXem.getHeight() / 2);
-        g2.drawString(thongBao, x, y);
-        g2.dispose();
     }
 
     private void dangKyChonDongNghiepVu() {
@@ -348,8 +313,7 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
     private void apDungDuLieu(Object[][] duLieu) {
         String daChon = bangBang.getSelectedRow() < 0 ? null : layDongChon();
         var khoaSapXep = new ArrayList<>(bangBang.getRowSorter().getSortKeys());
-        moHinh.setRowCount(0);
-        for (Object[] dong : duLieu) moHinh.addRow(dong);
+        DinhDangBang.thayTheDuLieu(moHinh, Arrays.asList(duLieu));
         bangBang.getRowSorter().setSortKeys(khoaSapXep);
         nhanSoLuong.setText(ThanhDanhSach.soKetQua(bangBang.getRowCount(), moHinh.getRowCount()));
         String giu =
@@ -419,7 +383,9 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         DefaultTableModel chiTiet =
                 DinhDangBang.taoMoHinhChiDoc(cacDong.toArray(Object[][]::new), cacCot);
         JScrollPane scrCuon = taoBangDinhDang(chiTiet);
-        scrCuon.setPreferredSize(new Dimension(800, 320));
+        int cao = Math.min(380, Math.max(130, cacDong.size() * 30 + 48));
+        int rong = Math.min(820, Math.max(540, cacCot.length * 150));
+        scrCuon.setPreferredSize(new Dimension(rong, cao));
         HopThoai.hienThiNoiDung(this, scrCuon, tieuDe);
     }
 
@@ -432,6 +398,27 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         datLaiBoLoc();
         if (oTimKiem != null && !oTimKiem.getText().isEmpty()) oTimKiem.setText("");
         lamMoi();
+    }
+
+    /** Cập nhật bộ đếm số lượng theo cột trạng thái cho danh sách mục lọc trong combo box. */
+    protected void capNhatSoLuongMucLoc(
+            List<MucLocTrangThai> cacMuc,
+            JComboBox<MucLocTrangThai> cboTrangThai,
+            int cotTrangThai,
+            String maTatCa) {
+        DefaultTableModel mh = layMoHinh();
+        if (mh == null) return;
+        Map<String, Integer> dem = new LinkedHashMap<>();
+        int tong = mh.getRowCount();
+        for (int i = 0; i < tong; i++) {
+            String tt = String.valueOf(mh.getValueAt(i, cotTrangThai));
+            dem.merge(tt, 1, Integer::sum);
+        }
+        for (MucLocTrangThai muc : cacMuc) {
+            int so = maTatCa.equals(muc.layMa()) ? tong : dem.getOrDefault(muc.layMa(), 0);
+            muc.datSoLuong(so);
+        }
+        cboTrangThai.repaint();
     }
 
     protected String layNoiDungTroGiup() {

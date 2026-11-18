@@ -8,6 +8,7 @@ import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.ThanhDanhSach;
 import com.petstation.gui.chung.thanhphan.BoChonKhoangNgay;
+import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.gui.chung.thanhphan.XuatExcelDialog;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.hethong.NhatKyHeThongService;
@@ -41,6 +42,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -194,7 +196,9 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         oTruongNguoiDungTimKiem = taoOTimKiem("Tìm người dùng, hành động, mã...");
         oTruongNguoiDungTimKiem.setToolTipText(
                 "Tìm theo nhân viên, hành động, đối tượng hoặc mã chứng từ");
-        themBoLangNgheTaiLieu(oTruongNguoiDungTimKiem, this::apDungBoLocClient);
+        Timer henGioTim = new Timer(150, e -> apDungBoLocClient());
+        henGioTim.setRepeats(false);
+        themBoLangNgheTaiLieu(oTruongNguoiDungTimKiem, henGioTim::restart);
         oTruongNguoiDungTimKiem.addActionListener(
                 e -> {
                     if (bangBang != null && bangBang.getRowCount() > 0) {
@@ -383,8 +387,8 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             String ketQua,
             String nhanVien,
             String tuKhoa) {
-        moHinhBang.setRowCount(0);
         duLieuDangHienThi = new ArrayList<>();
+        List<Object[]> cacHang = new ArrayList<>();
         int cacCanhBao = 0;
         for (DongNhatKyHeThong suKien : cacMuc) {
             if (!trongKhoangNgay(suKien, tu, den)) continue;
@@ -400,7 +404,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             if ("Cảnh báo".equals(suKien.ketQua()) || "Thất bại".equals(suKien.ketQua()))
                 cacCanhBao++;
             duLieuDangHienThi.add(suKien);
-            moHinhBang.addRow(
+            cacHang.add(
                     new Object[] {
                         suKien.layVanBanThoiGian(),
                         tenNguoiDung,
@@ -409,6 +413,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
                         suKien.ketQua()
                     });
         }
+        DinhDangBang.thayTheDuLieu(moHinhBang, cacHang);
         capNhatChiSoTieuDe(cacCanhBao);
     }
 
@@ -598,14 +603,12 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             }
             switch (val) {
                 case "Thành công" ->
-                        huyHieu.datMauHuyHieu(MauUngDung.mau(0xDCFCE7), MauUngDung.XANH_LA);
+                        huyHieu.datMauHuyHieu(MauUngDung.THANH_CONG_NEN, MauUngDung.XANH_LA);
                 case "Thất bại" ->
                         huyHieu.datMauHuyHieu(
                                 MauUngDung.KHONG_HOP_LE_NEN, MauUngDung.VAN_BAN_NGUY_HIEM);
-                case "Cảnh báo" ->
-                        huyHieu.datMauHuyHieu(MauUngDung.mau(0xFEF3C7), MauUngDung.CAM_NHAN);
-                default ->
-                        huyHieu.datMauHuyHieu(MauUngDung.XAM_NEN_TRUNG, MauUngDung.mau(0x4B5563));
+                case "Cảnh báo" -> huyHieu.datMauHuyHieu(MauUngDung.VANG_CA, MauUngDung.CAM_NHAN);
+                default -> huyHieu.datMauHuyHieu(MauUngDung.XAM_NEN_TRUNG, MauUngDung.XAM_CHU_DAM);
             }
             return this;
         }

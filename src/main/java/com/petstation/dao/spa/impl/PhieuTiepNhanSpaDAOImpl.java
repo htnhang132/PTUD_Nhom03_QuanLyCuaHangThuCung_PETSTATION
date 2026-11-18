@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
+    // 1. HÀM KHỞI TẠO & LỊCH HẸN SPA
+
     public PhieuTiepNhanSpaDAOImpl() {}
 
     @Override
@@ -108,6 +110,8 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
         return maLichHen;
     }
 
+    // 2. TIẾP NHẬN, BẢNG GIÁ & THÊM DỊCH VỤ SPA
+
     @Override
     public List<ThongTinTiepNhan> timTiepNhan(String maLichHen, String maThuCung) {
         return truyVanDanhSach(
@@ -145,10 +149,7 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     @Override
     public String layTiepNhan(String maLichHen) {
-        Object giaTri =
-                ThaoTacSQL.layGiaTriDon(
-                        "SELECT ma_goi FROM lich_hen WHERE ma_lich_hen = ?", maLichHen);
-        return giaTri == null ? null : giaTri.toString();
+        return layCotLichHen("ma_goi", maLichHen);
     }
 
     @Override
@@ -255,6 +256,8 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
                 maPhieu);
     }
 
+    // 3. CẬP NHẬT TRẠNG THÁI & TRUY VẤN CHI TIẾT
+
     @Override
     public int capNhatTrangThaiSpa(String trangThaiMoi, String maPhieu, String trangThaiHienTai) {
         return ThaoTacSQL.capNhat(
@@ -282,9 +285,13 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     @Override
     public String layMaLichHenThuCung(String maLichHen) {
+        return layCotLichHen("ma_thu_cung", maLichHen);
+    }
+
+    private String layCotLichHen(String tenCot, String maLichHen) {
         Object giaTri =
                 ThaoTacSQL.layGiaTriDon(
-                        "SELECT ma_thu_cung FROM lich_hen WHERE ma_lich_hen = ?", maLichHen);
+                        "SELECT " + tenCot + " FROM lich_hen WHERE ma_lich_hen = ?", maLichHen);
         return giaTri == null ? null : giaTri.toString();
     }
 

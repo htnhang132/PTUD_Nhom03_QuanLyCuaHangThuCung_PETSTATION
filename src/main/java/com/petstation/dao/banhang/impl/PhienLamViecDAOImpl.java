@@ -86,10 +86,10 @@ public class PhienLamViecDAOImpl implements PhienLamViecDAO {
             return Optional.empty();
         List<Object[]> rows =
                 ThaoTacSQL.truyVan(
-                        "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec WHERE"
-                                + " (ma_nhan_vien=? OR ma_nhan_vien IN (SELECT ma_nhan_vien"
-                                + " FROM tai_khoan WHERE ten_dang_nhap=?)) AND trang_thai=?"
-                                + " ORDER BY mo_luc DESC",
+                        "SELECT ma_phien,ten_ca,mo_luc,tien_dau_ca FROM phien_lam_viec"
+                                + " WITH(UPDLOCK,HOLDLOCK) WHERE (ma_nhan_vien=? OR ma_nhan_vien IN"
+                                + " (SELECT ma_nhan_vien FROM tai_khoan WHERE ten_dang_nhap=?)) AND"
+                                + " trang_thai=? ORDER BY mo_luc DESC",
                         maNhanVienHoacTenDangNhap,
                         maNhanVienHoacTenDangNhap,
                         TrangThaiPhienLamViec.DANG_MO.maDB());

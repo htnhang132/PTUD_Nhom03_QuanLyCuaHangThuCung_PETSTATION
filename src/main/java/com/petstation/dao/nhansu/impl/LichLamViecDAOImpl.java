@@ -98,7 +98,7 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
     public int capNhatDanhDauNghiPhepDaDuyet(String maNhanVien, LocalDate ngay) {
         return ThaoTacSQL.capNhat(
                 "UPDATE lich_lam_viec SET loai='NGHI_PHEP',trang_thai=? WHERE ma_nhan_vien = ? AND"
-                        + " ngay_lam=?",
+                        + " ngay_lam=? AND trang_thai<>'DA_HUY'",
                 TrangThaiLichLamViec.DANG_MO.maDB(),
                 maNhanVien,
                 ngay);
@@ -106,6 +106,11 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
 
     @Override
     public int themLichNghiPhep(String maNhanVien, LocalDate ngay) {
+        ThaoTacSQL.capNhat(
+                "DELETE FROM lich_lam_viec WHERE ma_nhan_vien = ? AND ngay_lam=? AND ma_ca='CA01'"
+                        + " AND trang_thai='DA_HUY'",
+                maNhanVien,
+                ngay);
         return ThaoTacSQL.capNhat(
                 "INSERT INTO lich_lam_viec(ma_nhan_vien, ngay_lam, ma_ca, loai, trang_thai)"
                         + " VALUES(?, ?, 'CA01', 'NGHI_PHEP', 'DANG_MO')",
@@ -152,6 +157,15 @@ public final class LichLamViecDAOImpl implements LichLamViecDAO {
         return ThaoTacSQL.capNhat(
                 "UPDATE lich_lam_viec SET trang_thai='DA_KHOA' WHERE ngay_lam>=? AND ngay_lam<? AND"
                         + " trang_thai='DANG_MO'",
+                tu,
+                den);
+    }
+
+    @Override
+    public long demLichBiKhoa(LocalDate tu, LocalDate den) {
+        return ThaoTacSQL.laySo(
+                "SELECT COUNT(*) FROM lich_lam_viec WHERE ngay_lam>=? AND ngay_lam<? AND"
+                        + " trang_thai='DA_KHOA'",
                 tu,
                 den);
     }

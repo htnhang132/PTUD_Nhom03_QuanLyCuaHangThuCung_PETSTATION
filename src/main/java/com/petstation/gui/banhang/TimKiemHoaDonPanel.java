@@ -1,6 +1,7 @@
 package com.petstation.gui.banhang;
 
 import com.petstation.dto.ChiTietBienLai;
+import com.petstation.dto.DieuKienDoiHoaDon;
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BangNghiepVuPanel;
 import com.petstation.gui.chung.BoGocPanel;
@@ -14,32 +15,31 @@ import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.service.banhang.BanHangService;
+import com.petstation.service.banhang.DoiTraService;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.pheduyet.PheDuyetService;
 import com.petstation.util.DinhDang;
+import com.petstation.util.DuLieu;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -67,6 +67,8 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private NutDinhDang btnInLai;
     private NutDinhDang btnXuatPdf;
     private NutDinhDang btnDoiHang;
+    private Component khoangCachDoiHang;
+    private JPanel khungThaoTacHoaDon;
     private NutDinhDang btnYeuCauPheDuyet;
     private final BoLangNgheSuKien<String> boLangNghePheDuyet =
             suKien -> {
@@ -91,10 +93,13 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
     private static final class DuLieuXemTruoc {
         final GioHang.BienLai bienLai;
         final ChiTietBienLai chiTiet;
+        final DieuKienDoiHoaDon dieuKienDoi;
 
-        DuLieuXemTruoc(GioHang.BienLai bienLai, ChiTietBienLai chiTiet) {
+        DuLieuXemTruoc(
+                GioHang.BienLai bienLai, ChiTietBienLai chiTiet, DieuKienDoiHoaDon dieuKienDoi) {
             this.bienLai = bienLai;
             this.chiTiet = chiTiet;
+            this.dieuKienDoi = dieuKienDoi;
         }
     }
 
@@ -148,7 +153,8 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrHoaDon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         khungChiTietPhai.add(scrHoaDon, BorderLayout.CENTER);
-        JPanel khungThaoTacHoaDon = new JPanel(new GridLayout(4, 1, 0, 8));
+        khungThaoTacHoaDon = new JPanel();
+        khungThaoTacHoaDon.setLayout(new BoxLayout(khungThaoTacHoaDon, BoxLayout.Y_AXIS));
         khungThaoTacHoaDon.setOpaque(false);
         khungThaoTacHoaDon.setBorder(new EmptyBorder(6, 0, 0, 0));
         btnInLai =
@@ -159,7 +165,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         "Xuất file PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
         btnDoiHang =
                 taoNutXemTruocHoaDon(
-                        "Đổi hàng từ HĐ này",
+                        "Đổi phụ kiện từ HĐ này",
                         NutDinhDang.KieuNut.PHU,
                         e -> {
                             if (bienLaiDangChon != null) {
@@ -170,14 +176,20 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                                         bienLaiDangChon.getSoHoaDon());
                             }
                         });
+        btnDoiHang.setVisible(false);
+        khoangCachDoiHang = Box.createVerticalStrut(8);
+        khoangCachDoiHang.setVisible(false);
         btnYeuCauPheDuyet =
                 taoNutXemTruocHoaDon(
                         "Yêu cầu hủy / sửa HĐ",
                         NutDinhDang.KieuNut.NGUY_HIEM,
                         e -> xuLyYeuCauHuySua());
         khungThaoTacHoaDon.add(btnInLai);
+        khungThaoTacHoaDon.add(Box.createVerticalStrut(8));
         khungThaoTacHoaDon.add(btnXuatPdf);
+        khungThaoTacHoaDon.add(khoangCachDoiHang);
         khungThaoTacHoaDon.add(btnDoiHang);
+        khungThaoTacHoaDon.add(Box.createVerticalStrut(8));
         khungThaoTacHoaDon.add(btnYeuCauPheDuyet);
         khungChiTietPhai.add(khungThaoTacHoaDon, BorderLayout.SOUTH);
         return khungChiTietPhai;
@@ -199,6 +211,8 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
             String nhan, NutDinhDang.KieuNut kieu, ActionListener hanhDong) {
         NutDinhDang nut = new NutDinhDang(nhan, kieu);
         nut.setEnabled(false);
+        nut.setAlignmentX(Component.LEFT_ALIGNMENT);
+        nut.setMaximumSize(new Dimension(Integer.MAX_VALUE, MauUngDung.CAO_NUT));
         nut.addActionListener(hanhDong);
         return nut;
     }
@@ -307,6 +321,16 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         }
     }
 
+    private void capNhatNutDoiPhuKien(boolean hienThi, boolean choPhep) {
+        btnDoiHang.setVisible(hienThi);
+        khoangCachDoiHang.setVisible(hienThi);
+        btnDoiHang.setEnabled(choPhep);
+        if (khungThaoTacHoaDon != null) {
+            khungThaoTacHoaDon.revalidate();
+            khungThaoTacHoaDon.repaint();
+        }
+    }
+
     private void xoaXemTruoc() {
         ++luotXemTruoc;
         bienLaiDangChon = null;
@@ -314,7 +338,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
         btnXuatPdf.setEnabled(false);
-        btnDoiHang.setEnabled(false);
+        capNhatNutDoiPhuKien(false, false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("");
     }
@@ -335,7 +359,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khungHoaDon.datDuLieu(null);
         btnInLai.setEnabled(false);
         btnXuatPdf.setEnabled(false);
-        btnDoiHang.setEnabled(false);
+        capNhatNutDoiPhuKien(false, false);
         btnYeuCauPheDuyet.setEnabled(false);
         nhanTrangThaiHoaDon.setText("Đang tải hóa đơn " + soHoaDon + "...");
         TacVuNen.chayCoPhien(
@@ -343,9 +367,11 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                 () -> luot == luotXemTruoc,
                 () -> {
                     BanHangService banHangService = new BanHangService();
+                    DoiTraService doiTraService = new DoiTraService();
                     return new DuLieuXemTruoc(
                             banHangService.layBienLai(soHoaDon),
-                            banHangService.layChiTietBienLai(soHoaDon));
+                            banHangService.layChiTietBienLai(soHoaDon),
+                            doiTraService.kiemTraDieuKienDoiHoaDon(soHoaDon));
                 },
                 duLieu -> {
                     bienLaiDangChon = duLieu.bienLai;
@@ -357,7 +383,12 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                     btnInLai.setEnabled(duLieu.chiTiet != null);
                     btnXuatPdf.setEnabled(duLieu.chiTiet != null);
                     boolean duocThaoTacHd = !daKhoaPheDuyet(trangThai, trangThaiHienThi);
-                    btnDoiHang.setEnabled(duLieu.bienLai != null && duocThaoTacHd);
+                    boolean duocDoiPhuKien =
+                            duLieu.bienLai != null
+                                    && duocThaoTacHd
+                                    && duLieu.dieuKienDoi != null
+                                    && duLieu.dieuKienDoi.isHopLe();
+                    capNhatNutDoiPhuKien(duocDoiPhuKien, duocDoiPhuKien);
                     btnYeuCauPheDuyet.setEnabled(duocThaoTacHd);
                 },
                 ex -> nhanTrangThaiHoaDon.setText("Lỗi nạp hóa đơn: " + ex.getMessage()));
@@ -388,20 +419,23 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                         true);
         if (loai < 0) return;
         boolean laHuy = (loai == 0);
-        String tieuDeLyDo = laHuy ? "Nhập lý do hủy hóa đơn:" : "Nhập nội dung/lý do sửa:";
+        String noiDungSua = "Hủy hóa đơn";
+        if (!laHuy) {
+            String nhapGhiChu =
+                    HopThoai.nhapChuoi(
+                            this, "Nhập nội dung ghi chú mới cho hóa đơn:", "Sửa ghi chú hóa đơn");
+            if (nhapGhiChu == null || nhapGhiChu.trim().isEmpty()) return;
+            noiDungSua = nhapGhiChu.trim();
+        }
+        String tieuDeLyDo = laHuy ? "Nhập lý do hủy hóa đơn:" : "Nhập lý do sửa hóa đơn:";
         String lyDo = HopThoai.nhapChuoi(this, tieuDeLyDo, "Lý do yêu cầu");
         if (lyDo == null || lyDo.trim().isEmpty()) return;
         String lyDoChuan = lyDo.trim();
+        String giaTriMoi = noiDungSua;
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
-                () ->
-                        new PheDuyetService()
-                                .layHoaDonYeuCau(
-                                        soHoaDon,
-                                        laHuy,
-                                        lyDoChuan,
-                                        laHuy ? "Hủy hóa đơn" : lyDoChuan),
+                () -> new PheDuyetService().layHoaDonYeuCau(soHoaDon, laHuy, lyDoChuan, giaTriMoi),
                 () ->
                         HopThoai.hienThiThanhCong(
                                 this,
@@ -479,13 +513,9 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
 
     private static String dinhDangGiaTriTimKiem(int col, Object val) {
         if (col == 4) {
-            if (val instanceof LocalDateTime ldt) return DinhDang.ngayGio(ldt);
+            var ldt = DuLieu.chuyenLocalDateTime(val);
+            if (ldt != null) return DinhDang.ngayGio(ldt);
             if (val instanceof LocalDate ld) return DinhDang.ngay(ld);
-            if (val instanceof Date d) {
-                return DinhDang.ngayGio(
-                        LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(d.getTime()), ZoneId.systemDefault()));
-            }
         }
         if (col == 7) return DinhDangBang.tenTrangThai(val.toString());
         return val.toString();
@@ -496,37 +526,12 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         return new RowFilter<DefaultTableModel, Object>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
-                LocalDate ngay = docNgay(entry.getValue(4));
+                LocalDate ngay = DuLieu.docNgayLinhHoat(entry.getValue(4));
                 if (ngay == null) return false;
                 if (tuNgay != null && ngay.isBefore(tuNgay)) return false;
                 return denNgay == null || !ngay.isAfter(denNgay);
             }
         };
-    }
-
-    private static LocalDate docNgay(Object val) {
-        if (val == null) return null;
-        if (val instanceof LocalDate d) return d;
-        if (val instanceof LocalDateTime dt) return dt.toLocalDate();
-        if (val instanceof Date d) {
-            return Instant.ofEpochMilli(d.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-        }
-        String chuoi = val.toString().trim();
-        if (chuoi.isEmpty()) return null;
-        try {
-            if (chuoi.length() >= 10 && chuoi.charAt(4) == '-') {
-                return LocalDate.parse(chuoi.substring(0, 10));
-            }
-            if (chuoi.length() >= 16 && chuoi.charAt(2) == '/') {
-                return LocalDateTime.parse(chuoi.substring(0, 16), DinhDang.NGAY_GIO).toLocalDate();
-            }
-            if (chuoi.length() >= 10 && chuoi.charAt(2) == '/') {
-                return LocalDate.parse(chuoi.substring(0, 10), DinhDang.NGAY);
-            }
-        } catch (RuntimeException loi) {
-            return null;
-        }
-        return null;
     }
 
     @Override

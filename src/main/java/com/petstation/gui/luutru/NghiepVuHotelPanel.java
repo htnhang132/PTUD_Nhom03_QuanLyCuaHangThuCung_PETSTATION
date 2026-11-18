@@ -14,7 +14,6 @@ import com.petstation.gui.chung.thanhphan.BieuMauTruong;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.model.chung.PhuongThuc;
-import com.petstation.model.chung.TrangThaiHopDong;
 import com.petstation.model.luutru.PhongHotel;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.banhang.CaThuNganService;
@@ -27,9 +26,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,35 +41,38 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
+    // 1. THUỘC TÍNH & HÀM KHỞI TẠO
+
     protected final LuuTruService luuTruService = new LuuTruService();
     private final BanHangService banHangService = new BanHangService();
 
     protected NghiepVuHotelPanel(
             LoaiNghiepVu kieu, GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(kieu, banHang, dieuHuong);
-        themNut(layKhungThaoTac(), "Thu cọc", this::thuCoc);
-        themNut(
-                layKhungThaoTac(),
-                "Phiếu chăm sóc",
-                () -> NhatKyChamSocDialog.mo(this, "HOTEL", layDongChon()));
     }
 
+    // 2. THAO TÁC PHÒNG, ĐẶT PHÒNG & HỦY ĐẶT
+
     protected void lichSuCoc() {
-        String ma = layDongChon();
+        lichSuCocChoHopDong(layDongChon());
+    }
+
+    public void lichSuCocChoHopDong(String ma) {
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
@@ -146,63 +150,6 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 });
     }
 
-    @Override
-    protected void capNhatThaoTac() {
-        if (layBangDuLieu() == null || layKhungThaoTac() == null) return;
-        String trangThai =
-                layBangDuLieu().getSelectedRow() < 0
-                        ? ""
-                        : String.valueOf(
-                                layMoHinh()
-                                        .getValueAt(
-                                                layBangDuLieu()
-                                                        .convertRowIndexToModel(
-                                                                layBangDuLieu().getSelectedRow()),
-                                                9));
-        boolean daChon = !trangThai.isEmpty();
-        for (Component thanhPhan : layKhungThaoTac().getComponents())
-            if (thanhPhan instanceof JButton btn) {
-                switch (btn.getText()) {
-                    case "Thu cọc" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiHopDong.DA_DAT.maDB())
-                                            && cocConThieu() > 0);
-                    case "Điều chỉnh cọc" ->
-                            btn.setEnabled(trangThai.equals(TrangThaiHopDong.DA_DAT.maDB()));
-                    case "Nhận phòng" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiHopDong.DA_DAT.maDB())
-                                            && cocConThieu() <= 0);
-                    case "Phiếu chăm sóc" ->
-                            btn.setEnabled(trangThai.equals(TrangThaiHopDong.DANG_O.maDB()));
-                    case "Quyết toán" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiHopDong.DANG_O.maDB())
-                                            && layKieuNghiepVu() != LoaiNghiepVu.NHAT_KY_LUU_TRU);
-                    case "Xem nhật ký" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiHopDong.DANG_O.maDB())
-                                            || trangThai.equals(
-                                                    TrangThaiHopDong.DA_TRA_PHONG.maDB()));
-                    case "Lịch sử cọc" -> btn.setEnabled(daChon);
-                    case "Sửa đặt phòng" ->
-                            btn.setEnabled(trangThai.equals(TrangThaiHopDong.DA_DAT.maDB()));
-                    case "Gia hạn lưu trú" ->
-                            btn.setEnabled(trangThai.equals(TrangThaiHopDong.DANG_O.maDB()));
-                    case "Hủy đặt phòng" ->
-                            btn.setEnabled(
-                                    trangThai.equals(TrangThaiHopDong.DA_DAT.maDB())
-                                            && cocDaThu() == 0);
-                    default -> {
-                        if (btn.getText().startsWith("+ Đặt phòng"))
-                            btn.setEnabled(
-                                    layKieuNghiepVu() != LoaiNghiepVu.TRA_PHONG_LUU_TRU
-                                            && layKieuNghiepVu() != LoaiNghiepVu.NHAT_KY_LUU_TRU);
-                    }
-                }
-            }
-    }
-
     protected long cocConThieu() {
         if (layBangDuLieu().getSelectedRow() < 0 || layMoHinh().getColumnCount() < 11)
             return Long.MAX_VALUE;
@@ -219,10 +166,14 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         return value instanceof Number n ? n.longValue() : 0;
     }
 
-    protected void datPhong() {
+    protected boolean datPhong() {
         String maPhong = layBanHang().getQuyTrinh().getMaPhongHotel();
         String maHopDong = DatPhongHotelDialog.mo(this, null, maPhong);
-        if (maHopDong != null) layBanHang().getQuyTrinh().chonHotel(maHopDong);
+        if (maHopDong != null) {
+            layBanHang().getQuyTrinh().chonHotel(maHopDong);
+            return true;
+        }
+        return false;
     }
 
     protected void suaDatPhong() {
@@ -232,16 +183,17 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     protected void huyDatPhong() {
-        String maHopDong = layDongChon();
-        if (!HopThoai.xacNhanDongY(
-                this,
-                "Hủy hợp đồng đặt phòng #"
-                        + maHopDong
-                        + "?\n"
-                        + "Chỉ có thể hủy trực tiếp khi hợp đồng chưa thu cọc.",
-                "Xác nhận hủy đặt phòng",
-                true)) return;
-        String reason = HopThoai.nhapChuoiThuan(this, "Lý do hủy đặt phòng:", "Hủy đặt phòng");
+        huyDatPhongChoHopDong(layDongChon(), this::taiLaiNen);
+    }
+
+    public void huyDatPhongChoHopDong(String maHopDong, Runnable sauKhiHuy) {
+        String reason =
+                HopThoai.nhapChuoiThuan(
+                        this,
+                        "Nhập lý do hủy hợp đồng đặt phòng #"
+                                + maHopDong
+                                + ":\n(Chỉ có thể hủy trực tiếp khi hợp đồng chưa thu cọc.)",
+                        "Hủy đặt phòng #" + maHopDong);
         if (reason == null) return;
         TacVuNen.chayCoPhien(
                 this,
@@ -249,13 +201,17 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 () -> luuTruService.huyDatPhong(maHopDong, reason),
                 () -> {
                     layBanHang().getQuyTrinh().chonHotel("");
-                    taiLaiNen();
+                    if (sauKhiHuy != null) sauKhiHuy.run();
                 });
     }
 
+    // 3. THU CỌC & ĐỐI SOÁT THANH TOÁN CỌC
+
     protected void thuCoc() {
-        String ma = layDongChon();
-        String maHopDong = layNoiDungDongChon(1);
+        thuCocChoHopDong(layDongChon(), layNoiDungDongChon(1), null);
+    }
+
+    public void thuCocChoHopDong(String ma, String maHopDongHienThi, Runnable sauKhiXong) {
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
@@ -267,7 +223,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                         + " cọc.");
                         return;
                     }
-                    nhapVaThuCoc(ma, maHopDong, muc);
+                    nhapVaThuCoc(ma, maHopDongHienThi, muc, sauKhiXong);
                 });
     }
 
@@ -283,7 +239,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         }
     }
 
-    private void nhapVaThuCoc(String ma, String maHopDong, long[] muc) {
+    private void nhapVaThuCoc(String ma, String maHopDong, long[] muc, Runnable sauKhiXong) {
         long thieu = muc[0] - muc[1];
         if (thieu <= 0) {
             HopThoai.hienThiThongTin(this, "Hợp đồng đã thu đủ tiền cọc yêu cầu.");
@@ -302,12 +258,17 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                         new PhuongThuc[] {
                             PhuongThuc.TIEN_MAT, PhuongThuc.CHUYEN_KHOAN, PhuongThuc.THE_NGAN_HANG
                         });
+        Dimension kichThuocNhap = new Dimension(180, MauUngDung.CAO_DAU_VAO);
+        oSoTien.setPreferredSize(kichThuocNhap);
+        oKhachDua.setPreferredSize(kichThuocNhap);
+        cboPhuongThuc.setPreferredSize(kichThuocNhap);
         JLabel nhanTienThua = new JLabel("0 ₫");
         JLabel nhanQr = new JLabel("", SwingConstants.CENTER);
         JCheckBox chkDaNhan = new JCheckBox();
         JTextArea oHuongDan = new JTextArea(4, 30);
         boolean[] qrHopLe = {false};
         String[] loiQr = {""};
+        int[] luotQr = {0};
         JPanel noiDung =
                 taoNoiDungThuCoc(
                         muc,
@@ -333,7 +294,8 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 chkDaNhan,
                                 oHuongDan,
                                 qrHopLe,
-                                loiQr);
+                                loiQr,
+                                luotQr);
         ganSuKienVaMoThuCoc(
                 hopThoai,
                 ma,
@@ -347,7 +309,8 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 qrHopLe,
                 loiQr,
                 noiDung,
-                capNhat);
+                capNhat,
+                sauKhiXong);
     }
 
     private void ganSuKienVaMoThuCoc(
@@ -363,7 +326,8 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             boolean[] qrHopLe,
             String[] loiQr,
             JPanel noiDung,
-            Runnable capNhat) {
+            Runnable capNhat,
+            Runnable sauKhiXong) {
         cboPhuongThuc.addActionListener(e -> capNhat.run());
         themBoLangNgheTaiLieu(
                 oSoTien,
@@ -376,12 +340,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         themBoLangNgheTaiLieu(
                 oKhachDua, () -> capNhatTienThuaThuCoc(oSoTien, oKhachDua, nhanTienThua, thieu));
         NutDinhDang btnXacNhan = new NutDinhDang("Xác nhận thu cọc", NutDinhDang.KieuNut.CHINH);
-        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         btnHuy.addActionListener(e -> hopThoai.dispose());
         btnXacNhan.addActionListener(
                 e ->
                         thucHienThuCocMotBuoc(
                                 hopThoai,
+                                btnXacNhan,
                                 ma,
                                 thieu,
                                 khoa,
@@ -390,7 +355,8 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                                 cboPhuongThuc,
                                 chkDaNhan,
                                 qrHopLe[0],
-                                loiQr[0]));
+                                loiQr[0],
+                                sauKhiXong));
         JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         chan.setOpaque(false);
         chan.add(btnHuy);
@@ -401,9 +367,15 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         khung.add(new JScrollPane(noiDung), BorderLayout.CENTER);
         khung.add(chan, BorderLayout.SOUTH);
         hopThoai.setContentPane(khung);
-        hopThoai.setSize(520, 560);
-        HopThoai.chuanHoaCuaSo(hopThoai, this);
+        hopThoai.getRootPane().setDefaultButton(btnXacNhan);
+        hopThoai.getRootPane()
+                .registerKeyboardAction(
+                        e -> hopThoai.dispose(),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
         capNhat.run();
+        HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 480, 320);
+        HopThoai.chuanHoaCuaSo(hopThoai, this);
         hopThoai.setVisible(true);
     }
 
@@ -433,13 +405,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         p.add(Box.createVerticalStrut(10));
         JPanel luoi = new JPanel(new GridLayout(4, 2, 10, 8));
         luoi.setOpaque(false);
-        luoi.add(new JLabel("Số tiền thu lần này:"));
+        luoi.add(taoNhanTruong("Số tiền thu lần này", true));
         luoi.add(oSoTien);
-        luoi.add(new JLabel("Phương thức thu:"));
+        luoi.add(taoNhanTruong("Phương thức thu", true));
         luoi.add(cboPhuongThuc);
-        luoi.add(new JLabel("Tiền khách đưa:"));
+        luoi.add(taoNhanTruong("Tiền khách đưa:", false));
         luoi.add(oKhachDua);
-        luoi.add(new JLabel("Tiền thừa trả khách:"));
+        luoi.add(taoNhanTruong("Tiền thừa trả khách:", false));
         nhanTienThua.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         luoi.add(nhanTienThua);
         p.add(luoi);
@@ -469,7 +441,8 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             JCheckBox chkDaNhan,
             JTextArea oHuongDan,
             boolean[] qrHopLe,
-            String[] loiQr) {
+            String[] loiQr,
+            int[] luotQr) {
         PhuongThuc pt = (PhuongThuc) cboPhuongThuc.getSelectedItem();
         boolean laTienMat = pt == PhuongThuc.TIEN_MAT;
         oKhachDua.setEnabled(laTienMat);
@@ -479,6 +452,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             chkDaNhan.setVisible(false);
             oHuongDan.setText("Nhập số tiền thu cọc và tiền khách đưa (nếu trả tiền mặt).");
             capNhatTienThuaThuCoc(oSoTien, oKhachDua, nhanTienThua, thieu);
+            capNhatKichThuocThuCoc(hopThoai);
             return;
         }
         nhanTienThua.setText("0 ₫");
@@ -491,6 +465,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             nhanQr.setVisible(false);
             chkDaNhan.setVisible(false);
             oHuongDan.setText(ex.getMessage());
+            capNhatKichThuocThuCoc(hopThoai);
             return;
         }
         if (pt == PhuongThuc.THE_NGAN_HANG) {
@@ -499,9 +474,19 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             chkDaNhan.setEnabled(true);
             chkDaNhan.setText("Đã xác nhận quẹt thẻ thành công trên máy POS");
             oHuongDan.setText("Số tiền cần quẹt thẻ POS: " + DinhDang.dinhDang(soThu));
+            capNhatKichThuocThuCoc(hopThoai);
             return;
         }
-        taiMaVietQrThuCoc(hopThoai, maHopDong, soThu, nhanQr, chkDaNhan, oHuongDan, qrHopLe, loiQr);
+        taiMaVietQrThuCoc(
+                hopThoai, maHopDong, soThu, nhanQr, chkDaNhan, oHuongDan, qrHopLe, loiQr, luotQr);
+        capNhatKichThuocThuCoc(hopThoai);
+    }
+
+    private void capNhatKichThuocThuCoc(JDialog hopThoai) {
+        if (hopThoai.isShowing()) {
+            HopThoai.canChinhKichThuocVuaManHinh(hopThoai, 480, 320);
+            HopThoai.chuanHoaCuaSo(hopThoai, this);
+        }
     }
 
     private void taiMaVietQrThuCoc(
@@ -512,7 +497,9 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             JCheckBox chkDaNhan,
             JTextArea oHuongDan,
             boolean[] qrHopLe,
-            String[] loiQr) {
+            String[] loiQr,
+            int[] luotQr) {
+        int luot = ++luotQr[0];
         qrHopLe[0] = false;
         nhanQr.setVisible(true);
         nhanQr.setIcon(null);
@@ -522,7 +509,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         chkDaNhan.setText("Đã kiểm tra tài khoản và nhận đủ tiền chuyển khoản");
         TacVuNen.chayCoPhien(
                 hopThoai,
-                () -> true,
+                () -> luot == luotQr[0],
                 () -> {
                     String bin = CaiDatService.macDinh().layTuyChon("BANK_BIN");
                     String tk = CaiDatService.macDinh().layTuyChon("BANK_ACCOUNT");
@@ -552,7 +539,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             JTextField oSoTien, JTextField oKhachDua, JLabel nhanTienThua, long thieu) {
         try {
             long canThu = phanTichSoTienCoc(oSoTien.getText(), thieu);
-            long khachDua = Long.parseLong(oKhachDua.getText().trim().replaceAll("[.,\\s₫đ]", ""));
+            long khachDua = phanTichSoKhachDua(oKhachDua.getText());
             nhanTienThua.setText(DinhDang.dinhDang(Math.max(0, khachDua - canThu)));
         } catch (RuntimeException ex) {
             nhanTienThua.setText("—");
@@ -561,6 +548,7 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
 
     private void thucHienThuCocMotBuoc(
             JDialog hopThoai,
+            NutDinhDang btnXacNhan,
             String ma,
             long thieu,
             String khoa,
@@ -569,14 +557,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             JComboBox<PhuongThuc> cboPhuongThuc,
             JCheckBox chkDaNhan,
             boolean qrHopLe,
-            String loiQr) {
+            String loiQr,
+            Runnable sauKhiXong) {
         try {
             long so = phanTichSoTienCoc(oSoTien.getText(), thieu);
             PhuongThuc pt = (PhuongThuc) cboPhuongThuc.getSelectedItem();
             long khachDua =
-                    pt == PhuongThuc.TIEN_MAT
-                            ? Long.parseLong(oKhachDua.getText().trim().replaceAll("[.,\\s₫đ]", ""))
-                            : so;
+                    pt == PhuongThuc.TIEN_MAT ? phanTichSoKhachDua(oKhachDua.getText()) : so;
             if (pt == PhuongThuc.TIEN_MAT && khachDua < so) {
                 throw new IllegalArgumentException("Tiền khách đưa phải đủ số tiền thu cọc.");
             }
@@ -586,15 +573,21 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
             if (pt != PhuongThuc.TIEN_MAT && !chkDaNhan.isSelected()) {
                 throw new IllegalArgumentException("Vui lòng xác nhận đã nhận tiền trước khi lưu.");
             }
+            btnXacNhan.setEnabled(false);
             TacVuNen.chayCoPhien(
                     this,
                     () -> true,
                     () -> luuTruService.thuCoc(ma, pt, so, khachDua, khoa),
                     () -> {
+                        btnXacNhan.setEnabled(true);
                         hopThoai.dispose();
                         taiLaiNen();
+                        if (sauKhiXong != null) {
+                            sauKhiXong.run();
+                        }
                     },
                     ex -> {
+                        btnXacNhan.setEnabled(true);
                         if (ex.getMessage() != null && ex.getMessage().contains("Cần mở ca")) {
                             hienThiCanhBaoMoCa(ex.getMessage());
                         } else {
@@ -602,12 +595,28 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                         }
                     });
         } catch (RuntimeException ex) {
+            btnXacNhan.setEnabled(true);
             HopThoai.hienThiCanhBao(hopThoai, ex.getMessage());
         }
     }
 
+    private static long phanTichSoKhachDua(String raw) {
+        String daDon = raw == null ? "" : raw.trim().replaceAll("[.,\\s₫đ]", "");
+        if (daDon.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập số tiền khách đưa.");
+        }
+        if (!daDon.matches("\\d+")) {
+            throw new IllegalArgumentException("Tiền khách đưa phải là số nguyên hợp lệ.");
+        }
+        try {
+            return Long.parseLong(daDon);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Tiền khách đưa vượt giới hạn hợp lệ.");
+        }
+    }
+
     private static long phanTichSoTienCoc(String input, long thieu) {
-        String daDon = input.trim().replaceAll("[.,\\s₫đ]", "");
+        String daDon = input == null ? "" : input.trim().replaceAll("[.,\\s₫đ]", "");
         if (!daDon.matches("\\d+")) {
             throw new IllegalArgumentException("Vui lòng nhập số tiền hợp lệ (chỉ gồm chữ số).");
         }
@@ -624,8 +633,13 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
         return so;
     }
 
+    // 4. ĐỔI CỌC, NHẬT KÝ & QUYẾT TOÁN HỢP ĐỒNG
+
     protected void doiCoc() {
-        String ma = layDongChon();
+        doiCocChoHopDong(layDongChon(), this::taiLaiNen);
+    }
+
+    public void doiCocChoHopDong(String ma, Runnable sauKhiDoi) {
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
@@ -647,12 +661,17 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                             this,
                             () -> true,
                             () -> luuTruService.dieuChinhCoc(ma, mucMoi, lyDo),
-                            this::taiLaiNen);
+                            () -> {
+                                if (sauKhiDoi != null) sauKhiDoi.run();
+                            });
                 });
     }
 
     protected void layNhatKyChiTiet() {
-        String ma = layDongChon();
+        layNhatKyChiTietChoHopDong(layDongChon());
+    }
+
+    public void layNhatKyChiTietChoHopDong(String ma) {
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,
@@ -679,6 +698,10 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
     }
 
     protected void quyetToan(String loai) {
+        quyetToanChoHopDong(loai, layDongChon());
+    }
+
+    public void quyetToanChoHopDong(String loai, String ma) {
         if (!layBanHang().kiemTraTrong()) {
             if (HopThoai.xacNhanDongY(
                     this,
@@ -691,7 +714,6 @@ public abstract class NghiepVuHotelPanel extends BangNghiepVuPanel {
                 return;
             }
         }
-        String ma = layDongChon();
         TacVuNen.chayCoPhien(
                 this,
                 () -> true,

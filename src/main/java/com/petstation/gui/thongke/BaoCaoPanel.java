@@ -138,6 +138,7 @@ public class BaoCaoPanel extends CoSoPanel {
         for (var k : cacKieuHienThi) cboHienThiHop.addItem(k.ten());
         JPanel top = taoPhanDauBaoCao(tieuDe, phu, taoThanhCongCu(hienBoGop));
         DinhDangBang.apDung(bangBang);
+        datBangChinh(bangBang);
         JScrollPane bar = taoKhungBieuDoNgang();
         JPanel khuVucBieuDo = taoKhuVucBieuDo(bar);
         JScrollPane scrBang = taoKhungBangDuLieu();
@@ -159,6 +160,7 @@ public class BaoCaoPanel extends CoSoPanel {
             tools.themBoLoc("Biểu đồ:", cboTongHop);
             if (cboTongHop.getParent() != null) cboTongHop.getParent().setVisible(false);
         }
+        xuat.putClientProperty("luonCuoi", Boolean.TRUE);
         tools.add(xuat);
         xuat.addActionListener(
                 e ->
@@ -197,20 +199,36 @@ public class BaoCaoPanel extends CoSoPanel {
         var tu = cboKy.layNgayBatDau();
         var den = cboKy.layNgayKetThuc();
         if (tu == null || den == null) {
-            nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-            nhanKhoang.setText("Khoảng ngày chưa đầy đủ: vui lòng chọn đủ Từ ngày và Đến ngày");
+            xoaDuLieuCuKhiKhoangNgayLoi(
+                    "Khoảng ngày chưa đầy đủ: vui lòng chọn đủ Từ ngày và Đến ngày");
             return false;
         }
         if (tu.isAfter(den)) {
             String thongBao = "Khoảng ngày chưa hợp lệ: Từ ngày đang lớn hơn Đến ngày";
-            nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
-            nhanKhoang.setText(thongBao);
+            xoaDuLieuCuKhiKhoangNgayLoi(thongBao);
             if (hienCanhBaoKhiDaoNgay) HopThoai.hienThiCanhBao(this, thongBao);
             return false;
         }
         nhanKhoang.setForeground(MauUngDung.VAN_BAN_XAM);
         khoangDaApDung = new KhoangNgay(tu, den);
         return true;
+    }
+
+    private void xoaDuLieuCuKhiKhoangNgayLoi(String thongBao) {
+        duLieu = null;
+        chungTu = null;
+        tongHop = null;
+        pieDocs = null;
+        moHinh.setRowCount(0);
+        khungCacThe.removeAll();
+        khungCacThe.revalidate();
+        khungCacThe.repaint();
+        bieuDo.datDuLieu(new String[0], new double[0], false, "");
+        tron.datDuLieu(new String[0], new double[0], false);
+        nhanTrangThaiTrong.setVisible(false);
+        xuat.setEnabled(false);
+        nhanKhoang.setForeground(MauUngDung.VAN_BAN_NGUY_HIEM);
+        nhanKhoang.setText(thongBao);
     }
 
     private JPanel taoPhanDauBaoCao(String tieuDe, String phu, ThanhDanhSach tools) {
@@ -413,6 +431,8 @@ public class BaoCaoPanel extends CoSoPanel {
                                         + ky.getDenNgay().format(DinhDang.NGAY))
                         + (trong ? " · Không có dữ liệu" : ""));
         nhanTrangThaiTrong.setVisible(trong);
+        int soThe = Math.max(1, duLieu.theCacTieuDe().length);
+        ((GridLayout) khungCacThe.getLayout()).setColumns(soThe);
         khungCacThe.removeAll();
         for (int i = 0; i < duLieu.theCacTieuDe().length; i++) {
             JPanel card =
@@ -568,11 +588,16 @@ public class BaoCaoPanel extends CoSoPanel {
                         });
         DinhDangBang.apDung(t);
         JPanel p = new JPanel(new BorderLayout(0, 8));
-        JButton export = new JButton("Xuất Excel");
+        NutDinhDang export = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         export.addActionListener(e -> XuatExcelDialog.xuatBang(this, t, tenXuat + "_chi_tiet"));
-        p.add(export, BorderLayout.NORTH);
+        JPanel khungNutTren = new JPanel(new BorderLayout());
+        khungNutTren.setOpaque(false);
+        khungNutTren.add(export, BorderLayout.EAST);
+        p.add(khungNutTren, BorderLayout.NORTH);
         p.add(new JScrollPane(t));
-        p.setPreferredSize(new Dimension(950, 400));
+        int cao = Math.min(420, Math.max(150, rows.length * 30 + 48));
+        int rong = Math.min(920, Math.max(580, columns.length * 145));
+        p.setPreferredSize(new Dimension(rong, cao));
         HopThoai.hienThiNoiDung(this, p, "Chứng từ chi tiết · " + nhanKhoang.getText());
     }
 

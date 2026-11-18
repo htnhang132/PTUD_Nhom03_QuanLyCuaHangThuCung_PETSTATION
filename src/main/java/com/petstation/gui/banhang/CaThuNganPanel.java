@@ -1,5 +1,6 @@
 package com.petstation.gui.banhang;
 
+import com.petstation.dto.TomTatCaLamViec;
 import com.petstation.gui.chung.BieuMauPanel;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
@@ -8,9 +9,9 @@ import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
-import com.petstation.model.chung.PhuongThuc;
 import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.chung.BoLangNgheSuKien;
+import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
@@ -45,6 +46,8 @@ import javax.swing.border.EmptyBorder;
 public final class CaThuNganPanel extends CoSoPanel {
     private final CaThuNganService caLamViec;
 
+    // 1. THUỘC TÍNH & HÀM KHỞI TẠO
+
     private final CardLayout cacThe = new CardLayout();
 
     private final JPanel khungGoc = new JPanel(cacThe);
@@ -77,18 +80,28 @@ public final class CaThuNganPanel extends CoSoPanel {
 
     private final NutDinhDang btnNutDong = new NutDinhDang("Kết ca", NutDinhDang.KieuNut.CHINH);
 
+    private long tienMatDuKienHienTai;
+    private String tenCaHienTai = "";
+    private int luotLamMoi;
+
     private final BoLangNgheSuKien<CaThuNganService> boLangNgheCa =
             ca -> {
+                Runnable capNhat =
+                        () -> {
+                            if (isShowing()) {
+                                lamMoi();
+                            }
+                        };
                 if (SwingUtilities.isEventDispatchThread()) {
-                    lamMoi();
+                    capNhat.run();
                 } else {
-                    SwingUtilities.invokeLater(this::lamMoi);
+                    SwingUtilities.invokeLater(capNhat);
                 }
             };
 
     public CaThuNganPanel(CaThuNganService caLamViec) {
         this.caLamViec = caLamViec;
-        setBorder(new EmptyBorder(12, 24, 16, 24));
+        setBorder(new EmptyBorder(20, 24, 20, 24));
         setLayout(new BorderLayout(0, 12));
         add(taoTieuDeManHinh("Ca thu ngân"), BorderLayout.NORTH);
         khungGoc.setOpaque(false);
@@ -109,6 +122,8 @@ public final class CaThuNganPanel extends CoSoPanel {
         caLamViec.xoaBoLangNghe(boLangNgheCa);
         super.removeNotify();
     }
+
+    // 2. XÂY DỰNG GIAO DIỆN MỞ CA & ĐANG CHẠY
 
     private JPanel taoMo() {
         JPanel khungMo = taoVungTrongSuot(new GridBagLayout());
@@ -244,7 +259,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         khungTrai.add(taoCumNhapLieu(layNho("Tổng tiền mặt thực đếm (₫)"), oTienThucDem), gbcTrai);
 
         JPanel khungChenhLech = new JPanel(new BorderLayout(10, 0));
-        khungChenhLech.setBackground(MauUngDung.mau(0xFAF7F2));
+        khungChenhLech.setBackground(MauUngDung.NEN_THE_NHAN);
         khungChenhLech.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(MauUngDung.KEM_VIEN),
@@ -332,6 +347,8 @@ public final class CaThuNganPanel extends CoSoPanel {
         return nhanDongDangXet;
     }
 
+    // 3. MỞ CA, KẾT CA & ĐỒNG BỘ DỮ LIỆU CA
+
     private void moCaLamViec() {
         long tienMat;
         try {
@@ -364,7 +381,7 @@ public final class CaThuNganPanel extends CoSoPanel {
             nhanDongLoi.setText(e.getMessage());
             return;
         }
-        long chenhLech = tong - caLamViec.layTienMatDuKien();
+        long chenhLech = tong - tienMatDuKienHienTai;
         if (cboHinhThuc.getSelectedIndex() == 1 && cboNguoiNhan.getSelectedItem() == null) {
             nhanDongLoi.setText("Nhập tên người nhận bàn giao.");
             cboNguoiNhan.requestFocusInWindow();
@@ -382,7 +399,7 @@ public final class CaThuNganPanel extends CoSoPanel {
                 HopThoai.xacNhan(
                         this,
                         "Đóng "
-                                + caLamViec.layTenCa()
+                                + tenCaHienTai
                                 + " với tiền thực đếm "
                                 + DinhDang.dinhDang(tong)
                                 + (chenhLech == 0
@@ -423,7 +440,7 @@ public final class CaThuNganPanel extends CoSoPanel {
     private void capNhatSoLuongTomTat() {
         long chenhLech;
         try {
-            chenhLech = docSoTien(oTienThucDem) - caLamViec.layTienMatDuKien();
+            chenhLech = docSoTien(oTienThucDem) - tienMatDuKienHienTai;
         } catch (IllegalArgumentException e) {
             nhanChenhLech.setText("Chưa nhập tiền thực đếm");
             nhanChenhLech.setForeground(MauUngDung.VAN_BAN_XAM);
@@ -444,18 +461,32 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private void lamMoi() {
-        if (!caLamViec.kiemTraMo()) {
-            nhanCuoiCungBanGiao.setText(
-                    caLamViec.layBanGiaoGanNhat().isEmpty()
-                            ? ""
-                            : "Ca gần nhất – " + caLamViec.layBanGiaoGanNhat());
+        int luot = ++luotLamMoi;
+        if (!DieuKienTaiDuLieu.coTheTachLuong()) {
+            apDungTomTatCa(caLamViec.layTomTatVaNguoiNhan());
+            return;
+        }
+        TacVuNen.chayCoPhien(
+                this,
+                () -> luot == luotLamMoi,
+                caLamViec::layTomTatVaNguoiNhan,
+                this::apDungTomTatCa,
+                ex -> HopThoai.hienThiCanhBao(CaThuNganPanel.this, TacVuNen.thongDiepLoi(ex)));
+    }
+
+    private void apDungTomTatCa(TomTatCaLamViec tomTat) {
+        if (!tomTat.isDangMo()) {
+            tienMatDuKienHienTai = 0L;
+            tenCaHienTai = "";
+            String banGiao = tomTat.getBanGiaoGanNhat();
+            nhanCuoiCungBanGiao.setText(banGiao.isEmpty() ? "" : "Ca gần nhất – " + banGiao);
             cboTenCaLamViec.setSelectedItem(layDeXuatCaLamViec());
-            boolean dangCho = !caLamViec.layTieuDeDangCho().isEmpty();
+            boolean dangCho = !tomTat.getTieuDeDangCho().isEmpty();
             nhanDangChoBieuNgu.setVisible(dangCho);
             nhanDangChoBieuNgu.setText(
                     dangCho
                             ? "Mở ca xong hệ thống sẽ đưa bạn về \""
-                                    + caLamViec.layTieuDeDangCho()
+                                    + tomTat.getTieuDeDangCho()
                                     + "\"."
                             : "");
             cacThe.show(khungGoc, "MO_CA");
@@ -463,41 +494,40 @@ public final class CaThuNganPanel extends CoSoPanel {
             oTienDauCa.requestFocusInWindow();
             return;
         }
+        tienMatDuKienHienTai = tomTat.getTienMatDuKien();
+        tenCaHienTai = tomTat.getTenCa();
         khungCacChiSo.removeAll();
+        String gioMo =
+                tomTat.getGioMoCa() == null ? "—" : tomTat.getGioMoCa().format(DinhDang.GIO_PHUT);
+        khungCacChiSo.add(layChiSoTheGon("Ca hiện tại (" + gioMo + ")", tenCaHienTai));
+        khungCacChiSo.add(layChiSoTheGon("Tiền đầu ca", DinhDang.dinhDang(tomTat.getTienDauCa())));
         khungCacChiSo.add(
                 layChiSoTheGon(
-                        "Ca hiện tại (" + caLamViec.layGioMoCa().format(DinhDang.GIO_PHUT) + ")",
-                        caLamViec.layTenCa()));
-        khungCacChiSo.add(
-                layChiSoTheGon("Tiền đầu ca", DinhDang.dinhDang(caLamViec.layTienDauCa())));
-        khungCacChiSo.add(
-                layChiSoTheGon(
-                        "Doanh thu tiền mặt", DinhDang.dinhDang(caLamViec.layDoanhThuTienMat())));
+                        "Doanh thu tiền mặt", DinhDang.dinhDang(tomTat.getDoanhThuTienMat())));
         khungCacChiSo.add(
                 layChiSoTheGon(
                         "Chuyển khoản / thẻ",
-                        DinhDang.dinhDang(
-                                caLamViec.layDoanhThuChuyenKhoan()
-                                        + caLamViec.layDoanhThuThe()
-                                        + caLamViec.layCocHotel(PhuongThuc.CHUYEN_KHOAN)
-                                        + caLamViec.layCocHotel(PhuongThuc.THE_NGAN_HANG))));
+                        DinhDang.dinhDang(tomTat.getDoanhThuChuyenKhoanVaThe())));
         khungCacChiSo.add(
                 layChiSoTheGon(
-                        "Cọc Hotel tiền mặt", DinhDang.dinhDang(caLamViec.layTienCocHotel())));
+                        "Cọc Hotel tiền mặt", DinhDang.dinhDang(tomTat.getTienCocHotelTienMat())));
         khungCacChiSo.add(
-                layChiSoTheNoiBat(
-                        "Dự kiến trong két", DinhDang.dinhDang(caLamViec.layTienMatDuKien())));
+                layChiSoTheNoiBat("Dự kiến trong két", DinhDang.dinhDang(tienMatDuKienHienTai)));
         khungCacChiSo.revalidate();
         khungCacChiSo.repaint();
         oTienThucDem.setText("");
         cboNguoiNhan.removeAllItems();
-        caLamViec.layNguoiNhan().forEach(cboNguoiNhan::addItem);
+        tomTat.getNguoiNhan().stream()
+                .map(CaThuNganService.NguoiNhan::new)
+                .forEach(cboNguoiNhan::addItem);
         cboNguoiNhan.setSelectedItem(null);
         nhanDongLoi.setText("");
         capNhatSoLuongTomTat();
         cacThe.show(khungGoc, "DANG_CHAY");
         oTienThucDem.requestFocusInWindow();
     }
+
+    // 4. VÒNG ĐỜI & TIỆN ÍCH ĐỊNH DẠNG
 
     @Override
     public KhaNangThanhCongCu layKhaNangThanhCongCu() {
@@ -547,12 +577,10 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private static long docSoTien(JTextField truong) {
-        String giaTri = truong.getText().trim().replaceAll("(?i)[₫đ\\s]+$", "");
-        if (!giaTri.matches("\\d+(?:[.,]\\d{3})*")) {
+        long ketQua = DinhDang.docTienKhongAm(truong.getText());
+        if (ketQua < 0) {
             throw new IllegalArgumentException("Nhập số tiền nguyên không âm hợp lệ.");
         }
-        long ketQua = DinhDang.doc(giaTri);
-        if (ketQua < 0) throw new IllegalArgumentException("Số tiền quá lớn.");
         return ketQua;
     }
 
@@ -564,7 +592,7 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private JPanel layChiSoTheGon(String nhan, String giaTri) {
-        BoGocPanel khungThe = new BoGocPanel(10, MauUngDung.THE_NEN, true);
+        BoGocPanel khungThe = new BoGocPanel(MauUngDung.BAN_KINH_THE, MauUngDung.THE_NEN, true);
         khungThe.setLayout(new BorderLayout(0, 6));
         khungThe.setBorder(new EmptyBorder(12, 16, 12, 16));
         JLabel nhanHienThi = new JLabel(nhan);
@@ -579,7 +607,8 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private JPanel layChiSoTheNoiBat(String nhan, String giaTri) {
-        BoGocPanel khungThe = new BoGocPanel(10, MauUngDung.mau(0xFFF9F5), true);
+        BoGocPanel khungThe =
+                new BoGocPanel(MauUngDung.BAN_KINH_THE, MauUngDung.NEN_THE_NOI_BAT, true);
         khungThe.setLayout(new BorderLayout(0, 6));
         khungThe.setBorder(
                 BorderFactory.createCompoundBorder(

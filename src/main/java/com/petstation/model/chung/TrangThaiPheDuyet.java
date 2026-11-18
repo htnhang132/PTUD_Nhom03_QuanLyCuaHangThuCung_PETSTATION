@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của yêu cầu phê duyệt gửi Cửa hàng trưởng. Mapping tương ứng cột trang_thai trong bảng
  * yeu_cau_phe_duyet: 'CHO_DUYET', 'DA_DUYET', 'TU_CHOI', 'CAN_THEM_THONG_TIN', 'DA_HUY'
  */
-public enum TrangThaiPheDuyet {
+public enum TrangThaiPheDuyet implements MaDBEnum {
     CHO_DUYET("CHO_DUYET", "Chờ phê duyệt"),
     DA_DUYET("DA_DUYET", "Đã duyệt chấp thuận"),
     TU_CHOI("TU_CHOI", "Từ chối yêu cầu"),
@@ -32,12 +32,6 @@ public enum TrangThaiPheDuyet {
     }
 
     public static TrangThaiPheDuyet tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiPheDuyet t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException("Không tìm thấy TrangThaiPheDuyet với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiPheDuyet.class, ma);
     }
 }

@@ -6,6 +6,7 @@ import com.petstation.dto.ChiTietBienLai;
 import com.petstation.gui.banhang.HoaDonDocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
@@ -18,6 +19,7 @@ import com.petstation.util.DinhDang;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterJob;
@@ -95,6 +97,7 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                 taoTieuDeMuc(taoTieuDeKhachHang(ma, ten, soDienThoai, diaChi, hang, diem)),
                 BorderLayout.NORTH);
         JTabbedPane tabCacTab = new JTabbedPane();
+        tabCacTab.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         tabCacTab.addTab(
                 "Thú cưng",
                 taoTabLichSu(taoBangDinhDang(moHinhThuCung), "ThuCung_" + maKhachHang, false));
@@ -299,7 +302,7 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                         }
                     });
         }
-        NutDinhDang btnXuatExcel = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnXuatExcel = new NutDinhDang("Xuất Excel", NutDinhDang.KieuNut.TRONG_SUOT);
         btnXuatExcel.addActionListener(
                 suKien -> XuatExcelDialog.xuatBang(this, layBang(scrBang), tenXuat));
         thanhNut.add(btnXuatExcel);

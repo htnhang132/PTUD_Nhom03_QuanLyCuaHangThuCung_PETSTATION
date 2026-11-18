@@ -114,7 +114,11 @@ public final class XacThucService {
 
     private KetQuaDangNhap xuLySaiMatKhau(
             Connection ketNoi, TaiKhoan taiKhoan, LocalDateTime hienTai) throws Exception {
-        int soLuongThatBai = taiKhoan.getSoLanDangNhapSai() + 1;
+        int soLuongTruoc =
+                (taiKhoan.getKhoaDenLuc() != null && !taiKhoan.isTamThoiDaKhoa(hienTai))
+                        ? 0
+                        : taiKhoan.getSoLanDangNhapSai();
+        int soLuongThatBai = soLuongTruoc + 1;
         LocalDateTime khoaDenLuc =
                 soLuongThatBai >= LON_NHAT_THAT_BAI_SO_LAN_THU
                         ? hienTai.plusMinutes(KHOA_SO_PHUT)

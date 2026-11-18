@@ -7,6 +7,7 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.thanhphan.TruongMatKhauAnHien;
+import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.hethong.TaiKhoanService;
 
 import java.awt.BorderLayout;
@@ -44,7 +45,11 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     private JLabel nhanNhanDoManh;
 
     public DoiMatKhauPanel() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 12));
+        add(
+                taoTieuDeManHinh(
+                        "Đổi mật khẩu", "Cập nhật mật khẩu đăng nhập của tài khoản hiện tại"),
+                BorderLayout.NORTH);
         JPanel khungNoiDung = taoKhungBieuMauDoiMatKhau();
         JPanel khungCanGiua = new JPanel(new GridBagLayout());
         khungCanGiua.setOpaque(false);
@@ -65,13 +70,17 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         gc.insets = new Insets(8, 10, 8, 10);
         gc.fill = GridBagConstraints.HORIZONTAL;
         gc.weightx = 1;
-        themPhanDauDoiMatKhau(khungNoiDung, gc);
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.gridwidth = 2;
+        khungNoiDung.add(taoTieuDeMuc("Thông tin mật khẩu"), gc);
+        gc.gridwidth = 1;
         khungTruongHienTaiMatKhau = taoTruongMatKhau();
         khungTruongMoiMatKhau = taoTruongMatKhau();
         khungTruongXacNhanMatKhau = taoTruongMatKhau();
-        themDong(khungNoiDung, gc, 2, "Mật khẩu hiện tại", khungTruongHienTaiMatKhau);
-        themDong(khungNoiDung, gc, 3, "Mật khẩu mới", khungTruongMoiMatKhau);
-        themDong(khungNoiDung, gc, 4, "Xác nhận mật khẩu", khungTruongXacNhanMatKhau);
+        themDong(khungNoiDung, gc, 1, "Mật khẩu hiện tại *", khungTruongHienTaiMatKhau);
+        themDong(khungNoiDung, gc, 2, "Mật khẩu mới *", khungTruongMoiMatKhau);
+        themDong(khungNoiDung, gc, 3, "Xác nhận mật khẩu *", khungTruongXacNhanMatKhau);
         nhanNhanDoManh = taoNhanDoManhMatKhau(khungNoiDung, gc);
         themGhiChuQuyTacMatKhau(khungNoiDung, gc);
         themThanhThaoTacDoiMatKhau(khungNoiDung, gc);
@@ -79,22 +88,10 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         return khungNoiDung;
     }
 
-    private void themPhanDauDoiMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
-        JLabel nhanTieuDe = taoTieuDeManHinh("Đổi mật khẩu");
-        JLabel nhanGoiY = new JLabel("Cập nhật mật khẩu đăng nhập của tài khoản hiện tại");
-        nhanGoiY.setForeground(MauUngDung.VAN_BAN_XAM);
-        gc.gridx = 0;
-        gc.gridy = 0;
-        gc.gridwidth = 2;
-        khungNoiDung.add(nhanTieuDe, gc);
-        gc.gridy++;
-        khungNoiDung.add(nhanGoiY, gc);
-    }
-
     private JLabel taoNhanDoManhMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
         JLabel nhanDoManh = new JLabel("");
         nhanDoManh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-        gc.gridy = 5;
+        gc.gridy = 4;
         gc.gridx = 1;
         gc.gridwidth = 1;
         khungNoiDung.add(nhanDoManh, gc);
@@ -134,7 +131,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
                                 + " biệt.");
         nhanQuyTac.setForeground(MauUngDung.VAN_BAN_XAM);
         nhanQuyTac.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
-        gc.gridy = 6;
+        gc.gridy = 5;
         gc.gridx = 0;
         gc.gridwidth = 2;
         khungNoiDung.add(nhanQuyTac, gc);
@@ -143,16 +140,16 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     private void themThanhThaoTacDoiMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
         JPanel khungCacThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         khungCacThaoTac.setOpaque(false);
-        NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnXoaTrang = new NutDinhDang("Xóa trắng", NutDinhDang.KieuNut.TRONG_SUOT);
         NutDinhDang btnLuu = new NutDinhDang("Lưu mật khẩu", NutDinhDang.KieuNut.CHINH);
-        khungCacThaoTac.add(btnHuy);
+        khungCacThaoTac.add(btnXoaTrang);
         khungCacThaoTac.add(btnLuu);
-        gc.gridy = 7;
+        gc.gridy = 6;
         khungNoiDung.add(khungCacThaoTac, gc);
-        btnHuy.addActionListener(
+        btnXoaTrang.addActionListener(
                 e -> {
                     if (coThayDoiChuaLuu()
-                            && !HopThoai.xacNhan(this, "Hủy bỏ thông tin mật khẩu đang nhập?")) {
+                            && !HopThoai.xacNhan(this, "Xóa trắng thông tin mật khẩu đang nhập?")) {
                         return;
                     }
                     xoaBieuMau();
@@ -168,7 +165,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
                         e -> khungTruongXacNhanMatKhau.layTruongMatKhau().requestFocusInWindow());
         khungTruongXacNhanMatKhau.layTruongMatKhau().addActionListener(e -> luuMatKhauMoi());
         dangKyBanPhimPhimTat("control S", e -> luuMatKhauMoi());
-        dangKyBanPhimPhimTat("ESCAPE", e -> btnHuy.doClick());
+        dangKyBanPhimPhimTat("ESCAPE", e -> btnXoaTrang.doClick());
     }
 
     private void xoaBieuMau() {
@@ -192,13 +189,22 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     }
 
     @Override
+    public void xuLyLamMoi() {
+        if (coThayDoiChuaLuu()
+                && !HopThoai.xacNhan(this, "Xóa trắng thông tin mật khẩu đang nhập?")) {
+            return;
+        }
+        xoaBieuMau();
+    }
+
+    @Override
     public void xuLyHienThi() {
         xoaBieuMau();
     }
 
     private TruongMatKhauAnHien taoTruongMatKhau() {
         TruongMatKhauAnHien khungTruong = new TruongMatKhauAnHien(20);
-        khungTruong.setPreferredSize(new Dimension(300, 36));
+        khungTruong.setPreferredSize(new Dimension(300, MauUngDung.CAO_DAU_VAO));
         return khungTruong;
     }
 
@@ -240,6 +246,10 @@ public final class DoiMatKhauPanel extends CoSoPanel {
                 () -> true,
                 () -> taiKhoanService.layThayDoiMatKhau(hienTai, moiMatKhau),
                 () -> {
+                    var phien = PhienDangNhapService.macDinh().layPhienHienTai();
+                    if (phien != null && phien.getTaiKhoan() != null) {
+                        phien.getTaiKhoan().setBatBuocDoiMatKhau(false);
+                    }
                     HopThoai.hienThiThongTin(this, "Đã cập nhật mật khẩu.", "Thành công");
                     xoaBieuMau();
                 },

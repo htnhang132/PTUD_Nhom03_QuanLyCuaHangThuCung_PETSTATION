@@ -4,7 +4,7 @@ package com.petstation.model.chung;
  * Trạng thái của hóa đơn bán hàng / dịch vụ. Mapping tương ứng cột trang_thai trong bảng hoa_don:
  * 'DA_THANH_TOAN', 'DA_HUY', 'CHO_THANH_TOAN', 'GIO_TREO'
  */
-public enum TrangThaiHoaDon {
+public enum TrangThaiHoaDon implements MaDBEnum {
     DA_THANH_TOAN("DA_THANH_TOAN", "Đã thanh toán"),
     DA_HUY("DA_HUY", "Đã hủy"),
     CHO_THANH_TOAN("CHO_THANH_TOAN", "Chờ thanh toán"),
@@ -31,13 +31,6 @@ public enum TrangThaiHoaDon {
     }
 
     public static TrangThaiHoaDon tuMaDB(String ma) {
-        if (ma == null || ma.isBlank()) return null;
-        for (TrangThaiHoaDon t : values()) {
-            if (t.maDB.equalsIgnoreCase(ma.trim())) {
-                return t;
-            }
-        }
-        throw new IllegalArgumentException(
-                "Không tìm thấy TrangThaiHoaDon tương ứng với mã: " + ma);
+        return MaDBEnum.tuMaDB(TrangThaiHoaDon.class, ma);
     }
 }

@@ -16,18 +16,18 @@ import com.petstation.model.chung.TrangThaiHopDong;
 import com.petstation.model.khachhang.KhachHang;
 import com.petstation.model.khachhang.ThuCung;
 import com.petstation.model.luutru.HopDongLuuTru;
-import com.petstation.model.luutru.LichSuThuCocHotel;
 import com.petstation.model.luutru.PhongHotel;
 import com.petstation.model.nhansu.NhanVien;
 import com.petstation.util.DuLieu;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
+    // 1. HÀM KHỞI TẠO, ĐẶT PHÒNG & NHẬN PHÒNG
+
     public HopDongLuuTruDAOImpl() {}
 
     @Override
@@ -220,6 +220,8 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
                 maPhong);
     }
 
+    // 2. NHẬT KÝ CHĂM SÓC & QUYẾT TOÁN PHÒNG
+
     @Override
     public long demNhatKy(String maHopDong) {
         return ThaoTacSQL.laySo(
@@ -298,6 +300,8 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
                         + " trang_thai='BAO_TRI'",
                 maPhong);
     }
+
+    // 3. QUẢN LÝ TIỀN CỌC & LỊCH SỬ THU CỌC
 
     @Override
     public int datMucCoc(long muc, String maHopDong) {
@@ -431,45 +435,6 @@ public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
                 pt,
                 khoa,
                 maHopDong);
-    }
-
-    @Override
-    public List<LichSuThuCocHotel> layLichSuTheoHopDong(String maHopDong) {
-        List<Object[]> rows =
-                truyVan(
-                        "SELECT ma_hop_dong, khoa_thu_coc, phuong_thuc, so_tien, khach_dua,"
-                            + " tien_thua, ma_phien, ma_nhan_vien_thu, tao_luc FROM"
-                            + " lich_su_thu_coc_hotel WHERE ma_hop_dong = ? ORDER BY tao_luc ASC",
-                        maHopDong);
-        List<LichSuThuCocHotel> ketQua = new ArrayList<>();
-        for (Object[] r : rows) {
-            LichSuThuCocHotel item = new LichSuThuCocHotel();
-            if (r[0] != null && !r[0].toString().isBlank()) {
-                HopDongLuuTru hd = new HopDongLuuTru();
-                hd.setMaHopDong(r[0].toString());
-                item.setHopDong(hd);
-            }
-            item.setKhoaThuCoc(r[1] != null ? r[1].toString() : null);
-            item.setPhuongThuc(r[2] != null ? r[2].toString() : null);
-            item.setSoTien(r[3] != null ? ((Number) r[3]).longValue() : 0L);
-            item.setKhachDua(r[4] != null ? ((Number) r[4]).longValue() : 0L);
-            item.setTienThua(r[5] != null ? ((Number) r[5]).longValue() : 0L);
-            if (r[6] != null && !r[6].toString().isBlank()) {
-                PhienLamViec phien = new PhienLamViec();
-                phien.setMaPhien(r[6].toString());
-                item.setPhienLamViec(phien);
-            }
-            if (r[7] != null && !r[7].toString().isBlank()) {
-                NhanVien nv = new NhanVien();
-                nv.setMaNhanVien(r[7].toString());
-                item.setNhanVienThu(nv);
-            }
-            if (r[8] instanceof Timestamp ts) {
-                item.setTaoLuc(ts.toLocalDateTime());
-            }
-            ketQua.add(item);
-        }
-        return ketQua;
     }
 
     @Override

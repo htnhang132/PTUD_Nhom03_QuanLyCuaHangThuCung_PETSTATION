@@ -38,7 +38,7 @@ public class TruongMatKhauAnHien extends JPanel {
         setLayout(new BorderLayout(5, 0));
         oTruongMatKhau = new JPasswordField(cacCot);
         oTruongMatKhau.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        oTruongMatKhau.setPreferredSize(new Dimension(220, 36));
+        oTruongMatKhau.setPreferredSize(new Dimension(220, MauUngDung.CAO_DAU_VAO));
         this.kyTuAnMacDinh = oTruongMatKhau.getEchoChar();
         btnNutBatTat = new JToggleButton();
         btnNutBatTat.setIcon(taoBieuTuongMat(false));

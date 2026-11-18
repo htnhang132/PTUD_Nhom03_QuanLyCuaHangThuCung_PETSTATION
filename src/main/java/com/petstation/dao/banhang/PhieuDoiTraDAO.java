@@ -3,6 +3,7 @@ package com.petstation.dao.banhang;
 import com.petstation.model.banhang.ChiTietDoiTra;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
+import com.petstation.model.banhang.PhieuDoiTra;
 import com.petstation.model.kho.LoHang;
 import com.petstation.model.kho.SanPham;
 
@@ -48,4 +49,24 @@ public interface PhieuDoiTraDAO {
             String maLo,
             int soLuong,
             long tienHoan);
+
+    default List<HoaDon> timHoaDonGanDay(int soNgay) {
+        return List.of();
+    }
+
+    default Optional<HoaDon> layThongTinHoaDonDoi(String maHoaDon) {
+        return Optional.empty();
+    }
+
+    default Optional<PhieuDoiTra> layPhieuDoi(String maPhieu) {
+        return Optional.empty();
+    }
+
+    default List<ChiTietDoiTra> layChiTietPhieuDoi(String maPhieu) {
+        return List.of();
+    }
+
+    default List<ChiTietHoaDon> layHangThayTheCuaPhieu(String maHoaDonThayThe) {
+        return List.of();
+    }
 }

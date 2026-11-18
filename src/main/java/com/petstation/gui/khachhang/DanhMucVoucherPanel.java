@@ -20,11 +20,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.SwingUtilities;
 
-// Màn hình con (Tab 2) trong Danh mục > Điểm thưởng và voucher
+// Màn hình con (Tab 1) trong Danh mục > Voucher và điểm thưởng
 public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     private final TichDiemService tichDiemService = new TichDiemService();
     private final Map<String, Boolean> quyenSuaCache = new ConcurrentHashMap<>();
     private final Set<String> dangTaiQuyenSua = ConcurrentHashMap.newKeySet();
+    private volatile Set<String> maVoucherDoiDiemSet;
     private final AtomicReference<BoChonNhieuKhachHang> boChonKhachRef;
 
     // 1. KIỂM TRA PHÂN QUYỀN & RÀNG BUỘC CHỈNH SỬA BẢN GHI VOUCHER
@@ -39,6 +40,12 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
         if (dong == null || dong[0] == null) return false;
         if (DinhDang.doc(String.valueOf(dong[4])) > 0) return false;
         String ma = String.valueOf(dong[0]);
+        Set<String> tapDoiDiem = maVoucherDoiDiemSet;
+        if (tapDoiDiem != null) {
+            boolean choPhep = !tapDoiDiem.contains(ma);
+            quyenSuaCache.put(ma, choPhep);
+            return choPhep;
+        }
         Boolean cached = quyenSuaCache.get(ma);
         if (cached != null) return cached;
         if (!SwingUtilities.isEventDispatchThread() || !DieuKienTaiDuLieu.coTheTachLuong()) {
@@ -87,6 +94,20 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
     @Override
     protected void khiLamMoiDuLieu() {
         quyenSuaCache.clear();
+        maVoucherDoiDiemSet = null;
+        if (DieuKienTaiDuLieu.coTheTachLuong()) {
+            TacVuNen.chayCoPhien(
+                    this,
+                    this::isDisplayable,
+                    () -> tichDiemService.layTapMaVoucherDoiDiem().orElse(null),
+                    tap -> {
+                        if (tap != null) {
+                            maVoucherDoiDiemSet = Set.copyOf(tap);
+                            capNhatTrangThaiNut();
+                        }
+                    },
+                    ex -> {});
+        }
         BoChonNhieuKhachHang boChon = boChonKhachRef.get();
         if (boChon != null) boChon.lamMoiNguon();
     }

@@ -12,6 +12,8 @@ import com.petstation.service.hethong.PhienDangNhapService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 // Tầng xử lý nghiệp vụ Tích điểm & Voucher khách hàng (Service)
 public final class TichDiemService {
@@ -109,5 +111,17 @@ public final class TichDiemService {
     public List<Voucher> layVoucher(String maKhachHang) {
         phienDangNhapService.yeuCau(Quyen.BAN_HANG);
         return tichDiemDAO.layCuaKhach(maKhachHang);
+    }
+
+    public Optional<Set<String>> layTapMaVoucherDoiDiem() {
+        if (!phienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_KHUYEN_MAI)) {
+            return Optional.empty();
+        }
+        return tichDiemDAO.layTapMaVoucherDoiDiem();
+    }
+
+    public String layHangKhachHang(String maKhachHang) {
+        phienDangNhapService.layPhien();
+        return tichDiemDAO.layHangKhachHang(maKhachHang).orElse("");
     }
 }

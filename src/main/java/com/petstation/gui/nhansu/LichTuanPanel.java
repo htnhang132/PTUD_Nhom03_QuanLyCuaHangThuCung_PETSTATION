@@ -40,6 +40,7 @@ import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -63,6 +64,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -70,14 +72,18 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 public class LichTuanPanel extends CoSoPanel {
+    // 1. HẰNG SỐ & CẤU TRÚC DỮ LIỆU
+
     private static final Logger LOG = LoggerFactory.getLogger(LichTuanPanel.class);
 
     public enum CheDo {
@@ -90,21 +96,23 @@ public class LichTuanPanel extends CoSoPanel {
         "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"
     };
 
-    private static final Color TIEU_DE_NEN = MauUngDung.mau(0xEAF1FB);
+    private static final Color TIEU_DE_NEN = MauUngDung.KEM_NEN_NHAN;
 
-    private static final Color TIEU_DE_CHU = MauUngDung.mau(0x1F6FB5);
+    private static final Color TIEU_DE_CHU = MauUngDung.NAU;
 
-    private static final Color DONG_NHAN_NEN = MauUngDung.mau(0xFFFFCC);
+    private static final Color DONG_NHAN_NEN = MauUngDung.CANH_BAO_NEN;
 
-    private static final Color BAN_HANG = MauUngDung.mau(0xE6EAEE);
+    private static final Color BAN_HANG = MauUngDung.XAM_NEN_NHAT;
 
-    private static final Color SPA = MauUngDung.mau(0x72D12F);
+    private static final Color SPA = MauUngDung.XANH_LA_CA;
 
-    private static final Color KHO = MauUngDung.mau(0x92D2F6);
+    private static final Color KHO = MauUngDung.XANH_NHAT_CA;
 
-    private static final Color QUAN_LY = MauUngDung.mau(0xFFF28C);
+    private static final Color QUAN_LY = MauUngDung.VANG_CA;
 
-    private static final Color NGHI_PHEP = MauUngDung.mau(0xE04B3A);
+    private static final Color NGHI_PHEP = MauUngDung.VAN_BAN_NGUY_HIEM;
+
+    // 2. THUỘC TÍNH & TRẠNG THÁI LỊCH TUẦN
 
     private final CheDo cheDo;
 
@@ -114,7 +122,7 @@ public class LichTuanPanel extends CoSoPanel {
 
     private final BoChonNgay oTruongNgay = new BoChonNgay();
 
-    private final JTextField oLocNhanVien = new JTextField(11);
+    private final JTextField oLocNhanVien;
 
     private final JRadioButton btnTatCa = new JRadioButton("Tất cả", true);
 
@@ -164,9 +172,12 @@ public class LichTuanPanel extends CoSoPanel {
         }
     }
 
+    // 3. HÀM KHỞI TẠO & VÒNG ĐỜI PANEL
+
     public LichTuanPanel(CheDo cheDo, String hienTaiNguoiDung) {
         this.cheDo = cheDo;
         this.hienTaiNguoiDung = hienTaiNguoiDung == null ? "" : hienTaiNguoiDung;
+        this.oLocNhanVien = taoOTimKiem("Lọc tên, mã NV, chức vụ...");
         setLayout(new BorderLayout(0, 10));
         String tieuDe =
                 switch (cheDo) {
@@ -212,6 +223,66 @@ public class LichTuanPanel extends CoSoPanel {
         super.removeNotify();
     }
 
+    @Override
+    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
+        return new KhaNangThanhCongCu(false, false, cheDo != CheDo.CA_NHAN, true, false, true);
+    }
+
+    @Override
+    public void xuLyTimKiem() {
+        if (cheDo != CheDo.CA_NHAN) {
+            oLocNhanVien.requestFocusInWindow();
+            oLocNhanVien.selectAll();
+        }
+    }
+
+    @Override
+    public void xuLyIn() {
+        inLichLamViec();
+    }
+
+    @Override
+    public void xuLyHienThi() {
+        dungLai();
+    }
+
+    @Override
+    public void xuLyLamMoi() {
+        dangDatLaiBoLoc = true;
+        try {
+            btnTatCa.setSelected(true);
+            if (!oLocNhanVien.getText().isEmpty()) oLocNhanVien.setText("");
+            LocalDate homNay = LocalDate.now();
+            thuHai = LichLamViecService.macDinh().layThuHaiCuaTuan(homNay);
+            oTruongNgay.datNgayDuocChon(homNay);
+        } finally {
+            dangDatLaiBoLoc = false;
+        }
+        dungLai();
+    }
+
+    @Override
+    protected String layTieuDeTroGiup() {
+        return "Lịch làm việc theo tuần";
+    }
+
+    @Override
+    protected String layNoiDungTroGiup() {
+        return switch (cheDo) {
+            case HIEN_THI_TAT_CA ->
+                    "Lịch cả cửa hàng theo tuần. Dùng Trở về / Tiếp, chọn ngày hoặc Hiện tại để đổi"
+                            + " tuần. Ô viền đỏ là ca thiếu người.";
+            case CA_NHAN ->
+                    "Ca của bạn trong tuần, tổng giờ trong tháng. Bấm \"Đăng ký nghỉ phép\" để gửi"
+                            + " yêu cầu sang Cửa hàng trưởng duyệt.";
+            case SUA ->
+                    "Chọn tuần rồi bấm \"+ Thêm nhân viên\" trong ô để phân ca; bấm vào thẻ nhân"
+                            + " viên để bỏ khỏi ca. Ô viền đỏ là ca thiếu người.";
+        };
+    }
+
+    // 4. XÂY DỰNG THANH CÔNG CỤ & LƯỚI TUẦN
+
     private JPanel taoThanhCongCu() {
         ThanhDanhSach khungThanh = new ThanhDanhSach();
         themCumBoLoc(khungThanh);
@@ -238,16 +309,23 @@ public class LichTuanPanel extends CoSoPanel {
         }
         khungThanh.themBoLoc(nhomCheDo);
         if (cheDo != CheDo.CA_NHAN) {
-            oLocNhanVien.setPreferredSize(new Dimension(145, 34));
+            oLocNhanVien.setPreferredSize(new Dimension(170, MauUngDung.CAO_DAU_VAO));
             oLocNhanVien.setToolTipText("Lọc theo tên, mã NV hoặc chức vụ (Ctrl+F)");
             oLocNhanVien.addActionListener(
                     suKien -> {
                         if (!dangDatLaiBoLoc) veLuoiTuan();
                     });
+            Timer henGioLocNv =
+                    new Timer(
+                            150,
+                            e -> {
+                                if (!dangDatLaiBoLoc) veLuoiTuan();
+                            });
+            henGioLocNv.setRepeats(false);
             themBoLangNgheTaiLieu(
                     oLocNhanVien,
                     () -> {
-                        if (!dangDatLaiBoLoc) veLuoiTuan();
+                        if (!dangDatLaiBoLoc) henGioLocNv.restart();
                     });
             khungThanh.themBoLoc("Lọc NV:", oLocNhanVien);
         }
@@ -258,13 +336,12 @@ public class LichTuanPanel extends CoSoPanel {
                 taoNutCongCu(
                         "< Tuần trước",
                         NutDinhDang.KieuNut.TRONG_SUOT,
-                        110,
                         null,
                         () -> {
                             thuHai = thuHai.minusWeeks(1);
                             dungLai();
                         }));
-        oTruongNgay.setPreferredSize(new Dimension(140, 34));
+        oTruongNgay.setPreferredSize(new Dimension(140, MauUngDung.CAO_DAU_VAO));
         oTruongNgay.addPropertyChangeListener(
                 "date",
                 suKien -> {
@@ -282,7 +359,6 @@ public class LichTuanPanel extends CoSoPanel {
                 taoNutCongCu(
                         "Tuần sau >",
                         NutDinhDang.KieuNut.TRONG_SUOT,
-                        105,
                         null,
                         () -> {
                             thuHai = thuHai.plusWeeks(1);
@@ -292,7 +368,6 @@ public class LichTuanPanel extends CoSoPanel {
                 taoNutCongCu(
                         "Hiện tại",
                         NutDinhDang.KieuNut.PHU,
-                        90,
                         null,
                         () -> {
                             thuHai = LichLamViecService.macDinh().layThuHaiCuaTuan(LocalDate.now());
@@ -306,21 +381,18 @@ public class LichTuanPanel extends CoSoPanel {
                     taoNutCongCu(
                             "Sao chép tuần trước",
                             NutDinhDang.KieuNut.TRONG_SUOT,
-                            150,
                             "Sao chép phân ca từ tuần trước sang tuần này",
                             this::saoChepLichTuan));
             khungThanh.add(
                     taoNutCongCu(
                             "Đổi ca",
                             NutDinhDang.KieuNut.TRONG_SUOT,
-                            85,
                             "Hoán đổi ca làm việc trực tiếp giữa 2 nhân viên",
                             this::hoanDoiCaNhanVien));
             khungThanh.add(
                     taoNutCongCu(
                             "Khóa lịch tuần",
                             NutDinhDang.KieuNut.PHU,
-                            125,
                             "Khóa lịch tuần này để công bố chính thức",
                             this::khoaLichTuan));
         } else if (cheDo == CheDo.CA_NHAN) {
@@ -328,33 +400,34 @@ public class LichTuanPanel extends CoSoPanel {
                     taoNutCongCu(
                             "Đăng ký nghỉ phép",
                             NutDinhDang.KieuNut.PHU,
-                            145,
                             null,
                             () -> ThaoTacNhanh.layNghiPhep(this)));
             khungThanh.add(
                     taoNutCongCu(
                             "Yêu cầu đổi ca",
                             NutDinhDang.KieuNut.TRONG_SUOT,
-                            130,
                             null,
                             this::guiYeuCauDoiCaCaNhan));
         }
         khungThanh.add(
                 taoNutCongCu(
+                        "In lịch",
+                        NutDinhDang.KieuNut.TRONG_SUOT,
+                        "In lịch làm việc tuần (Ctrl+P)",
+                        this::inLichLamViec));
+        NutDinhDang btnXuat =
+                taoNutCongCu(
                         "Xuất Excel",
                         NutDinhDang.KieuNut.TRONG_SUOT,
-                        100,
                         "Xuất lịch làm việc tuần ra file Excel",
-                        this::xuatExcelLichTuan));
-        khungThanh.add(
-                taoNutCongCu(
-                        "In lịch", NutDinhDang.KieuNut.TRONG_SUOT, 85, null, this::inLichLamViec));
+                        this::xuatExcelLichTuan);
+        btnXuat.putClientProperty("luonCuoi", Boolean.TRUE);
+        khungThanh.add(btnXuat);
     }
 
     private static NutDinhDang taoNutCongCu(
-            String nhan, NutDinhDang.KieuNut kieu, int rong, String goiY, Runnable hanhDong) {
+            String nhan, NutDinhDang.KieuNut kieu, String goiY, Runnable hanhDong) {
         NutDinhDang btn = new NutDinhDang(nhan, kieu);
-        btn.setPreferredSize(new Dimension(rong, 34));
         if (goiY != null) btn.setToolTipText(goiY);
         btn.addActionListener(e -> hanhDong.run());
         return btn;
@@ -366,7 +439,6 @@ public class LichTuanPanel extends CoSoPanel {
         khungChuGiai.add(layNhan(BAN_HANG, "Nhân viên bán hàng"));
         khungChuGiai.add(layNhan(SPA, "Nhân viên Spa/Hotel"));
         khungChuGiai.add(layNhan(KHO, "Nhân viên kho"));
-        khungChuGiai.add(layNhan(QUAN_LY, "Cửa hàng trưởng"));
         khungChuGiai.add(layNhan(NGHI_PHEP, "Nghỉ phép"));
         JLabel nhanCanhBao = new JLabel("Viền đỏ = ca thiếu người");
         nhanCanhBao.setForeground(NGHI_PHEP);
@@ -474,9 +546,9 @@ public class LichTuanPanel extends CoSoPanel {
 
     private JPanel layOTieuDe(String tren, String duoi, boolean homNay) {
         JPanel khungVungDangXet = new JPanel(new BorderLayout());
-        khungVungDangXet.setBackground(homNay ? MauUngDung.mau(0xD3E6FA) : TIEU_DE_NEN);
+        khungVungDangXet.setBackground(homNay ? MauUngDung.XANH_NHAT_CA : TIEU_DE_NEN);
         khungVungDangXet.setBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 1, MauUngDung.mau(0xC9D6E5)));
+                BorderFactory.createMatteBorder(0, 0, 2, 1, MauUngDung.XAM_VIEN_TRUNG));
         khungVungDangXet.setPreferredSize(new Dimension(duoi == null ? 96 : 104, 52));
         JLabel nhanDongDangXet =
                 new JLabel(
@@ -495,7 +567,7 @@ public class LichTuanPanel extends CoSoPanel {
         JPanel khungVungDangXet = new JPanel(new BorderLayout());
         khungVungDangXet.setBackground(DONG_NHAN_NEN);
         khungVungDangXet.setBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 1, MauUngDung.mau(0xE3E3B5)));
+                BorderFactory.createMatteBorder(0, 0, 1, 1, MauUngDung.KEM_VIEN));
         JLabel nhanDongDangXet =
                 new JLabel(
                         "<html><div style='text-align:center'><b>"
@@ -541,7 +613,7 @@ public class LichTuanPanel extends CoSoPanel {
                 };
         khungVungDangXet.setLayout(new BoxLayout(khungVungDangXet, BoxLayout.Y_AXIS));
         khungVungDangXet.setBackground(
-                ngay.equals(LocalDate.now()) ? MauUngDung.mau(0xFCFDFF) : Color.WHITE);
+                ngay.equals(LocalDate.now()) ? MauUngDung.XAM_SIEU_NHAT : Color.WHITE);
         List<Muc> cacMucTrongO =
                 lichTuanHienTai.stream()
                         .filter(m -> m.layNgay().equals(ngay) && m.layCaLamViec() == caLamViec)
@@ -552,7 +624,7 @@ public class LichTuanPanel extends CoSoPanel {
                         && soNguoiDiLam < LichLamViecService.NHO_NHAT_NHAN_VIEN[caLamViec];
         khungVungDangXet.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 1, MauUngDung.mau(0xE3E7EC)),
+                        BorderFactory.createMatteBorder(0, 0, 1, 1, MauUngDung.XAM_VIEN_NHE),
                         ngan1 && !btnNghiPhep.isSelected()
                                 ? BorderFactory.createLineBorder(NGHI_PHEP, 2)
                                 : new EmptyBorder(2, 2, 2, 2)));
@@ -607,7 +679,7 @@ public class LichTuanPanel extends CoSoPanel {
                                 : viTriThuong.contains("kho")
                                         ? KHO
                                         : viTriThuong.contains("trưởng") ? QUAN_LY : BAN_HANG;
-        Color chu = suKien.kiemTraNghiPhep() ? Color.WHITE : MauUngDung.mau(0x1B2A3A);
+        Color chu = suKien.kiemTraNghiPhep() ? Color.WHITE : MauUngDung.XAM_LICH_CHU;
         JPanel khungThe = new JPanel(new BorderLayout());
         khungThe.setBackground(nen);
         khungThe.setBorder(
@@ -617,9 +689,9 @@ public class LichTuanPanel extends CoSoPanel {
         khungThe.setAlignmentX(Component.LEFT_ALIGNMENT);
         String noiDung =
                 "<html><body style='width:88px'><b>"
-                        + thoatHtml(ten)
+                        + DinhDang.thoatHtml(ten)
                         + "</b><br>"
-                        + thoatHtml(viTri)
+                        + DinhDang.thoatHtml(viTri)
                         + "<br>"
                         + (suKien.kiemTraNghiPhep()
                                 ? "<b>Nghỉ phép</b>"
@@ -690,6 +762,8 @@ public class LichTuanPanel extends CoSoPanel {
                 loi -> TacVuNen.baoLoi(this, loi));
     }
 
+    // 5. PHÂN CA & HOÁN ĐỔI CA
+
     private void moHopThoaiPhanCa(LocalDate ngay, int caLamViec) {
         var phien = PhienDangNhapService.macDinh().yeuCauHienTai();
         LocalDate tuan = thuHai;
@@ -702,7 +776,7 @@ public class LichTuanPanel extends CoSoPanel {
                     List<Muc> lichTuan = LichLamViecService.macDinh().layLichTrongTuan(tuan);
                     Map<String, Integer> gioTuanTheoNv =
                             LichLamViecService.macDinh().tinhGioTatCaTrongTuan(tuan);
-                    int gioToiDaTuan = docGioSoCauHinh("SO_GIO_TOI_DA_MOI_TUAN", 42, 7);
+                    int gioToiDaTuan = docGioSoCauHinh("SO_GIO_TOI_DA_MOI_TUAN", 40, 7);
                     return new DuLieuPhanCa(dsNv, lichTuan, gioTuanTheoNv, gioToiDaTuan);
                 },
                 () -> setCursor(Cursor.getDefaultCursor()),
@@ -723,8 +797,7 @@ public class LichTuanPanel extends CoSoPanel {
                                 + ngay.format(DinhDang.NGAY_CHUAN),
                         Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setLayout(new BorderLayout(0, 10));
-        dlg.setSize(680, 500);
-        HopThoai.chuanHoaCuaSo(dlg, owner);
+        dangKyPhimTatHuyDialog(dlg);
         List<Muc> hienCo =
                 new ArrayList<>(
                         duLieu.lichTuan.stream()
@@ -737,12 +810,15 @@ public class LichTuanPanel extends CoSoPanel {
         for (Muc m : hienCo) if (!m.kiemTraNghiPhep()) maHienCo.add(m.layMaNhanVien());
         DefaultTableModel model = taoMoHinhPhanCa(ngay, caLamViec, maHienCo, duLieu);
         JTable table = taoBangPhanCa(model);
+        table.setPreferredScrollableViewportSize(new Dimension(640, 320));
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
         JPanel khungDuoiChinh = taoChanTrangPhanCa(dlg, ngay, caLamViec, hienCo, maHienCo, model);
         dlg.add(taoBoLocPhanCa(sorter), BorderLayout.NORTH);
         dlg.add(new JScrollPane(table), BorderLayout.CENTER);
         dlg.add(khungDuoiChinh, BorderLayout.SOUTH);
+        HopThoai.canChinhKichThuocVuaManHinh(dlg, 660, 420);
+        HopThoai.chuanHoaCuaSo(dlg, owner);
         dlg.setVisible(true);
     }
 
@@ -781,13 +857,25 @@ public class LichTuanPanel extends CoSoPanel {
         for (Object[] nv : duLieu.dsNhanVien) {
             if ("Nghỉ việc".equals(String.valueOf(nv[6]))) continue;
             String ma = String.valueOf(nv[0]);
+            String chucVu = String.valueOf(nv[4]).toLowerCase();
+            if (!maHienCo.contains(ma)
+                    && (chucVu.contains("trưởng") || chucVu.contains("quản lý"))) {
+                continue;
+            }
             int gioTuan = duLieu.gioTuanTheoNv.getOrDefault(ma, 0);
+            boolean daCoTrongCa = maHienCo.contains(ma);
             String canhBao =
                     xacDinhCanhBaoPhanCa(
-                            ngay, caLamViec, ma, gioTuan, duLieu.gioToiDaTuan, duLieu.lichTuan);
+                            ngay,
+                            caLamViec,
+                            ma,
+                            daCoTrongCa,
+                            gioTuan,
+                            duLieu.gioToiDaTuan,
+                            duLieu.lichTuan);
             model.addRow(
                     new Object[] {
-                        maHienCo.contains(ma),
+                        daCoTrongCa,
                         ma,
                         String.valueOf(nv[1]),
                         String.valueOf(nv[4]),
@@ -802,6 +890,7 @@ public class LichTuanPanel extends CoSoPanel {
             LocalDate ngay,
             int caLamViec,
             String ma,
+            boolean daCoTrongCa,
             int gioTuan,
             int gioToiDaTuan,
             List<Muc> lichTuan) {
@@ -811,9 +900,13 @@ public class LichTuanPanel extends CoSoPanel {
             if (m.layCaLamViec() != caLamViec)
                 return "[!] Đã có " + LichLamViecService.CAC_CA_LAM_VIEC[m.layCaLamViec()];
         }
-        return gioTuan >= gioToiDaTuan
-                ? "[!] Đã làm " + gioTuan + "h/" + gioToiDaTuan + "h tuần này"
-                : "";
+        if (gioTuan >= gioToiDaTuan) {
+            return "[!] Đã làm " + gioTuan + "h/" + gioToiDaTuan + "h tuần này";
+        }
+        if (!daCoTrongCa && gioTuan + 7 > gioToiDaTuan) {
+            return "[!] Sẽ vượt " + gioToiDaTuan + "h nếu thêm (+7h)";
+        }
+        return "";
     }
 
     private static JTable taoBangPhanCa(DefaultTableModel model) {
@@ -830,10 +923,13 @@ public class LichTuanPanel extends CoSoPanel {
         JPanel khungTrenChinh = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         khungTrenChinh.setOpaque(false);
         JTextField oTimKiemNhanh = new JTextField(14);
-        oTimKiemNhanh.setToolTipText("Tìm tên hoặc mã nhân viên...");
+        oTimKiemNhanh.setPreferredSize(new Dimension(180, MauUngDung.CAO_DAU_VAO));
+        oTimKiemNhanh.putClientProperty("JTextField.showClearButton", true);
+        oTimKiemNhanh.putClientProperty(
+                "JTextField.placeholderText", "Tìm tên hoặc mã nhân viên...");
         JComboBox<String> cboRole =
-                new JComboBox<>(
-                        new String[] {"Tất cả", "Bán hàng", "Spa", "Kho", "Cửa hàng trưởng"});
+                new JComboBox<>(new String[] {"Tất cả", "Bán hàng", "Spa", "Kho"});
+        cboRole.setPreferredSize(new Dimension(160, MauUngDung.CAO_DAU_VAO));
         Runnable filterAction =
                 () ->
                         apDungLocPhanCa(
@@ -888,7 +984,8 @@ public class LichTuanPanel extends CoSoPanel {
         nhanThongTin.setForeground(MauUngDung.VAN_BAN_XAM);
         JPanel khungChuaNut = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         NutDinhDang nutLuuThayDoi = new NutDinhDang("Lưu phân ca", NutDinhDang.KieuNut.CHINH);
-        NutDinhDang nutHuyBo = new NutDinhDang("Đóng", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang nutHuyBo = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        dlg.getRootPane().setDefaultButton(nutLuuThayDoi);
         nutLuuThayDoi.addActionListener(
                 e -> luuPhanCa(dlg, nutLuuThayDoi, ngay, caLamViec, hienCo, maHienCo, model));
         nutHuyBo.addActionListener(e -> dlg.dispose());
@@ -937,7 +1034,7 @@ public class LichTuanPanel extends CoSoPanel {
                 dlg::isDisplayable,
                 () -> capNhatPhanCaNen(ngay, caLamViec, hienCo, toAdd, toRemove),
                 () -> nutLuuThayDoi.setEnabled(true),
-                ketQua -> xuLyKetQuaPhanCa(dlg, ketQua, maHienCo, hienCo),
+                ketQua -> xuLyKetQuaPhanCa(dlg, ketQua, maHienCo, hienCo, model),
                 loi -> TacVuNen.baoLoi(dlg, loi));
     }
 
@@ -981,7 +1078,11 @@ public class LichTuanPanel extends CoSoPanel {
 
     @SuppressWarnings("unchecked")
     private void xuLyKetQuaPhanCa(
-            JDialog dlg, Object[] ketQua, Set<String> maHienCo, List<Muc> hienCo) {
+            JDialog dlg,
+            Object[] ketQua,
+            Set<String> maHienCo,
+            List<Muc> hienCo,
+            DefaultTableModel model) {
         List<String> cacLoi = (List<String>) ketQua[0];
         List<String> daThem = (List<String>) ketQua[1];
         List<String> daXoa = (List<String>) ketQua[2];
@@ -990,6 +1091,10 @@ public class LichTuanPanel extends CoSoPanel {
         maHienCo.removeAll(daXoa);
         hienCo.clear();
         hienCo.addAll(capNhat);
+        for (int r = 0; r < model.getRowCount(); r++) {
+            String ma = String.valueOf(model.getValueAt(r, 1));
+            model.setValueAt(maHienCo.contains(ma), r, 0);
+        }
         for (String loi : cacLoi) HopThoai.hienThiCanhBao(dlg, loi);
         dungLai();
         if (cacLoi.isEmpty()) dlg.dispose();
@@ -1027,8 +1132,7 @@ public class LichTuanPanel extends CoSoPanel {
                         Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setLayout(new BorderLayout(0, 12));
         dlg.getContentPane().setBackground(MauUngDung.NEN_KEM);
-        dlg.setSize(660, 380);
-        HopThoai.chuanHoaCuaSo(dlg, owner);
+        dangKyPhimTatHuyDialog(dlg);
         JComboBox<String> cboDay1 = new JComboBox<>(), cboDay2 = new JComboBox<>();
         JComboBox<String> cboShift1 = new JComboBox<>(LichLamViecService.CAC_CA_LAM_VIEC);
         JComboBox<String> cboShift2 = new JComboBox<>(LichLamViecService.CAC_CA_LAM_VIEC);
@@ -1044,7 +1148,8 @@ public class LichTuanPanel extends CoSoPanel {
         khungCacNutNho.setBorder(new EmptyBorder(0, 18, 14, 18));
         NutDinhDang nutXacNhanDongY =
                 new NutDinhDang("Xác nhận hoán đổi", NutDinhDang.KieuNut.CHINH);
-        NutDinhDang nutDongHopThoai = new NutDinhDang("Đóng", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang nutDongHopThoai = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        dlg.getRootPane().setDefaultButton(nutXacNhanDongY);
         nutXacNhanDongY.addActionListener(
                 e ->
                         thucHienHoanDoiCa(
@@ -1061,6 +1166,8 @@ public class LichTuanPanel extends CoSoPanel {
         khungCacNutNho.add(nutXacNhanDongY);
         dlg.add(khungTrungTam, BorderLayout.CENTER);
         dlg.add(khungCacNutNho, BorderLayout.SOUTH);
+        HopThoai.canChinhKichThuocVuaManHinh(dlg, 560, 280);
+        HopThoai.chuanHoaCuaSo(dlg, owner);
         dlg.setVisible(true);
     }
 
@@ -1078,9 +1185,9 @@ public class LichTuanPanel extends CoSoPanel {
         theCa.add(nhanTieuDe, BorderLayout.NORTH);
         JPanel khungTam = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
         khungTam.setOpaque(false);
-        cboDay.setPreferredSize(new Dimension(135, 32));
-        cboShift.setPreferredSize(new Dimension(110, 32));
-        cboStaff.setPreferredSize(new Dimension(180, 32));
+        cboDay.setPreferredSize(new Dimension(135, MauUngDung.CAO_DAU_VAO));
+        cboShift.setPreferredSize(new Dimension(110, MauUngDung.CAO_DAU_VAO));
+        cboStaff.setPreferredSize(new Dimension(180, MauUngDung.CAO_DAU_VAO));
         theCa.add(khungTam, BorderLayout.CENTER);
         for (int i = 0; i < 7; i++)
             cboDay.addItem(THU[i] + " (" + thuHai.plusDays(i).format(DinhDang.NGAY_CHUAN) + ")");
@@ -1174,6 +1281,8 @@ public class LichTuanPanel extends CoSoPanel {
                 },
                 loi -> TacVuNen.baoLoi(this, loi));
     }
+
+    // 6. YÊU CẦU ĐỔI CA CÁ NHÂN
 
     private void guiYeuCauDoiCaCaNhan() {
         List<Muc> caCuaToi =
@@ -1290,9 +1399,18 @@ public class LichTuanPanel extends CoSoPanel {
         dlg.add(form, BorderLayout.CENTER);
         dlg.add(chan, BorderLayout.SOUTH);
         dlg.pack();
-        dlg.setLocationRelativeTo(this);
+        HopThoai.chuanHoaCuaSo(dlg, owner);
+        dangKyPhimTatHuyDialog(dlg);
         dlg.setVisible(true);
         return ketQua[0];
+    }
+
+    private static void dangKyPhimTatHuyDialog(JDialog dlg) {
+        dlg.getRootPane()
+                .registerKeyboardAction(
+                        e -> dlg.dispose(),
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                        JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private void napCaDongNghiep(
@@ -1326,10 +1444,14 @@ public class LichTuanPanel extends CoSoPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4, 4, 4, 4);
         gbc.anchor = GridBagConstraints.WEST;
-        themHangFormDoiCa(khung, gbc, 0, "Ca của bạn:", cboCaToi);
-        themHangFormDoiCa(khung, gbc, 1, "Đồng nghiệp:", cboDongNghiep);
-        themHangFormDoiCa(khung, gbc, 2, "Ca đồng nghiệp:", cboCaDongNghiep);
-        themHangFormDoiCa(khung, gbc, 3, "Lý do đổi ca:", oLyDo);
+        cboCaToi.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        cboDongNghiep.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        cboCaDongNghiep.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        oLyDo.setPreferredSize(new Dimension(240, MauUngDung.CAO_DAU_VAO));
+        themHangFormDoiCa(khung, gbc, 0, "Ca của bạn *", cboCaToi);
+        themHangFormDoiCa(khung, gbc, 1, "Đồng nghiệp *", cboDongNghiep);
+        themHangFormDoiCa(khung, gbc, 2, "Ca đồng nghiệp *", cboCaDongNghiep);
+        themHangFormDoiCa(khung, gbc, 3, "Lý do đổi ca *", oLyDo);
         return khung;
     }
 
@@ -1357,8 +1479,14 @@ public class LichTuanPanel extends CoSoPanel {
             String[][] ketQua) {
         NutDinhDang nutGui = new NutDinhDang("Gửi yêu cầu", NutDinhDang.KieuNut.CHINH);
         NutDinhDang nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
+        dlg.getRootPane().setDefaultButton(nutGui);
         nutGui.addActionListener(
                 e -> {
+                    if (cboCaToi.getSelectedItem() == null
+                            || cboDongNghiep.getSelectedIndex() < 0) {
+                        HopThoai.hienThiCanhBao(dlg, "Vui lòng chọn đầy đủ ca và đồng nghiệp.");
+                        return;
+                    }
                     String ca1Nhan = String.valueOf(cboCaToi.getSelectedItem());
                     String khoa1 = ca1Nhan.substring(0, ca1Nhan.indexOf(" - "));
                     if (!kiemTraThoiGianBaoTruocDoiCa(dlg, khoa1, soGioBaoTruoc)) return;
@@ -1375,6 +1503,11 @@ public class LichTuanPanel extends CoSoPanel {
                             ca2Nhan.startsWith("NHUONG_CA|")
                                     ? ""
                                     : ca2Nhan.substring(0, ca2Nhan.indexOf(" - "));
+                    if (khoa1.equals(khoa2)) {
+                        HopThoai.hienThiCanhBao(
+                                dlg, "Không thể đổi với ca trùng ngày và ca hiện tại.");
+                        return;
+                    }
                     String moTaSau =
                             khoa2.isEmpty()
                                     ? "Nhường ca cho " + tenDn
@@ -1402,8 +1535,10 @@ public class LichTuanPanel extends CoSoPanel {
         if (phan.length == 2) {
             LocalDate ngayCa = LocalDate.parse(phan[0], DinhDang.NGAY_CHUAN);
             LocalTime gioBatDau = LichLamViecService.layGioBatDauCa(Integer.parseInt(phan[1]));
-            if (Duration.between(LocalDateTime.now(), LocalDateTime.of(ngayCa, gioBatDau)).toHours()
-                    < soGioBaoTruoc) {
+            long phutConLai =
+                    Duration.between(LocalDateTime.now(), LocalDateTime.of(ngayCa, gioBatDau))
+                            .toMinutes();
+            if (phutConLai < 0 || phutConLai < (long) soGioBaoTruoc * 60L) {
                 HopThoai.hienThiCanhBao(
                         cha,
                         "Yêu cầu đổi ca phải được gửi trước ít nhất "
@@ -1414,6 +1549,8 @@ public class LichTuanPanel extends CoSoPanel {
         }
         return true;
     }
+
+    // 7. THỐNG KÊ, IN & XUẤT EXCEL
 
     private void capNhatTomTat() {
         LocalDate ketThuc = thuHai.plusDays(6);
@@ -1585,72 +1722,5 @@ public class LichTuanPanel extends CoSoPanel {
             ds.add(muc.kiemTraNghiPhep() ? ten + " (Nghỉ phép)" : ten);
         }
         return String.join("\n", ds);
-    }
-
-    private static String thoatHtml(String giaTri) {
-        if (giaTri == null) return "";
-        return giaTri.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#39;");
-    }
-
-    @Override
-    public KhaNangThanhCongCu layKhaNangThanhCongCu() {
-        return new KhaNangThanhCongCu(false, false, cheDo != CheDo.CA_NHAN, true, false, true);
-    }
-
-    @Override
-    public void xuLyTimKiem() {
-        if (cheDo != CheDo.CA_NHAN) {
-            oLocNhanVien.requestFocusInWindow();
-            oLocNhanVien.selectAll();
-        }
-    }
-
-    @Override
-    public void xuLyIn() {
-        inLichLamViec();
-    }
-
-    @Override
-    public void xuLyHienThi() {
-        dungLai();
-    }
-
-    @Override
-    public void xuLyLamMoi() {
-        dangDatLaiBoLoc = true;
-        try {
-            btnTatCa.setSelected(true);
-            if (!oLocNhanVien.getText().isEmpty()) oLocNhanVien.setText("");
-            LocalDate homNay = LocalDate.now();
-            thuHai = LichLamViecService.macDinh().layThuHaiCuaTuan(homNay);
-            oTruongNgay.datNgayDuocChon(homNay);
-        } finally {
-            dangDatLaiBoLoc = false;
-        }
-        dungLai();
-    }
-
-    @Override
-    protected String layTieuDeTroGiup() {
-        return "Lịch làm việc theo tuần";
-    }
-
-    @Override
-    protected String layNoiDungTroGiup() {
-        return switch (cheDo) {
-            case HIEN_THI_TAT_CA ->
-                    "Lịch cả cửa hàng theo tuần. Dùng Trở về / Tiếp, chọn ngày hoặc Hiện tại để đổi"
-                            + " tuần. Ô viền đỏ là ca thiếu người.";
-            case CA_NHAN ->
-                    "Ca của bạn trong tuần, tổng giờ trong tháng. Bấm \"Đăng ký nghỉ phép\" để gửi"
-                            + " yêu cầu sang Cửa hàng trưởng duyệt.";
-            case SUA ->
-                    "Chọn tuần rồi bấm \"+ Thêm nhân viên\" trong ô để phân ca; bấm vào thẻ nhân"
-                            + " viên để bỏ khỏi ca. Ô viền đỏ là ca thiếu người.";
-        };
     }
 }

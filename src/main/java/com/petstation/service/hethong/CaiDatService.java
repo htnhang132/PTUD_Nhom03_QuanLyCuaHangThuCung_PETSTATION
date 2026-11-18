@@ -13,29 +13,50 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class CaiDatService {
-    private static final CaiDatService MAC_DINH = new CaiDatService();
+    private static final CaiDatService MAC_DINH =
+            new CaiDatService(
+                    new CaiDatDAOImpl(),
+                    NhatKyHeThongService.macDinh(),
+                    PhienDangNhapService.macDinh(),
+                    true);
 
     private final CaiDatDAO caiDatDAO;
     private final NhatKyHeThongService nhatKyService;
     private final PhienDangNhapService phienService;
+    private final boolean dungBoDem;
+    private final Map<String, Optional<String>> boDemGiaTri = new ConcurrentHashMap<>();
 
     public CaiDatService() {
-        this(new CaiDatDAOImpl(), NhatKyHeThongService.macDinh(), PhienDangNhapService.macDinh());
+        this(
+                new CaiDatDAOImpl(),
+                NhatKyHeThongService.macDinh(),
+                PhienDangNhapService.macDinh(),
+                true);
     }
 
     public CaiDatService(CaiDatDAO caiDatDAO) {
-        this(caiDatDAO, NhatKyHeThongService.macDinh(), PhienDangNhapService.macDinh());
+        this(caiDatDAO, NhatKyHeThongService.macDinh(), PhienDangNhapService.macDinh(), false);
     }
 
     public CaiDatService(
             CaiDatDAO caiDatDAO,
             NhatKyHeThongService nhatKyService,
             PhienDangNhapService phienService) {
+        this(caiDatDAO, nhatKyService, phienService, false);
+    }
+
+    private CaiDatService(
+            CaiDatDAO caiDatDAO,
+            NhatKyHeThongService nhatKyService,
+            PhienDangNhapService phienService,
+            boolean dungBoDem) {
         this.caiDatDAO = Objects.requireNonNull(caiDatDAO);
         this.nhatKyService = Objects.requireNonNull(nhatKyService);
         this.phienService = Objects.requireNonNull(phienService);
+        this.dungBoDem = dungBoDem;
     }
 
     public static CaiDatService macDinh() {
@@ -115,8 +136,21 @@ public final class CaiDatService {
                         });
     }
 
+    private String timGiaTriCoBoDem(String khoaChuan) {
+        if (!dungBoDem) {
+            return caiDatDAO.timGiaTri(khoaChuan);
+        }
+        return boDemGiaTri
+                .computeIfAbsent(khoaChuan, k -> Optional.ofNullable(caiDatDAO.timGiaTri(k)))
+                .orElse(null);
+    }
+
+    public void xoaBoDem() {
+        boDemGiaTri.clear();
+    }
+
     public String layTuyChonHoacMacDinh(String khoa, String macDinh) {
-        String giaTri = caiDatDAO.timGiaTri(chuanHoaKhoa(khoa));
+        String giaTri = timGiaTriCoBoDem(chuanHoaKhoa(khoa));
         if (giaTri == null || giaTri.isBlank()) {
             return macDinh;
         }
@@ -124,7 +158,7 @@ public final class CaiDatService {
     }
 
     public String layTuyChon(String khoa) {
-        String giaTri = caiDatDAO.timGiaTri(chuanHoaKhoa(khoa));
+        String giaTri = timGiaTriCoBoDem(chuanHoaKhoa(khoa));
         return giaTri == null ? "" : giaTri;
     }
 
@@ -144,7 +178,7 @@ public final class CaiDatService {
 
     public String lay(String khoa) {
         String khoaChuan = chuanHoaKhoa(khoa);
-        String giaTri = caiDatDAO.timGiaTri(khoaChuan);
+        String giaTri = timGiaTriCoBoDem(khoaChuan);
         if (giaTri == null) {
             String macDinh =
                     switch (khoaChuan) {
@@ -160,16 +194,17 @@ public final class CaiDatService {
                                         "MAY_IN" ->
                                 "";
                         case "NGUONG_TON_KHO_THAP" -> "10";
-                        case "SO_NGAY_CANH_BAO_HET_HAN", "SO_NGAY_TON_DONG" -> "30";
+                        case "SO_NGAY_CANH_BAO_HET_HAN" -> "30";
+                        case "SO_NGAY_TON_DONG" -> "45";
                         case "PHI_TRA_PHONG_TRE" -> "100000";
                         case "THUE_VAT_PHAN_TRAM" -> "8";
                         case "HAN_MUC_XUAT_HUY_CAN_DUYET" -> "500000";
-                        case "MAC_DINH_KIEM_KE_MU" -> "0";
-                        case "SO_GIO_TOI_DA_MOI_TUAN" -> "48";
-                        case "SO_GIO_BAO_TRUOC_DOI_CA" -> "24";
+                        case "MAC_DINH_KIEM_KE_MU" -> "false";
+                        case "SO_GIO_TOI_DA_MOI_TUAN" -> "40";
+                        case "SO_GIO_BAO_TRUOC_DOI_CA" -> "12";
                         case "SO_NGAY_DOI_TRA" -> "3";
                         case "THU_MUC_ANH_CHAM_SOC" -> "images/care";
-                        case "MUC_CHI_TIEU_HANG" -> "0;2000000;5000000;10000000";
+                        case "MUC_CHI_TIEU_HANG" -> "500000,2000000,5000000,10000000";
                         case "SO_TIEN_MOI_DIEM_TICH" -> "10000";
                         case "SO_TIEN_MOI_DIEM_DOI" -> "1000";
                         default -> null;
@@ -187,15 +222,20 @@ public final class CaiDatService {
     public void ghi(String khoa, String giaTri) {
         phienService.yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
         String khoaChuan = chuanHoaKhoa(khoa);
+        boDemGiaTri.remove(khoaChuan);
         String nguoiCapNhat =
                 phienService.layPhienHienTai() == null ? null : phienService.layMaNhanVien();
-        QuanLyGiaoDich.macDinh()
-                .thucThi(
-                        ketNoi -> {
-                            if (caiDatDAO.capNhatGiaTri(giaTri, nguoiCapNhat, khoaChuan) == 0)
-                                caiDatDAO.themGiaTri(khoaChuan, giaTri, nguoiCapNhat);
-                            return null;
-                        });
+        try {
+            QuanLyGiaoDich.macDinh()
+                    .thucThi(
+                            ketNoi -> {
+                                if (caiDatDAO.capNhatGiaTri(giaTri, nguoiCapNhat, khoaChuan) == 0)
+                                    caiDatDAO.themGiaTri(khoaChuan, giaTri, nguoiCapNhat);
+                                return null;
+                            });
+        } finally {
+            boDemGiaTri.remove(khoaChuan);
+        }
     }
 
     private int laySoNguyen(String khoaDangXet) {
@@ -231,7 +271,7 @@ public final class CaiDatService {
 
     public long[] layHangChiTieu() {
         try {
-            return Arrays.stream(lay("MUC_CHI_TIEU_HANG").split(","))
+            return Arrays.stream(lay("MUC_CHI_TIEU_HANG").split("[,;]"))
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .mapToLong(Long::parseLong)

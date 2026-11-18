@@ -55,6 +55,11 @@ public final class HopThoai {
         UIManager.put("Button.arc", 10);
         UIManager.put("Component.arc", 10);
         UIManager.put("TextComponent.arc", 10);
+        UIManager.put("TextField.minimumHeight", MauUngDung.CAO_DAU_VAO);
+        UIManager.put("PasswordField.minimumHeight", MauUngDung.CAO_DAU_VAO);
+        UIManager.put("FormattedTextField.minimumHeight", MauUngDung.CAO_DAU_VAO);
+        UIManager.put("ComboBox.minimumHeight", MauUngDung.CAO_DAU_VAO);
+        UIManager.put("Spinner.minimumHeight", MauUngDung.CAO_DAU_VAO);
         UIManager.put("TextField.margin", new Insets(5, 10, 5, 10));
         UIManager.put("PasswordField.margin", new Insets(5, 10, 5, 10));
         UIManager.put("FormattedTextField.margin", new Insets(5, 10, 5, 10));
@@ -128,15 +133,17 @@ public final class HopThoai {
 
     public static void hienThiThongBaoHopThoai(
             Component cha, Object thongBao, String tieuDe, int kieu) {
-        String daChuanHoa =
-                switch (kieu) {
-                    case JOptionPane.ERROR_MESSAGE -> TIEU_DE_LOI;
-                    case JOptionPane.WARNING_MESSAGE -> TIEU_DE_CANH_BAO;
-                    default ->
-                            tieuDe != null && tieuDe.toLowerCase().contains("thành công")
-                                    ? TIEU_DE_THANH_CONG
-                                    : TIEU_DE_THONG_TIN;
-                };
+        String daChuanHoa;
+        if (tieuDe != null && !tieuDe.isBlank()) {
+            daChuanHoa = tieuDe.trim();
+        } else {
+            daChuanHoa =
+                    switch (kieu) {
+                        case JOptionPane.ERROR_MESSAGE -> TIEU_DE_LOI;
+                        case JOptionPane.WARNING_MESSAGE -> TIEU_DE_CANH_BAO;
+                        default -> TIEU_DE_THONG_TIN;
+                    };
+        }
         hienThi(cha, thongBao, daChuanHoa, kieu);
     }
 
@@ -174,6 +181,26 @@ public final class HopThoai {
                         e -> dialog.dispose(),
                         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                         JComponent.WHEN_IN_FOCUSED_WINDOW);
+    }
+
+    public static void canChinhKichThuocVuaManHinh(
+            JDialog dialog, int rongToiThieu, int caoToiThieu) {
+        if (dialog == null) return;
+        dialog.pack();
+        Dimension uuTien = dialog.getPreferredSize();
+        var cauHinh = dialog.getGraphicsConfiguration();
+        if (cauHinh == null) {
+            dialog.setSize(
+                    Math.max(uuTien.width, rongToiThieu), Math.max(uuTien.height, caoToiThieu));
+            return;
+        }
+        var vung = cauHinh.getBounds();
+        Insets le = Toolkit.getDefaultToolkit().getScreenInsets(cauHinh);
+        int rongToiDa = Math.max(320, vung.width - le.left - le.right - 36);
+        int caoToiDa = Math.max(240, vung.height - le.top - le.bottom - 36);
+        int rong = Math.min(rongToiDa, Math.max(uuTien.width, Math.min(rongToiThieu, rongToiDa)));
+        int cao = Math.min(caoToiDa, Math.max(uuTien.height, Math.min(caoToiThieu, caoToiDa)));
+        dialog.setSize(rong, cao);
     }
 
     public static void hienThiThongTin(Component cha, String thongBao, String tieuDe) {
@@ -223,10 +250,6 @@ public final class HopThoai {
 
     public static String nhapChuoiThuan(Component cha, String thongBao, String tieuDe) {
         return JOptionPane.showInputDialog(cha, thongBao, tieuDe, JOptionPane.PLAIN_MESSAGE);
-    }
-
-    public static String nhapChuoiMacDinh(Component cha, String thongBao, String giaTriMacDinh) {
-        return JOptionPane.showInputDialog(cha, thongBao, giaTriMacDinh);
     }
 
     public static Object chonMuc(

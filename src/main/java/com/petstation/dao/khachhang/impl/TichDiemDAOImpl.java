@@ -9,7 +9,10 @@ import com.petstation.model.khachhang.Voucher;
 import com.petstation.util.DuLieu;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 // Triển khai truy vấn SQL cho nghiệp vụ Tích điểm thành viên & Quản lý/Áp dụng Voucher.
 public final class TichDiemDAOImpl implements TichDiemDAO {
@@ -63,10 +66,10 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
         List<Object[]> rows =
                 truyVan(
                         "SELECT v.ma_voucher, v.menh_gia, v.hieu_luc_den, CASE WHEN"
-                            + " v.da_dung>=v.so_luong THEN N'Đã dùng' WHEN"
-                            + " v.hieu_luc_den<=SYSDATETIME() THEN N'Hết hạn' ELSE N'Còn hiệu lực'"
-                            + " END FROM voucher v WHERE v.ma_khach_hang = ? ORDER BY v.ma_voucher"
-                            + " DESC",
+                                + " v.trang_thai='DA_HUY' THEN N'Ngừng' WHEN v.da_dung>=v.so_luong"
+                                + " THEN N'Đã dùng' WHEN v.hieu_luc_den<=SYSDATETIME() THEN N'Hết"
+                                + " hạn' ELSE N'Còn hiệu lực' END FROM voucher v WHERE"
+                                + " v.ma_khach_hang = ? ORDER BY v.ma_voucher DESC",
                         ma);
         List<Voucher> ketQua = new ArrayList<>(rows.size());
         for (Object[] r : rows) {
@@ -132,5 +135,28 @@ public final class TichDiemDAOImpl implements TichDiemDAO {
                 maKhachHang,
                 khoa);
         return ma;
+    }
+
+    @Override
+    public Optional<Set<String>> layTapMaVoucherDoiDiem() {
+        List<Object[]> rows =
+                truyVan("SELECT ma_voucher FROM voucher WHERE khoa_doi_diem IS NOT NULL");
+        Set<String> ketQua = new HashSet<>(rows.size());
+        for (Object[] r : rows) {
+            if (r[0] != null) ketQua.add(r[0].toString());
+        }
+        return Optional.of(ketQua);
+    }
+
+    @Override
+    public Optional<String> layHangKhachHang(String maKhachHang) {
+        if (maKhachHang == null || maKhachHang.isBlank()) return Optional.empty();
+        List<Object[]> rows =
+                truyVan(
+                        "SELECT COALESCE(hang_thanh_vien, N'Đồng') FROM khach_hang WHERE"
+                                + " ma_khach_hang=?",
+                        maKhachHang);
+        if (rows.isEmpty() || rows.get(0)[0] == null) return Optional.empty();
+        return Optional.of(rows.get(0)[0].toString());
     }
 }

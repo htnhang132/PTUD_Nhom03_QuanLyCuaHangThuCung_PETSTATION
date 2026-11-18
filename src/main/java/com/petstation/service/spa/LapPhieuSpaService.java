@@ -3,15 +3,15 @@ package com.petstation.service.spa;
 import com.petstation.dao.spa.PhieuTiepNhanSpaDAO;
 import com.petstation.dao.spa.impl.PhieuTiepNhanSpaDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
+import com.petstation.dto.SpaDTO;
 import com.petstation.model.chung.Quyen;
+import com.petstation.model.chung.TrangThaiPhieuSpa;
 import com.petstation.model.khachhang.ThuCung;
-import com.petstation.model.spa.PhieuTiepNhanSpa;
 import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.khachhang.ThuCungService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public final class LapPhieuSpaService {
     private final PhieuTiepNhanSpaDAO dao;
@@ -51,10 +51,23 @@ public final class LapPhieuSpaService {
             double canNang,
             String tinhTrang,
             String yeuCau) {
+        if (maGoi == null || maGoi.isBlank()) {
+            throw new IllegalArgumentException("Cần chọn dịch vụ.");
+        }
+        return luuNhieuDichVu(maThu, List.of(maGoi), maHen, canNang, tinhTrang, yeuCau, false);
+    }
+
+    public String luuNhieuDichVu(
+            String maThu,
+            List<String> dsMaGoi,
+            String maHen,
+            double canNang,
+            String tinhTrang,
+            String yeuCau,
+            boolean batDauNgay) {
         phienDangNhap.yeuCau(Quyen.QUAN_LY_SPA);
         kiemTraCanNang(canNang);
-        if (maGoi == null || maGoi.isBlank())
-            throw new IllegalArgumentException("Cần chọn dịch vụ.");
+        List<String> dsHopLe = chuanHoaDanhSachGoi(dsMaGoi);
         if (tinhTrang == null || tinhTrang.isBlank())
             throw new IllegalArgumentException("Cần nhập tình trạng khi nhận.");
         String ghiChu =
@@ -66,23 +79,52 @@ public final class LapPhieuSpaService {
                 .thucThi(
                         c -> {
                             String maPhieu = spaService.tiepNhan(maThu, maHen, canNang, ghiChu);
-
-                            if (maHen == null
-                                    || maHen.isBlank()
-                                    || spaService.layPhieuSpaChiTiet(maPhieu).isEmpty()) {
-                                spaService.themDichVuSpa(maPhieu, maGoi);
+                            themCacGoiChuaCo(maPhieu, maThu, canNang, dsHopLe);
+                            if (batDauNgay) {
+                                spaService.layTrangThaiSpa(
+                                        maPhieu, TrangThaiPhieuSpa.DANG_THUC_HIEN.maDB());
                             }
                             return maPhieu;
                         });
     }
 
+    private List<String> chuanHoaDanhSachGoi(List<String> dsMaGoi) {
+        if (dsMaGoi == null) {
+            throw new IllegalArgumentException("Cần chọn ít nhất 1 dịch vụ.");
+        }
+        List<String> dsHopLe = dsMaGoi.stream().filter(ma -> ma != null && !ma.isBlank()).toList();
+        if (dsHopLe.isEmpty()) {
+            throw new IllegalArgumentException("Cần chọn ít nhất 1 dịch vụ.");
+        }
+        return dsHopLe;
+    }
+
+    private void themCacGoiChuaCo(
+            String maPhieu, String maThu, double canNang, List<String> dsMaGoi) {
+        List<SpaDTO.DongChiTietSpa> daCo = spaService.layPhieuSpaChiTiet(maPhieu);
+        String tenGoiSanCo = daCo.isEmpty() ? null : daCo.get(0).getTenDichVu();
+        ThuCung thu =
+                tenGoiSanCo == null ? null : ThuCungService.macDinh().layThuCungHoatDong(maThu);
+        boolean daBoQuaGoiSanCo = false;
+        for (String maGoi : dsMaGoi) {
+            if (!daBoQuaGoiSanCo
+                    && tenGoiSanCo != null
+                    && laCungTenGoi(maGoi, thu, canNang, tenGoiSanCo)) {
+                daBoQuaGoiSanCo = true;
+                continue;
+            }
+            spaService.themDichVuSpa(maPhieu, maGoi);
+        }
+    }
+
+    private boolean laCungTenGoi(String maGoi, ThuCung thu, double canNang, String tenGoiSanCo) {
+        List<PhieuTiepNhanSpaDAO.GiaDichVuCanNang> gia =
+                dao.layGiaDichVuTheoCanNang(maGoi, thu.getLoai(), canNang);
+        return !gia.isEmpty() && tenGoiSanCo.equalsIgnoreCase(gia.get(0).tenGoi);
+    }
+
     private static void kiemTraCanNang(double canNang) {
         if (!Double.isFinite(canNang) || canNang <= 0 || canNang > 100)
             throw new IllegalArgumentException("Cân nặng phải lớn hơn 0 và không quá 100 kg.");
-    }
-
-    public Optional<PhieuTiepNhanSpa> timPhieu(String maPhieu) {
-        phienDangNhap.yeuCau(Quyen.QUAN_LY_SPA);
-        return dao.timTheoMa(maPhieu);
     }
 }

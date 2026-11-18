@@ -53,6 +53,7 @@ public final class DanhMucDichVuSpaPanel extends QuanLyDanhMucPanel {
                         .batBuoc()
                         .datDoRong(95, 115, 0),
                 TruongDuLieu.tao("Bảng giá theo loài / cân nặng", Kieu.TUY_CHINH)
+                        .batBuoc()
                         .datDoRong(130, 165, 0)
                         .datBoSoanThao(BoSoanThaoBangGia::new)
                         .hienThi(
