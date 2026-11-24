@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Locale;
 
@@ -13,6 +14,15 @@ import java.util.Locale;
 public final class DinhDang {
     private static final NumberFormat DINH_DANG_TIEN =
             NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
+
+    /** Đọc đúng định dạng dd/MM/uuuu; giữ null cho dữ liệu không hợp lệ của bộ lọc danh mục. */
+    public static LocalDate docNgayChuanHoacNull(Object giaTri) {
+        try {
+            return LocalDate.parse(String.valueOf(giaTri), NGAY_CHUAN);
+        } catch (DateTimeParseException loi) {
+            return null;
+        }
+    }
 
     public static final DateTimeFormatter NGAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

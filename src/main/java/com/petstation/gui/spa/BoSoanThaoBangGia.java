@@ -39,10 +39,10 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private final JTextField tuKg = new JTextField("0", 4);
     private final JTextField denKg = new JTextField("5", 4);
     private final JTextField gia = new JTextField(6);
-    private final JButton them = new NutDinhDang("+ Thêm", NutDinhDang.KieuNut.PHU);
+    private final JButton them = new NutDinhDang("+ Thêm mức giá", NutDinhDang.KieuNut.PHU);
     private final JButton taoNhanh = new NutDinhDang("4 mốc cân", NutDinhDang.KieuNut.TRONG_SUOT);
-    private final JButton sua = new NutDinhDang("Sửa", NutDinhDang.KieuNut.PHU);
-    private final JButton xoa = new NutDinhDang("Xóa", NutDinhDang.KieuNut.NGUY_HIEM);
+    private final JButton sua = new NutDinhDang("Sửa mức giá", NutDinhDang.KieuNut.PHU);
+    private final JButton xoa = new NutDinhDang("Xóa mức giá", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public BoSoanThaoBangGia() {
         DinhDangBang.apDung(bang);

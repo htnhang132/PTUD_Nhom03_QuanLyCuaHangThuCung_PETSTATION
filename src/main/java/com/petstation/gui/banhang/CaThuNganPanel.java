@@ -1,7 +1,6 @@
 package com.petstation.gui.banhang;
 
 import com.petstation.dto.TomTatCaLamViec;
-import com.petstation.gui.chung.BieuMauPanel;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
@@ -9,6 +8,7 @@ import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.TaoThanhPhanBieuMau;
 import com.petstation.service.banhang.CaThuNganService;
 import com.petstation.service.chung.BoLangNgheSuKien;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
@@ -18,7 +18,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,7 +52,7 @@ public final class CaThuNganPanel extends CoSoPanel {
     private final JPanel khungGoc = new JPanel(cacThe);
 
     private final JComboBox<String> cboTenCaLamViec =
-            BieuMauPanel.layHopChon(new String[] {"Ca sáng", "Ca chiều"});
+            TaoThanhPhanBieuMau.layHopChon(new String[] {"Ca sáng", "Ca chiều"});
 
     private final JLabel nhanMoLoi = new JLabel("");
 
@@ -69,10 +68,10 @@ public final class CaThuNganPanel extends CoSoPanel {
 
     private final JComboBox<String> cboHinhThuc =
             new JComboBox<>(new String[] {"Nộp quỹ cửa hàng", "Bàn giao nhân viên"});
-    private final JTextField oTienDauCa = BieuMauPanel.layTruongVanBan("");
-    private final JTextField oTienThucDem = BieuMauPanel.layTruongVanBan("");
+    private final JTextField oTienDauCa = TaoThanhPhanBieuMau.layTruongVanBan("");
+    private final JTextField oTienThucDem = TaoThanhPhanBieuMau.layTruongVanBan("");
 
-    private final JTextField oGhiChu = BieuMauPanel.layTruongVanBan("");
+    private final JTextField oGhiChu = TaoThanhPhanBieuMau.layTruongVanBan("");
 
     private final JLabel nhanDongLoi = new JLabel("");
 
@@ -131,7 +130,7 @@ public final class CaThuNganPanel extends CoSoPanel {
         BoGocPanel theThongTin = new BoGocPanel(12, MauUngDung.THE_NEN, true);
         theThongTin.setLayout(new BorderLayout(0, 18));
         theThongTin.setBorder(new EmptyBorder(24, 28, 24, 28));
-        theThongTin.setPreferredSize(new Dimension(720, 310));
+        theThongTin.setPreferredSize(new Dimension(760, 300));
 
         JPanel dau = taoVungTrongSuot(new BorderLayout(0, 4));
         dau.add(taoTieuDeMuc("Mở ca làm việc"), BorderLayout.NORTH);
@@ -205,12 +204,13 @@ public final class CaThuNganPanel extends CoSoPanel {
     }
 
     private JPanel taoThanhGoiYTienMoCa() {
-        JPanel thanhGoiYTien = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        JPanel thanhGoiYTien = new JPanel(new GridLayout(1, 4, 8, 0));
         thanhGoiYTien.setOpaque(false);
         for (long muc : new long[] {1_000_000L, 2_000_000L, 3_000_000L, 5_000_000L}) {
             NutDinhDang nutMuc =
                     new NutDinhDang(DinhDang.dinhDang(muc), NutDinhDang.KieuNut.TRONG_SUOT);
             nutMuc.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
+            nutMuc.setPreferredSize(new Dimension(0, 34));
             nutMuc.addActionListener(e -> oTienDauCa.setText(DinhDang.soNguyen(muc)));
             thanhGoiYTien.add(nutMuc);
         }

@@ -11,6 +11,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -124,7 +125,7 @@ public final class HopThoai {
                         thongBao,
                         TIEU_DE_XAC_NHAN,
                         JOptionPane.DEFAULT_OPTION,
-                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE,
+                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.PLAIN_MESSAGE,
                         null,
                         cacLuaChon,
                         nguyHiem ? HUY : nhanXacNhan);
@@ -159,14 +160,28 @@ public final class HopThoai {
                 JOptionPane.showOptionDialog(
                         cha,
                         thongBao,
-                        tieuDe == null || tieuDe.isBlank() ? TIEU_DE_XAC_NHAN : tieuDe,
+                        chuanHoaTieuDe(
+                                tieuDe == null || tieuDe.isBlank() ? TIEU_DE_XAC_NHAN : tieuDe),
                         JOptionPane.DEFAULT_OPTION,
-                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE,
+                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.PLAIN_MESSAGE,
                         null,
                         cacLuaChon,
                         nguyHiem ? cacLuaChon[1] : cacLuaChon[0]);
         if (luaChon == 0) return dongYKhong ? JOptionPane.YES_OPTION : JOptionPane.OK_OPTION;
         return dongYKhong ? JOptionPane.NO_OPTION : JOptionPane.CANCEL_OPTION;
+    }
+
+    public static String chuanHoaTieuDe(String tieuDe) {
+        if (tieuDe == null || tieuDe.isBlank()) return TIEU_DE_THONG_TIN;
+        String goc = tieuDe.trim().replaceAll("\\s+", " ");
+        String[] tu = goc.split(" ");
+        for (int i = 0; i < tu.length; i++) {
+            // Preserve document identifiers such as DT00000001 and HD2610190009.
+            if (!tu[i].matches(".*[0-9].*")) tu[i] = tu[i].toLowerCase(Locale.forLanguageTag("vi"));
+        }
+        String ketQua = String.join(" ", tu);
+        return ketQua.substring(0, 1).toUpperCase(Locale.forLanguageTag("vi"))
+                + ketQua.substring(1);
     }
 
     public static void chuanHoaCuaSo(JDialog dialog, Component cha) {
@@ -175,6 +190,7 @@ public final class HopThoai {
                 cha instanceof Window w
                         ? w
                         : (cha != null ? SwingUtilities.getWindowAncestor(cha) : null);
+        dialog.setTitle(chuanHoaTieuDe(dialog.getTitle()));
         dialog.setLocationRelativeTo(owner);
         dialog.getRootPane()
                 .registerKeyboardAction(
@@ -204,15 +220,16 @@ public final class HopThoai {
     }
 
     public static void hienThiThongTin(Component cha, String thongBao, String tieuDe) {
-        hienThiThongBaoHopThoai(cha, thongBao, tieuDe, JOptionPane.INFORMATION_MESSAGE);
+        hienThiThongBaoHopThoai(
+                cha, thongBao, chuanHoaTieuDe(tieuDe), JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static void hienThiCanhBao(Component cha, String thongBao, String tieuDe) {
-        hienThiThongBaoHopThoai(cha, thongBao, tieuDe, JOptionPane.WARNING_MESSAGE);
+        hienThiThongBaoHopThoai(cha, thongBao, chuanHoaTieuDe(tieuDe), JOptionPane.WARNING_MESSAGE);
     }
 
     public static void hienThiLoi(Component cha, String thongBao, String tieuDe) {
-        hienThi(cha, thongBao, tieuDe, JOptionPane.ERROR_MESSAGE);
+        hienThi(cha, thongBao, chuanHoaTieuDe(tieuDe), JOptionPane.ERROR_MESSAGE);
     }
 
     public static void hienThiNoiDung(Component cha, Object noiDung, String tieuDe) {
@@ -228,9 +245,9 @@ public final class HopThoai {
         return hienThiXacNhanHopThoai(
                         cha,
                         thongBao,
-                        tieuDe,
+                        chuanHoaTieuDe(tieuDe),
                         JOptionPane.YES_NO_OPTION,
-                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE)
+                        nguyHiem ? JOptionPane.WARNING_MESSAGE : JOptionPane.PLAIN_MESSAGE)
                 == JOptionPane.YES_OPTION;
     }
 
@@ -238,24 +255,32 @@ public final class HopThoai {
         return hienThiXacNhanHopThoai(
                         cha,
                         thongBao,
-                        tieuDe,
+                        chuanHoaTieuDe(tieuDe),
                         JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE)
+                        JOptionPane.PLAIN_MESSAGE)
                 == JOptionPane.OK_OPTION;
     }
 
     public static String nhapChuoi(Component cha, String thongBao, String tieuDe) {
-        return JOptionPane.showInputDialog(cha, thongBao, tieuDe, JOptionPane.QUESTION_MESSAGE);
+        return JOptionPane.showInputDialog(
+                cha, thongBao, chuanHoaTieuDe(tieuDe), JOptionPane.PLAIN_MESSAGE);
     }
 
     public static String nhapChuoiThuan(Component cha, String thongBao, String tieuDe) {
-        return JOptionPane.showInputDialog(cha, thongBao, tieuDe, JOptionPane.PLAIN_MESSAGE);
+        return JOptionPane.showInputDialog(
+                cha, thongBao, chuanHoaTieuDe(tieuDe), JOptionPane.PLAIN_MESSAGE);
     }
 
     public static Object chonMuc(
             Component cha, String thongBao, String tieuDe, Object[] cacLuaChon, Object macDinh) {
         return JOptionPane.showInputDialog(
-                cha, thongBao, tieuDe, JOptionPane.QUESTION_MESSAGE, null, cacLuaChon, macDinh);
+                cha,
+                thongBao,
+                chuanHoaTieuDe(tieuDe),
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                cacLuaChon,
+                macDinh);
     }
 
     public static int tuyChon(
@@ -263,9 +288,9 @@ public final class HopThoai {
         return JOptionPane.showOptionDialog(
                 cha,
                 noiDung,
-                tieuDe,
+                chuanHoaTieuDe(tieuDe),
                 JOptionPane.DEFAULT_OPTION,
-                hoi ? JOptionPane.QUESTION_MESSAGE : JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.PLAIN_MESSAGE,
                 null,
                 cacLuaChon,
                 cacLuaChon[0]);
@@ -320,7 +345,7 @@ public final class HopThoai {
                             null,
                             new Object[] {DONG},
                             DONG);
-            JDialog hopThoai = tuyChon.createDialog(cha, tieuDe);
+            JDialog hopThoai = tuyChon.createDialog(cha, chuanHoaTieuDe(tieuDe));
             hopThoai.setResizable(true);
             hopThoai.getRootPane()
                     .registerKeyboardAction(
@@ -334,7 +359,7 @@ public final class HopThoai {
         JOptionPane.showOptionDialog(
                 cha,
                 thongBao,
-                tieuDe,
+                chuanHoaTieuDe(tieuDe),
                 JOptionPane.DEFAULT_OPTION,
                 kieu,
                 null,

@@ -367,7 +367,7 @@ public final class KiemKePanel extends NghiepVuKhoPanel {
         JDialog dlg =
                 new JDialog(
                         (Frame) SwingUtilities.getWindowAncestor(this),
-                        "WORKSPACE KIỂM KÊ TỒN KHO THEO ĐỢT",
+                        "Kiểm kê tồn kho theo đợt",
                         true);
         dlg.setLayout(new BorderLayout(0, 10));
         JTextField oKyKiemKe =

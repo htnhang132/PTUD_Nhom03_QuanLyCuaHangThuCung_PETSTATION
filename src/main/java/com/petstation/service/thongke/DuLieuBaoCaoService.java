@@ -97,7 +97,7 @@ public final class DuLieuBaoCaoService {
         double[] cacGiaTri = new double[cacHang.size()];
         double tong = 0;
         long tongDon = 0;
-        double tongLoiNhuanGop = 0;
+        Double tongLoiNhuanGop = 0.0;
         boolean coLoiNhuanGop = cacCot.length >= 7 && "Lợi nhuận gộp".equals(cacCot[6]);
         int cotSoDon = timCotSoDon(cacCot);
         for (int i = 0; i < cacHang.size(); i++) {
@@ -108,8 +108,11 @@ public final class DuLieuBaoCaoService {
             cacGiaTri[i] = giaTri == null ? 0 : ((Number) giaTri).doubleValue();
             tong += cacGiaTri[i];
             if (cotSoDon >= 0 && dong[cotSoDon] instanceof Number nDon) tongDon += nDon.longValue();
-            if (coLoiNhuanGop && dong[6] instanceof Number nLng)
-                tongLoiNhuanGop += nLng.doubleValue();
+            if (coLoiNhuanGop) {
+                if (!(dong[6] instanceof Number)) tongLoiNhuanGop = null;
+                else if (tongLoiNhuanGop != null)
+                    tongLoiNhuanGop += ((Number) dong[6]).doubleValue();
+            }
         }
         if (cotSoDon < 0) tongDon = cacHang.size();
         if (coLoiNhuanGop) {
@@ -190,9 +193,9 @@ public final class DuLieuBaoCaoService {
             Object[][] cacDong,
             double tong,
             long tongDon,
-            double tongLoiNhuanGop) {
+            Double tongLoiNhuanGop) {
         long aov = tongDon > 0 ? Math.round(tong / tongDon) : 0;
-        double tySuat = tong > 0 ? tongLoiNhuanGop * 100.0 / tong : 0;
+        double tySuat = tong > 0 && tongLoiNhuanGop != null ? tongLoiNhuanGop * 100.0 / tong : 0;
         return new DuLieu(
                 cacNhan,
                 cacGiaTri,
@@ -207,8 +210,10 @@ public final class DuLieuBaoCaoService {
                     tongDon + " đơn",
                     DinhDang.dinhDang(Math.round(tong)),
                     DinhDang.dinhDang(aov),
-                    DinhDang.dinhDang(Math.round(tongLoiNhuanGop))
-                            + String.format(Locale.ROOT, " (%.1f%%)", tySuat)
+                    tongLoiNhuanGop == null
+                            ? "Cần đối chiếu giá vốn"
+                            : DinhDang.dinhDang(Math.round(tongLoiNhuanGop))
+                                    + String.format(Locale.ROOT, " (%.1f%%)", tySuat)
                 });
     }
 

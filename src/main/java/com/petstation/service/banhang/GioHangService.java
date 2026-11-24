@@ -1,6 +1,6 @@
 package com.petstation.service.banhang;
 
-import com.petstation.database.ThaoTacSQL;
+import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.GioHang.MucKhuyenMai;
 import com.petstation.model.chung.PhuongThuc;
@@ -55,7 +55,7 @@ public final class GioHangService {
                         phienDangNhapService.yeuCauHienTai();
                         boolean coTheDem =
                                 danhMucService == DanhMucService.macDinh()
-                                        && !ThaoTacSQL.dangTrongGiaoDich();
+                                        && !QuanLyGiaoDich.dangTrongGiaoDich();
                         long bayGio = System.currentTimeMillis();
                         if (coTheDem && bayGio - thoiDiemDemKmMs < 1500L) {
                             return khuyenMaiDem;

@@ -9,29 +9,22 @@ import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.gui.chung.ThanhDanhSach;
-import com.petstation.gui.chung.thanhphan.DinhDangBang;
-import com.petstation.model.banhang.ChiTietDoiTra;
-import com.petstation.model.banhang.ChiTietHoaDon;
-import com.petstation.model.banhang.PhieuDoiTra;
 import com.petstation.model.chung.LoaiNghiepVu;
 import com.petstation.model.chung.MaManHinh;
 import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.banhang.DoiTraService;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
-import com.petstation.util.DinhDang;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -69,7 +62,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
                         "Lịch sử hoàn tiền"
                     });
     private final JLabel nhanTieuDeChiTiet = new JLabel("Chọn phiếu đổi để xem chi tiết");
-    private final JEditorPane vungChiTiet = new JEditorPane("text/html", "");
+    private final ChiTietPhieuDoiPanel vungChiTiet = new ChiTietPhieuDoiPanel();
     private int luotXemChiTiet;
 
     public DoiTraPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
@@ -175,16 +168,14 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
         nhanTieuDeChiTiet.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         nhanTieuDeChiTiet.setForeground(MauUngDung.VAN_BAN_TOI);
         khungPhai.add(nhanTieuDeChiTiet, BorderLayout.NORTH);
-        vungChiTiet.setEditable(false);
-        vungChiTiet.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-        vungChiTiet.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
-        vungChiTiet.setBackground(MauUngDung.THE_NEN);
         JScrollPane scr =
                 new JScrollPane(
                         vungChiTiet,
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scr.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
+        scr.setBorder(BorderFactory.createEmptyBorder());
+        scr.getViewport().setBackground(MauUngDung.THE_NEN);
+        scr.getVerticalScrollBar().setUnitIncrement(16);
         khungPhai.add(scr, BorderLayout.CENTER);
         return khungPhai;
     }
@@ -255,7 +246,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
         if (row < 0) {
             ++luotXemChiTiet;
             nhanTieuDeChiTiet.setText("Chọn phiếu đổi để xem chi tiết");
-            vungChiTiet.setText("");
+            vungChiTiet.hienThi(null);
             return;
         }
         int modelRow = layBangDuLieu().convertRowIndexToModel(row);
@@ -263,7 +254,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
         int luot = ++luotXemChiTiet;
         nhanTieuDeChiTiet.setText("Phiếu " + maPhieu + " (đang tải...)");
         if (!DieuKienTaiDuLieu.coTheTachLuong()) {
-            hienThiXemTruocHtml(
+            hienThiChiTiet(
                     maPhieu, new DoiTraService().layChiTietXemTruocPhieu(maPhieu).orElse(null));
             return;
         }
@@ -271,78 +262,13 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
                 this,
                 () -> luot == luotXemChiTiet,
                 () -> new DoiTraService().layChiTietXemTruocPhieu(maPhieu).orElse(null),
-                chiTiet -> hienThiXemTruocHtml(maPhieu, chiTiet),
+                chiTiet -> hienThiChiTiet(maPhieu, chiTiet),
                 ex -> nhanTieuDeChiTiet.setText("Lỗi tải chi tiết phiếu " + maPhieu));
     }
 
-    private void hienThiXemTruocHtml(String maPhieu, ChiTietXemTruocPhieuDoi dl) {
-        if (dl == null || dl.getPhieu() == null) {
-            nhanTieuDeChiTiet.setText("Phiếu " + maPhieu);
-            vungChiTiet.setText("<html><body><p>Không có dữ liệu chi tiết.</p></body></html>");
-            return;
-        }
-        PhieuDoiTra p = dl.getPhieu();
-        nhanTieuDeChiTiet.setText("Chi tiết phiếu " + p.getMaPhieu());
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif'>");
-        themDongHtml(
-                sb, "Hóa đơn gốc", p.getHoaDonGoc() != null ? p.getHoaDonGoc().getMaHoaDon() : "");
-        themDongHtml(
-                sb,
-                "Hóa đơn thay thế",
-                p.getHoaDonThayThe() != null ? p.getHoaDonThayThe().getMaHoaDon() : "—");
-        themDongHtml(
-                sb, "Nhân viên lập", p.getNguoiLap() != null ? p.getNguoiLap().getHoTen() : "");
-        themDongHtml(sb, "Trạng thái", DinhDangBang.tenTrangThai(p.getTrangThai()));
-        themDongHtml(sb, "Giá trị hàng đổi", DinhDang.dinhDang(p.getGiaTriDuocDoi()));
-        themDongHtml(sb, "Chênh lệch", DinhDang.dinhDang(p.getChenhLech()));
-        themDongHtml(sb, "Lý do", p.getLyDo());
-        sb.append("<hr><b>Hàng khách trả lại:</b><ul>");
-        List<ChiTietDoiTra> tra = dl.getHangTra();
-        if (tra.isEmpty()) {
-            sb.append("<li>Không có chi tiết hàng trả</li>");
-        } else {
-            for (ChiTietDoiTra c : tra) {
-                String tenSp =
-                        c.getChiTietHoaDon() != null && c.getChiTietHoaDon().getSanPham() != null
-                                ? c.getChiTietHoaDon().getSanPham().getTenSanPham()
-                                : "";
-                String lo = c.getLoHang() != null ? c.getLoHang().getMaLo() : "";
-                sb.append("<li>")
-                        .append(DinhDang.thoatHtml(tenSp))
-                        .append(" × ")
-                        .append(c.getSoLuong())
-                        .append(lo.isBlank() ? "" : " (Lô " + DinhDang.thoatHtml(lo) + ")")
-                        .append(" · ")
-                        .append(DinhDang.dinhDang(c.getTienHoan()))
-                        .append("</li>");
-            }
-        }
-        sb.append("</ul><b>Phụ kiện thay thế:</b><ul>");
-        List<ChiTietHoaDon> moi = dl.getHangThayThe();
-        if (moi.isEmpty()) {
-            sb.append("<li>Chưa xuất hóa đơn thay thế</li>");
-        } else {
-            for (ChiTietHoaDon c : moi) {
-                sb.append("<li>")
-                        .append(DinhDang.thoatHtml(c.getTenHang()))
-                        .append(" × ")
-                        .append(c.getSoLuong())
-                        .append(" · ")
-                        .append(DinhDang.dinhDang(c.getDonGia() * c.getSoLuong()))
-                        .append("</li>");
-            }
-        }
-        sb.append("</ul></body></html>");
-        vungChiTiet.setText(sb.toString());
-        vungChiTiet.setCaretPosition(0);
-    }
-
-    private static void themDongHtml(StringBuilder sb, String nhan, String giaTri) {
-        sb.append("<div><b>")
-                .append(DinhDang.thoatHtml(nhan))
-                .append(":</b> ")
-                .append(DinhDang.thoatHtml(giaTri))
-                .append("</div>");
+    private void hienThiChiTiet(String maPhieu, ChiTietXemTruocPhieuDoi dl) {
+        nhanTieuDeChiTiet.setText("Chi tiết đổi trả");
+        vungChiTiet.hienThi(dl);
     }
 
     private void xemBienLaiTheoCot(int cot, String moTa) {

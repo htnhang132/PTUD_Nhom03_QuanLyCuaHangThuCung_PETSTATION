@@ -82,9 +82,11 @@ import javax.swing.SwingUtilities;
 
 class SpaVaLuuTruPanelTest {
     private PhienDangNhap phien;
+    private com.petstation.gui.DongThongBaoKiemThu thongBao;
 
     @BeforeEach
     void thietLapPhien() {
+        thongBao = new com.petstation.gui.DongThongBaoKiemThu();
         TaiKhoan tk = new TaiKhoan();
         tk.setTenDangNhap("admin_test");
         tk.setVaiTro(VaiTro.QUAN_LY_CUA_HANG);
@@ -97,6 +99,7 @@ class SpaVaLuuTruPanelTest {
 
     @AfterEach
     void donDepPhien() {
+        thongBao.close();
         PhienDangNhapService.macDinh().datPhienDangNhap(null);
     }
 
@@ -416,6 +419,28 @@ class SpaVaLuuTruPanelTest {
                         assertThat(daChon).isNotNull();
                         assertThat(daChon.giaTri()).isEqualTo("TC000001");
                     } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    @Test
+    void lapPhieuSpaVanNhapDuocCanNangKhiCuaSoHep() throws Exception {
+        SwingUtilities.invokeAndWait(
+                () -> {
+                    try {
+                        LapPhieuSpaPanel panel = new LapPhieuSpaPanel(s -> {}, () -> {}, () -> {});
+                        Field field = LapPhieuSpaPanel.class.getDeclaredField("oCanNang");
+                        field.setAccessible(true);
+                        JTextField canNang = (JTextField) field.get(panel);
+                        for (int width : new int[] {1146, 900}) {
+                            for (int i = 0; i < 3; i++) veLenAnh(panel, width, 700);
+                            assertThat(canNang.getWidth()).isGreaterThanOrEqualTo(100);
+                            assertThat(canNang.getHeight()).isGreaterThanOrEqualTo(24);
+                            luuAnhNeuCauHinh(
+                                    veLenAnh(panel, width, 700), "spa_lap_phieu_" + width + ".png");
+                        }
+                    } catch (ReflectiveOperationException e) {
                         throw new RuntimeException(e);
                     }
                 });

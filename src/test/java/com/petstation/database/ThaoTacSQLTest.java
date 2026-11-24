@@ -10,6 +10,19 @@ import java.sql.Connection;
 import java.sql.Savepoint;
 
 public class ThaoTacSQLTest {
+    @Test
+    void loiThongBaoSauCommitKhongChanThongBaoKeTiep() {
+        java.util.concurrent.atomic.AtomicInteger soLan =
+                new java.util.concurrent.atomic.AtomicInteger();
+        ThaoTacSQL.chaySauCommit(
+                java.util.List.of(
+                        () -> {
+                            throw new IllegalStateException("notification failure");
+                        },
+                        soLan::incrementAndGet));
+        assertThat(soLan.get()).isEqualTo(1);
+    }
+
     public static AutoCloseable chayTrongKetNoiGia() {
         Savepoint diemLuuGia =
                 (Savepoint)

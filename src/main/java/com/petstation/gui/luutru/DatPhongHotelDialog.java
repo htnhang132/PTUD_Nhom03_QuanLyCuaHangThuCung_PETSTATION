@@ -563,7 +563,7 @@ public final class DatPhongHotelDialog {
             if (hangCocDuKien != null) {
                 hangCocDuKien.setVisible(false);
             }
-            hopThoai.setTitle("Gia hạn / Đổi ngày trả Pet Hotel");
+            hopThoai.setTitle("Gia hạn / đổi ngày trả pet hotel");
             nhanTieuDeHopThoai.setText("GIA HẠN / ĐỔI NGÀY TRẢ PHÒNG");
             oTimKhach.setEnabled(false);
             cboKhachHang.setEnabled(false);

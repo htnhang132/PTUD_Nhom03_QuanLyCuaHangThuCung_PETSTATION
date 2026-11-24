@@ -8,7 +8,6 @@ import com.petstation.dao.banhang.impl.HoaDonDAOImpl;
 import com.petstation.dao.luutru.HopDongLuuTruDAO;
 import com.petstation.dao.luutru.impl.HopDongLuuTruDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
-import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.HotelDTO;
 import com.petstation.model.chung.PhuongThuc;
 import com.petstation.model.chung.Quyen;
@@ -26,7 +25,6 @@ import com.petstation.service.khachhang.ThuCungService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -211,8 +209,6 @@ public final class LuuTruService {
                                                             new IllegalArgumentException(
                                                                     "Cần mở ca trước khi thu"
                                                                             + " cọc."));
-                            if (banHangDAO.demNgayDaChot() > 0)
-                                throw new IllegalStateException("Ngày đã chốt.");
                             luuTruDAO.ghiThuCoc(
                                     maHopDong,
                                     maPhien,
@@ -329,15 +325,7 @@ public final class LuuTruService {
                                         "Ngày trả mới khi gia hạn phải sau ngày trả dự kiến hiện"
                                                 + " tại.");
                             kiemTraTrungLichGiaHan(duLieuCu, maHopDong, ngayRaMoi);
-                            if (ThaoTacSQL.capNhat(
-                                            "UPDATE hop_dong_luu_tru SET ngay_ra_du_kien=?,"
-                                                    + " ghi_chu=? WHERE ma_hop_dong=? AND"
-                                                    + " trang_thai=?",
-                                            ngayRaMoi,
-                                            ghiChuChuan,
-                                            maHopDong,
-                                            TrangThaiHopDong.DANG_O.maDB())
-                                    != 1)
+                            if (luuTruDAO.giaHan(maHopDong, ngayRaMoi, ghiChuChuan) != 1)
                                 throw new IllegalStateException(
                                         "Hợp đồng vừa thay đổi trạng thái. Hãy tải lại danh sách.");
                             NhatKyHeThongService.macDinh()
@@ -379,14 +367,7 @@ public final class LuuTruService {
 
     public Map<String, String> layTrangThaiTatCaPhong() {
         PhienDangNhapService.macDinh().yeuCau(Quyen.QUAN_LY_LUU_TRU);
-        List<Object[]> dong =
-                ThaoTacSQL.truyVan(
-                        "SELECT ma_phong, trang_thai FROM phong_hotel ORDER BY ma_phong");
-        Map<String, String> kq = new LinkedHashMap<>();
-        for (Object[] r : dong) {
-            kq.put(chuyenThanhChuoi(r[0]), chuyenThanhChuoi(r[1]));
-        }
-        return kq;
+        return luuTruDAO.layTrangThaiTatCaPhong();
     }
 
     public void suaDatPhong(

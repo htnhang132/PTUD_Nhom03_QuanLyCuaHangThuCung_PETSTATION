@@ -9,7 +9,7 @@ import java.util.List;
 
 // Màn hình: Thống kê doanh thu (Mã: THONG_KE_DOANH_THU)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (hoa_don, dong_thanh_toan_hoa_don)
+// ThongKeDAOImpl -> SQL (hoa_don)
 // Mô tả: Báo cáo phân tích doanh thu bán hàng và dịch vụ theo thời gian, hình thức thanh toán và ca
 // làm việc
 // Phân hệ: thongke

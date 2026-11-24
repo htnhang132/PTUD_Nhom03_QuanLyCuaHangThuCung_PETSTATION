@@ -17,6 +17,7 @@ import com.petstation.util.TaiAnhSanPham;
 
 import java.sql.Connection;
 import java.time.LocalDate;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -54,8 +55,9 @@ public final class DanhMucService {
 
     // 1. MÔ HÌNH DANH SÁCH DÒNG DỮ LIỆU ĐỒNG BỘ VỚI CSDL (CacDong)
 
-    public final class CacDong extends ArrayList<Object[]> {
-        public final LoaiDanhMuc loai;
+    public final class CacDong extends AbstractList<Object[]> {
+        private final LoaiDanhMuc loai;
+        private final List<Object[]> duLieu = new ArrayList<>();
 
         CacDong(LoaiDanhMuc loai) {
             this(loai, true);
@@ -66,8 +68,39 @@ public final class DanhMucService {
             if (docNgay) lamMoi();
         }
 
+        @Override
+        public Object[] get(int viTri) {
+            return duLieu.get(viTri);
+        }
+
+        @Override
+        public int size() {
+            return duLieu.size();
+        }
+
+        @Override
+        public Object[] set(int viTri, Object[] dong) {
+            return duLieu.set(viTri, dong);
+        }
+
+        @Override
+        public void add(int viTri, Object[] dong) {
+            duLieu.add(viTri, dong);
+            modCount++;
+        }
+
+        @Override
+        public Object[] remove(int viTri) {
+            modCount++;
+            return duLieu.remove(viTri);
+        }
+
         public List<Object[]> taiBanSao() {
-            return danhMucDAO.nap(loai).stream().map(DongNghiepVu::thanhMang).toList();
+            kiemTraQuyenDoc(loai);
+            return danhMucDAO.nap(loai).stream()
+                    .map(DongNghiepVu::thanhMang)
+                    .map(dong -> anThongTinNhanSu(loai, dong))
+                    .toList();
         }
 
         public void lamMoi() {
@@ -255,6 +288,50 @@ public final class DanhMucService {
                             ghiNhatKyLuuDanhMuc(ketNoi, danhMuc.loai, truoc, giaTri, laNcc);
                             return null;
                         });
+    }
+
+    private Object[] anThongTinNhanSu(LoaiDanhMuc loai, Object[] dong) {
+        if (loai == LoaiDanhMuc.NHAN_VIEN
+                && !phienDangNhapService.layPhien().kiemTraCo(Quyen.QUAN_LY_TAI_KHOAN)) {
+            Object[] an = dong.clone();
+            for (int cot : new int[] {2, 3, 5}) if (cot < an.length) an[cot] = "";
+            return an;
+        }
+        return dong;
+    }
+
+    private void kiemTraQuyenDoc(LoaiDanhMuc loai) {
+        switch (loai) {
+            case TAI_KHOAN -> phienDangNhapService.yeuCau(Quyen.QUAN_LY_TAI_KHOAN);
+            case NHAN_VIEN ->
+                    phienDangNhapService.yeuCauMotTrong(
+                            Quyen.QUAN_LY_TAI_KHOAN,
+                            Quyen.QUAN_LY_LICH_LAM_VIEC,
+                            Quyen.XEM_LICH_LAM_VIEC,
+                            Quyen.QUAN_LY_SPA);
+            case SAN_PHAM ->
+                    phienDangNhapService.yeuCauMotTrong(
+                            Quyen.QUAN_LY_SAN_PHAM,
+                            Quyen.BAN_HANG,
+                            Quyen.NHAP_KHO,
+                            Quyen.KIEM_KE_KHO);
+            case NHA_CUNG_CAP ->
+                    phienDangNhapService.yeuCauMotTrong(Quyen.QUAN_LY_NHA_CUNG_CAP, Quyen.NHAP_KHO);
+            case KHUYEN_MAI, VOUCHER ->
+                    phienDangNhapService.yeuCauMotTrong(
+                            Quyen.QUAN_LY_KHUYEN_MAI,
+                            Quyen.BAN_HANG,
+                            Quyen.THANH_TOAN,
+                            Quyen.QUAN_LY_KHACH_HANG);
+            case KHACH_HANG, THU_CUNG ->
+                    phienDangNhapService.yeuCauMotTrong(
+                            Quyen.QUAN_LY_KHACH_HANG,
+                            Quyen.QUAN_LY_THU_CUNG,
+                            Quyen.BAN_HANG,
+                            Quyen.QUAN_LY_SPA,
+                            Quyen.QUAN_LY_LUU_TRU);
+            default -> phienDangNhapService.yeuCau(quyenTheoLoai(loai));
+        }
     }
 
     private static Quyen quyenTheoLoai(LoaiDanhMuc loai) {

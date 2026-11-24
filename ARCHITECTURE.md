@@ -4,7 +4,11 @@
 > **Sản phẩm:** Ứng dụng desktop quản lý cửa hàng thú cưng Pet Station  
 > **Mục đích tài liệu:** Cung cấp điểm vào nhanh về cấu trúc source, ranh giới giữa các tầng, luồng nghiệp vụ, công nghệ và các điểm cần kiểm tra khi phát triển.
 
-Tài liệu này là bản tổng quan ở thư mục gốc repository. Xem thêm [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) để đọc mô tả kiến trúc chi tiết đã có trong dự án; [`CONTRIBUTING.md`](CONTRIBUTING.md) để xem quy ước nhánh, commit và code; [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md) để xem nhật ký sử dụng AI.
+Tài liệu này là bản tổng quan ở thư mục gốc repository. Xem thêm [phần lịch sử khôi phục](#lich-su-khoi-phuc) để đọc ghi chép khôi phục lịch sử; [`CONTRIBUTING.md`](CONTRIBUTING.md) để xem quy ước nhánh, commit và code; [`AI_USAGE_LOG.md`](AI_USAGE_LOG.md) để xem nhật ký sử dụng AI.
+
+Quy định hiện hành: [Chuẩn code](docs/CHUAN_CODE.md). Việc tuân thủ và các giới hạn còn lại: [Rà soát từng file](docs/RA_SOAT_MA_NGUON.md).
+
+Kết nối SQL hiện dùng JDBC trực tiếp qua `DriverManager`, không dùng HikariCP hay connection pool. Mỗi lần `KetNoiCSDL.mo()` tạo một kết nối; `ThaoTacSQL` và `QuanLyGiaoDich` đóng kết nối bằng try-with-resources. Các thao tác trong cùng giao dịch vẫn dùng chung kết nối hiện tại, commit/rollback theo cơ chế sẵn có.
 
 ## 1. Tổng quan kiến trúc
 
@@ -75,14 +79,17 @@ PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/
 ├── scripts/
 │   ├── check-environment.ps1
 │   ├── setup-database.ps1
-│   ├── test-sqlserver.ps1
 │   ├── format-java.ps1
 │   └── run-java.ps1
 ├── docs/
-│   ├── ARCHITECTURE.md               # Ghi chú khôi phục và trạng thái xác minh
+│   ├── CHUAN_CODE.md
+│   ├── BAN_DO_TRUY_VET_CODE.md
+│   ├── THUYET_TRINH_VA_VAN_DAP.md
 │   ├── KIEM_THU_VA_YEU_CAU.md
+│   ├── RA_SOAT_MA_NGUON.md
 │   ├── NGUON_SAN_PHAM.md
-│   ├── AI_PROMPTS.md
+│   ├── SQL_SECURITY_EXAMPLES.md
+│   ├── data/                        # Nguồn sản phẩm và đối chiếu ảnh
 │   └── diagrams/
 └── src/
     ├── main/
@@ -217,8 +224,21 @@ Các lần thu cọc cần được ghi nhận tách bạch, gắn hợp đồng
 - GitHub Actions workflow [Verify Java](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/actions/runs/40689136445) đã thành công trên Windows và Linux với JDK 17 và 21. Quy tắc format, build và các test không cần SQL Server đều pass.
 - CI không bật kiểm thử tích hợp SQL Server và không mở cửa sổ Swing tương tác. Do đó, không dùng kết quả CI để khẳng định database trên máy người dùng đã kết nối hoặc mọi màn hình đã được thao tác thủ công.
 - Để mở ứng dụng tại máy Windows, làm theo [`SETUP.md`](SETUP.md): dùng JDK 17+, SQL Server 2019+, chạy script thiết lập database, tạo `config/db.properties` từ file mẫu và điền SQL login của máy đó. Sau đó chạy `./mvnw.cmd -B -ntp verify`, `./mvnw.cmd -B -ntp package` và `java -jar target/petstation.jar`.
-- `database/002_sample_data.sql` dành cho demo/test và có thể thay toàn bộ dữ liệu trong database đích. Không chạy seed/reset trên database thật; sao lưu trước khi reset.
+- `database/002_sample_data.sql` nạp mẫu cho database trống và bỏ qua khi đã có dữ liệu. Database cũ nâng cấp bằng `scripts/setup-database.ps1`, có backup và kiểm chứng trước khi chạy migration; không dùng reset để nâng cấp.
 - Nếu mở ứng dụng gặp lỗi kết nối, xác minh dịch vụ SQL Server, TCP/IP/cổng, tên database, SQL login và quyền user. Không sửa source để nhúng mật khẩu vào code.
 
-Các kiểm tra tiếp theo cần thực hiện trên máy có SQL Server: mở app, đăng nhập, điều hướng các màn hình chính và chạy `scripts/test-sqlserver.ps1` trên database `PetStationIntegrationTest` riêng. Ghi nhận kết quả thật trước khi tuyên bố đã xác minh mọi luồng nghiệp vụ.
+Các kiểm tra tiếp theo cần thực hiện trên máy có SQL Server: mở app, đăng nhập, điều hướng các màn hình chính và chạy `scripts/setup-database.ps1 -RunTests` trên database `PetStationIntegrationTest` riêng. Ghi nhận kết quả thật trước khi tuyên bố đã xác minh mọi luồng nghiệp vụ.
 
+
+
+<a id="lich-su-khoi-phuc"></a>
+## Lịch sử khôi phục source
+
+Phần này tóm tắt ghi chép ARCHITECTURE cũ trong docs, không phải kết quả chạy lại CI của bản hiện tại. Ghi chép cho biết nhánh develop từng thiếu entrypoint, DAO interface, hạ tầng kết nối/giao dịch, model, GUI và cấu hình Maven; bản khôi phục đã bổ sung các nhóm đó và loại skeleton com.petstore không được dùng.
+
+- Ghi chép cũ nêu PR [#43 — Restore missing sources and build setup](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/pull/43), hợp nhất ngày 28/10/2026, commit `9e4d330c7bb8250222d3eb9564e85a6f614b78e8`.
+- Ghi chép cũ dẫn [workflow Verify Java](https://github.com/htnhang132/PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION/actions/runs/40689136445) cho Windows/Linux, JDK 17/21. Không dùng kết quả đó thay kết quả kiểm thử source hiện tại; lượt gộp tài liệu này không kiểm chứng lại trạng thái GitHub.
+- Điểm khởi chạy hiện vẫn là `com.petstation.App`: khởi tạo FlatLaf/ngữ cảnh, nạp cấu hình, xác minh SQL, mở đăng nhập rồi mở ChinhFrame.
+- Cấu hình cá nhân được Git bỏ qua và Maven loại khỏi JAR. Mã sinh/build trong target không phải source để khôi phục vào src.
+
+Cách cài và chạy hiện hành ở [SETUP.md](SETUP.md); [báo cáo rà soát](docs/RA_SOAT_MA_NGUON.md) ghi kết quả mới và giới hạn. Bản nguyên các tài liệu trước khi gộp được lưu tại `target/review-evidence/docs-before-consolidation.zip`.

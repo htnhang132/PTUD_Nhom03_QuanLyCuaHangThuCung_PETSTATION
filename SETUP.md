@@ -54,16 +54,30 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -
 Remove-Item Env:SQLCMDPASSWORD
 ```
 
-Script tạo `PetStationDemo2` nếu chưa có, rồi chạy hai file SQL. Nếu database đã đúng bản hiện tại, lệnh không nạp lại mẫu. Nếu database cũ, script dừng và yêu cầu xem hướng dẫn reset. Script không tạo SQL login hoặc tự đổi mật khẩu SQL Server.
+Script tạo `PetStationDemo1` nếu chưa có, rồi chạy hai file SQL. Nếu database đã đúng bản hiện tại, lệnh không nạp lại mẫu. Database cũ cần nâng cấp theo mục dưới. Script không tạo SQL login hoặc tự đổi mật khẩu SQL Server.
+
+### Nâng cấp database hiện có, giữ dữ liệu
+
+Schema hiện tại là **20261124**. Với database phiên bản 20261106:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -Server 'localhost,1433' -Database PetStationDemo1
+```
+
+Đóng ứng dụng trước khi nâng cấp. Script sao lưu `COPY_ONLY,CHECKSUM`, kiểm chứng `RESTORE VERIFYONLY` rồi chạy migration trong transaction. SQL Authentication dùng thêm `-SqlUser` và `SQLCMDPASSWORD` như lệnh setup. Phần nâng cấp nằm trong `001_schema.sql`; không cần file migration/script khác. Đường dẫn backup được in trong kết quả SQL và được script lưu ở `target/database-setup/`; file `.bak` nằm trong thư mục backup của SQL Server. Chạy lại giữ dữ liệu nghiệp vụ.
+
+`doi_chieu_du_lieu` lưu các dòng lịch sử thiếu phân bổ lô xác thực. Không tự suy ra phân bổ nhiều lô từ cột `ma_lo` cũ. Hủy/đổi trả các dòng này bị chặn đến khi người quản trị đối chiếu chứng từ. Spa nhiều dịch vụ cũ giữ tổng tiền gốc, đánh dấu dòng tổng hợp; không chia giá theo danh mục hiện tại. Xem [báo cáo triển khai](docs/RA_SOAT_MA_NGUON.md#ket-qua-trien-khai).
 
 ### Cách B — SSMS
 
-Tạo một database trống, nên dùng collation `Vietnamese_CI_AS`. Chọn đúng database trong SSMS, chạy lần lượt:
+Trong SSMS, mở và Execute toàn bộ hai file theo thứ tự dưới đây, không cần bật SQLCMD Mode. Hai file tự dùng database mặc định `PetStationDemo1`, tạo mới nếu chưa có hoặc nâng cấp phiên bản 20261106 nếu đã có:
 
-1. `database/001_schema.sql`: 31 bảng, khóa chính/ngoại, CHECK và chỉ mục.
-2. `database/002_sample_data.sql`: dữ liệu mẫu, mỗi bảng có dữ liệu dùng một `INSERT ... VALUES` nhiều dòng.
+1. `database/001_schema.sql`: tạo mới hoặc nâng cấp lên schema 20261124, có backup/VERIFYONLY trước khi nâng cấp, DDL trong transaction. Chạy lại bản hiện tại không tạo trùng bảng.
+2. `database/002_sample_data.sql`: nạp dữ liệu mẫu, phân bổ lô, chi tiết spa và chứng từ tồn đầu kỳ khi database chưa có dữ liệu nghiệp vụ. Nếu đã có dữ liệu thì bỏ qua nạp mẫu.
 
-File schema yêu cầu database trống. File mẫu **không xóa dữ liệu đang có**. Script yêu cầu các bảng dbo trống, kiểm tra điều kiện trước khi chèn và nạp dữ liệu trong một transaction; chỉ chạy trên database demo/test mới. Các câu INSERT dùng ID mẫu và được sắp theo thứ tự đáp ứng khóa ngoại; script không tắt kiểm tra CHECK/FK. Ngày nghiệp vụ mẫu tính tương đối theo ngày nạp; ngày sinh và ngày thu thập nguồn được giữ cố định. `PN-DAU-KY` và lịch sử điểm đầu kỳ giải thích số dư có sẵn của bộ mẫu.
+Hai file có `USE [PetStationDemo1]`. Khi dùng tên database khác, dùng script PowerShell với `-Database` để thay đúng database đích; chỉ chọn database trên thanh SSMS là chưa đủ.
+
+Hai file không xóa dữ liệu hiện có và không nạp đè bộ mẫu. Ngày nghiệp vụ mẫu tính tương đối theo ngày nạp; khóa ngoại/CHECK luôn được kiểm tra. Chỉ dùng `-Reset` khi chủ động muốn xóa và tạo lại dữ liệu demo/test. Với database không rõ phiên bản/cấu trúc, `001` dừng trước khi sửa thay vì đoán cách nâng cấp.
 
 ## 4. Cấu hình ứng dụng
 
@@ -75,7 +89,7 @@ Copy-Item src/main/resources/db.properties.example config/db.properties
 Sửa `config/db.properties`:
 
 ```properties
-db.url=jdbc:sqlserver://localhost:1433;databaseName=PetStationDemo2;encrypt=true;trustServerCertificate=true
+db.url=jdbc:sqlserver://localhost:1433;databaseName=PetStationDemo1;encrypt=true;trustServerCertificate=true
 db.user=your_sql_login
 db.password=your_sql_password
 db.loginTimeoutSeconds=10
@@ -122,13 +136,13 @@ Khôi phục: SSMS → database → Tasks → Restore → Database → Device �
 
 ## 8. Kiểm thử
 
-`./mvnw.cmd verify` chạy bộ không cần SQL, bỏ qua 60 test tích hợp. Để tạo/reset database kiểm thử **riêng** và chạy đủ bộ:
+`./mvnw.cmd verify` chạy bộ không cần SQL và bỏ qua các lớp tích hợp theo cờ môi trường. Để thiết lập database kiểm thử **riêng** và chạy đủ cả ba nhóm SQL ngay trong cùng script:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-sqlserver.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -RunTests
 ```
 
-Script dùng `PetStationIntegrationTest`, không dùng database bán hàng. Hai suite SQL tự kiểm tra tên database. Xem [kịch bản kiểm thử](docs/KIEM_THU_VA_YEU_CAU.md) để ghi kết quả thủ công và các giới hạn còn lại.
+`-RunTests` mặc định dùng `PetStationIntegrationTest` và từ chối tên database bán hàng. Muốn tạo lại dữ liệu test thêm `-Reset`. Các suite SQL cũng tự kiểm tra database đích. Xem [kịch bản kiểm thử](docs/KIEM_THU_VA_YEU_CAU.md) để ghi kết quả thủ công và các giới hạn còn lại.
 
 ## 9. Lỗi thường gặp
 

@@ -1,47 +1,19 @@
 package com.petstation.database;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public final class KetNoiCSDL implements AutoCloseable {
+public final class KetNoiCSDL {
     private final CauHinhCSDL cauHinh;
-    private volatile HikariDataSource boKetNoi;
 
     public KetNoiCSDL(CauHinhCSDL cauHinh) {
         this.cauHinh = cauHinh;
         DriverManager.setLoginTimeout(cauHinh.thoiGianChoDangNhapGiay());
     }
 
-    private HikariDataSource layBoKetNoi() {
-        HikariDataSource hienTai = boKetNoi;
-        if (hienTai != null && !hienTai.isClosed()) {
-            return hienTai;
-        }
-        synchronized (this) {
-            if (boKetNoi == null || boKetNoi.isClosed()) {
-                HikariConfig config = new HikariConfig();
-                config.setJdbcUrl(cauHinh.url());
-                config.setUsername(cauHinh.nguoiDung());
-                config.setPassword(cauHinh.matKhau());
-                config.setMaximumPoolSize(10);
-                config.setMinimumIdle(2);
-                config.setConnectionTimeout(
-                        Math.max(1000L, cauHinh.thoiGianChoDangNhapGiay() * 1000L));
-                config.setIdleTimeout(300_000L);
-                config.setMaxLifetime(1_800_000L);
-                config.setPoolName("PetStationPool");
-                boKetNoi = new HikariDataSource(config);
-            }
-            return boKetNoi;
-        }
-    }
-
     public Connection mo() throws SQLException {
-        return layBoKetNoi().getConnection();
+        return DriverManager.getConnection(cauHinh.url(), cauHinh.nguoiDung(), cauHinh.matKhau());
     }
 
     public void xacMinh() throws SQLException {
@@ -54,18 +26,17 @@ public final class KetNoiCSDL implements AutoCloseable {
                         "Pet Station cần SQL Server 2019 trở lên. Phiên bản SSMS không phải phiên"
                                 + " bản SQL Server.");
             }
+            try (var statement = ketNoi.createStatement();
+                    var result =
+                            statement.executeQuery(
+                                    "SELECT gia_tri FROM dbo.cai_dat WHERE"
+                                            + " ma_cai_dat='PHIEN_BAN_CSDL'")) {
+                if (!result.next() || !"20261124".equals(result.getString(1)))
+                    throw new SQLException(
+                            "Cơ sở dữ liệu cần nâng cấp lên 20261124. Chạy"
+                                + " scripts/setup-database.ps1 với database hiện tại trước khi mở"
+                                + " ứng dụng.");
+            }
         }
-    }
-
-    public synchronized void dong() {
-        if (boKetNoi != null && !boKetNoi.isClosed()) {
-            boKetNoi.close();
-        }
-        boKetNoi = null;
-    }
-
-    @Override
-    public void close() {
-        dong();
     }
 }

@@ -3,7 +3,6 @@ package com.petstation.service.banhang;
 import com.petstation.dao.banhang.PhienLamViecDAO;
 import com.petstation.dao.banhang.impl.PhienLamViecDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
-import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.TomTatCaLamViec;
 import com.petstation.model.banhang.PhienLamViec;
 import com.petstation.model.chung.PhuongThuc;
@@ -58,7 +57,7 @@ public final class CaThuNganService {
             return null;
         }
         String maNv = PhienDangNhapService.macDinh().layMaNhanVien();
-        if (ThaoTacSQL.dangTrongGiaoDich()) {
+        if (QuanLyGiaoDich.dangTrongGiaoDich()) {
             return caThuNganDAO.timHienTai(maNv).orElse(null);
         }
         long bayGio = System.currentTimeMillis();

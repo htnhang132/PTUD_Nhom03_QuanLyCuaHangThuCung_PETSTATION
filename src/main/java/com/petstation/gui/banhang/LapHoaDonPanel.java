@@ -64,6 +64,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -180,7 +181,7 @@ public class LapHoaDonPanel extends CoSoPanel {
     // Cột phải: Khách hàng & Thanh toán
     private final BoChonKhachHang khungBoChon;
     private final JLabel nhanNhanTamTinh = new JLabel("0₫");
-    private final JLabel nhanNhanKhuyenMai = new JLabel("—");
+    private final JTextArea nhanNhanKhuyenMai = new JTextArea("—", 1, 0);
     private final JLabel nhanNhanGiamGia = new JLabel("0₫");
     private final JLabel nhanNhanTong = new JLabel("0₫");
 
@@ -326,13 +327,12 @@ public class LapHoaDonPanel extends CoSoPanel {
                     }
                 };
         bangChiTiet = new JTable(moHinhBang);
+        bangChiTiet.putClientProperty("giuDoRongCot", Boolean.TRUE);
         DinhDangBang.apDung(bangChiTiet);
         bangChiTiet.setRowHeight(40);
         bangChiTiet.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         thietLapCotBangChiTiet();
         dangKyTuongTacChuotBang();
-        moHinhBang.addTableModelListener(
-                e -> SwingUtilities.invokeLater(this::apDungKichThuocCotBangChiTiet));
         bangChiTiet.addComponentListener(
                 new ComponentAdapter() {
                     @Override
@@ -396,7 +396,7 @@ public class LapHoaDonPanel extends CoSoPanel {
         cotModel.getColumn(1).setPreferredWidth(120);
         cotModel.getColumn(2).setPreferredWidth(240);
         cotModel.getColumn(3).setPreferredWidth(105);
-        khoaChieuRongCot(cotModel.getColumn(4), 118, 124, 136);
+        khoaChieuRongCot(cotModel.getColumn(4), 124, 124, 124);
         cotModel.getColumn(5).setPreferredWidth(115);
         khoaChieuRongCot(cotModel.getColumn(6), 44, 48, 54);
     }
@@ -485,7 +485,7 @@ public class LapHoaDonPanel extends CoSoPanel {
         khungTongHop.setBorder(new EmptyBorder(10, 0, 10, 0));
         khungTongHop.add(tinhTongDong("Tạm tính tiền hàng", nhanNhanTamTinh, false));
         khungTongHop.add(Box.createVerticalStrut(6));
-        khungTongHop.add(tinhTongDong("Khuyến mãi tự áp", nhanNhanKhuyenMai, false));
+        khungTongHop.add(taoDongKhuyenMai());
         khungTongHop.add(Box.createVerticalStrut(6));
         khungTongHop.add(tinhTongDong("Giảm giá khuyến mãi", nhanNhanGiamGia, false));
         khungTongHop.add(Box.createVerticalStrut(10));
@@ -504,7 +504,9 @@ public class LapHoaDonPanel extends CoSoPanel {
         khungTongCong.add(nhanChuTong, BorderLayout.WEST);
         khungTongCong.add(nhanNhanTong, BorderLayout.EAST);
         khungTongHop.add(khungTongCong);
-        khungPhai.add(khungTongHop, BorderLayout.CENTER);
+        JPanel vungTongHop = taoVungTrongSuot(new BorderLayout());
+        vungTongHop.add(khungTongHop, BorderLayout.NORTH);
+        khungPhai.add(vungTongHop, BorderLayout.CENTER);
 
         // Cụm nút điều khiển ở đáy
         JPanel khungDay = taoVungTrongSuot(new BorderLayout(0, 8));
@@ -546,6 +548,30 @@ public class LapHoaDonPanel extends CoSoPanel {
         khungDong.add(nhanTen, BorderLayout.WEST);
         khungDong.add(nhanGiaTri, BorderLayout.EAST);
         return khungDong;
+    }
+
+    private JPanel taoDongKhuyenMai() {
+        JPanel khung =
+                new JPanel(new BorderLayout(0, 4)) {
+                    @Override
+                    public Dimension getMaximumSize() {
+                        return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+                    }
+                };
+        khung.setOpaque(false);
+        JLabel nhan = new JLabel("Khuyến mãi tự áp");
+        nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
+        nhan.setForeground(MauUngDung.VAN_BAN_XAM);
+        nhanNhanKhuyenMai.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
+        nhanNhanKhuyenMai.setForeground(MauUngDung.VAN_BAN_TOI);
+        nhanNhanKhuyenMai.setEditable(false);
+        nhanNhanKhuyenMai.setOpaque(false);
+        nhanNhanKhuyenMai.setLineWrap(true);
+        nhanNhanKhuyenMai.setWrapStyleWord(true);
+        nhanNhanKhuyenMai.setBorder(null);
+        khung.add(nhan, BorderLayout.NORTH);
+        khung.add(nhanNhanKhuyenMai, BorderLayout.CENTER);
+        return khung;
     }
 
     // 4. TÌM KIẾM, BARCODE & GỢI Ý SẢN PHẨM
@@ -923,7 +949,6 @@ public class LapHoaDonPanel extends CoSoPanel {
         nhanSoLuongMatHang.setText(gioHang.size() + " mặt hàng · " + tongSanPham + " sản phẩm");
         banHang.setCacDong(gioHang);
         capNhatCacTong();
-        apDungKichThuocCotBangChiTiet();
     }
 
     private void capNhatCacTong() {

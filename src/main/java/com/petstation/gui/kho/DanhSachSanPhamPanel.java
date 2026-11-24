@@ -45,7 +45,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                                         ? "Dưới tối thiểu"
                                                         : "Còn hàng")
                         .datTienTo("SP")
-                        .datTruongDau(10)
+                        .datTruongDau(1)
                         .themThaoTacBoSungKhongLuu(
                                 "Tạo Barcode",
                                 dong -> {

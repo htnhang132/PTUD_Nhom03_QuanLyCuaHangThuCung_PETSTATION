@@ -1,6 +1,6 @@
 package com.petstation.gui.nhansu;
 
-import static com.petstation.gui.chung.TruongDanhMuc.layTenCacVaiTro;
+import static com.petstation.model.chung.VaiTro.layCacTenHienThi;
 
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
@@ -12,6 +12,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import javax.swing.SwingUtilities;
 
@@ -69,7 +70,8 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                                     String tenDangNhap =
                                             NhanVienService.macDinh()
                                                     .layTenDangNhapTheoNhanVien(maNv);
-                                    String passMoi = "PetStation@" + maNv;
+                                    String passMoi =
+                                            "PS-" + UUID.randomUUID().toString().substring(0, 12);
                                     String vaiTro =
                                             NhanVienService.suyRaVaiTroTuChucVu(
                                                     String.valueOf(dong[4]));
@@ -96,7 +98,7 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Họ và tên", Kieu.VAN_BAN).batBuoc(),
                 TruongDuLieu.tao("Số điện thoại", Kieu.SO_DIEN_THOAI).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("CCCD", Kieu.CCCD).batBuoc().kiemTraDuyNhat().an(),
-                TruongDuLieu.tao("Chức vụ", Kieu.HOP_CHON).batBuoc().datLuaChon(layTenCacVaiTro()),
+                TruongDuLieu.tao("Chức vụ", Kieu.HOP_CHON).batBuoc().datLuaChon(layCacTenHienThi()),
                 TruongDuLieu.tao("Ngày vào làm", Kieu.NGAY)
                         .batBuoc()
                         .an()

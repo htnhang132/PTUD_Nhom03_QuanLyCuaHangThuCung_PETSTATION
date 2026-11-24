@@ -118,7 +118,7 @@ public class ChiTietBaoCao implements Serializable {
         private final double giamGia;
         private final double hoanTra;
         private final double doanhThuThuan;
-        private final double loiNhuanGop;
+        private final Double loiNhuanGop;
 
         public DoanhThuHoanTat(
                 LocalDate ngay,
@@ -127,7 +127,7 @@ public class ChiTietBaoCao implements Serializable {
                 double giamGia,
                 double hoanTra,
                 double doanhThuThuan,
-                double loiNhuanGop) {
+                Double loiNhuanGop) {
             this.ngay = ngay;
             this.soDon = soDon;
             this.doanhThuGoc = doanhThuGoc;

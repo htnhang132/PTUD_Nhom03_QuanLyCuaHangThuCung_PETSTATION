@@ -10,7 +10,7 @@ import java.util.List;
 
 // Màn hình: Thống kê khách hàng (Mã: THONG_KE_KHACH_HANG)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (khach_hang, hoa_don)
+// ThongKeDAOImpl -> SQL (khach_hang, hoa_don)
 // Mô tả: Phân nhóm khách hàng theo hạng thành viên (Đồng/Bạc/Vàng/Kim Cương), tần suất quay lại và
 // mức chi tiêu
 // Phân hệ: thongke

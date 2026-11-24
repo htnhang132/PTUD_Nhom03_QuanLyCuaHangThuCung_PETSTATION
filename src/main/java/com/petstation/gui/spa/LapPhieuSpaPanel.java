@@ -96,7 +96,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     private final JTextField oSoDienThoai = new JTextField(16);
     private final JLabel nhanKhachHang = new JLabel("Chưa chọn khách hàng");
     private final JComboBox<LuaChon> cboThuCung = new JComboBox<>();
-    private final JTextField oCanNang = new JTextField(6);
+    private final JTextField oCanNang = new JTextField();
     private final JTextArea oGhiChu = new JTextArea(2, 24);
     private final JComboBox<LuaChon> cboDichVu = new JComboBox<>();
     private final JLabel nhanGia = new JLabel("Chọn gói và nhập cân nặng để xem đơn giá");
@@ -212,7 +212,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         this.khiLuu = khiLuu;
         this.khiTreo = khiTreo;
         khoiTaoThanhPhanNhapLieu();
-        JPanel haiCot = new JPanel(new GridBagLayout());
+        JPanel haiCot = new LuoiSpaCoGian();
         haiCot.setOpaque(false);
         GridBagConstraints gTrai = new GridBagConstraints();
         gTrai.gridx = 0;
@@ -241,6 +241,52 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         setBackground(MauUngDung.NEN_KEM);
         add(taoVungCuon(baoNoiDung), BorderLayout.CENTER);
         add(taoThanhThaoTac(), BorderLayout.SOUTH);
+    }
+
+    private static final class LuoiSpaCoGian extends JPanel {
+        private boolean dangHep;
+
+        LuoiSpaCoGian() {
+            super(new GridBagLayout());
+        }
+
+        @Override
+        public void doLayout() {
+            if (getComponentCount() >= 2) {
+                GridBagLayout layout = (GridBagLayout) getLayout();
+                Component trai = getComponent(0), phai = getComponent(1);
+                GridBagConstraints a = layout.getConstraints(trai);
+                GridBagConstraints b = layout.getConstraints(phai);
+                boolean hep = getWidth() < 1050;
+                boolean doiBoCuc = dangHep != hep;
+                dangHep = hep;
+                a.gridx = 0;
+                a.gridy = 0;
+                a.weightx = 1;
+                a.weighty = hep ? 0 : 1;
+                b.gridx = hep ? 0 : 1;
+                b.gridy = hep ? 1 : 0;
+                b.weightx = 1;
+                b.weighty = 1;
+                a.insets = new Insets(0, 0, hep ? 12 : 0, hep ? 0 : 12);
+                b.insets = new Insets(0, 0, 0, 0);
+                layout.setConstraints(trai, a);
+                layout.setConstraints(phai, b);
+                if (doiBoCuc) revalidate();
+            }
+            super.doLayout();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            if (getComponentCount() < 2 || !dangHep) return super.getPreferredSize();
+            Dimension trai = getComponent(0).getPreferredSize();
+            Dimension phai = getComponent(1).getPreferredSize();
+            Insets le = getInsets();
+            return new Dimension(
+                    Math.max(trai.width, phai.width) + le.left + le.right,
+                    trai.height + phai.height + 12 + le.top + le.bottom);
+        }
     }
 
     private static JPanel taoKhungCuonTheoChieuRong() {
@@ -463,7 +509,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         btnThemThu.setEnabled(khachHang != null);
         chuanHoaChieuCaoInput(oSoDienThoai, 205, MauUngDung.CAO_DAU_VAO);
         chuanHoaChieuCaoInput(cboThuCung, 172, MauUngDung.CAO_DAU_VAO);
-        chuanHoaChieuCaoInput(oCanNang, 66, MauUngDung.CAO_DAU_VAO);
+        chuanHoaChieuCaoInput(oCanNang, 110, MauUngDung.CAO_DAU_VAO);
         nhanKhachHang.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         nhanKhachHang.setForeground(MauUngDung.VAN_BAN_TOI);
 
@@ -474,7 +520,8 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                 phaiTieuDe,
                 hangBieuMau("Khách hàng *", oSoDienThoai, btnTimKhach, btnThemKhach),
                 hangBieuMau("Đã chọn", nhanKhachHang),
-                hangBieuMau("Thú cưng *", cboThuCung, btnThemThu, nhanNho("Cân (kg) *"), oCanNang),
+                hangBieuMau("Thú cưng *", cboThuCung, btnThemThu),
+                hangBieuMau("Cân (kg) *", oCanNang),
                 khungTheHoSo);
     }
 
@@ -1255,9 +1302,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         String maHenTreo = p.getLichHen() != null ? p.getLichHen().getMaLichHen() : "";
 
         chonKhach(khach, dsThu, maThu);
-        if (khach == null) {
-            oSoDienThoai.setText(p.getSoDienThoai());
-        }
+        oSoDienThoai.setText(p.getSoDienThoai());
         chonItemCombo(cboDichVu, maGoi);
         dsGoiChon.clear();
         maHen = maHenTreo == null ? "" : maHenTreo;

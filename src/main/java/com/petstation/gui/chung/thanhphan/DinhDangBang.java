@@ -303,6 +303,8 @@ public final class DinhDangBang {
     // 3. CĂN CHỈNH ĐỘ RỘNG CỘT
 
     public static void canChinhDoRongCot(JTable bangBang) {
+        if (bangBang != null && Boolean.TRUE.equals(bangBang.getClientProperty("giuDoRongCot")))
+            return;
         if (bangBang == null || bangBang.getColumnCount() == 0) return;
         FontMetrics hfm =
                 bangBang.getTableHeader() != null

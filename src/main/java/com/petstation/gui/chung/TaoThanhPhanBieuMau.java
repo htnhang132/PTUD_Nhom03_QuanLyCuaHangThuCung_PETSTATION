@@ -6,11 +6,10 @@ import java.awt.Font;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public final class BieuMauPanel extends JPanel {
-    private BieuMauPanel() {}
+public final class TaoThanhPhanBieuMau {
+    private TaoThanhPhanBieuMau() {}
 
     public static JTextField layTruongVanBan(String vanBan) {
         JTextField oTruongDangXet = new JTextField(vanBan);

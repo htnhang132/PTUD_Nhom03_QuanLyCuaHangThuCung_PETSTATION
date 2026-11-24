@@ -10,7 +10,7 @@ import java.util.List;
 
 // Màn hình: Thống kê công nợ NCC (Mã: THONG_KE_CONG_NO)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (nha_cung_cap, phieu_nhap_kho)
+// ThongKeDAOImpl -> SQL (nha_cung_cap, phieu_nhap_kho)
 // Mô tả: Quản lý tổng giá trị hàng nhập, số tiền đã thanh toán và dư nợ phải trả theo từng nhà cung
 // cấp
 // Phân hệ: thongke

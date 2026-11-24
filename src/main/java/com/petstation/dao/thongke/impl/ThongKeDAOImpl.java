@@ -175,23 +175,28 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
             LocalDate tu, LocalDate denNgay, String maNhanVien) {
         return truyVanDanhSach(
                 "SELECT CAST(h.thanh_toan_luc AS date), COUNT(DISTINCT h.ma_hoa_don),"
-                        + " SUM(h.tam_tinh + COALESCE(c.coc, 0)), SUM(h.giam_gia),"
-                        + " SUM(COALESCE(dt.hoan_tra, 0)), SUM(h.tong_tien + COALESCE(c.coc, 0)"
-                        + " - COALESCE(dt.hoan_tra, 0)), SUM(h.tong_tien + COALESCE(c.coc, 0) -"
-                        + " COALESCE(dt.hoan_tra, 0) - COALESCE(gv.gia_von, 0)) FROM hoa_don h"
-                        + " OUTER APPLY (SELECT SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE"
-                        + " ma_hoa_don=h.ma_hoa_don AND da_nhan_coc=1) c OUTER APPLY (SELECT"
-                        + " SUM(CASE WHEN p.chenh_lech < 0 THEN -p.chenh_lech ELSE 0 END)"
-                        + " hoan_tra FROM phieu_doi_tra p WHERE p.ma_hoa_don=h.ma_hoa_don AND"
-                        + " p.trang_thai='HOAN_TAT') dt OUTER APPLY (SELECT SUM(ct.so_luong *"
-                        + " COALESCE(NULLIF(l.gia_nhap, 0), sp.gia_nhap_gan_nhat, ct.don_gia *"
-                        + " 0.6)) gia_von FROM chi_tiet_hoa_don ct JOIN san_pham sp ON"
-                        + " sp.ma_san_pham=ct.ma_san_pham LEFT JOIN lo_hang l ON"
-                        + " l.ma_lo=ct.ma_lo WHERE ct.ma_hoa_don=h.ma_hoa_don) gv JOIN"
-                        + " phien_lam_viec s ON s.ma_phien=h.ma_phien WHERE"
-                        + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND"
-                        + " h.thanh_toan_luc<? AND (? IS NULL OR s.ma_nhan_vien = ?) GROUP BY"
-                        + " CAST(h.thanh_toan_luc AS date) ORDER BY 1",
+                    + " SUM(h.tam_tinh + COALESCE(c.coc, 0)), SUM(h.giam_gia),"
+                    + " SUM(COALESCE(dt.hoan_tra, 0)), SUM(h.tong_tien + COALESCE(c.coc, 0) -"
+                    + " COALESCE(dt.hoan_tra, 0)), CASE WHEN SUM(COALESCE(gv.thieu,0))>0 THEN NULL"
+                    + " ELSE SUM(h.tong_tien + COALESCE(c.coc, 0) - COALESCE(dt.hoan_tra, 0) -"
+                    + " COALESCE(gv.gia_von, 0)) END FROM hoa_don h OUTER APPLY (SELECT"
+                    + " SUM(tien_coc) coc FROM hop_dong_luu_tru WHERE ma_hoa_don=h.ma_hoa_don AND"
+                    + " da_nhan_coc=1) c OUTER APPLY (SELECT SUM(CASE WHEN p.chenh_lech < 0 THEN"
+                    + " -p.chenh_lech ELSE 0 END) hoan_tra FROM phieu_doi_tra p WHERE"
+                    + " p.ma_hoa_don=h.ma_hoa_don AND p.trang_thai='HOAN_TAT') dt OUTER APPLY"
+                    + " (SELECT SUM(a.gia_von) gia_von, SUM(CASE WHEN"
+                    + " ct.so_luong<>COALESCE(a.so_luong,0) THEN 1 ELSE 0 END) thieu FROM"
+                    + " chi_tiet_hoa_don ct OUTER APPLY (SELECT SUM((x.so_luong-"
+                    + " COALESCE(r.so_luong,0))*x.gia_von) gia_von,SUM(x.so_luong) so_luong FROM"
+                    + " phan_bo_lo_hoa_don x OUTER APPLY (SELECT SUM(d.so_luong) so_luong FROM"
+                    + " chi_tiet_doi_tra d JOIN phieu_doi_tra p ON p.ma_phieu=d.ma_phieu WHERE"
+                    + " p.trang_thai='HOAN_TAT' AND d.ma_hoa_don=ct.ma_hoa_don AND"
+                    + " d.ma_san_pham=ct.ma_san_pham AND d.ma_lo=x.ma_lo) r WHERE"
+                    + " x.ma_dong=ct.ma_dong) a WHERE ct.ma_hoa_don=h.ma_hoa_don AND ct.ma_san_pham"
+                    + " IS NOT NULL) gv JOIN phien_lam_viec s ON s.ma_phien=h.ma_phien WHERE"
+                    + " h.trang_thai='DA_THANH_TOAN' AND h.thanh_toan_luc>=? AND h.thanh_toan_luc<?"
+                    + " AND (? IS NULL OR s.ma_nhan_vien = ?) GROUP BY CAST(h.thanh_toan_luc AS"
+                    + " date) ORDER BY 1",
                 r ->
                         new DoanhThuHoanTat(
                                 DuLieu.chuyenLocalDate(r[0]),
@@ -200,7 +205,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
                                 soThuc(r[3]),
                                 soThuc(r[4]),
                                 soThuc(r[5]),
-                                soThuc(r[6])),
+                                soThucCoTheNull(r[6])),
                 tu,
                 denNgay,
                 maNhanVien,

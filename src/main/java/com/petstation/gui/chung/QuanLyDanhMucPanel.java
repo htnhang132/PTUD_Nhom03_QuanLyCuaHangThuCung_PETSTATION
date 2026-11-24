@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -1567,6 +1568,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     private void luu() {
+        if (dangGhiDuLieu) return;
         Object[] cacGiaTri = thuThapGiaTriBieuMau();
         if (cacGiaTri == null) return;
         boolean laVoucher =
@@ -1687,12 +1689,17 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         List<Object[]> cacDongMoi =
                 taoDanhSachVoucherMoi(cacGiaTri, maGoc, khachChinh, dsKhachVoucher);
         if (cacDongMoi == null) return;
-        try {
-            DanhMucService.macDinh().luuNhieu(cacDong, truoc, dongCapNhat, cacDongMoi);
-        } catch (RuntimeException ngoaiLe) {
-            HopThoai.hienThiCanhBao(this, "Không thể lưu: " + ngoaiLe.getMessage());
-            return;
-        }
+        Object[] capNhatCuoi = dongCapNhat;
+        chayGhiDanhMuc(
+                () -> DanhMucService.macDinh().luuNhieu(cacDong, truoc, capNhatCuoi, cacDongMoi),
+                () -> apDungVoucherDaLuu(capNhatCuoi, truoc, cacDongMoi, dsKhachVoucher.size()),
+                loi ->
+                        HopThoai.hienThiCanhBao(
+                                this, "Không thể lưu: " + TacVuNen.thongDiepLoi(loi)));
+    }
+
+    private void apDungVoucherDaLuu(
+            Object[] dongCapNhat, Object[] truoc, List<Object[]> cacDongMoi, int soKhach) {
         Object[] daLuuCuoi = null;
         if (dongCapNhat != null && hienTai != null) {
             System.arraycopy(dongCapNhat, 0, hienTai, 0, dongCapNhat.length);
@@ -1706,7 +1713,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         }
         lamMoiLuaChonLoc();
         taiLai(daLuuCuoi);
-        nhay("Đã lưu " + dsKhachVoucher.size() + " " + cauHinh.tenThucThe + ".");
+        nhay("Đã lưu " + soKhach + " " + cauHinh.tenThucThe + ".");
     }
 
     private List<Object[]> taoDanhSachVoucherMoi(
@@ -1756,23 +1763,35 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         return Arrays.equals(cu, moi);
     }
 
+    private boolean dangGhiDuLieu;
+
     private void luuMotBanGhi(Object[] cacGiaTri, Object[] truoc) {
-        try {
-            try {
-                DanhMucService.macDinh().luu(cacDong, truoc, cacGiaTri);
-            } catch (DanhMucService.TrungSoDienThoaiException ex) {
-                if (!HopThoai.xacNhan(
-                        this,
-                        ex.getMessage() + "\nNếu đây là chi nhánh khác, bạn có muốn vẫn lưu?"))
-                    return;
-                DanhMucService.macDinh().luu(cacDong, truoc, cacGiaTri, true);
-            }
-        } catch (RuntimeException ngoaiLe) {
-            HopThoai.hienThiCanhBao(this, "Không thể lưu: " + ngoaiLe.getMessage());
-            return;
-        }
+        luuMotBanGhi(cacGiaTri, truoc, false);
+    }
+
+    private void luuMotBanGhi(Object[] cacGiaTri, Object[] truoc, boolean choTrungSdt) {
+        chayGhiDanhMuc(
+                () -> DanhMucService.macDinh().luu(cacDong, truoc, cacGiaTri, choTrungSdt),
+                () -> apDungBanGhiDaLuu(cacGiaTri, truoc),
+                loi -> {
+                    if (loi instanceof DanhMucService.TrungSoDienThoaiException
+                            && HopThoai.xacNhan(
+                                    this,
+                                    loi.getMessage()
+                                            + "\n"
+                                            + "Nếu đây là chi nhánh khác, bạn có muốn vẫn"
+                                            + " lưu?")) {
+                        luuMotBanGhi(cacGiaTri, truoc, true);
+                    } else {
+                        HopThoai.hienThiCanhBao(
+                                this, "Không thể lưu: " + TacVuNen.thongDiepLoi(loi));
+                    }
+                });
+    }
+
+    private void apDungBanGhiDaLuu(Object[] cacGiaTri, Object[] truoc) {
         Object[] daLuu;
-        if (cheDo == CheDo.MOI) {
+        if (truoc == null) {
             cacDong.add(cacGiaTri);
             daLuu = cacGiaTri;
         } else {
@@ -1783,6 +1802,38 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         lamMoiLuaChonLoc();
         taiLai(daLuu);
         nhay("Đã lưu " + cauHinh.tenThucThe + " " + daLuu[0] + ".");
+    }
+
+    private void chayGhiDanhMuc(Runnable ghi, Runnable khiXong, Consumer<Throwable> khiLoi) {
+        if (dangGhiDuLieu) return;
+        if (!SwingUtilities.isEventDispatchThread()) {
+            ghi.run();
+            khiXong.run();
+            return;
+        }
+        dangGhiDuLieu = true;
+        Map<Component, Boolean> trangThai = new IdentityHashMap<>();
+        khoaThanhPhan(this, trangThai);
+        TacVuNen.chayCoPhien(
+                PhienDangNhapService.macDinh().layPhienHienTai(),
+                () -> true,
+                () -> {
+                    ghi.run();
+                    return null;
+                },
+                () -> {
+                    dangGhiDuLieu = false;
+                    trangThai.forEach(Component::setEnabled);
+                },
+                ignored -> khiXong.run(),
+                khiLoi);
+    }
+
+    private static void khoaThanhPhan(Component c, Map<Component, Boolean> trangThai) {
+        trangThai.put(c, c.isEnabled());
+        c.setEnabled(false);
+        if (c instanceof Container con)
+            for (Component child : con.getComponents()) khoaThanhPhan(child, trangThai);
     }
 
     private String kiemTraTruong(int chiSo, TruongDuLieu truongDangXet, String giaTri) {
@@ -1832,6 +1883,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
     }
 
     private void layNhatXoa() {
+        if (dangGhiDuLieu) return;
         if (hienTai == null) return;
         if (cauHinh.chiSoTrangThai < 0) {
             HopThoai.hienThiThongTin(this, "Danh mục này không hỗ trợ ngừng hoạt động.");
@@ -1859,33 +1911,35 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
         Object[] truoc = hienTai.clone();
         Object[] daCapNhat = hienTai.clone();
         daCapNhat[cauHinh.chiSoTrangThai] = cauHinh.nhanNgungHoatDong;
-        try {
-            DanhMucService.macDinh().luu(cacDong, hienTai.clone(), daCapNhat);
-        } catch (RuntimeException ngoaiLe) {
-            HopThoai.hienThiCanhBao(this, ngoaiLe.getMessage());
-            return;
-        }
-        hienTai[cauHinh.chiSoTrangThai] = cauHinh.nhanNgungHoatDong;
-        NhatKyHeThongService.macDinh()
-                .ghiNhatKy(
-                        "Xóa",
-                        cauHinh.tenThucThe
-                                + " "
-                                + hienTai[0]
-                                + " - "
-                                + hienTai[1]
-                                + " ("
-                                + cauHinh.nhanNgungHoatDong
-                                + ")");
-        if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(truoc, hienTai);
-        taiLai(hienTai);
-        nhay(
-                cauHinh.tenThucThe
-                        + " "
-                        + hienTai[0]
-                        + " đã chuyển sang "
-                        + cauHinh.nhanNgungHoatDong
-                        + ".");
+        Object[] dongChon = hienTai;
+        chayGhiDanhMuc(
+                () -> {
+                    DanhMucService.macDinh().luu(cacDong, truoc, daCapNhat);
+                    NhatKyHeThongService.macDinh()
+                            .ghiNhatKy(
+                                    "Xóa",
+                                    cauHinh.tenThucThe
+                                            + " "
+                                            + truoc[0]
+                                            + " - "
+                                            + truoc[1]
+                                            + " ("
+                                            + cauHinh.nhanNgungHoatDong
+                                            + ")");
+                },
+                () -> {
+                    dongChon[cauHinh.chiSoTrangThai] = cauHinh.nhanNgungHoatDong;
+                    if (cauHinh.khiDaLuu != null) cauHinh.khiDaLuu.accept(truoc, dongChon);
+                    taiLai(dongChon);
+                    nhay(
+                            cauHinh.tenThucThe
+                                    + " "
+                                    + dongChon[0]
+                                    + " đã chuyển sang "
+                                    + cauHinh.nhanNgungHoatDong
+                                    + ".");
+                },
+                ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
     }
 
     private void chayBoSung(ThaoTacBoSung ngoaiLe) {
@@ -2145,6 +2199,10 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     @Override
     public boolean coTheRoiManHinh() {
+        if (dangGhiDuLieu) {
+            nhay("Đang lưu dữ liệu, vui lòng chờ.");
+            return false;
+        }
         if (cheDo != CheDo.HIEN_THI && kiemTraChuaLuu()) {
             return HopThoai.xacNhan(this, "Bạn có thay đổi chưa lưu. Vẫn rời khỏi màn hình này?");
         }
@@ -2155,6 +2213,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     @Override
     public void xuLyHienThi() {
+        if (dangGhiDuLieu) return;
         if (cheDo != CheDo.HIEN_THI) return;
         khiLamMoiDuLieu();
         if (cacDong instanceof DanhMucService.CacDong danhMuc) {
@@ -2172,6 +2231,7 @@ public class QuanLyDanhMucPanel extends CoSoPanel {
 
     @Override
     public void xuLyLamMoi() {
+        if (dangGhiDuLieu) return;
         if (cheDo != CheDo.HIEN_THI) {
             if (kiemTraChuaLuu()
                     && !HopThoai.xacNhan(

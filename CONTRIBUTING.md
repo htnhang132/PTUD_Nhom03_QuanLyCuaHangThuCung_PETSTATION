@@ -1,28 +1,18 @@
-# HƯỚNG DẪN ĐÓNG GÓP VÀ QUY TẮC LÀM VIỆC (CONTRIBUTING)
-**Đồ án Môn Phát triển Ứng dụng - Nhóm 03**
+# Đóng góp và quy tắc làm việc
 
----
+Pet Station dùng Java 17, Swing và SQL Server. Quy định code chính thức nằm tại [Chuẩn code](docs/CHUAN_CODE.md); kết luận từng file tại [Rà soát mã nguồn](docs/RA_SOAT_MA_NGUON.md). Không dùng quy ước công nghệ khác thay cho cấu hình Maven hiện có.
 
-## 1. Quy tắc phân nhánh (Git Branching Strategy)
-* **Tuyệt đối KHÔNG commit trực tiếp lên nhánh `main`.**[cite: 3]
-* Nhánh **`main`**: Nhánh chứa mã nguồn hoàn chỉnh, chạy ổn định, dùng để nộp bài hoặc báo cáo.
-* Nhánh **`develop`**: Nhánh tích hợp chung của nhóm[cite: 3].
-* Nhánh **`feature/<tên-chức-năng>`**: Mỗi thành viên phải tự tạo nhánh riêng để làm việc (Ví dụ: `feature/pet-management`, `feature/pos-checkout`)[cite: 3].
-* Sau khi hoàn thành tính năng và test kỹ, tạo **Pull Request (PR)** để merge vào nhánh `develop`[cite: 3].
+## Nhánh và commit
 
-## 2. Quy định về Commit Message
-Viết commit rõ nghĩa, bắt đầu bằng các tiền tố chuẩn (Conventional Commits):
-* `feat:` Thêm tính năng mới (Ví dụ: `feat: add pet category management screen`)
-* `fix:` Sửa lỗi (Ví dụ: `fix: resolve null pointer exception in checkout`)
-* `docs:` Cập nhật tài liệu (Ví dụ: `docs: update SRS requirement document`)
-* `refactor:` Tái cấu trúc code không đổi chức năng
-* ❌ **Cấm các commit chung chung** như: `update`, `fix bug`, `123`, `asdf`[cite: 3].
+- Làm việc ở `feature/<ten-chuc-nang>`, tạo PR vào `develop`; tích hợp `main` từ `develop` theo workflow hiện tại.
+- Dùng tiền tố `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:` với nội dung mô tả thay đổi cụ thể. Không commit mật khẩu hoặc kết quả build.
+- Không đảo ngược thay đổi đang có của thành viên khác khi dọn code. Không gộp nghiệp vụ khác nhau chỉ để giảm số file.
 
-## 3. Quy chuẩn lập trình (Coding Convention)
-* **Ngôn ngữ:** Java hoặc C# (theo lựa chọn của nhóm)[cite: 3].
-* **Mô hình kiến trúc:** Áp dụng mô hình phân tầng rõ ràng (n-Tier Architecture)[cite: 3].
-* **Lập trình hướng đối tượng (OOP):** Tuân thủ các nguyên tắc đóng gói, kế thừa, đa hình và SOLID.
-* **Quy tắc đặt tên:**
-  * Tên Class: PascalCase (Ví dụ: `PetController`, `InvoiceService`)
-  * Tên biến / hàm: camelCase (Ví dụ: `calculateTotalPrice`, `petName`)
-  * Tên bảng CSDL: Snake_case hoặc PascalCase đồng nhất.
+## Trước khi gửi PR
+
+1. Kiểm tra nơi sử dụng trước khi xóa/đổi tên; cập nhật test và tài liệu tương ứng.
+2. Chạy `powershell -File scripts/format-java.ps1 -Mode check` và `mvnw.cmd -B -ntp verify`.
+3. Khi sửa SQL/nghiệp vụ, chạy `scripts/setup-database.ps1 -Database PetStationIntegrationTest_Review -RunTests` trên database riêng. Không reset dữ liệu cửa hàng để kiểm thử.
+4. Ghi số test chạy/bỏ qua, kiểm tra UI liên quan và rủi ro còn lại. Đối chiếu [bản đồ truy vết](docs/BAN_DO_TRUY_VET_CODE.md), không chép tên lớp cũ vào phần giải thích.
+
+Giới hạn phương thức 80 dòng và quy ước class thay record là lựa chọn của nhóm, không phải định nghĩa phổ quát về Java/OOP. Những điểm chưa đạt thiết kế tốt được ghi nhận trong báo cáo, không che bằng việc chỉ sửa format.

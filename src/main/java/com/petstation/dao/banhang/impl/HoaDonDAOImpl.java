@@ -3,6 +3,7 @@ package com.petstation.dao.banhang.impl;
 import com.petstation.dao.banhang.HoaDonDAO;
 import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.DonDoiTreo;
+import com.petstation.dto.ThongTinDonTreo;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
 import com.petstation.model.banhang.PhieuDoiTra;
@@ -169,11 +170,6 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 "UPDATE hoa_don SET trang_thai='DA_HUY' WHERE ma_hoa_don=?", maHoaDon);
     }
 
-    @Override
-    public int danhDauHuyDonHang(String maHoaDon) {
-        return 1;
-    }
-
     // 2. XỬ LÝ THANH TOÁN, TỒN LÔ FEFO & TÍCH ĐIỂM
 
     @Override
@@ -188,11 +184,6 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                         tenHoacMaNhanVien,
                         tenHoacMaNhanVien);
         return Optional.ofNullable(giaTri).map(Object::toString);
-    }
-
-    @Override
-    public long demNgayDaChot() {
-        return 0L;
     }
 
     @Override
@@ -297,20 +288,17 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     @Override
     public int ghiPhanBoLo(String maHoaDon, String maSanPham, String maLo, int soLuong) {
-        int ketQua =
-                ThaoTacSQL.capNhat(
-                        "UPDATE TOP (1) chi_tiet_hoa_don SET ma_lo=? WHERE ma_hoa_don=? AND"
-                                + " ma_san_pham=? AND (ma_lo IS NULL OR ma_lo = '')",
-                        maLo,
-                        maHoaDon,
-                        maSanPham);
-        if (ketQua > 0) return ketQua;
-        List<Object[]> daCo =
-                ThaoTacSQL.truyVan(
-                        "SELECT ma_lo FROM chi_tiet_hoa_don WHERE ma_hoa_don=? AND ma_san_pham=?",
-                        maHoaDon,
-                        maSanPham);
-        return (!daCo.isEmpty() && daCo.get(0)[0] != null) ? 1 : 0;
+        return ThaoTacSQL.capNhat(
+                "INSERT INTO phan_bo_lo_hoa_don(ma_dong,ma_lo,so_luong,gia_von) SELECT"
+                        + " c.ma_dong,?,?,COALESCE(l.gia_nhap,p.gia_nhap_gan_nhat,0) FROM"
+                        + " chi_tiet_hoa_don c JOIN lo_hang l ON l.ma_san_pham=c.ma_san_pham AND"
+                        + " l.ma_lo=? JOIN san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE"
+                        + " c.ma_hoa_don=? AND c.ma_san_pham=?",
+                maLo,
+                soLuong,
+                maLo,
+                maHoaDon,
+                maSanPham);
     }
 
     @Override
@@ -518,6 +506,29 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     }
 
     @Override
+    public void luuThongTinTreo(String maHoaDon, String maVoucher, String ghiChu) {
+        ThaoTacSQL.capNhat(
+                "UPDATE hoa_don SET ma_voucher=?,ghi_chu=? WHERE ma_hoa_don=?"
+                        + " AND trang_thai='GIO_TREO'",
+                maVoucher == null || maVoucher.isBlank() ? null : maVoucher,
+                ghiChu,
+                maHoaDon);
+    }
+
+    @Override
+    public Optional<ThongTinDonTreo> layThongTinTreo(String maHoaDon) {
+        var rows =
+                ThaoTacSQL.truyVan(
+                        "SELECT COALESCE(ma_voucher,''),COALESCE(ghi_chu,'')"
+                                + " FROM hoa_don WHERE ma_hoa_don=? AND trang_thai='GIO_TREO'",
+                        maHoaDon);
+        return rows.isEmpty()
+                ? Optional.empty()
+                : Optional.of(
+                        new ThongTinDonTreo(rows.get(0)[0].toString(), rows.get(0)[1].toString()));
+    }
+
+    @Override
     public long demGioTreoCuaTaiKhoan(String maHoaDon, String maNhanVien) {
         String nv = maNhanVien == null ? "" : maNhanVien.trim();
         return ThaoTacSQL.laySo(
@@ -589,11 +600,8 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
     @Override
     public List<ChiTietHoaDon> layDichVuSpaQuyetToan(String maPhieuSpa) {
         return ThaoTacSQL.truyVanDanhSach(
-                "SELECT COALESCE(g.ma_goi,'DV-SPA'),"
-                        + " COALESCE(t.mo_ta_dich_vu,g.ten_goi,N'Dịch vụ Spa'),"
-                        + " COALESCE(NULLIF(t.don_gia,0),t.tong_tien),"
-                        + " COALESCE(NULLIF(t.so_luong,0),1) FROM phieu_tiep_nhan_spa t LEFT"
-                        + " JOIN goi_dich_vu_spa g ON g.ma_goi=t.ma_goi WHERE t.ma_phieu=?",
+                "SELECT COALESCE(ma_goi,CONCAT('SPA-',ma_chi_tiet)),ten_dich_vu,don_gia,so_luong"
+                        + " FROM chi_tiet_phieu_spa WHERE ma_phieu=? ORDER BY ma_chi_tiet",
                 r -> taoChiTietSpa(maPhieuSpa, r),
                 maPhieuSpa);
     }
@@ -639,9 +647,10 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
 
     @Override
     public List<LoHang> layPhanBoCanHoanTon(String maHoaDon) {
+        kiemTraPhanBoDayDu(maHoaDon);
         return ThaoTacSQL.truyVanDanhSach(
-                "SELECT ma_lo,so_luong FROM chi_tiet_hoa_don WHERE ma_hoa_don=? AND ma_lo IS NOT"
-                        + " NULL",
+                "SELECT a.ma_lo,a.so_luong FROM phan_bo_lo_hoa_don a"
+                        + " JOIN chi_tiet_hoa_don c ON c.ma_dong=a.ma_dong WHERE c.ma_hoa_don=?",
                 r -> taoLoTon(r, true),
                 maHoaDon);
     }
@@ -660,6 +669,19 @@ public final class HoaDonDAOImpl implements HoaDonDAO {
                 "UPDATE voucher SET da_dung=CASE WHEN da_dung>0 THEN da_dung-1 ELSE 0 END WHERE"
                         + " ma_voucher=?",
                 maVoucher);
+    }
+
+    private void kiemTraPhanBoDayDu(String maHoaDon) {
+        if (ThaoTacSQL.laySo(
+                        "SELECT COUNT(*) FROM chi_tiet_hoa_don c WHERE c.ma_hoa_don=?"
+                                + " AND c.ma_san_pham IS NOT NULL AND c.so_luong<>COALESCE("
+                                + " (SELECT SUM(a.so_luong) FROM phan_bo_lo_hoa_don a"
+                                + " WHERE a.ma_dong=c.ma_dong),0)",
+                        maHoaDon)
+                > 0) {
+            throw new IllegalStateException(
+                    "Hóa đơn lịch sử cần đối chiếu phân bổ lô trước khi hủy.");
+        }
     }
 
     private static LoHang taoLoTon(Object[] r, boolean khongAm) {

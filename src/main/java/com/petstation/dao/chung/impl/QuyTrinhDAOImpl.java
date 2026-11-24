@@ -135,15 +135,14 @@ public final class QuyTrinhDAOImpl implements QuyTrinhDAO {
     @Override
     public List<HotelDTO.ChiTietLichPhong> layLichPhong() {
         return truyVan(
-                        "SELECT h.ma_phong, h.ma_hop_dong, t.ma_thu_cung, t.ten,"
-                                + " k.ma_khach_hang, k.ho_ten, h.ngay_vao,"
-                                + " h.ngay_ra_du_kien, h.trang_thai,"
-                                + " COALESCE(k.so_dien_thoai, ''), COALESCE(h.tien_coc, 0),"
-                                + " COALESCE(h.da_nhan_coc, 0), COALESCE(h.gia_dem_ap_dung, 0)"
-                                + " FROM hop_dong_luu_tru h JOIN thu_cung t ON"
-                                + " t.ma_thu_cung=h.ma_thu_cung JOIN khach_hang k ON"
-                                + " k.ma_khach_hang=h.ma_khach_hang WHERE h.trang_thai"
-                                + " IN('DA_DAT','DANG_O') ORDER BY h.ngay_vao, h.ma_hop_dong")
+                        "SELECT h.ma_phong, h.ma_hop_dong, t.ma_thu_cung, t.ten, k.ma_khach_hang,"
+                            + " k.ho_ten, h.ngay_vao, h.ngay_ra_du_kien, h.trang_thai,"
+                            + " COALESCE(k.so_dien_thoai, ''), COALESCE(h.tien_coc, 0),"
+                            + " COALESCE(h.da_nhan_coc, 0), COALESCE(h.gia_dem, r.gia_dem) FROM"
+                            + " hop_dong_luu_tru h JOIN phong_hotel r ON r.ma_phong=h.ma_phong JOIN"
+                            + " thu_cung t ON t.ma_thu_cung=h.ma_thu_cung JOIN khach_hang k ON"
+                            + " k.ma_khach_hang=h.ma_khach_hang WHERE h.trang_thai"
+                            + " IN('DA_DAT','DANG_O') ORDER BY h.ngay_vao, h.ma_hop_dong")
                 .stream()
                 .map(
                         r -> {

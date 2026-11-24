@@ -10,7 +10,7 @@ import java.util.List;
 // Màn hình Thống kê > Nhân viên
 // Màn hình: Thống kê nhân viên (Mã: THONG_KE_NHAN_VIEN)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (nhan_vien, hoa_don)
+// ThongKeDAOImpl -> SQL (nhan_vien, hoa_don)
 // Mô tả: Đánh giá năng suất bán hàng, số giờ trực ca và doanh số đóng góp của từng nhân sự
 // Phân hệ: thongke
 public final class ThongKeNhanVienPanel extends BaoCaoPanel {

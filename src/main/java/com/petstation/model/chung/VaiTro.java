@@ -16,6 +16,13 @@ public enum VaiTro {
         return tenHienThi;
     }
 
+    public static String[] layCacTenHienThi() {
+        VaiTro[] cacVaiTro = values();
+        String[] ten = new String[cacVaiTro.length];
+        for (int i = 0; i < cacVaiTro.length; i++) ten[i] = cacVaiTro[i].getTenHienThi();
+        return ten;
+    }
+
     public static VaiTro docTuCSDL(String giaTri) {
         if (giaTri == null) return NHAN_VIEN_BAN_HANG;
         return switch (giaTri.trim().toUpperCase()) {

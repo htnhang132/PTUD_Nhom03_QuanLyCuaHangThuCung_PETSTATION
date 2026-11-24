@@ -1,6 +1,6 @@
 package com.petstation.gui.khachhang;
 
-import static com.petstation.gui.chung.TruongDanhMuc.docNgay;
+import static com.petstation.util.DinhDang.docNgayChuanHoacNull;
 
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.gui.chung.TacVuNen;
@@ -138,7 +138,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 .datTrangThai(6, "Còn hiệu lực", "Ngừng")
                 .datBoChuanHoa(
                         dongDuLieu -> {
-                            LocalDate hanDung = docNgay(dongDuLieu[2]);
+                            LocalDate hanDung = docNgayChuanHoacNull(dongDuLieu[2]);
                             String trangThai = String.valueOf(dongDuLieu[6]);
                             long soLuong = DinhDang.doc(String.valueOf(dongDuLieu[3]));
                             long daDung = DinhDang.doc(String.valueOf(dongDuLieu[4]));
@@ -164,7 +164,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
         if (donToiThieu < 0) {
             return "Đơn tối thiểu không được âm.";
         }
-        LocalDate hanDung = docNgay(dongDuLieu[2]);
+        LocalDate hanDung = docNgayChuanHoacNull(dongDuLieu[2]);
         String tt = String.valueOf(dongDuLieu[6]);
         if (hanDung != null && hanDung.isBefore(LocalDate.now())) {
             if ("Còn hiệu lực".equals(tt)) {

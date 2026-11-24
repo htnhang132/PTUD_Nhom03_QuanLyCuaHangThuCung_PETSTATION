@@ -22,13 +22,34 @@ import com.petstation.util.DuLieu;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public final class HopDongLuuTruDAOImpl implements HopDongLuuTruDAO {
     // 1. HÀM KHỞI TẠO, ĐẶT PHÒNG & NHẬN PHÒNG
 
     public HopDongLuuTruDAOImpl() {}
+
+    @Override
+    public int giaHan(String maHopDong, LocalDateTime ngayRaMoi, String ghiChu) {
+        return capNhat(
+                "UPDATE hop_dong_luu_tru SET ngay_ra_du_kien=?,ghi_chu=?"
+                        + " WHERE ma_hop_dong=? AND trang_thai='DANG_O'",
+                ngayRaMoi,
+                ghiChu,
+                maHopDong);
+    }
+
+    @Override
+    public Map<String, String> layTrangThaiTatCaPhong() {
+        Map<String, String> ketQua = new LinkedHashMap<>();
+        for (Object[] row :
+                truyVan("SELECT ma_phong,trang_thai FROM phong_hotel ORDER BY ma_phong"))
+            ketQua.put(DuLieu.chuyenThanhChuoi(row[0]), DuLieu.chuyenThanhChuoi(row[1]));
+        return ketQua;
+    }
 
     @Override
     public List<PhongHotel> layPhongDangDon() {

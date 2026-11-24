@@ -2,9 +2,14 @@ param(
     [string]$Server = 'localhost,1433',
     [string]$Database = 'PetStationDemo1',
     [string]$SqlUser = '',
-    [switch]$Reset
+    [switch]$Reset,
+    [switch]$RunTests
 )
 $ErrorActionPreference = 'Stop'
+if ($RunTests -and -not $PSBoundParameters.ContainsKey('Database')) { $Database = 'PetStationIntegrationTest' }
+if ($RunTests -and $Database -notmatch '^PetStationIntegrationTest(?:_[A-Za-z0-9]+)?$') {
+    throw 'RunTests requires a dedicated PetStationIntegrationTest database.'
+}
 $projectRoot = Split-Path $PSScriptRoot -Parent
 if ($Database -notmatch '^[A-Za-z][A-Za-z0-9_]{0,100}$' -or
     $Database -in @('master', 'model', 'msdb', 'tempdb')) { throw 'Invalid application database name.' }
@@ -25,16 +30,7 @@ $major = ((Invoke-Query "SET NOCOUNT ON; SELECT CONVERT(int,SERVERPROPERTY('Prod
 if ([int]$major -lt 15) { throw 'SQL Server 2019 or newer is required. The SSMS version is not the SQL Server version.' }
 Invoke-Query "IF DB_ID(N'$Database') IS NULL CREATE DATABASE [$Database] COLLATE Vietnamese_CI_AS;" | Out-Null
 $tableCount = ((Invoke-Query "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.tables WHERE is_ms_shipped=0 AND name<>'sysdiagrams';" $Database | Out-String).Trim())
-if ([int]$tableCount -gt 0 -and -not $Reset) {
-    $ready = ((Invoke-Query "SET NOCOUNT ON; IF OBJECT_ID('dbo.cai_dat') IS NOT NULL AND COL_LENGTH('dbo.cai_dat','ma_cai_dat') IS NOT NULL SELECT COUNT(*) FROM dbo.cai_dat WHERE ma_cai_dat='PHIEN_BAN_CSDL' AND gia_tri='20261106'; ELSE SELECT 0;" $Database | Out-String).Trim())
-    if ($ready -eq '1') {
-        Write-Output "$Database is already initialized and up to date."
-        exit 0
-    }
-    throw 'An older database exists. Use -Reset only after reviewing the reset and backup instructions in SETUP.md.'
-}
-
-if ([int]$tableCount -gt 0) {
+if ([int]$tableCount -gt 0 -and $Reset) {
     # Only reset tables belonging to this application, never unrelated tables.
     $schemaPath = Join-Path $projectRoot 'database/001_schema.sql'
     $tableNames = [regex]::Matches([IO.File]::ReadAllText($schemaPath), 'CREATE TABLE dbo\.\[([^\]]+)\]') |
@@ -74,6 +70,9 @@ COMMIT;
 "@ $Database | Out-Null
 }
 
+$setupLogFolder = Join-Path $projectRoot 'target/database-setup'
+New-Item -ItemType Directory -Force -Path $setupLogFolder | Out-Null
+$setupLog = Join-Path $setupLogFolder ("$Database-" + (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '.log')
 foreach ($file in @('001_schema.sql', '002_sample_data.sql')) {
     $sourcePath = Join-Path $projectRoot "database/$file"
     $targetPath = $sourcePath
@@ -86,12 +85,35 @@ foreach ($file in @('001_schema.sql', '002_sample_data.sql')) {
         $targetPath = $tempPath
     }
     try {
-        & sqlcmd @sqlArgs -d $Database -i $targetPath
-        if ($LASTEXITCODE -ne 0) { throw "Setup failed at $file. If this was a reset, the verified backup is listed under target/database-backups." }
+        $sqlOutput = @(& sqlcmd @sqlArgs -d $Database -i $targetPath)
+        $sqlExitCode = $LASTEXITCODE
+        $sqlOutput | Tee-Object -FilePath $setupLog -Append
+        if ($sqlExitCode -ne 0) { throw "Setup failed at $file. Inspect $setupLog before continuing." }
     } finally {
         if ($tempPath -and (Test-Path -LiteralPath $tempPath)) {
             Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
         }
     }
 }
-Write-Output "$Database is ready. Demo application password: PetStation@123 (change it after signing in)."
+Write-Output "$Database is ready (schema 20261124). Existing business data was preserved unless -Reset was supplied."
+Write-Output "Setup log and upgrade backup location: $setupLog"
+if ($RunTests) {
+    $names = @('PETSTATION_DB_URL','PETSTATION_DB_USER','PETSTATION_DB_PASSWORD',
+        'PETSTATION_SQL_TESTS','PETSTATION_EXCHANGE_HOLD_SQL_TESTS','PETSTATION_SPA_HOLD_SQL_TESTS')
+    $previous = @{}
+    foreach ($name in $names) { $previous[$name] = [Environment]::GetEnvironmentVariable($name,'Process') }
+    Push-Location $projectRoot
+    try {
+        $env:PETSTATION_DB_URL = "jdbc:sqlserver://$($Server.Replace(',',':'));databaseName=$Database;encrypt=true;trustServerCertificate=true"
+        if ($SqlUser) { $env:PETSTATION_DB_USER = $SqlUser }
+        if ($env:SQLCMDPASSWORD) { $env:PETSTATION_DB_PASSWORD = $env:SQLCMDPASSWORD }
+        $env:PETSTATION_SQL_TESTS = 'true'
+        $env:PETSTATION_EXCHANGE_HOLD_SQL_TESTS = 'true'
+        $env:PETSTATION_SPA_HOLD_SQL_TESTS = 'true'
+        & (Join-Path $projectRoot 'mvnw.cmd') -B -ntp verify
+        if ($LASTEXITCODE -ne 0) { throw 'Verification failed; inspect the Maven output.' }
+    } finally {
+        foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name,$previous[$name],'Process') }
+        Pop-Location
+    }
+}

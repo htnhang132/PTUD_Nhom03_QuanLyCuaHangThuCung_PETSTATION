@@ -225,38 +225,49 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
     @Override
     public int capNhatThemDichVuSpa(String maPhieu, String maGoi, String moTa, long donGia) {
         return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET ma_goi=COALESCE(ma_goi, ?), mo_ta_dich_vu=CASE WHEN"
-                    + " mo_ta_dich_vu IS NULL OR mo_ta_dich_vu=N'' THEN ? ELSE mo_ta_dich_vu + N';"
-                    + " ' + ? END, don_gia=don_gia+?, so_luong=CASE WHEN so_luong<=0 THEN 1 ELSE"
-                    + " so_luong END, tong_tien=tong_tien+? WHERE ma_phieu = ?",
+                "INSERT chi_tiet_phieu_spa(ma_phieu,ma_goi,ten_dich_vu,don_gia,so_luong)"
+                        + " VALUES(?,?,?,?,1)",
+                maPhieu,
                 maGoi,
                 moTa,
-                moTa,
-                donGia,
-                donGia,
-                maPhieu);
+                donGia);
     }
 
     @Override
-    public int capNhatDanhSachDichVuSpa(String maPhieu, String moTaMoi, long donGiaMoi) {
-        return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET mo_ta_dich_vu=?, don_gia=?, tong_tien=? *"
-                        + " COALESCE(NULLIF(so_luong,0),1) WHERE ma_phieu = ?",
-                moTaMoi,
-                donGiaMoi,
-                donGiaMoi,
-                maPhieu);
+    public int xoaDongDichVu(String maPhieu, int viTri) {
+        if (laySo(
+                        "SELECT COUNT(*) FROM chi_tiet_phieu_spa WHERE ma_phieu=?"
+                                + " AND can_doi_chieu=1",
+                        maPhieu)
+                > 0) {
+            throw new IllegalStateException(
+                    "Phiếu lịch sử cần đối chiếu chi tiết trước khi sửa dịch vụ.");
+        }
+        return capNhat(
+                "DELETE FROM chi_tiet_phieu_spa WHERE ma_chi_tiet=(SELECT ma_chi_tiet"
+                        + " FROM chi_tiet_phieu_spa WHERE ma_phieu=? ORDER BY ma_chi_tiet"
+                        + " OFFSET ? ROWS FETCH NEXT 1 ROWS ONLY)",
+                maPhieu,
+                viTri);
     }
 
     @Override
     public int tinhLaiTongPhieuSpa(String maPhieu) {
-        return ThaoTacSQL.capNhat(
-                "UPDATE phieu_tiep_nhan_spa SET tong_tien=don_gia*COALESCE(NULLIF(so_luong,0),1)"
-                        + " WHERE ma_phieu = ?",
+        return capNhat(
+                "UPDATE phieu_tiep_nhan_spa SET tong_tien=COALESCE((SELECT"
+                        + " SUM(don_gia*so_luong) FROM chi_tiet_phieu_spa WHERE ma_phieu=?),0),"
+                        + " don_gia=COALESCE((SELECT SUM(don_gia*so_luong) FROM chi_tiet_phieu_spa"
+                        + " WHERE ma_phieu=?),0),so_luong=1,ma_goi=(SELECT TOP 1 ma_goi FROM"
+                        + " chi_tiet_phieu_spa WHERE ma_phieu=? ORDER BY ma_chi_tiet),"
+                        + " mo_ta_dich_vu=(SELECT STRING_AGG(ten_dich_vu,N'; ') WITHIN GROUP"
+                        + " (ORDER BY ma_chi_tiet) FROM chi_tiet_phieu_spa WHERE ma_phieu=?)"
+                        + " WHERE ma_phieu=?",
+                maPhieu,
+                maPhieu,
+                maPhieu,
+                maPhieu,
                 maPhieu);
     }
-
-    // 3. CẬP NHẬT TRẠNG THÁI & TRUY VẤN CHI TIẾT
 
     @Override
     public int capNhatTrangThaiSpa(String trangThaiMoi, String maPhieu, String trangThaiHienTai) {
@@ -297,69 +308,21 @@ public final class PhieuTiepNhanSpaDAOImpl implements PhieuTiepNhanSpaDAO {
 
     @Override
     public List<SpaDTO.DongChiTietSpa> layPhieuSpaChiTiet(String maPhieu) {
-        List<Object[]> rows =
-                truyVan(
-                        "SELECT COALESCE(p.mo_ta_dich_vu, N'Dịch vụ Spa'),"
-                                + " COALESCE(NULLIF(p.don_gia, 0), p.tong_tien),"
-                                + " COALESCE(NULLIF(p.so_luong, 0), 1), p.tong_tien,"
-                                + " p.can_nang_thuc_te, COALESCE(tc.loai, N'Chó') FROM"
-                                + " phieu_tiep_nhan_spa p LEFT JOIN thu_cung tc ON tc.ma_thu_cung ="
-                                + " p.ma_thu_cung WHERE p.ma_phieu = ? AND (p.ma_goi IS NOT NULL OR"
-                                + " p.don_gia > 0 OR p.tong_tien > 0)",
-                        maPhieu);
-        if (rows.isEmpty()) return List.of();
-        Object[] r0 = rows.get(0);
-        String moTa = r0[0] != null ? r0[0].toString().trim() : "";
-        if (!moTa.contains(";")) {
-            return List.of(chuyenDongChiTiet(r0[0], r0[1], r0[2], r0[3]));
-        }
-        String[] dsDichVu = moTa.split(";\\s*");
-        double canNang = r0[4] instanceof Number n ? n.doubleValue() : 5.0;
-        String loai = r0[5] != null ? r0[5].toString().trim() : "Chó";
-        long tongTien = r0[3] instanceof Number n ? n.longValue() : 0L;
-        List<SpaDTO.DongChiTietSpa> ketQua = new ArrayList<>();
-        long tongGiaTinh = 0;
-        for (String dv : dsDichVu) {
-            String ten = dv.trim();
-            if (ten.isEmpty()) continue;
-            List<Object[]> goiList =
-                    ThaoTacSQL.truyVan(
-                            "SELECT COALESCE(bang_gia, N'') FROM goi_dich_vu_spa WHERE ten_goi = ?"
-                                    + " OR ma_goi = ?",
-                            ten,
-                            ten);
-            long gia = -1;
-            if (!goiList.isEmpty()) {
-                String bg = String.valueOf(goiList.get(0)[0]).trim();
-                if (!bg.isEmpty()) {
-                    gia = timGiaTheoCanNang(bg, loai, canNang);
-                }
-            }
-            if (gia < 0) gia = 0;
-            tongGiaTinh += gia;
-            ketQua.add(new SpaDTO.DongChiTietSpa(ten, gia, 1, gia));
-        }
-        if (ketQua.isEmpty()) {
-            return List.of(chuyenDongChiTiet(r0[0], r0[1], r0[2], r0[3]));
-        }
-        if (tongGiaTinh > 0 && tongTien > 0 && tongGiaTinh != tongTien) {
-            long chenhLech = tongTien - tongGiaTinh;
-            SpaDTO.DongChiTietSpa last = ketQua.get(ketQua.size() - 1);
-            long lastGia = last.getDonGia() + chenhLech;
-            ketQua.set(
-                    ketQua.size() - 1,
-                    new SpaDTO.DongChiTietSpa(last.getTenDichVu(), lastGia, 1, lastGia));
-        } else if (tongGiaTinh == 0 && tongTien > 0) {
-            long chiaDeu = tongTien / ketQua.size();
-            for (int i = 0; i < ketQua.size(); i++) {
-                long g =
-                        (i == ketQua.size() - 1)
-                                ? (tongTien - chiaDeu * (ketQua.size() - 1))
-                                : chiaDeu;
-                ketQua.set(i, new SpaDTO.DongChiTietSpa(ketQua.get(i).getTenDichVu(), g, 1, g));
-            }
-        }
-        return ketQua;
+        return truyVanDanhSach(
+                "SELECT ten_dich_vu,don_gia,so_luong,don_gia*so_luong"
+                        + " FROM chi_tiet_phieu_spa WHERE ma_phieu=? ORDER BY ma_chi_tiet",
+                r -> chuyenDongChiTiet(r[0], r[1], r[2], r[3]),
+                maPhieu);
+    }
+
+    @Override
+    public void capNhatGhiChuLichHen(String maLichHen, String ghiChu) {
+        capNhat("UPDATE lich_hen SET ghi_chu=? WHERE ma_lich_hen=?", ghiChu, maLichHen);
+    }
+
+    @Override
+    public String layGhiChuLichHen(String maLichHen) {
+        return layCotLichHen("ghi_chu", maLichHen);
     }
 
     @Override

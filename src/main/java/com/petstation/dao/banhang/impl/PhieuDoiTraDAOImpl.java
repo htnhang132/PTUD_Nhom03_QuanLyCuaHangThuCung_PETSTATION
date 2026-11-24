@@ -24,7 +24,12 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
     @Override
     public int capNhatApDungDoiTra(int soLuong, String maLo) {
         return ThaoTacSQL.capNhat(
-                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+? WHERE ma_lo=?", soLuong, maLo);
+                "UPDATE lo_hang SET so_luong_ton=so_luong_ton+?,trang_thai=CASE"
+                        + " WHEN trang_thai='HET_HANG' AND (han_su_dung IS NULL OR"
+                        + " han_su_dung>=CAST(GETDATE() AS date)) THEN 'SAN_SANG' ELSE trang_thai"
+                        + " END WHERE ma_lo=?",
+                soLuong,
+                maLo);
     }
 
     @Override
@@ -39,18 +44,25 @@ public final class PhieuDoiTraDAOImpl implements PhieuDoiTraDAO {
 
     @Override
     public List<LoHang> laySoLuongLoConDuocDoi(String maHoaDon, String maSanPham) {
+        List<Object[]> chuaDu =
+                ThaoTacSQL.truyVan(
+                        "SELECT c.ma_dong FROM chi_tiet_hoa_don c WHERE c.ma_hoa_don=? AND"
+                            + " c.ma_san_pham=? AND c.so_luong<>COALESCE((SELECT SUM(a.so_luong)"
+                            + " FROM phan_bo_lo_hoa_don a WHERE a.ma_dong=c.ma_dong),0)",
+                        maHoaDon,
+                        maSanPham);
+        if (!chuaDu.isEmpty())
+            throw new IllegalArgumentException(
+                    "Hóa đơn lịch sử cần đối chiếu phân bổ lô trước khi đổi trả.");
         List<Object[]> rows =
                 ThaoTacSQL.truyVan(
-                        "SELECT COALESCE(b.ma_lo, (SELECT TOP 1 ma_lo FROM lo_hang WHERE"
-                            + " ma_san_pham=b.ma_san_pham ORDER BY ngay_nhap ASC)),"
-                            + " b.so_luong-COALESCE((SELECT SUM(c.so_luong) FROM chi_tiet_doi_tra c"
-                            + " JOIN phieu_doi_tra p ON p.ma_phieu=c.ma_phieu WHERE"
-                            + " c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
-                            + " (c.ma_lo=b.ma_lo OR b.ma_lo IS NULL) AND p.trang_thai IN"
-                            + " ('CHO_XU_LY','HOAN_TAT')),0) FROM chi_tiet_hoa_don b WHERE"
-                            + " b.ma_hoa_don=? AND b.ma_san_pham=? AND (b.ma_lo IS NOT NULL OR"
-                            + " EXISTS (SELECT 1 FROM lo_hang l WHERE l.ma_san_pham=b.ma_san_pham))"
-                            + " ORDER BY b.ma_san_pham",
+                        "SELECT a.ma_lo,a.so_luong-COALESCE((SELECT SUM(c.so_luong) FROM"
+                            + " chi_tiet_doi_tra c JOIN phieu_doi_tra p ON p.ma_phieu=c.ma_phieu"
+                            + " WHERE c.ma_hoa_don=b.ma_hoa_don AND c.ma_san_pham=b.ma_san_pham AND"
+                            + " c.ma_lo=a.ma_lo AND p.trang_thai IN ('CHO_XU_LY','HOAN_TAT')),0)"
+                            + " FROM chi_tiet_hoa_don b JOIN phan_bo_lo_hoa_don a ON"
+                            + " a.ma_dong=b.ma_dong WHERE b.ma_hoa_don=? AND b.ma_san_pham=? ORDER"
+                            + " BY a.ma_lo",
                         maHoaDon,
                         maSanPham);
         List<LoHang> ketQua = new ArrayList<>();

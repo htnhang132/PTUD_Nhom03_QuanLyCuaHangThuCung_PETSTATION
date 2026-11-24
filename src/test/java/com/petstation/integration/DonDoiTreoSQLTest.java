@@ -126,7 +126,11 @@ class DonDoiTreoSQLTest {
                     var sua = new DonDoiTreo(soHoaDon, dong, maHang, "", 2, "Đổi cỡ", true, true);
                     assertThat(donDoiTreoService.treo(id, sua)).isEqualTo(id);
                     assertThat(donDoiTreoService.lay(id)).isEqualTo(sua);
-                    assertThat(laySo("SELECT COUNT(*) FROM phieu_doi_tra")).isZero();
+                    assertThat(
+                                    laySo(
+                                            "SELECT COUNT(*) FROM phieu_doi_tra WHERE ma_hoa_don=?",
+                                            soHoaDon))
+                            .isZero();
                     assertThat(nghiepVuService.layCacDong(LoaiNghiepVu.GIO_HANG_TREO))
                             .anySatisfy(
                                     d -> {
@@ -159,7 +163,11 @@ class DonDoiTreoSQLTest {
                     assertThat(gio.tinhTong()).isEqualTo(40000);
                     assertThat(gio.kiemTraDaNhanTien(PhuongThuc.CHUYEN_KHOAN)).isFalse();
                     assertThat(donDoiTreoService.lay(id)).isNull();
-                    assertThat(laySo("SELECT COUNT(*) FROM phieu_doi_tra")).isZero();
+                    assertThat(
+                                    laySo(
+                                            "SELECT COUNT(*) FROM phieu_doi_tra WHERE ma_hoa_don=?",
+                                            soHoaDon))
+                            .isZero();
                     assertThatThrownBy(
                                     () ->
                                             donDoiTreoService.chuyenThanhToan(

@@ -19,7 +19,8 @@ class KienTrucPhanTangTest {
             for (Path file : files.filter(p -> p.toString().endsWith(".java")).toList()) {
                 String code = Files.readString(file);
                 for (String goi : goiCam) {
-                    if (code.contains(goi + ".")) loi.add(file.getFileName() + " -> " + goi);
+                    if (Pattern.compile(Pattern.quote(goi) + "(?:\\.|\\s*;)").matcher(code).find())
+                        loi.add(file.getFileName() + " -> " + goi);
                 }
             }
         }

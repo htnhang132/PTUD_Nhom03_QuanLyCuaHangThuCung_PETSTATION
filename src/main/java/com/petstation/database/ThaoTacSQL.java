@@ -1,5 +1,8 @@
 package com.petstation.database;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
@@ -20,6 +23,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public final class ThaoTacSQL {
+    private static final Logger LOG = LoggerFactory.getLogger(ThaoTacSQL.class);
+
     @FunctionalInterface
     public interface CongViec<KieuDuLieu> {
         KieuDuLieu chay(Connection ketNoi) throws Exception;
@@ -76,7 +81,11 @@ public final class ThaoTacSQL {
     static void chaySauCommit(List<Runnable> ds) {
         if (ds == null || ds.isEmpty()) return;
         for (Runnable r : ds) {
-            r.run();
+            try {
+                r.run();
+            } catch (RuntimeException ex) {
+                LOG.error("Giao dịch đã commit; tác vụ thông báo sau commit bị lỗi.", ex);
+            }
         }
     }
 

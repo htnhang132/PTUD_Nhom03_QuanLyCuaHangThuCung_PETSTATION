@@ -25,6 +25,31 @@ import java.util.Date;
 class DuLieuDinhDangModelTest {
 
     @Test
+    void docNgayDanhMucGiuDungDinhDangVaNullKhiLoi() {
+        assertThat(DinhDang.docNgayChuanHoacNull("29/02/2024"))
+                .isEqualTo(LocalDate.of(2024, 2, 29));
+        assertThat(DinhDang.docNgayChuanHoacNull("31/12/2026"))
+                .isEqualTo(LocalDate.of(2026, 12, 31));
+        for (Object sai :
+                new Object[] {null, "", "29/02/2023", "31/04/2026", "2026-12-31", " 31/12/2026 "})
+            assertThat(DinhDang.docNgayChuanHoacNull(sai)).as(String.valueOf(sai)).isNull();
+    }
+
+    @Test
+    void tenVaiTroGiuThuTuVaKhongChiaSeMangCoTheSua() {
+        String[] ten = com.petstation.model.chung.VaiTro.layCacTenHienThi();
+        assertThat(ten)
+                .containsExactly(
+                        "Cửa hàng trưởng",
+                        "Nhân viên kho",
+                        "Nhân viên bán hàng",
+                        "Nhân viên Spa/Hotel");
+        ten[0] = "Đã sửa bản sao";
+        assertThat(com.petstation.model.chung.VaiTro.layCacTenHienThi()[0])
+                .isEqualTo("Cửa hàng trưởng");
+    }
+
+    @Test
     void dinhDangDocGiuDauAmVaDuLieuLayGiaTriThapPhan() {
         assertThat(DinhDang.doc("-50.000₫")).isEqualTo(-50_000L);
         assertThat(DinhDang.doc("−12.500")).isEqualTo(-12_500L);

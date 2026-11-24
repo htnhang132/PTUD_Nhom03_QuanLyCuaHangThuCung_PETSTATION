@@ -17,47 +17,26 @@ DECLARE @homNay date = CAST(GETDATE() AS date);
 BEGIN TRY
 BEGIN TRANSACTION;
 
-IF OBJECT_ID('dbo.FK_chi_tiet_hoa_don_san_pham', 'F') IS NOT NULL
-    ALTER TABLE dbo.[chi_tiet_hoa_don] DROP CONSTRAINT [FK_chi_tiet_hoa_don_san_pham];
-
-ALTER TABLE dbo.[bien_ban_kiem_ke] ALTER COLUMN [ky_kiem_ke] NVARCHAR(150) NOT NULL;
-ALTER TABLE dbo.[nhat_ky_he_thong] ALTER COLUMN [loai_doi_tuong] NVARCHAR(60) NULL;
-
--- Xóa dữ liệu cũ theo đúng thứ tự topo ngược (con xóa trước, cha xóa sau)
-DELETE FROM dbo.[bo_dem_hoa_don_ngay];
-DELETE FROM dbo.[nhat_ky_cham_soc];
-DELETE FROM dbo.[lich_su_thu_coc_hotel];
-DELETE FROM dbo.[chi_tiet_doi_tra];
-DELETE FROM dbo.[phieu_tiep_nhan_spa];
-DELETE FROM dbo.[hop_dong_luu_tru];
-DELETE FROM dbo.[phieu_doi_tra];
-DELETE FROM dbo.[chi_tiet_hoa_don];
-DELETE FROM dbo.[chi_tiet_phieu_xuat];
-DELETE FROM dbo.[chi_tiet_phieu_nhap];
-DELETE FROM dbo.[hoa_don];
-DELETE FROM dbo.[chi_tiet_kiem_ke];
-DELETE FROM dbo.[phieu_spa_treo];
-DELETE FROM dbo.[yeu_cau_phe_duyet];
-DELETE FROM dbo.[phieu_xuat_kho];
-DELETE FROM dbo.[phieu_nhap_kho];
-DELETE FROM dbo.[phien_lam_viec];
-DELETE FROM dbo.[nhat_ky_he_thong];
-DELETE FROM dbo.[cai_dat];
-DELETE FROM dbo.[bien_ban_kiem_ke];
-DELETE FROM dbo.[lich_hen];
-DELETE FROM dbo.[lo_hang];
-DELETE FROM dbo.[tai_khoan];
-DELETE FROM dbo.[lich_lam_viec];
-DELETE FROM dbo.[voucher];
-DELETE FROM dbo.[thu_cung];
-DELETE FROM dbo.[san_pham];
-DELETE FROM dbo.[phong_hotel];
-DELETE FROM dbo.[nhan_vien];
-DELETE FROM dbo.[nha_cung_cap];
-DELETE FROM dbo.[khach_hang];
-DELETE FROM dbo.[goi_dich_vu_spa];
-DELETE FROM dbo.[chuong_trinh_khuyen_mai];
-DELETE FROM dbo.[ca_lam_viec];
+-- 002 không xóa/chèn đè database đã có dữ liệu nghiệp vụ.
+IF NOT EXISTS(SELECT 1 FROM dbo.cai_dat WHERE ma_cai_dat='PHIEN_BAN_CSDL' AND gia_tri='20261124')
+    THROW 51000,N'Hãy chạy thành công 001_schema.sql trước khi chạy 002_sample_data.sql.',1;
+DECLARE @khoa int;
+EXEC @khoa=sys.sp_getapplock @Resource=N'PetStation.SchemaSetup',
+    @LockMode='Exclusive',@LockOwner='Transaction',@LockTimeout=30000;
+IF @khoa<0 THROW 51000,N'Không thể khóa tác vụ nạp mẫu.',1;
+DECLARE @coDuLieu bit=0,@kiemTra nvarchar(max)=N'';
+SELECT @kiemTra+=N'IF EXISTS(SELECT 1 FROM '+QUOTENAME(s.name)+N'.'+QUOTENAME(t.name)
+    +CASE WHEN s.name=N'dbo' AND t.name=N'cai_dat' THEN N' WHERE ma_cai_dat<>''PHIEN_BAN_CSDL''' ELSE N'' END
+    +N') SET @co=1;'
+FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id
+WHERE t.is_ms_shipped=0 AND t.name<>N'sysdiagrams';
+EXEC sys.sp_executesql @kiemTra,N'@co bit OUTPUT',@co=@coDuLieu OUTPUT;
+IF @coDuLieu=1
+BEGIN
+    COMMIT TRANSACTION;
+    PRINT N'Database đã có dữ liệu; giữ nguyên, không nạp đè dữ liệu mẫu.';
+    RETURN;
+END;
 
 -- 1. CA LÀM VIỆC
 INSERT INTO dbo.[ca_lam_viec] ([ma_ca], [ten_ca], [gio_bat_dau], [gio_ket_thuc])
@@ -585,8 +564,7 @@ VALUES
     (N'SO_NGAY_CANH_BAO_HET_HAN', N'30', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'PHI_TRA_PHONG_TRE', N'100000', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
     (N'MAY_IN', N'Microsoft Print to PDF', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'MA_BIN_NGAN_HANG', N'970436', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2))),
-    (N'PHIEN_BAN_CSDL', N'20261106', N'NV0001', DATEADD(second,-555362,CAST(@homNay AS datetime2)));
+    (N'MA_BIN_NGAN_HANG', N'970436', N'NV0001', DATEADD(second,-483838,CAST(@homNay AS datetime2)));
 
 -- 33. NHẬT KÝ HỆ THỐNG
 INSERT INTO dbo.[nhat_ky_he_thong] ([ma_nhat_ky], [ma_nhan_vien], [hanh_dong], [loai_doi_tuong], [ma_doi_tuong], [ghi_chu], [thoi_gian], [loai_su_kien], [ket_qua])
@@ -790,15 +768,15 @@ VALUES
     (N'HD2610190022', N'SP000022', N'LO00000023', 1, 370000.00, 0.00, 0.00, N'', N'Cát vệ sinh thủy tinh cho mèo TRIXIE Silikatstreu'),
     (N'HD2610190023', N'SP000023', N'LO00000024', 1, 380000.00, 0.00, 0.00, N'', N'Thức ăn cho mèo trưởng thành ROYAL CANIN Indoor 27'),
     (N'HD2610190024', N'SP000024', N'LO00000025', 1, 390000.00, 0.00, 0.00, N'', N'Pate cho mèo vị nước sốt thịt bò WHISKAS'),
-    (N'HD2610190025', N'SPA00000001', NULL, 1, 150000.00, 0.00, 0.00, N'SPA00000001', N'Tắm và sấy khô cơ bản'),
-    (N'HD2610190026', N'SPA00000002', NULL, 1, 210000.00, 0.00, 0.00, N'SPA00000002', N'Cắt tỉa tạo kiểu dáng'),
-    (N'HD2610190027', N'SPA00000003', NULL, 1, 100000.00, 0.00, 0.00, N'SPA00000003', N'Vệ sinh tai và cắt mài móng'),
+    (N'HD2610190025', NULL, NULL, 1, 150000.00, 0.00, 0.00, N'SPA00000001', N'Tắm và sấy khô cơ bản'),
+    (N'HD2610190026', NULL, NULL, 1, 210000.00, 0.00, 0.00, N'SPA00000002', N'Cắt tỉa tạo kiểu dáng'),
+    (N'HD2610190027', NULL, NULL, 1, 100000.00, 0.00, 0.00, N'SPA00000003', N'Vệ sinh tai và cắt mài móng'),
     (N'HD2610190028', N'SP000039', N'LO00000040', 1, 430000.00, 0.00, 0.00, N'', N'Thức ăn cho chó Poodle MKB All Life Stages 1kg'),
-    (N'HD2610190029', N'SPA00000004', NULL, 1, 350000.00, 0.00, 0.00, N'SPA00000004', N'Combo Spa toàn diện VIP'),
-    (N'HD2610190030', N'SPA00000005', NULL, 1, 160000.00, 0.00, 0.00, N'SPA00000005', N'Tắm trị liệu nấm và ve rận'),
-    (N'HD2610190031', N'HOTEL-ROOM', NULL, 1, 300000.00, 0.00, 0.00, N'HOTEL-ROOM', N'Lưu trú phòng P002 (3 ngày, đã trừ cọc)'),
-    (N'HD2610190032', N'HOTEL-ROOM', NULL, 1, 450000.00, 0.00, 0.00, N'HOTEL-ROOM', N'Lưu trú phòng P001 (4 ngày, đã trừ cọc)'),
-    (N'HD2610190033', N'SPA00000008', NULL, 1, 430000.00, 0.00, 0.00, N'SPA00000008', N'Tắm sục khoáng Onsen thư giãn'),
+    (N'HD2610190029', NULL, NULL, 1, 350000.00, 0.00, 0.00, N'SPA00000004', N'Combo Spa toàn diện VIP'),
+    (N'HD2610190030', NULL, NULL, 1, 160000.00, 0.00, 0.00, N'SPA00000005', N'Tắm trị liệu nấm và ve rận'),
+    (N'HD2610190031', NULL, NULL, 1, 300000.00, 0.00, 0.00, N'HOTEL-ROOM', N'Lưu trú phòng P002 (3 ngày, đã trừ cọc)'),
+    (N'HD2610190032', NULL, NULL, 1, 450000.00, 0.00, 0.00, N'HOTEL-ROOM', N'Lưu trú phòng P001 (4 ngày, đã trừ cọc)'),
+    (N'HD2610190033', NULL, NULL, 1, 430000.00, 0.00, 0.00, N'SPA00000008', N'Tắm sục khoáng Onsen thư giãn'),
     (N'HD2610190034', N'SP000046', N'LO00000047', 1, 250000.00, 0.00, 0.00, N'', N'Khay vệ sinh cho mèo MAKAR Cat Litter Station'),
     (N'HD2610190034', N'SP000048', N'LO00000049', 1, 240000.00, 0.00, 0.00, N'', N'Cát vệ sinh cho mèo than hoạt tính IRIS OHYAMA'),
     (N'HD2610190035', N'SP000002', N'LO00000002', 2, 145000.00, 0.00, 0.00, N'', N'Thức ăn hạt cho chó ROYAL CANIN Mini Adult — Gói 800g'),
@@ -892,8 +870,52 @@ ALTER SEQUENCE dbo.[seq_hoa_don_treo] RESTART WITH 1;
 ALTER SEQUENCE dbo.[seq_hoa_don_treo_doi] RESTART WITH 1;
 ALTER SEQUENCE dbo.[seq_ma_chung] RESTART WITH 1;
 
+-- Dữ liệu mẫu có chứng từ một lô: lưu phân bổ thực, không suy diễn cho dữ liệu vận hành cũ.
+UPDATE c SET ma_san_pham=NULL FROM dbo.chi_tiet_hoa_don c
+ WHERE NOT EXISTS(SELECT 1 FROM dbo.san_pham p WHERE p.ma_san_pham=c.ma_san_pham);
+INSERT dbo.phan_bo_lo_hoa_don(ma_dong,ma_lo,so_luong,gia_von)
+ SELECT c.ma_dong,c.ma_lo,c.so_luong,COALESCE(l.gia_nhap,p.gia_nhap_gan_nhat,0)
+ FROM dbo.chi_tiet_hoa_don c JOIN dbo.lo_hang l ON l.ma_lo=c.ma_lo
+ JOIN dbo.san_pham p ON p.ma_san_pham=c.ma_san_pham WHERE c.ma_lo IS NOT NULL;
+INSERT dbo.chi_tiet_phieu_spa(ma_phieu,ma_goi,ten_dich_vu,don_gia,so_luong,can_doi_chieu)
+ SELECT p.ma_phieu,p.ma_goi,COALESCE(p.mo_ta_dich_vu,g.ten_goi,N'Dịch vụ Spa'),
+        CASE WHEN p.so_luong>0 THEN p.tong_tien/p.so_luong ELSE p.tong_tien END,
+        CASE WHEN p.so_luong>0 THEN p.so_luong ELSE 1 END,
+        CASE WHEN p.mo_ta_dich_vu LIKE N'%;%' THEN 1 ELSE 0 END
+ FROM dbo.phieu_tiep_nhan_spa p LEFT JOIN dbo.goi_dich_vu_spa g ON g.ma_goi=p.ma_goi
+ WHERE p.ma_goi IS NOT NULL OR p.tong_tien>0;
+
+-- Số dư đầu kỳ chỉ dành cho bộ mẫu mới; tuyệt đối không chạy đoạn này khi nâng cấp.
+SELECT l.ma_lo,l.ma_san_pham,COALESCE(l.gia_nhap,p.gia_nhap_gan_nhat,1) gia,
+ l.han_su_dung,
+ l.so_luong_ton-(COALESCE((SELECT SUM(c.so_luong) FROM chi_tiet_phieu_nhap c JOIN phieu_nhap_kho n
+ ON n.ma_phieu_nhap=c.ma_phieu_nhap WHERE c.ma_lo=l.ma_lo AND n.trang_thai='DA_NHAP'),0)
+ -COALESCE((SELECT SUM(a.so_luong) FROM phan_bo_lo_hoa_don a JOIN chi_tiet_hoa_don c ON c.ma_dong=a.ma_dong
+ JOIN hoa_don h ON h.ma_hoa_don=c.ma_hoa_don WHERE a.ma_lo=l.ma_lo AND h.trang_thai='DA_THANH_TOAN'),0)
+ -COALESCE((SELECT SUM(c.so_luong) FROM chi_tiet_phieu_xuat c JOIN phieu_xuat_kho x ON x.ma_phieu_xuat=c.ma_phieu_xuat
+ WHERE c.ma_lo=l.ma_lo AND x.trang_thai='DA_XUAT'),0)
+ +COALESCE((SELECT SUM(c.so_luong) FROM chi_tiet_doi_tra c JOIN phieu_doi_tra d ON d.ma_phieu=c.ma_phieu
+ WHERE c.ma_lo=l.ma_lo AND d.trang_thai='HOAN_TAT'),0)
+ +COALESCE((SELECT SUM(c.chenh_lech) FROM chi_tiet_kiem_ke c JOIN bien_ban_kiem_ke k ON k.ma_bien_ban=c.ma_bien_ban
+ WHERE c.ma_lo=l.ma_lo AND k.trang_thai='DA_DUYET'),0)) bo_sung
+INTO #dau_ky_mau FROM lo_hang l JOIN san_pham p ON p.ma_san_pham=l.ma_san_pham;
+IF EXISTS(SELECT 1 FROM #dau_ky_mau WHERE bo_sung>0)
+BEGIN
+ INSERT phieu_nhap_kho(ma_phieu_nhap,ma_nha_cung_cap,ma_nhan_vien,ngay_nhap,tong_tien,da_tra,trang_thai)
+ SELECT 'PNKDAUKYMAU',(SELECT TOP 1 ma_nha_cung_cap FROM nha_cung_cap ORDER BY ma_nha_cung_cap),
+ (SELECT TOP 1 ma_nhan_vien FROM nhan_vien ORDER BY ma_nhan_vien),DATEADD(day,-365,@homNay),SUM(bo_sung*gia),SUM(bo_sung*gia),'DA_NHAP'
+ FROM #dau_ky_mau WHERE bo_sung>0;
+ INSERT chi_tiet_phieu_nhap(ma_phieu_nhap,ma_san_pham,ma_lo,so_luong,gia_nhap,han_su_dung)
+ SELECT 'PNKDAUKYMAU',ma_san_pham,ma_lo,bo_sung,gia,han_su_dung FROM #dau_ky_mau WHERE bo_sung>0;
+END;
+UPDATE l SET so_luong_ton=l.so_luong_ton-CASE WHEN d.bo_sung<0 THEN d.bo_sung ELSE 0 END,
+ so_luong_nhap=(SELECT SUM(c.so_luong) FROM chi_tiet_phieu_nhap c JOIN phieu_nhap_kho p
+ ON p.ma_phieu_nhap=c.ma_phieu_nhap WHERE c.ma_lo=l.ma_lo AND p.trang_thai='DA_NHAP')
+FROM lo_hang l JOIN #dau_ky_mau d ON d.ma_lo=l.ma_lo;
+DROP TABLE #dau_ky_mau;
+
 COMMIT TRANSACTION;
-PRINT N'Đã nạp toàn bộ dữ liệu mẫu Pet Station thành công 100% không có giá trị NULL.';
+PRINT N'Đã nạp dữ liệu mẫu Pet Station thành công. Chạy lại hai file sẽ giữ nguyên dữ liệu hiện có.';
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0

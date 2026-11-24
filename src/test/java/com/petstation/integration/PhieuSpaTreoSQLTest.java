@@ -29,7 +29,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import java.util.EnumSet;
 import java.util.UUID;
 
-import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 
 @EnabledIfEnvironmentVariable(named = "PETSTATION_SPA_HOLD_SQL_TESTS", matches = "true")
@@ -92,6 +91,12 @@ class PhieuSpaTreoSQLTest {
                                     + " VALUES(?,?,60,'DOG:0-100:150000')",
                                 maGoi,
                                 "Test service " + ma);
+                        capNhat(
+                                "INSERT lich_su_tiem_phong(ma_thu_cung,ten_vaccine,ngay_tiem)"
+                                        + " VALUES(?,N'Mũi 1',DATEADD(day,-90,GETDATE())),"
+                                        + " (?,N'Mũi 2',DATEADD(day,-30,GETDATE()))",
+                                maThu,
+                                maThu);
                         viec.run();
                         throw new HoanTac();
                     });
@@ -146,8 +151,14 @@ class PhieuSpaTreoSQLTest {
                                                                 : "")
                                                 .isEqualTo("Test Spa");
                                     });
-                    assertThat(laySo("SELECT COUNT(*) FROM phieu_tiep_nhan_spa")).isZero();
-                    assertThat(laySo("SELECT COUNT(*) FROM hoa_don")).isZero();
+                    assertThat(
+                                    laySo(
+                                            "SELECT COUNT(*) FROM phieu_tiep_nhan_spa WHERE"
+                                                    + " ma_thu_cung=?",
+                                            maThu))
+                            .isZero();
+                    assertThat(laySo("SELECT COUNT(*) FROM hoa_don WHERE ma_khach_hang=?", maKhach))
+                            .isZero();
                 });
     }
 
@@ -175,7 +186,12 @@ class PhieuSpaTreoSQLTest {
                                                     id, maThu, maGoi, "", -1, "Bình thường", ""))
                             .hasMessageContaining("Cân nặng");
                     assertThat(phieuSpaTreoService.lay(id)).isEqualTo(nhap());
-                    assertThat(laySo("SELECT COUNT(*) FROM phieu_tiep_nhan_spa")).isZero();
+                    assertThat(
+                                    laySo(
+                                            "SELECT COUNT(*) FROM phieu_tiep_nhan_spa WHERE"
+                                                    + " ma_thu_cung=?",
+                                            maThu))
+                            .isZero();
                 });
     }
 
@@ -200,46 +216,50 @@ class PhieuSpaTreoSQLTest {
                                             phieuSpaTreoService.taoPhieu(
                                                     id, maThu, maGoi, "", 5.2, "Bình thường", ""))
                             .hasMessageContaining("đã được tạo hoặc xóa");
-                    assertThat(laySo("SELECT COUNT(*) FROM phieu_tiep_nhan_spa")).isEqualTo(1);
+                    assertThat(
+                                    laySo(
+                                            "SELECT COUNT(*) FROM phieu_tiep_nhan_spa WHERE"
+                                                    + " ma_thu_cung=?",
+                                            maThu))
+                            .isEqualTo(1);
                 });
     }
 
     @Test
-    void moLaiFormGiuLuaChonVaNoiDungNhungYeuCauKiemTraSucKhoeLai() throws Exception {
-        SwingUtilities.invokeAndWait(
-                () ->
-                        tinhHuong(
-                                () -> {
-                                    String id = phieuSpaTreoService.treo("", nhap());
-                                    var form = new LapPhieuSpaPanel(p -> {}, () -> {}, () -> {});
-                                    try {
-                                        var sucKhoe =
-                                                form.getClass().getDeclaredField("chkSucKhoe");
-                                        sucKhoe.setAccessible(true);
-                                        ((JCheckBox) sucKhoe.get(form)).setSelected(true);
-                                        var tai =
-                                                form.getClass()
-                                                        .getDeclaredMethod(
-                                                                "taiDuLieuKhoiPhuc", String.class);
-                                        tai.setAccessible(true);
-                                        Object duLieu = tai.invoke(form, id);
-                                        var apDung =
-                                                form.getClass()
-                                                        .getDeclaredMethod(
-                                                                "apDungKhoiPhucPhieu",
-                                                                String.class,
-                                                                Object[].class);
-                                        apDung.setAccessible(true);
-                                        apDung.invoke(form, id, (Object) duLieu);
-                                        var chup = form.getClass().getDeclaredMethod("chupNhap");
-                                        chup.setAccessible(true);
-                                        assertThat(chup.invoke(form)).isEqualTo(nhap());
-                                        assertThat(((JCheckBox) sucKhoe.get(form)).isSelected())
-                                                .isFalse();
-                                    } catch (ReflectiveOperationException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }));
+    void moLaiFormGiuLuaChonVaNoiDung() throws Exception {
+        try (var thongBao = new com.petstation.gui.DongThongBaoKiemThu()) {
+            SwingUtilities.invokeAndWait(
+                    () ->
+                            tinhHuong(
+                                    () -> {
+                                        String id = phieuSpaTreoService.treo("", nhap());
+                                        var form =
+                                                new LapPhieuSpaPanel(p -> {}, () -> {}, () -> {});
+                                        try {
+                                            var tai =
+                                                    form.getClass()
+                                                            .getDeclaredMethod(
+                                                                    "taiDuLieuKhoiPhuc",
+                                                                    String.class);
+                                            tai.setAccessible(true);
+                                            Object duLieu = tai.invoke(form, id);
+                                            var apDung =
+                                                    form.getClass()
+                                                            .getDeclaredMethod(
+                                                                    "apDungKhoiPhucPhieu",
+                                                                    String.class,
+                                                                    Object[].class);
+                                            apDung.setAccessible(true);
+                                            apDung.invoke(form, id, (Object) duLieu);
+                                            var chup =
+                                                    form.getClass().getDeclaredMethod("chupNhap");
+                                            chup.setAccessible(true);
+                                            assertThat(chup.invoke(form)).isEqualTo(nhap());
+                                        } catch (ReflectiveOperationException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }));
+        }
     }
 
     @Test

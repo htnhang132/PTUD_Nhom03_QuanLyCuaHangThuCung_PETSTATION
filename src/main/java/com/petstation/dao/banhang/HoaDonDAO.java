@@ -1,6 +1,7 @@
 package com.petstation.dao.banhang;
 
 import com.petstation.dto.DonDoiTreo;
+import com.petstation.dto.ThongTinDonTreo;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
 import com.petstation.model.banhang.PhieuDoiTra;
@@ -42,11 +43,7 @@ public interface HoaDonDAO {
 
     int danhDauHuyHoaDon(String maHoaDon);
 
-    int danhDauHuyDonHang(String maHoaDon);
-
     Optional<String> layMaPhienDangMo(String tenHoacMaNhanVien);
-
-    long demNgayDaChot();
 
     Optional<KhachHang> timThanhToan(String maKhachHang);
 
@@ -103,6 +100,10 @@ public interface HoaDonDAO {
     String themTreo(String maHoaDonTreo, String maPhien, String maNhanVien, String maKhachHang);
 
     int capNhatTreo(String maHoaDon, String maSanPham, String tenHang, long donGia, int soLuong);
+
+    void luuThongTinTreo(String maHoaDon, String maVoucher, String ghiChu);
+
+    Optional<ThongTinDonTreo> layThongTinTreo(String maHoaDon);
 
     long demGioTreoCuaTaiKhoan(String maHoaDon, String maNhanVien);
 

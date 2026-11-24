@@ -12,7 +12,7 @@ import java.util.List;
 
 // Màn hình: Thống kê hàng hóa & kho (Mã: THONG_KE_HANG_HOA)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (san_pham, lo_hang)
+// ThongKeDAOImpl -> SQL (san_pham, lo_hang)
 // Mô tả: Phân tích top sản phẩm bán chạy, tỷ trọng doanh số theo nhóm hàng và cảnh báo hàng sắp hết
 // hạn/tồn thấp
 // Phân hệ: thongke

@@ -2,13 +2,13 @@ package com.petstation.gui.banhang;
 
 import com.petstation.dto.DonDoiTreo;
 import com.petstation.dto.GioHang;
-import com.petstation.gui.chung.BieuMauPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
+import com.petstation.gui.chung.TaoThanhPhanBieuMau;
 import com.petstation.gui.chung.thanhphan.DinhDangBang;
 import com.petstation.gui.khachhang.BoChonKhachHang;
 import com.petstation.model.chung.LoaiPhieuDoiTra;
@@ -66,8 +66,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
 // Màn hình: Thanh toán & Thu tiền (Mã: THANH_TOAN)
-// Luồng xử lý: GUI -> BanHangService, GioHangService -> HoaDonDAOImpl, KhoanThuDAOImpl -> SQL
-// (hoa_don, dong_thanh_toan_hoa_don)
+// Luồng xử lý: GUI -> BanHangService, GioHangService -> HoaDonDAOImpl -> SQL
+// (hoa_don)
 // Mô tả: Giao diện xử lý thanh toán đa phương thức (tiền mặt, chuyển khoản QR, voucher)
 // Phân hệ: banhang
 public final class ThanhToanPanel extends CoSoPanel {
@@ -89,7 +89,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final JLabel nhanGiamGia = new JLabel();
     private final JLabel nhanTong = new JLabel();
 
-    private final JTextField oTruongVoucher = BieuMauPanel.layTruongVanBan("");
+    private final JTextField oTruongVoucher = TaoThanhPhanBieuMau.layTruongVanBan("");
     private final List<JComponent> dieuKhienVoucher = new ArrayList<>();
     private final JLabel nhanVoucherThongBao = new JLabel("");
 
@@ -100,7 +100,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final NutDinhDang btnChonVoucher =
             new NutDinhDang("Chọn voucher của khách", NutDinhDang.KieuNut.TRONG_SUOT);
 
-    private final JTextField oDaNhan = BieuMauPanel.layTruongVanBan("");
+    private final JTextField oDaNhan = TaoThanhPhanBieuMau.layTruongVanBan("");
     private final JPanel khungNhanhCacSoTien = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     private BoChonKhachHang boChonKhach;
     private long tongTruocDo = -1;

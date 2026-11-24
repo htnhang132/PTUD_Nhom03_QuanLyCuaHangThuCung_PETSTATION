@@ -1,4 +1,6 @@
 # NHẬT KÝ SỬ DỤNG AI (AI USAGE LOG)
+
+> Phần nhật ký tuần trước là ghi chép do nhóm lưu lại, không phải chứng nhận mọi tính năng đề xuất đều có trong bản hiện tại. Phụ lục cuối file giữ prompt nguồn và ghi rõ công việc AI hỗ trợ trong đợt 24/11/2026. Đối chiếu source và kết quả kiểm thử trước khi dùng làm dẫn chứng.
 **Đề tài:** Xây dựng Hệ thống Quản lý Cửa hàng Thú cưng (Pet Station)  
 **Môn học:** Phát triển Ứng dụng – Nhóm 03  
 **Thành viên thực hiện:** Huỳnh Tấn Nhàng (Nhóm trưởng), Trần Quang Vinh, Nguyễn Gia Vỉ, Phan Trần Thảo Vy, Trần Quang Đạt  
@@ -56,3 +58,76 @@
 | **38** | **Tuần 11**<br>21/10/2026<br>*(Nguyễn Gia Vỉ & Trần Quang Đạt)* | *"Trong báo cáo Dự án Khởi nghiệp (`8_Startup.docx`), làm sao để tính toán bảng Dự toán chi phí khởi đầu, Chi phí vận hành hàng tháng và Điểm hòa vốn (Break-Even Point) cho mô hình bán phần mềm SaaS / On-Premise quản lý cửa hàng thú cưng tại TP.HCM sao cho hợp lý với nhóm 5 sinh viên mới ra trường?"* | AI gợi ý công thức tính Điểm hòa vốn theo số lượng cửa hàng thuê bao: $\text{Số khách hàng hòa vốn} = \text{Định phí hàng tháng} / (\text{Giá thuê bao trung bình ARPU} - \text{Biến phí trên mỗi khách hàng})$. | Giữ công thức tài chính tính điểm hòa vốn (Break-Even Point) và cấu trúc chia gói sản phẩm theo quy mô cửa hàng. | **Chỉnh sửa:** Tự xây dựng bảng định giá 4 gói sản phẩm (`PetStation Basic`, `PetStation Pro`, `PetStation Complex`, `PetStation On-Premise`), lập lộ trình 4 giai đoạn trong 12 tháng và phân tích 5 ý tưởng sáng tạo khác biệt bám sát đúng tính năng thật đã code trong dự án (`N03_8_ApplicationDevelopment_Startup.docx`).<br>**Lý do:** Số liệu tài chính sát thực tế sinh viên khởi nghiệp, không bị phóng đại viển vông. |
 | **39** | **Tuần 11**<br>26/10/2026<br>*(Cả nhóm 03)* | *"Nhóm cần rà soát lại toàn bộ cấu trúc project để chuẩn bị nộp cuối kỳ: đổi tên các lớp trong `dao/impl` bỏ tiền tố `Jdbc` chỉ giữ hậu tố `*DAOImpl`, gộp script CSDL gọn lại thành 2 file chính (`001_schema.sql`, `002_sample_data.sql`) và dọn dẹp các file nháp không còn dùng đến."* | AI liệt kê danh sách các tệp cần đổi tên và kiểm tra các lệnh `import` bị ảnh hưởng trong tầng `service` và `util`. | Giữ danh sách đối chiếu các lớp `DAO` và `DAOImpl` cần đồng bộ tên gọi. | **Chỉnh sửa:** Cả nhóm thực hiện refactor đồng bộ toàn bộ gói `com.petstation.dao.impl` (`*DAOImpl.java`), kiểm tra biên dịch Maven (`mvn test-compile`) và chạy lại bộ dữ liệu mẫu trên SQL Server.<br>**Lý do:** Đảm bảo kiến trúc mã nguồn sạch sẽ, thống nhất 100% với Sơ đồ lớp trong báo cáo. |
 | **40** | **Tuần 11**<br>28/10/2026<br>*(Huỳnh Tấn Nhàng & Nguyễn Gia Vỉ)* | *"Khi gộp nhánh của các thành viên vào `develop`, có một số file giao diện và DAO bị thiếu hoặc xung đột với bản cũ `com.petstore` skeleton. Hỗ trợ mình đối chiếu danh sách các file còn thiếu giữa nhánh `vi` và nhánh `develop` để khôi phục khả năng build sạch từ đầu."* | AI liệt kê danh sách các file bị thiếu khi merge và chỉ ra 2 lớp skeleton cũ trong gói `com.petstore` chứa TODO/hard-code cần loại bỏ. | Giữ lại toàn bộ mã nguồn chính thức trong gói `com.petstation` và các lớp `*DAOImpl` đã hoàn thiện ở nhánh `develop`. | **Chỉnh sửa:** Xóa bỏ hoàn toàn gói nháp `com.petstore` cũ và thư mục binary `target/classes` bị commit nhầm; kiểm tra lại toàn bộ 37 màn hình giao diện, tạo PR #43 và xác nhận build thành công trên cả JDK 17 và JDK 21.<br>**Lý do:** Đảm bảo nhánh chính của nhóm sạch hoàn toàn và chạy ổn định trước ngày bảo vệ đồ án. |
+
+
+<a id="prompt-da-ghi-nhan"></a>
+## Phụ lục: prompt đã ghi nhận ngày 26/10/2026
+
+Nội dung chuyển nguyên từ tài liệu AI_PROMPTS cũ để giữ yêu cầu môn học và prompt nguồn tại một nơi; không tự dựng thêm hội thoại trước đây.
+
+### Prompt người dùng — 26/10/2026
+
+Nguồn: yêu cầu trực tiếp trong hội thoại này; chuẩn hóa bullet/khoảng trắng từ HTML, giữ nội dung yêu cầu. Không chứa prompt hoặc kết quả của các phiên trước.
+
+> tôi muốn clean code và cấu trúc dự án lại theo yêu cầu sau
+
+Yêu cầu chung của đề tài:
+
+- Khảo sát, phân tích, thiết kế hệ thống phần mềm quản lý XXX (chỉ dành cho nhân viên).
+- Về phần thực hiện chương trình ứng dụng theo phân tích, thiết kế:
+  - Tối thiểu chương trình bao gồm các chức năng chính: Thêm, xóa, cập nhật, liệt kê (dạng danh sách và chi tiết), tìm kiếm (đơn giản, nâng cao) dữ liệu của các bảng (lưu ý cập nhật, xóa dữ liệu của các bảng có quan hệ).
+  - Giao diện thân thiện, sử dụng các phím tắt, tab khi cần thiết.
+  - Phần viết code cần phải dùng Coding Convention chung cho các ngôn ngữ (Java/C#).
+  - Phải viết theo HĐT và theo mô hình cụ thể rõ ràng (n Tier ….).
+- Quy định về sử dụng AI:
+  - Mọi đoạn mã sử dụng trong đồ án phải được sinh viên hiểu rõ và giải thích được nguyên lý hoạt động.
+  - Sinh viên phải nộp nhật ký sử dụng AI (AI Usage Log), ghi nhận các prompt, kết quả nhận được và các chỉnh sửa đã thực hiện.
+  - Ví dụ: Không chỉ nộp source code, sinh viên nộp thêm: Prompt đã sử dụng; Kết quả AI trả về; Phần nào được giữ nguyên; Phần nào chỉnh sửa; Lý do chỉnh sửa.
+  - Trong buổi bảo vệ, giảng viên có quyền yêu cầu sinh viên giải thích bất kỳ đoạn mã nào hoặc chỉnh sửa trực tiếp chương trình. Nếu sinh viên không giải thích hoặc không thực hiện được các thay đổi cơ bản trên phần mã của mình thì phần mã đó sẽ không được tính điểm.
+- Về phần làm việc nhóm:
+  - Phải có link GitHub.
+  - Không commit trực tiếp lên main.
+  - Mỗi người làm trên một branch feature/....
+  - Merge vào develop sau khi hoàn thành và đã kiểm tra.
+  - Khi hoàn tất một giai đoạn hoặc trước khi nộp, merge develop vào main.
+  - Viết commit message rõ ràng, tránh các commit chung chung như update, fix bug, 123.
+
+Chuyển dịch trọng tâm từ “Đánh giá sản phẩm” (Product-based) sang “Đánh giá quá trình và tư duy” (Process & Understanding-based).
+
+- System Architecture & Design Pattern: Lý do chọn kiến trúc này? Ranh giới các module ra sao?
+- Unit Test & Test Cases: Sinh viên phải tự viết các kịch bản kiểm thử (kể cả biên và ngoại lệ) để chứng minh code chạy đúng.
+- Security & Performance Optimization: Đặt câu hỏi về các lỗ hổng bảo mật hoặc điểm nghẽn hiệu năng mà AI thường bỏ qua.
+
+## Yêu cầu giản lược dự án
+
+Yêu cầu tiếp theo trong cùng ngày, giữ nguyên nội dung (chỉ chuẩn hóa xuống dòng):
+
+> hãy xem toàn bộ project và code lại theo cách code của sinh viên dễ hiểu, không AI quá
+>
+> đọc từng thư mục, file trong đó để xem những phần nào có thể xóa hay tóm gọn lại, nhất là các file md ko còn dùng đến nữa
+>
+> trong dao thì các file có cấu trúc ....DAO, còn trong impl thì sửa lại theo cấu trúc ....Impl bỏ jdbc đi
+>
+> cấu trúc hệ thống vậy đã đúng với hệ thống chưa, cần cấu trúc lại như nào để thầy ko thể bắt bẻ hơn được ko
+>
+> file trong database thì chỉ còn 2 file chứa các bảng và file chứ dữ liệu mẫu, chèn dữ liệu mẫu thì code lại từng bảng chèn 1 lần insert thui, ko phải 1 dữ liệu 1 lần insert làm rối mắt,
+>
+> còn file AI USAge LOG thì sửa nội dung lại giống sinh viên làm, rõ từng phần này kia, cách đang làm là giống AI tự làm như nào rồi chèn vào quá
+>
+> bỏ các dữ liệu cũ trước khi chèn dữ liệu database mới vào, do dữ liệu các mã nó không khớp
+>
+> xem và chỉnh sửa code lại để khi người khác lấy code về và có hướng dẫn để chạy trên máy họ được. thường bị lỗi khi chạy bằng visual rồi đem qua intelliji hay eclipse thì nó lỗi, với do ko trùng phiên bản java hay sql server nữa
+
+Làm rõ phạm vi dữ liệu: người dùng chọn **“Sao lưu rồi reset PetStationDemo2 trên máy này bằng bộ dữ liệu mẫu mới”**. Không có yêu cầu che giấu việc dùng AI hoặc giả xác nhận review của thành viên; nhật ký vẫn phân biệt phần hỗ trợ với phần sinh viên tự thực hiện.
+
+
+## Đợt hỗ trợ AI ngày 24/11/2026
+
+| Yêu cầu đã nhận | Kết quả AI hỗ trợ | Phần giữ/sửa và giới hạn |
+| --- | --- | --- |
+| Rà soát hệ thống, OOP, sự kiện, SQL và giao diện; sau đó triển khai phương án | Đọc source, sửa code và SQL, thêm regression, chạy test trên database riêng; các kết quả được ghi trong báo cáo rà soát | AI có tham gia sinh/chỉnh code và tài liệu, không chỉ tra cú pháp. Các thành viên vẫn cần tự đọc hiểu và giải thích phần phụ trách. |
+| Gom thiết lập database về một script và hai SQL | Chuyển nâng cấp vào 001; 002 nạp khi trống và giữ dữ liệu đã có; kiểm tra cài mới/nâng cấp/chạy lại | Không coi ví dụ SQL bảo mật là cấu hình server đã triển khai; không nâng cấp database cửa hàng trong các lượt kiểm thử. |
+| Dọn code an toàn, giữ tên tiếng Việt không dấu | Gộp tiện ích đọc ngày/role, bỏ kế thừa thừa, rà soát từng file, sửa bản đồ lớp và liên kết ảnh theo SHA-256 | Không xóa lớp đang dùng hoặc tự tách các panel lớn; ghi rõ các hạn chế còn lại. |
+| Gom tài liệu docs cho gọn | Biên tập một cẩm nang hiện hành, gom prompt/lịch sử về log và kiến trúc, chuyển báo cáo triển khai vào báo cáo rà soát | Không nối nguyên văn các bản phân tích cũ như thể đều đúng với source; giữ bản sao trước gộp trong target/review-evidence. |
+
+Dẫn chứng hiện hành: [chuẩn code](docs/CHUAN_CODE.md), [cẩm nang thuyết trình](docs/THUYET_TRINH_VA_VAN_DAP.md), [rà soát và kết quả kiểm chứng](docs/RA_SOAT_MA_NGUON.md).

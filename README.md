@@ -7,7 +7,7 @@ GitHub: [PTUD Nhóm 03 — Pet Station](https://github.com/htnhang132/PTUD_Nhom0
 # PTUD_Nhom03_QuanLyCuaHangThuCung_PETSTATION
 Hệ thống Quản lý Cửa hàng Thú cưng - Đồ án môn Phát triển Ứng dụng (10/08/2026 - 27/10/2026).
 ### 📊 Sơ đồ Phân cấp Chức năng Hệ thống
-![Sơ đồ phân cấp](./docs/diagrams/so-do-phan-cap-chuc-nang-ver2.png)
+![Sơ đồ phân cấp](docs/diagrams/so-do-phan-cap-chuc-nang-ver2.png)
 
 ## Chạy dự án
 
@@ -23,7 +23,7 @@ Copy-Item src/main/resources/db.properties.example config/db.properties
 java -jar target/petstation.jar
 ```
 
-Hướng dẫn đầy đủ cho VS Code, IntelliJ, Eclipse, SQL Authentication và các lỗi thường gặp: **[SETUP.md](SETUP.md)**. Nếu đã có database cũ, xem mục reset trước khi chạy; lệnh mặc định không tự xóa database cũ.
+Hướng dẫn đầy đủ cho VS Code, IntelliJ, Eclipse, SQL Authentication và các lỗi thường gặp: **[SETUP.md](SETUP.md)**. Nếu đã có database cũ, xem mục nâng cấp trước khi chạy; lệnh mặc định không tự xóa database cũ.
 
 Tài khoản ứng dụng mẫu sau khi nạp SQL mới:
 
@@ -38,10 +38,15 @@ Mật khẩu mẫu: **`PetStation@123`**; phải đổi khi đăng nhập lần 
 
 ## Tài liệu
 
-- [Cấu trúc và luồng xử lý](docs/ARCHITECTURE.md)
+- [Cấu trúc và luồng xử lý](ARCHITECTURE.md)
 - [Kịch bản kiểm thử và demo](docs/KIEM_THU_VA_YEU_CAU.md)
-- [Quy ước code và làm việc nhóm](CONTRIBUTING.md)
+- [Chuẩn code](docs/CHUAN_CODE.md)
+- [Bản đồ truy vết màn hình, lớp và bảng SQL](docs/BAN_DO_TRUY_VET_CODE.md)
+- [Thuyết trình và vấn đáp](docs/THUYET_TRINH_VA_VAN_DAP.md)
+- [Rà soát từng file](docs/RA_SOAT_MA_NGUON.md)
+- [Quy ước làm việc nhóm](CONTRIBUTING.md)
 - [Nhật ký sử dụng AI](AI_USAGE_LOG.md)
 - [Nguồn sản phẩm và ảnh](docs/NGUON_SAN_PHAM.md)
+- [Ví dụ bảo mật SQL để tham khảo](docs/SQL_SECURITY_EXAMPLES.md)
 
-Database chỉ có `001_schema.sql` tạo bảng/khóa/chỉ mục và `002_sample_data.sql` nạp mẫu. File dữ liệu mẫu yêu cầu các bảng ứng dụng dbo trống, chèn dữ liệu mẫu trong một transaction và không xóa dữ liệu hiện có; chỉ dùng cho database demo/test mới. Không dùng tài khoản và mật khẩu mẫu để vận hành thật.
+Cài mới hoặc cập nhật database chỉ cần `scripts/setup-database.ps1`, hoặc chạy thủ công lần lượt `database/001_schema.sql` rồi `database/002_sample_data.sql`. `001` tạo mới/nâng cấp schema; `002` nạp mẫu nếu trống và giữ nguyên dữ liệu nếu đã có. Schema hiện tại: **20261124**. Xem [hướng dẫn](SETUP.md) và [kết quả kiểm chứng](docs/RA_SOAT_MA_NGUON.md#ket-qua-trien-khai).

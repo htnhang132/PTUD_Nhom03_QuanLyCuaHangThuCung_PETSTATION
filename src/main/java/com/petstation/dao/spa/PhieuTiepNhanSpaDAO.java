@@ -55,7 +55,11 @@ public interface PhieuTiepNhanSpaDAO {
 
     int capNhatThemDichVuSpa(String maPhieu, String maGoi, String moTa, long donGia);
 
-    int capNhatDanhSachDichVuSpa(String maPhieu, String moTaMoi, long donGiaMoi);
+    int xoaDongDichVu(String maPhieu, int viTri);
+
+    void capNhatGhiChuLichHen(String maLichHen, String ghiChu);
+
+    String layGhiChuLichHen(String maLichHen);
 
     int tinhLaiTongPhieuSpa(String maPhieu);
 

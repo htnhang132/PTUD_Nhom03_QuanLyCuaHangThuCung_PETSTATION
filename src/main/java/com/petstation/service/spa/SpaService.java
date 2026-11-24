@@ -5,7 +5,6 @@ import static com.petstation.util.DuLieu.taoMa;
 import com.petstation.dao.spa.PhieuTiepNhanSpaDAO;
 import com.petstation.dao.spa.impl.PhieuTiepNhanSpaDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
-import com.petstation.database.ThaoTacSQL;
 import com.petstation.dto.SpaDTO;
 import com.petstation.model.chung.Quyen;
 import com.petstation.model.chung.TrangThaiLichHen;
@@ -99,10 +98,7 @@ public final class SpaService {
         List<LichHen> rows = xuLySpaDAO.layChiTietLichHen(maLichHen);
         if (rows.isEmpty()) throw new IllegalArgumentException("Lịch hẹn không còn tồn tại.");
         LichHen lichHen = rows.get(0);
-        Object ghiChu =
-                ThaoTacSQL.layGiaTriDon(
-                        "SELECT ghi_chu FROM lich_hen WHERE ma_lich_hen=?", maLichHen);
-        lichHen.setGhiChu(ghiChu == null ? "" : String.valueOf(ghiChu));
+        lichHen.setGhiChu(xuLySpaDAO.layGhiChuLichHen(maLichHen));
         return lichHen;
     }
 
@@ -174,8 +170,8 @@ public final class SpaService {
         return kq;
     }
 
-    private static void capNhatGhiChuLichHen(String maLichHen, String ghiChu) {
-        ThaoTacSQL.capNhat("UPDATE lich_hen SET ghi_chu=? WHERE ma_lich_hen=?", ghiChu, maLichHen);
+    private void capNhatGhiChuLichHen(String maLichHen, String ghiChu) {
+        xuLySpaDAO.capNhatGhiChuLichHen(maLichHen, ghiChu);
     }
 
     public String tiepNhan(String maThuCung, String maLichHen, double canNang, String ghiChu) {
@@ -283,17 +279,10 @@ public final class SpaService {
                                 throw new IllegalArgumentException("Dịch vụ cần xóa không hợp lệ.");
                             }
                             SpaDTO.DongChiTietSpa daXoa = ds.remove(viTriDichVu);
-                            String moTaMoi =
-                                    String.join(
-                                            "; ",
-                                            ds.stream()
-                                                    .map(SpaDTO.DongChiTietSpa::getTenDichVu)
-                                                    .toList());
-                            long tongMoi =
-                                    ds.stream()
-                                            .mapToLong(SpaDTO.DongChiTietSpa::getThanhTien)
-                                            .sum();
-                            xuLySpaDAO.capNhatDanhSachDichVuSpa(maPhieuSpa, moTaMoi, tongMoi);
+                            if (xuLySpaDAO.xoaDongDichVu(maPhieuSpa, viTriDichVu) != 1)
+                                throw new IllegalStateException(
+                                        "Dịch vụ vừa thay đổi, hãy tải lại phiếu.");
+                            xuLySpaDAO.tinhLaiTongPhieuSpa(maPhieuSpa);
                             NhatKyHeThongService.macDinh()
                                     .ghiNhatKy(
                                             "Xóa dịch vụ Spa",

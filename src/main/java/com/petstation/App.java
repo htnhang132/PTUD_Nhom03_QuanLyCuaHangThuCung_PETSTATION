@@ -39,11 +39,6 @@ public final class App {
                         () -> {
                             try {
                                 KhoiTaoUngDung nguCanh = KhoiTaoUngDung.tao();
-                                Runtime.getRuntime()
-                                        .addShutdownHook(
-                                                new Thread(
-                                                        () -> nguCanh.layCSDLKetNoi().dong(),
-                                                        "petstation-db-shutdown"));
                                 nguCanh.layCSDLKetNoi().xacMinh();
                                 SwingUtilities.invokeLater(
                                         () -> new DangNhapFrame(nguCanh).setVisible(true));

@@ -59,7 +59,7 @@ public final class HopThoaiTroGiup {
         JDialog dialog =
                 new JDialog(
                         win,
-                        "Hướng dẫn sử dụng — " + hd.tieuDe,
+                        HopThoai.chuanHoaTieuDe("Hướng dẫn sử dụng — " + hd.tieuDe),
                         Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         JPanel khungBao = new JPanel(new BorderLayout(0, 12));

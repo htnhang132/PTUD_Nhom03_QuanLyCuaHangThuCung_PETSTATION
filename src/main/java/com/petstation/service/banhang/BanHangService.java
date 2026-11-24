@@ -11,6 +11,7 @@ import com.petstation.dao.luutru.impl.HopDongLuuTruDAOImpl;
 import com.petstation.database.QuanLyGiaoDich;
 import com.petstation.dto.ChiTietBienLai;
 import com.petstation.dto.GioHang;
+import com.petstation.dto.ThongTinDonTreo;
 import com.petstation.model.banhang.ChiTietHoaDon;
 import com.petstation.model.banhang.HoaDon;
 import com.petstation.model.banhang.PhieuDoiTra;
@@ -28,26 +29,11 @@ import com.petstation.service.luutru.LuuTruService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public final class BanHangService {
     // 1. HẰNG SỐ, HÀM KHỞI TẠO & NGUỒN BIÊN LAI
-
-    private static final Map<String, ThongTinTreoTam> THONG_TIN_TREO_TAM =
-            new ConcurrentHashMap<>();
-
-    private static final class ThongTinTreoTam {
-        private final String maVoucher;
-        private final String ghiChu;
-
-        private ThongTinTreoTam(String maVoucher, String ghiChu) {
-            this.maVoucher = maVoucher == null ? "" : maVoucher.trim();
-            this.ghiChu = ghiChu == null ? "" : ghiChu.trim();
-        }
-    }
 
     private final HoaDonDAO banHangDAO;
     private final PhieuDoiTraDAO doiHangDAO;
@@ -146,8 +132,6 @@ public final class BanHangService {
         String maPhien = xacDinhCaDangMo();
         hienCo = banHangDAO.timHoaDonTheoKhoaThu(banHang.getKhoaThanhToan());
         if (hienCo.isPresent()) return layBienLai(hienCo.get());
-        if (banHangDAO.demNgayDaChot() > 0)
-            throw new IllegalStateException("Ngày đã chốt, không thể ghi giao dịch.");
         String phieuDoi =
                 LoaiPhieuDoiTra.DOI_HANG.maDB().equals(banHang.getKieuNguon())
                         ? doiTraService.chuanBi(banHang)
@@ -406,7 +390,7 @@ public final class BanHangService {
                                         dong.getTen(),
                                         dong.getDonGia(),
                                         dong.getSoLuong());
-                            luuThongTinTreoTam(maHoaDonTreo, banHang);
+                            luuThongTinDonTreo(maHoaDonTreo, banHang);
                             return maHoaDonTreo;
                         });
     }
@@ -428,7 +412,8 @@ public final class BanHangService {
                             List<GioHang.DongHang> cacDong = docCacDongMoLai(maHoaDon);
                             Optional<KhachHang> khachHangOpt =
                                     banHangDAO.layKhachCuaGioTreo(maHoaDon);
-                            ThongTinTreoTam thongTinTam = THONG_TIN_TREO_TAM.get(maHoaDon);
+                            ThongTinDonTreo thongTinTam =
+                                    banHangDAO.layThongTinTreo(maHoaDon).orElse(null);
                             xoaTreo(maHoaDon);
                             khoiPhucGioTreo(banHang, cacDong, khachHangOpt, thongTinTam);
                             return null;
@@ -453,7 +438,7 @@ public final class BanHangService {
             GioHang banHang,
             List<GioHang.DongHang> cacDong,
             Optional<KhachHang> khachHangOpt,
-            ThongTinTreoTam thongTinTam) {
+            ThongTinDonTreo thongTinTam) {
         banHang.xoa();
         banHang.setCacDong(cacDong);
         khachHangOpt.ifPresent(
@@ -463,19 +448,14 @@ public final class BanHangService {
                                 chuyenThanhChuoi(kh.getHoTen()),
                                 kh.getDiemTichLuy() == null ? 0L : kh.getDiemTichLuy()));
         if (thongTinTam != null) {
-            if (!thongTinTam.ghiChu.isBlank()) banHang.setGhiChu(thongTinTam.ghiChu);
-            if (!thongTinTam.maVoucher.isBlank()) banHang.apDungVoucher(thongTinTam.maVoucher);
+            if (!thongTinTam.getGhiChu().isBlank()) banHang.setGhiChu(thongTinTam.getGhiChu());
+            if (!thongTinTam.getMaVoucher().isBlank())
+                banHang.apDungVoucher(thongTinTam.getMaVoucher());
         }
     }
 
-    private static void luuThongTinTreoTam(String maHoaDonTreo, GioHang banHang) {
-        String maVoucher = banHang.getMaVoucher();
-        String ghiChu = banHang.getGhiChu();
-        if ((maVoucher != null && !maVoucher.isBlank()) || (ghiChu != null && !ghiChu.isBlank())) {
-            THONG_TIN_TREO_TAM.put(maHoaDonTreo, new ThongTinTreoTam(maVoucher, ghiChu));
-        } else {
-            THONG_TIN_TREO_TAM.remove(maHoaDonTreo);
-        }
+    private void luuThongTinDonTreo(String maHoaDonTreo, GioHang banHang) {
+        banHangDAO.luuThongTinTreo(maHoaDonTreo, banHang.getMaVoucher(), banHang.getGhiChu());
     }
 
     public void xoaTreo(String maHoaDon) {
@@ -488,7 +468,6 @@ public final class BanHangService {
                                 throw new IllegalArgumentException("Không tìm thấy đơn treo.");
                             banHangDAO.capNhatXoaTreo(maHoaDon);
                             banHangDAO.xoaGioHangTreo(maHoaDon, maNhanVien);
-                            THONG_TIN_TREO_TAM.remove(maHoaDon);
                             return null;
                         });
     }
@@ -538,7 +517,7 @@ public final class BanHangService {
         QuanLyGiaoDich.macDinh()
                 .thucThi(
                         ketNoi -> {
-                            HoaDon chieuCao =
+                            HoaDon hoaDonCanHuy =
                                     banHangDAO
                                             .timHuyHoaDon(maHoaDon)
                                             .orElseThrow(
@@ -558,27 +537,26 @@ public final class BanHangService {
                                 throw new IllegalArgumentException(
                                         "Hóa đơn dịch vụ đã hoàn thành không thể hủy trực tiếp.");
                             for (LoHang loHang :
-                                    banHangDAO.layPhanBoCanHoanTon(chieuCao.getMaHoaDon()))
+                                    banHangDAO.layPhanBoCanHoanTon(hoaDonCanHuy.getMaHoaDon()))
                                 banHangDAO.capNhatHuyHoaDon(
                                         loHang.getSoLuongTon(), loHang.getMaLo());
                             String maKhach =
-                                    chieuCao.getKhachHang() == null
+                                    hoaDonCanHuy.getKhachHang() == null
                                             ? null
-                                            : chieuCao.getKhachHang().getMaKhachHang();
+                                            : hoaDonCanHuy.getKhachHang().getMaKhachHang();
                             if (maKhach != null && !maKhach.isBlank()) {
                                 long cu = banHangDAO.khoaDiemKhachHang(maKhach),
                                         tiepTheo =
                                                 Math.max(
                                                         0,
                                                         cu
-                                                                - chieuCao.getDiemCongSnapshot()
-                                                                + chieuCao.getDiemDung());
+                                                                - hoaDonCanHuy.getDiemCongSnapshot()
+                                                                + hoaDonCanHuy.getDiemDung());
                                 banHangDAO.hoanDiemKhachHang(tiepTheo, maKhach);
                             }
-                            String maVoucher = chuyenThanhChuoi(chieuCao.getMaVoucher());
+                            String maVoucher = chuyenThanhChuoi(hoaDonCanHuy.getMaVoucher());
                             if (!maVoucher.isBlank()) banHangDAO.hoanLuotVoucher(maVoucher);
                             banHangDAO.danhDauHuyHoaDon(maHoaDon);
-                            banHangDAO.danhDauHuyDonHang(chieuCao.getMaHoaDon());
                             if (maKhach != null && !maKhach.isBlank()) capNhatHang(maKhach);
                             NhatKyHeThongService.macDinh().ghiNhatKy("Hủy hóa đơn", maHoaDon);
                             return null;

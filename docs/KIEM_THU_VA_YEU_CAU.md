@@ -4,7 +4,7 @@
 
 ```powershell
 ./mvnw.cmd -B -ntp verify
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-sqlserver.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -RunTests
 ```
 
 Lệnh đầu chạy bộ không cần SQL và bỏ qua 60 tình huống SQL. Lệnh sau sao lưu/reset `PetStationIntegrationTest`, nạp hai SQL rồi chạy đủ bộ. Không đổi tên này thành database đang bán hàng. Báo cáo kết quả nằm ở `target/surefire-reports/`.
@@ -56,7 +56,11 @@ Mỗi ca cần ghi người chạy, ngày, dữ liệu, kết quả thật và b
 
 Máy in thật, Excel/WPS, quét QR bằng điện thoại, DPI Windows và import IDE trên các máy khác chưa được thay thế bằng test tự động. Với dữ liệu lớn, ghi cấu hình máy, số dòng, thời gian tải/lọc và bộ nhớ; chưa có số đo tải/p95 hay kiểm thử xâm nhập trong hồ sơ hiện tại.
 
-## Kết quả ngày 26/10/2026
+## Kết quả hiện tại ngày 24/11/2026
+
+Lần kiểm chứng source sau dọn an toàn: **118 test đạt, 0 lỗi, 0 thất bại, 0 bỏ qua**, gồm 84 test thường và 34 test SQL trên database Review riêng. Bằng chứng nằm ở `target/review-evidence/full-verify.log`; xem [báo cáo rà soát](RA_SOAT_MA_NGUON.md). Lượt gộp tài liệu chạy lại các kiểm tra tài liệu, không thay đổi nghiệp vụ hay SQL.
+
+## Ghi chép lịch sử ngày 26/10/2026
 
 - Source cuối cùng: **136 test đạt, 0 lỗi, 0 thất bại, 0 bỏ qua**, gồm 76 test không cần SQL và 60 test SQL trên `PetStationIntegrationTest`.
 - Bản sao source/tài nguyên công khai, không có cấu hình SQL cá nhân, build thành công bằng Wrapper; 60 test SQL được bỏ qua đúng thiết kế.

@@ -9,7 +9,7 @@ import java.util.List;
 
 // Màn hình: Thống kê dịch vụ Spa (Mã: THONG_KE_SPA)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (phieu_tiep_nhan_spa, goi_dich_vu_spa)
+// ThongKeDAOImpl -> SQL (phieu_tiep_nhan_spa, goi_dich_vu_spa)
 // Mô tả: Đánh giá hiệu suất phục vụ dịch vụ spa, gói dịch vụ ưa chuộng và doanh thu theo chuyên
 // viên
 // Phân hệ: thongke

@@ -1,6 +1,6 @@
 package com.petstation.gui.hethong;
 
-import static com.petstation.gui.chung.TruongDanhMuc.layTenCacVaiTro;
+import static com.petstation.model.chung.VaiTro.layCacTenHienThi;
 
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
@@ -98,7 +98,7 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
                         .kiemTraDuyNhat()
                         .coTheTimNhanh()
                         .layDong(() -> DanhMucService.macDinh().layLuaChonNhanVien()),
-                TruongDuLieu.tao("Vai trò", Kieu.HOP_CHON).batBuoc().datLuaChon(layTenCacVaiTro()),
+                TruongDuLieu.tao("Vai trò", Kieu.HOP_CHON).batBuoc().datLuaChon(layCacTenHienThi()),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON).datLuaChon("Hoạt động", "Đã khóa"),
                 TruongDuLieu.tao(
                                 "Mật khẩu mới (tối thiểu 8 ký tự, bắt buộc khi thêm tài khoản)",

@@ -623,18 +623,8 @@ class BanHangKhoServiceTest {
                     }
 
                     @Override
-                    public int danhDauHuyDonHang(String maHoaDon) {
-                        return 0;
-                    }
-
-                    @Override
                     public Optional<String> layMaPhienDangMo(String tenHoacMaNhanVien) {
                         return Optional.of("CA0001");
-                    }
-
-                    @Override
-                    public long demNgayDaChot() {
-                        return 0L;
                     }
 
                     @Override
@@ -753,6 +743,14 @@ class BanHangKhoServiceTest {
                             long donGia,
                             int soLuong) {
                         return 0;
+                    }
+
+                    @Override
+                    public void luuThongTinTreo(String ma, String voucher, String ghiChu) {}
+
+                    @Override
+                    public Optional<com.petstation.dto.ThongTinDonTreo> layThongTinTreo(String ma) {
+                        return Optional.empty();
                     }
 
                     @Override

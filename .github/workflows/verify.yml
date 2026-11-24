@@ -39,7 +39,7 @@ jobs:
         run: bash ./mvnw -B -ntp verify
       - name: State SQL test limitation
         if: always()
-        run: echo 'CI does not run the SQL Server integration suites. Run scripts/test-sqlserver.ps1 against the isolated test database and attach the results to the PR.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'CI does not run the SQL Server integration suites. Run scripts/setup-database.ps1 -RunTests against the isolated test database and attach the results to the PR.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

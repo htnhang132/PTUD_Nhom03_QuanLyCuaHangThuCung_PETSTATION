@@ -241,4 +241,18 @@ public class ThuCung implements Serializable {
                 + canNang
                 + '}';
     }
+
+    public static final class ThongTinHoatDong {
+        public final String maThuCung;
+        public final String maKhachHang;
+        public final String loai;
+        public final double canNang;
+
+        public ThongTinHoatDong(String maThuCung, String maKhachHang, String loai, double canNang) {
+            this.maThuCung = maThuCung;
+            this.maKhachHang = maKhachHang;
+            this.loai = loai;
+            this.canNang = canNang;
+        }
+    }
 }

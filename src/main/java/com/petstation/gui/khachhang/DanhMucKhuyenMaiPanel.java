@@ -1,6 +1,6 @@
 package com.petstation.gui.khachhang;
 
-import static com.petstation.gui.chung.TruongDanhMuc.docNgay;
+import static com.petstation.util.DinhDang.docNgayChuanHoacNull;
 
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
@@ -42,7 +42,8 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 .themBoLoc(
                         "Hiệu lực",
                         d -> {
-                            LocalDate tu = docNgay(d[6]), den = docNgay(d[7]);
+                            LocalDate tu = docNgayChuanHoacNull(d[6]),
+                                    den = docNgayChuanHoacNull(d[7]);
                             if ("Ngừng áp dụng".equals(d[8])) return "Đã tắt";
                             if (den != null && den.isBefore(LocalDate.now())) return "Hết hạn";
                             if (tu != null && tu.isAfter(LocalDate.now())) return "Chưa đến ngày";
@@ -53,8 +54,8 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                 .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
                 .datBoKiemTra(
                         dongDuLieu -> {
-                            LocalDate tu = docNgay(dongDuLieu[6]);
-                            LocalDate den = docNgay(dongDuLieu[7]);
+                            LocalDate tu = docNgayChuanHoacNull(dongDuLieu[6]);
+                            LocalDate den = docNgayChuanHoacNull(dongDuLieu[7]);
                             String loi =
                                     KhuyenMaiService.kiemTraKhuyenMai(
                                             tu,

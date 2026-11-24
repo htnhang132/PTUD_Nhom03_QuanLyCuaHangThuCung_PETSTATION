@@ -10,7 +10,7 @@ import java.util.List;
 
 // Màn hình: Thống kê phòng Hotel (Mã: THONG_KE_HOTEL)
 // Luồng xử lý: GUI -> ThongKeService, ChiTietThongKeService -> ThongKeDAOImpl,
-// ChiTietThongKeDAOImpl -> SQL (hop_dong_luu_tru, phong_hotel)
+// ThongKeDAOImpl -> SQL (hop_dong_luu_tru, phong_hotel)
 // Mô tả: Thống kê công suất sử dụng phòng lưu trú, doanh thu tiền phòng và số lượng thú cưng gửi
 // qua đêm
 // Phân hệ: thongke

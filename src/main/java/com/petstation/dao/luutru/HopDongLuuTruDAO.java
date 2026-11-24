@@ -7,12 +7,17 @@ import com.petstation.model.luutru.PhongHotel;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface HopDongLuuTruDAO {
     Optional<HopDongLuuTru> timTheoMa(String maHopDong);
 
     List<PhongHotel> layPhongDangDon();
+
+    int giaHan(String maHopDong, LocalDateTime ngayRaMoi, String ghiChu);
+
+    Map<String, String> layTrangThaiTatCaPhong();
 
     int capNhatNhanPhong(String maHopDong);
 
