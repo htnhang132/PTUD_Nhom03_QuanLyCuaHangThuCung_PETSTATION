@@ -67,7 +67,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
 
     public DoiTraPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.DOI_TRA, banHang, dieuHuong);
-        themNut(layKhungThaoTac(), "+ Đổi phụ kiện (F7)", NutDinhDang.KieuNut.CHINH, this::traHang);
+        themNut(layKhungThaoTac(), "+ Đổi phụ kiện (F2)", NutDinhDang.KieuNut.CHINH, this::traHang);
         btnXemGoc =
                 themNut(
                         layKhungThaoTac(),
@@ -77,7 +77,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
         btnXemThayThe =
                 themNut(
                         layKhungThaoTac(),
-                        "Xem HĐ thay thế",
+                        "Xem hóa đơn thay thế",
                         NutDinhDang.KieuNut.PHU,
                         () -> xemBienLaiTheoCot(COT_HOA_DON_THAY_THE, "hóa đơn thay thế"));
         cauHinhBoLocDoiTra();
@@ -204,7 +204,7 @@ public final class DoiTraPanel extends BangNghiepVuPanel {
                                 capNhatXemTruocChiTiet();
                             }
                         });
-        ganPhimTat(KeyEvent.VK_F7, this::traHang);
+        ganPhimTat(KeyEvent.VK_F2, this::traHang);
         ganSuKienDupChuot(() -> xemBienLaiTheoCot(COT_HOA_DON_GOC, "hóa đơn gốc"));
         ganMenuChuotPhai(
                 row -> {

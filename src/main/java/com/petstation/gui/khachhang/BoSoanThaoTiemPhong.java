@@ -60,9 +60,9 @@ public final class BoSoanThaoTiemPhong implements BoSoanThaoTruong {
     private final JButton btnLichNgayTiem = BoChonNgay.taoNutLich(oNgayTiem, DinhDang.NGAY_CHUAN);
     private final JButton btnLichNgayHan = BoChonNgay.taoNutLich(oNgayHan, DinhDang.NGAY_CHUAN);
 
-    private final JButton btnThem = new NutDinhDang("+ Thêm mũi", NutDinhDang.KieuNut.PHU);
-    private final JButton btnSua = new NutDinhDang("Cập nhật mũi", NutDinhDang.KieuNut.PHU);
-    private final JButton btnXoa = new NutDinhDang("Xóa mũi", NutDinhDang.KieuNut.NGUY_HIEM);
+    private final JButton btnThem = new NutDinhDang("Thêm mũi tiêm", NutDinhDang.KieuNut.PHU);
+    private final JButton btnSua = new NutDinhDang("Lưu mũi tiêm", NutDinhDang.KieuNut.PHU);
+    private final JButton btnXoa = new NutDinhDang("Xóa mũi tiêm", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public BoSoanThaoTiemPhong() {
         DinhDangBang.apDung(bang);

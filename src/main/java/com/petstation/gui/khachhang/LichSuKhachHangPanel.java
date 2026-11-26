@@ -161,7 +161,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     private JPanel taoVungChonKhachHang() {
         JPanel khungChon = new JPanel(new BorderLayout(0, 12));
         khungChon.setOpaque(false);
-        oTimKiem = taoOTimKiem("Nhập tên, SĐT hoặc mã khách...");
+        oTimKiem = taoOTimKiem("Tên, số điện thoại hoặc mã khách hàng");
         btnHienThi.setEnabled(false);
         btnXuat.putClientProperty("luonCuoi", Boolean.TRUE);
         btnXuat.addActionListener(
@@ -176,7 +176,7 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
                 });
         ThanhDanhSach khungPhai = new ThanhDanhSach();
         khungPhai.add(oTimKiem);
-        khungPhai.themBoLoc("Hạng thẻ:", cboHangThe);
+        khungPhai.themBoLoc("Hạng thành viên:", cboHangThe);
         khungPhai.themBoLoc("Điểm:", cboMucDiem);
         khungPhai.add(btnHienThi);
         khungPhai.add(btnXuat);
@@ -197,7 +197,9 @@ public final class LichSuKhachHangPanel extends CoSoPanel {
     }
 
     private JScrollPane taoBangKhachHang(JTextField oTimKiem) {
-        String[] cacCot = {"Mã KH", "Họ và tên", "Số điện thoại", "Địa chỉ", "Hạng thẻ", "Điểm"};
+        String[] cacCot = {
+            "Mã KH", "Họ và tên", "Số điện thoại", "Địa chỉ", "Hạng thành viên", "Điểm tích lũy"
+        };
         DefaultTableModel moHinhMoi = DinhDangBang.taoMoHinhChiDoc(cacCot);
         this.moHinh = moHinhMoi;
         taiLaiCacKhachHangNen();

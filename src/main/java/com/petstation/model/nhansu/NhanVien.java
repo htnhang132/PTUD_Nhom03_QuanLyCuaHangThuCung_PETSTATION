@@ -2,7 +2,6 @@ package com.petstation.model.nhansu;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Objects;
 
 public class NhanVien implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -103,12 +102,12 @@ public class NhanVien implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NhanVien that = (NhanVien) o;
-        return Objects.equals(this.maNhanVien, that.maNhanVien);
+        return maNhanVien != null && !maNhanVien.isBlank() && maNhanVien.equals(that.maNhanVien);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(maNhanVien);
+        return getClass().hashCode();
     }
 
     @Override

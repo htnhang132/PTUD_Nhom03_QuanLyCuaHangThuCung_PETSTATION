@@ -2,7 +2,14 @@ package com.petstation.gui.chung;
 
 import com.petstation.model.chung.MaManHinh;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.function.Consumer;
+
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 
 public final class CauTrucMenu {
     public static final class Muc {
@@ -96,7 +103,7 @@ public final class CauTrucMenu {
                             'T',
                             "Tìm kiếm",
                             List.of(
-                                    layMuc("Hóa đơn", MaManHinh.TIM_KIEM_HOA_DON, "F3"),
+                                    layMuc("Hóa đơn", MaManHinh.TIM_KIEM_HOA_DON, "F6"),
                                     layMuc("Lịch sử khách hàng", MaManHinh.TRA_CUU_KHACH_HANG),
                                     layMuc("Tồn kho theo lô", MaManHinh.TRA_CUU_LO_HANG),
                                     PHAN_CACH,
@@ -104,12 +111,12 @@ public final class CauTrucMenu {
                                     layMuc("Lịch làm việc cá nhân", MaManHinh.LICH_CA_NHAN))),
                     new Nhom(
                             'X',
-                            "Xử lý",
+                            "Nghiệp vụ",
                             List.of(
-                                    layMuc("Lập hóa đơn", MaManHinh.LAP_HOA_DON, "F2"),
-                                    layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA, "F7"),
-                                    layMuc("Quản lý Spa", MaManHinh.QUAN_LY_SPA, "F4"),
-                                    layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU, "F6"),
+                                    layMuc("Lập hóa đơn", MaManHinh.LAP_HOA_DON, "F1"),
+                                    layMuc("Đổi hàng", MaManHinh.DOI_TRA_HANG_HOA, "F2"),
+                                    layMuc("Quản lý Spa", MaManHinh.QUAN_LY_SPA, "F3"),
+                                    layMuc("Quản lý lưu trú", MaManHinh.QUAN_LY_LUU_TRU, "F4"),
                                     PHAN_CACH,
                                     layMuc("Lập phiếu nhập kho", MaManHinh.NHAP_KHO),
                                     layMuc("Xuất hủy hàng hóa", MaManHinh.XUAT_HUY_KHO),
@@ -134,5 +141,25 @@ public final class CauTrucMenu {
 
     public static List<Nhom> layCacNhom() {
         return CAC_NHOM;
+    }
+
+    public static void dangKyPhimTatDieuHuong(JRootPane goc, Consumer<MaManHinh> dieuHuong) {
+        for (Nhom nhom : CAC_NHOM) {
+            for (Muc muc : nhom.cacMuc()) {
+                if (muc.phimTat() == null) continue;
+                String lenh = "dieuHuong-" + muc.manHinh();
+                goc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                        .put(KeyStroke.getKeyStroke(muc.phimTat()), lenh);
+                goc.getActionMap()
+                        .put(
+                                lenh,
+                                new AbstractAction() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent suKien) {
+                                        dieuHuong.accept(muc.manHinh());
+                                    }
+                                });
+            }
+        }
     }
 }

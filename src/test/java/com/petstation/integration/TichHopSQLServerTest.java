@@ -4,7 +4,6 @@ import static com.petstation.database.ThaoTacSQL.*;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.petstation.dao.banhang.impl.HoaDonDAOImpl;
 import com.petstation.dao.banhang.impl.PhieuDoiTraDAOImpl;
 import com.petstation.database.CauHinhCSDL;
 import com.petstation.database.KetNoiCSDL;
@@ -18,6 +17,7 @@ import com.petstation.service.banhang.BanHangService;
 import com.petstation.service.banhang.GioHangService;
 import com.petstation.service.chung.NghiepVuService;
 import com.petstation.service.hethong.PhienDangNhapService;
+import com.petstation.service.kho.KiemKeService;
 import com.petstation.service.luutru.LuuTruService;
 import com.petstation.service.spa.LapPhieuSpaService;
 import com.petstation.service.spa.SpaService;
@@ -34,10 +34,115 @@ import java.util.UUID;
 /** Regression suite for the natural-key schema; every fixture rolls back. */
 @EnabledIfEnvironmentVariable(named = "PETSTATION_SQL_TESTS", matches = "true")
 class TichHopSQLServerTest {
+    @Test
+    void baoCaoVoucherGhiRoTongGiamHoaDonCoKhuyenMai() {
+        tinhHuong(
+                () -> {
+                    capNhat(
+                            "INSERT"
+                                + " chuong_trinh_khuyen_mai(ma_chuong_trinh,ten,loai_giam,gia_tri,bat_dau,ket_thuc,nguon,trang_thai,don_toi_thieu)"
+                                + " VALUES(?,N'Ưu đãi"
+                                + " thử','SO_TIEN',20000,DATEADD(day,-1,GETDATE()),DATEADD(day,1,GETDATE()),'PRODUCT','HOAT_DONG',0)",
+                            "KM" + nv);
+                    GioHang g = gio(2);
+                    assertThat(g.apDungVoucher(vc)).isNull();
+                    String hd = thu(g);
+                    long giam = laySo("SELECT giam_gia FROM hoa_don WHERE ma_hoa_don=?", hd);
+                    assertThat(giam).isGreaterThan(10000);
+                    var dong =
+                            new com.petstation.dao.thongke.impl.ThongKeDAOImpl()
+                                            .laySuDungVoucher(
+                                                    java.time.LocalDate.now(),
+                                                    java.time.LocalDate.now().plusDays(1))
+                                            .stream()
+                                            .filter(r -> vc.equals(r.thanhHang()[0]))
+                                            .findFirst()
+                                            .orElseThrow();
+                    assertThat(((Number) dong.thanhHang()[3]).longValue()).isEqualTo(giam);
+                });
+    }
+
+    @Test
+    void baoCaoTopMuoiTheoTienThucThuVoiMuoiMotSanPham() {
+        tinhHuong(
+                () -> {
+                    java.util.Map<String, Long> doanhThu = new java.util.HashMap<>();
+                    for (int i = 0; i < 11; i++) {
+                        String ma = sp + i;
+                        String lo = "L" + ma;
+                        long gia = i == 10 ? 5000000 : i == 0 ? 110000 : 100000L * (i + 1);
+                        int sl = i == 0 ? 5 : 1;
+                        capNhat(
+                                "INSERT"
+                                    + " san_pham(ma_san_pham,ten,nhom_hang,don_vi_tinh,gia_ban,gia_nhap_gan_nhat)"
+                                    + " VALUES(?,?,N'Phụ kiện',N'Cái',?,10000)",
+                                ma,
+                                "Xếp hạng " + i,
+                                gia);
+                        capNhat(
+                                "INSERT"
+                                    + " lo_hang(ma_lo,ma_san_pham,so_lo,ngay_nhap,han_su_dung,so_luong_nhap,so_luong_ton)"
+                                    + " VALUES(?,?,?,GETDATE(),DATEADD(day,60,GETDATE()),10,10)",
+                                lo,
+                                ma,
+                                lo);
+                        GioHang g = new GioHangService().tao();
+                        g.setCacDong(List.of(new GioHang.DongHang(ma, "Xếp hạng " + i, gia, sl)));
+                        String hd = thu(g);
+                        doanhThu.put(
+                                ma, laySo("SELECT tong_tien FROM hoa_don WHERE ma_hoa_don=?", hd));
+                    }
+                    var ketQua =
+                            new com.petstation.dao.thongke.impl.ThongKeDAOImpl()
+                                    .laySanPhamBanChay(
+                                            java.time.LocalDate.now(),
+                                            java.time.LocalDate.now().plusDays(1),
+                                            nv);
+                    var mongDoi =
+                            doanhThu.entrySet().stream()
+                                    .sorted(
+                                            java.util.Map.Entry.<String, Long>comparingByValue()
+                                                    .reversed())
+                                    .limit(10)
+                                    .map(java.util.Map.Entry::getKey)
+                                    .toList();
+                    assertThat(ketQua).hasSize(10);
+                    assertThat(ketQua)
+                            .extracting(r -> r.thanhHang()[0])
+                            .containsExactlyElementsOf(mongDoi);
+                    assertThat(ketQua.get(0).getSoBanSauTra()).isEqualTo(1);
+                    assertThat(ketQua.stream().mapToDouble(r -> r.getDoanhThu()).sum())
+                            .isEqualTo(mongDoi.stream().mapToLong(doanhThu::get).sum());
+                });
+    }
+
+    @Test
+    void kiemKeTuChoiSoSoSachCu() {
+        tinhHuong(
+                () -> {
+                    int ton =
+                            ((Number)
+                                            layGiaTriDon(
+                                                    "SELECT so_luong_ton FROM lo_hang WHERE"
+                                                            + " ma_lo=?",
+                                                    lo1))
+                                    .intValue();
+                    KiemKeService.DongKiemKe dong =
+                            new KiemKeService.DongKiemKe(
+                                    lo1, sp, "Hàng thử", "", "Lô thử", null, ton, ton, "");
+                    capNhat("UPDATE lo_hang SET so_luong_ton=so_luong_ton+1 WHERE ma_lo=?", lo1);
+                    assertThatThrownBy(
+                                    () ->
+                                            new KiemKeService()
+                                                    .lapBienBanKiemKe("Đếm thử", List.of(dong)))
+                            .isInstanceOf(IllegalStateException.class)
+                            .hasMessageContaining("đã thay đổi");
+                });
+    }
+
     private static final class HoanTac extends RuntimeException {}
 
     private final BanHangService banHang = new BanHangService();
-    private final HoaDonDAOImpl hoaDonDAO = new HoaDonDAOImpl();
     private final SpaService spa = new SpaService();
     private final LuuTruService hotel = new LuuTruService();
     private String nv, kh, sp, lo1, lo2, thu, goi1, goi2, phong, vc;

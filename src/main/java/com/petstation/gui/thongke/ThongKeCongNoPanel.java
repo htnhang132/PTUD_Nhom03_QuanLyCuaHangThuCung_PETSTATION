@@ -28,22 +28,25 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                         taoKieuHienThi(
                                         "Công nợ theo kỳ nhập",
                                         new String[] {
-                                            "Mã NCC",
+                                            "Mã nhà cung cấp",
                                             "Nhà cung cấp",
                                             "Tổng nhập trong kỳ",
                                             "Đã trả hiện tại",
-                                            "Dư nợ trên phiếu hiện tại"
+                                            "Còn nợ hiện tại của các phiếu trong kỳ"
                                         },
                                         1,
                                         4,
                                         true,
-                                        chiSo("Số nhà cung cấp", "Tổng dư nợ", "Dư nợ TB/NCC"),
+                                        chiSo(
+                                                "Số nhà cung cấp",
+                                                "Tổng dư nợ",
+                                                "Dư nợ trung bình mỗi nhà cung cấp"),
                                         thongKeService::layCongNoNhaCungCap)
                                 .chiQuanLy(),
                         taoKieuHienTai(
                                         "Dư nợ hiện tại",
                                         new String[] {
-                                            "Mã NCC",
+                                            "Mã nhà cung cấp",
                                             "Nhà cung cấp",
                                             "Tổng nhập",
                                             "Đã trả hiện tại",
@@ -56,7 +59,7 @@ public final class ThongKeCongNoPanel extends BaoCaoPanel {
                                         thongKeService::layDuNoHienTai)
                                 .chiQuanLy()),
                 false,
-                false);
+                true);
     }
 
     @Override

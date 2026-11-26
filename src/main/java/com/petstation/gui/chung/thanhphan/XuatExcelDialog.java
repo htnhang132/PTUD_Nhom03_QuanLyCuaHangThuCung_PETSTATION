@@ -32,7 +32,7 @@ public final class XuatExcelDialog {
         }
         JFileChooser chon = new JFileChooser();
         chon.setDialogTitle("Xuất Excel (.xlsx)");
-        chon.setFileFilter(new FileNameExtensionFilter("Excel Workbook (*.xlsx)", "xlsx"));
+        chon.setFileFilter(new FileNameExtensionFilter("Sổ làm việc Excel (*.xlsx)", "xlsx"));
         chon.setSelectedFile(
                 new File(
                         ten.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "-")
@@ -51,7 +51,7 @@ public final class XuatExcelDialog {
         String[] cot = new String[bang.getColumnCount()];
         Object[][] dong = new Object[bang.getRowCount()][cot.length];
         for (int c = 0; c < cot.length; c++) {
-            cot[c] = bang.getColumnName(c);
+            cot[c] = String.valueOf(bang.getColumnModel().getColumn(c).getHeaderValue());
             for (int r = 0; r < dong.length; r++) {
                 dong[r][c] = DinhDangBang.giaTriXuatExcel(bang, r, c);
             }

@@ -92,7 +92,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         NutDinhDang btnIn = new NutDinhDang("In hóa đơn (Ctrl+P)", NutDinhDang.KieuNut.PHU);
         btnIn.addActionListener(suKien -> xuLyIn());
         NutDinhDang btnTiepTheo =
-                new NutDinhDang("Lập hóa đơn mới (F2)", NutDinhDang.KieuNut.CHINH);
+                new NutDinhDang("Lập hóa đơn mới (F1)", NutDinhDang.KieuNut.CHINH);
         btnTiepTheo.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         JLabel nhanGoiY =
                 new JLabel(
@@ -113,7 +113,7 @@ public final class InHoaDonPanel extends CoSoPanel {
         khungBieuMau.add(khungGiay, BorderLayout.CENTER);
         khungBieuMau.add(khungDuoi, BorderLayout.SOUTH);
         khungGoc.add(khungBieuMau, "receipt");
-        NutDinhDang btnDi = new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnDi = new NutDinhDang("Về lập hóa đơn", NutDinhDang.KieuNut.CHINH);
         btnDi.addActionListener(suKien -> boDieuHuong.accept(MaManHinh.LAP_HOA_DON));
         khungGoc.add(
                 layTrongTrangThai(
@@ -129,7 +129,7 @@ public final class InHoaDonPanel extends CoSoPanel {
     private void dangKyPhimTat(Consumer<MaManHinh> boDieuHuong) {
         var inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         var actionMap = getActionMap();
-        inputMap.put(KeyStroke.getKeyStroke("F2"), "lapHoaDonMoi");
+        inputMap.put(KeyStroke.getKeyStroke("F1"), "lapHoaDonMoi");
         actionMap.put(
                 "lapHoaDonMoi",
                 new AbstractAction() {
@@ -343,7 +343,7 @@ public final class InHoaDonPanel extends CoSoPanel {
     private static String tenPhuongThuc(PhuongThuc pt) {
         return switch (pt) {
             case TIEN_MAT -> "Tiền mặt";
-            case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+            case CHUYEN_KHOAN -> "Chuyển khoản bằng mã QR";
             case THE_NGAN_HANG -> "Thẻ";
             case DIEM_TICH_LUY -> "Điểm tích lũy";
         };

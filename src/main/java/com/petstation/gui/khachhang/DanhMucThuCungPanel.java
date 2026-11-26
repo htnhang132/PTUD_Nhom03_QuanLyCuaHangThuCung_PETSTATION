@@ -144,7 +144,7 @@ public final class DanhMucThuCungPanel extends QuanLyDanhMucPanel {
                 .themBoLoc("Loài", d -> String.valueOf(d[2]))
                 .themBoLoc("Chủ nuôi", d -> String.valueOf(d[8]))
                 .datTienTo("TC")
-                .timKiem("Tìm theo tên thú, giống, chủ nuôi...")
+                .timKiem("Tên thú cưng, giống hoặc chủ nuôi")
                 .datTrangThai(13, "Đang hoạt động", "Ngừng hoạt động")
                 .datBoKiemTra(DanhMucThuCungPanel::kiemTraHoSoThuCung);
     }

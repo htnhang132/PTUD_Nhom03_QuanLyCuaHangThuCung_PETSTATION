@@ -1,5 +1,22 @@
 # Kịch bản kiểm thử và demo
 
+## Kết quả dùng khi báo cáo ngày 26/11/2026
+
+`verify` đạt **135 bài, 0 thất bại, 0 lỗi, 0 bỏ qua**, gồm 98 bài thường và 37 bài SQL trên `PetStationIntegrationTest_Review`. Đã đóng gói `target/petstation.jar` và kiểm tra tải tài nguyên, thư viện, kết nối SQL từ thư mục khác. Xem [hồ sơ nghiệm thu](NGHIEM_THU_SAU_CHINH_SUA.md) để lấy ảnh bằng chứng, kịch bản trình bày và giới hạn kiểm tra.
+
+Đã bổ sung kiểm tra nút Kết ca với tiền thực đếm trống, thiếu lý do chênh lệch và thiếu người nhận. Cả ba trường hợp đều bị chặn trước khi gọi DAO ghi kết ca.
+
+Để chạy lại trên database kiểm thử đã chuẩn bị, cấu hình URL và cách xác thực theo [SETUP](../SETUP.md), bật cả ba cờ rồi chạy verify.
+
+```powershell
+$env:PETSTATION_SQL_TESTS = 'true'
+$env:PETSTATION_EXCHANGE_HOLD_SQL_TESTS = 'true'
+$env:PETSTATION_SPA_HOLD_SQL_TESTS = 'true'
+./mvnw.cmd -B -ntp verify
+```
+
+Các bộ SQL yêu cầu tên database kiểm thử hợp lệ. Mỗi lần báo cáo số bài cần đọc kết quả thực chạy trong `target/surefire-reports`, vì số lượng sẽ thay đổi khi thêm kiểm thử.
+
 ## Chạy tự động
 
 ```powershell
@@ -7,7 +24,7 @@
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-database.ps1 -RunTests
 ```
 
-Lệnh đầu chạy bộ không cần SQL và bỏ qua 60 tình huống SQL. Lệnh sau sao lưu/reset `PetStationIntegrationTest`, nạp hai SQL rồi chạy đủ bộ. Không đổi tên này thành database đang bán hàng. Báo cáo kết quả nằm ở `target/surefire-reports/`.
+Lệnh đầu chạy bộ không cần SQL và bỏ qua 37 tình huống SQL khi các cờ tích hợp chưa được bật. Lệnh sau sao lưu/reset `PetStationIntegrationTest`, nạp hai SQL rồi chạy bộ theo cấu hình script. Không đổi tên này thành database đang bán hàng. Báo cáo kết quả nằm ở `target/surefire-reports/`. Với database Review đã có dữ liệu, dùng hướng dẫn chạy lại ở đầu tài liệu.
 
 Nếu database kiểm thử đã chuẩn bị, có thể đặt `PETSTATION_SQL_TESTS=true` và URL JDBC trỏ `PetStationIntegrationTest`, rồi chạy Wrapper verify. Cấu hình SQL login vẫn lấy từ tệp ngoài/env của máy. Suite tự chặn tên database khác.
 
@@ -56,7 +73,7 @@ Mỗi ca cần ghi người chạy, ngày, dữ liệu, kết quả thật và b
 
 Máy in thật, Excel/WPS, quét QR bằng điện thoại, DPI Windows và import IDE trên các máy khác chưa được thay thế bằng test tự động. Với dữ liệu lớn, ghi cấu hình máy, số dòng, thời gian tải/lọc và bộ nhớ; chưa có số đo tải/p95 hay kiểm thử xâm nhập trong hồ sơ hiện tại.
 
-## Kết quả hiện tại ngày 24/11/2026
+## Lịch sử kiểm chứng ngày 24/11/2026
 
 Lần kiểm chứng source sau dọn an toàn: **118 test đạt, 0 lỗi, 0 thất bại, 0 bỏ qua**, gồm 84 test thường và 34 test SQL trên database Review riêng. Bằng chứng nằm ở `target/review-evidence/full-verify.log`; xem [báo cáo rà soát](RA_SOAT_MA_NGUON.md). Lượt gộp tài liệu chạy lại các kiểm tra tài liệu, không thay đổi nghiệp vụ hay SQL.
 

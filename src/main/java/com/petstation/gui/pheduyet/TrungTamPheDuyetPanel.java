@@ -58,7 +58,9 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
     private final PheDuyetService pheDuyetService = new PheDuyetService();
     private final DefaultTableModel moHinh =
             new DefaultTableModel(
-                    new String[] {"Mã", "Loại yêu cầu", "Người gửi", "Thời gian", "Trạng thái"},
+                    new String[] {
+                        "Mã yêu cầu", "Loại yêu cầu", "Người gửi", "Gửi lúc", "Trạng thái"
+                    },
                     0) {
                 @Override
                 public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
@@ -74,7 +76,7 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
 
     private final JComboBox<String> cboLoaiYeuCau = taoComboLoaiYeuCau();
 
-    private final JTextField oTimKiem = taoOTimKiem("Tìm mã, người gửi...");
+    private final JTextField oTimKiem = taoOTimKiem("Mã yêu cầu hoặc người gửi");
 
     private final JCheckBox btnDangChoChi = new JCheckBox("Chỉ hiện yêu cầu chờ duyệt", true);
 
@@ -282,9 +284,9 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
             JPanel khungSoSanh = new JPanel(new GridLayout(1, 2, 10, 0));
             khungSoSanh.setOpaque(false);
             khungSoSanh.add(
-                    layHop("Trước khi sửa", dongDuLieu.layTruoc(), MauUngDung.XAM_TRUNG_TINH));
+                    layHop("Thông tin hiện tại", dongDuLieu.layTruoc(), MauUngDung.XAM_TRUNG_TINH));
             khungSoSanh.add(
-                    layHop("Sau khi sửa", dongDuLieu.laySau(), MauUngDung.XANH_LA_NEN_NHAT));
+                    layHop("Nội dung đề nghị", dongDuLieu.laySau(), MauUngDung.XANH_LA_NEN_NHAT));
             khungChiTiet.add(khungSoSanh, BorderLayout.CENTER);
             khungChiTiet.add(taoThanhNutPheDuyet(dongDuLieu), BorderLayout.SOUTH);
         }
@@ -423,7 +425,10 @@ public final class TrungTamPheDuyetPanel extends CoSoPanel {
         noiDung.setBorder(new EmptyBorder(14, 16, 6, 16));
         noiDung.add(taoNhanTruong(nhan, false));
         noiDung.add(oNhap);
-        JButton nutOk = new NutDinhDang("Xác nhận", NutDinhDang.KieuNut.CHINH);
+        JButton nutOk =
+                new NutDinhDang(
+                        tieuDe.startsWith("Từ chối") ? "Gửi lý do từ chối" : "Gửi yêu cầu bổ sung",
+                        NutDinhDang.KieuNut.CHINH);
         JButton nutHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         nutOk.addActionListener(
                 e -> {

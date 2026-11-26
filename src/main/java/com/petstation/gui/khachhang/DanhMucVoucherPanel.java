@@ -134,7 +134,7 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 .datTienTo("VOUCHER")
                 .themBoLoc("Chủ sở hữu", d -> String.valueOf(d[7]))
                 .themBoLoc("Phạm vi", d -> String.valueOf(d[8]))
-                .timKiem("Tìm theo mã voucher, khách hàng...")
+                .timKiem("Mã voucher hoặc chủ sở hữu")
                 .datTrangThai(6, "Còn hiệu lực", "Ngừng")
                 .datBoChuanHoa(
                         dongDuLieu -> {
@@ -192,8 +192,8 @@ public final class DanhMucVoucherPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Mã voucher", Kieu.VAN_BAN).batBuoc().kiemTraDuyNhat(),
                 TruongDuLieu.tao("Giá trị (₫)", Kieu.TIEN_TE).batBuoc(),
                 TruongDuLieu.tao("Hạn dùng", Kieu.NGAY).batBuoc(),
-                TruongDuLieu.tao("Số lượt", Kieu.SO_NGUYEN).chiDoc().datMacDinh("1"),
-                TruongDuLieu.tao("Đã dùng", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
+                TruongDuLieu.tao("Giới hạn lượt dùng", Kieu.SO_NGUYEN).chiDoc().datMacDinh("1"),
+                TruongDuLieu.tao("Lượt đã dùng", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
                 TruongDuLieu.tao("Đơn tối thiểu (₫)", Kieu.TIEN_TE).datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Còn hiệu lực", "Hết hạn", "Hết lượt", "Ngừng"),

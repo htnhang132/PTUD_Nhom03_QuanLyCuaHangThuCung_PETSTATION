@@ -66,7 +66,7 @@ public final class TimKiemTonTheoLoPanel extends BangNghiepVuPanel {
         NutDinhDang btnXuatHuyLo =
                 themNut(
                         layKhungThaoTac(),
-                        "Xuất hủy lô này",
+                        "Lập phiếu xuất hủy",
                         NutDinhDang.KieuNut.NGUY_HIEM,
                         () ->
                                 NghiepVuKhoPanel.moHopThoaiGhiHuy(

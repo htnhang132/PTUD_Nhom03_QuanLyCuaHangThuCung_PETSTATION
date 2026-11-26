@@ -60,29 +60,39 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
             taoMoHinhChiDoc(
                     new String[] {
                         "Mã thú",
-                        "Tên",
+                        "Tên thú cưng",
                         "Loài",
                         "Giống",
                         "Ngày sinh",
-                        "Cân nặng",
+                        "Cân nặng (kg)",
                         "Tiêm chủng",
                         "Lưu ý sức khỏe"
                     });
     private final DefaultTableModel moHinhHoaDon =
             taoMoHinhChiDoc(
-                    new String[] {"Số hóa đơn", "Ngày", "Tổng tiền", "Thanh toán", "Trạng thái"});
+                    new String[] {"Số hóa đơn", "Ngày", "Tổng tiền", "Phương thức", "Trạng thái"});
     private final DefaultTableModel moHinhSpa =
             taoMoHinhChiDoc(
                     new String[] {"Mã phiếu", "Thú cưng", "Ngày", "Tổng tiền", "Trạng thái"});
     private final DefaultTableModel moHinhLuuTru =
             taoMoHinhChiDoc(
                     new String[] {
-                        "Hợp đồng", "Thú cưng", "Phòng", "Ngày vào", "Ngày ra dự kiến", "Trạng thái"
+                        "Mã hợp đồng",
+                        "Thú cưng",
+                        "Phòng",
+                        "Ngày vào",
+                        "Ngày ra dự kiến",
+                        "Trạng thái"
                     });
     private final DefaultTableModel moHinhVoucher =
             taoMoHinhChiDoc(
                     new String[] {
-                        "Mã voucher", "Mệnh giá", "Hạn dùng", "Đã dùng", "Số lượng", "Trạng thái"
+                        "Mã voucher",
+                        "Mệnh giá",
+                        "Hạn dùng",
+                        "Lượt đã dùng",
+                        "Số lượng",
+                        "Trạng thái"
                     });
 
     private final String maKhachHang;
@@ -287,7 +297,7 @@ public final class ChiTietKhachHangPanel extends CoSoPanel {
                             }
                         }
                     });
-            NutDinhDang btnXemTruoc = new NutDinhDang("Xem / In hóa đơn", NutDinhDang.KieuNut.PHU);
+            NutDinhDang btnXemTruoc = new NutDinhDang("Xem hóa đơn", NutDinhDang.KieuNut.PHU);
             btnXemTruoc.addActionListener(suKien -> xemHoaDonChon(scrBang));
             thanhNut.add(btnXemTruoc);
         } else {

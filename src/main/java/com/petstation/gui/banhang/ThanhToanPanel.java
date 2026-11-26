@@ -94,7 +94,7 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final JLabel nhanVoucherThongBao = new JLabel("");
 
     private final JRadioButton btnTienMat = new JRadioButton("Tiền mặt", true);
-    private final JRadioButton btnChuyenKhoan = new JRadioButton("Chuyển khoản / QR");
+    private final JRadioButton btnChuyenKhoan = new JRadioButton("Chuyển khoản bằng mã QR");
     private final JRadioButton btnTheThanhToan = new JRadioButton("Thẻ");
 
     private final NutDinhDang btnChonVoucher =
@@ -111,12 +111,12 @@ public final class ThanhToanPanel extends CoSoPanel {
     private final NutDinhDang btnXacNhan =
             new NutDinhDang("Xác nhận thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
     private final NutDinhDang btnQuayLaiTrangThaiRong =
-            new NutDinhDang("Về lập đơn hàng", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Về lập hóa đơn", NutDinhDang.KieuNut.CHINH);
 
     private final NutDinhDang btnHuy =
             new NutDinhDang("Quay lại sửa đơn", NutDinhDang.KieuNut.TRONG_SUOT);
     private final NutDinhDang btnTreoDoi =
-            new NutDinhDang("Treo đơn đổi", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("Lưu phiếu đổi nháp", NutDinhDang.KieuNut.TRONG_SUOT);
 
     private final JPanel khungQRThanhToan = new JPanel();
     private final JLabel nhanQrLon = new JLabel();
@@ -342,8 +342,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         if (!suaLai) {
             banHang.xoa();
             boDieuHuong.accept(MaManHinh.LAP_HOA_DON);
-            HopThoai.hienThiThanhCong(
-                    this, "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
+            HopThoai.hienThiThanhCong(this, "Đã treo đơn đổi. Mở lại tại Đơn nháp để tiếp tục.");
             return;
         }
         banHang.xoa();
@@ -390,7 +389,7 @@ public final class ThanhToanPanel extends CoSoPanel {
             btnHuy.setText("Sửa đơn đổi");
             btnQuayLaiTrangThaiRong.setText("Về đổi phụ kiện");
         } else {
-            btnQuayLaiTrangThaiRong.setText("Về lập đơn hàng");
+            btnQuayLaiTrangThaiRong.setText("Về lập hóa đơn");
             btnHuy.setText("Quay lại sửa đơn");
         }
     }
@@ -476,7 +475,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         JPanel khungVoucherDong = new JPanel(new BorderLayout(8, 0));
         khungVoucherDong.setOpaque(false);
         oTruongVoucher.setPreferredSize(new Dimension(180, MauUngDung.CAO_DAU_VAO));
-        NutDinhDang btnApDung = new NutDinhDang("Áp dụng", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnApDung = new NutDinhDang("Áp dụng voucher", NutDinhDang.KieuNut.TRONG_SUOT);
         btnApDung.addActionListener(suKien -> apDungVoucher());
         oTruongVoucher.addActionListener(suKien -> apDungVoucher());
         khungVoucherDong.add(oTruongVoucher, BorderLayout.CENTER);
@@ -776,7 +775,7 @@ public final class ThanhToanPanel extends CoSoPanel {
         cacThe.show(khungGoc, "form");
         DefaultTableModel moHinh =
                 DinhDangBang.taoMoHinhChiDoc(
-                        new String[] {"Sản phẩm", "SL", "Đơn giá", "Thành tiền"});
+                        new String[] {"Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"});
         for (GioHang.DongHang dongDangXet : banHang.getCacDong()) {
             moHinh.addRow(
                     new Object[] {

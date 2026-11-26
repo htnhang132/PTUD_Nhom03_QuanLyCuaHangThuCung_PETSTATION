@@ -116,6 +116,16 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
         moHinh = DinhDangBang.taoMoHinhChiDoc(hienThi.cacCot());
         JScrollPane scrCuon = taoBangDinhDang(moHinh);
         bangBang = layBang(scrCuon);
+        bangBang.putClientProperty(
+                "thongBaoRong",
+                switch (kieuNghiepVu) {
+                    case GIO_HANG_TREO -> "Chưa có đơn nháp. Dùng Lưu đơn nháp khi lập hóa đơn.";
+                    case PHIEU_NHAP_KHO ->
+                            "Chưa có phiếu nhập kho. Chọn Lập phiếu nhập kho để bắt đầu.";
+                    case PHIEU_XUAT_KHO -> "Chưa có phiếu xuất kho hoặc xuất hủy.";
+                    case KIEM_KE -> "Chưa có biên bản. Chọn Bắt đầu kiểm kê để đếm hàng.";
+                    default -> "Chưa có chứng từ trong danh sách.";
+                });
         bangBang.removeColumn(bangBang.getColumnModel().getColumn(0));
         if (kieuNghiepVu != LoaiNghiepVu.HOA_DON) lienKetBoLoc(oTimKiem, bangBang);
         bangBang.getRowSorter()
@@ -140,12 +150,29 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
                 ThanhDanhSach.tieuDe(taoTieuDeManHinh(hienThi.tieuDe()), nhanSoLuong),
                 BorderLayout.NORTH);
         khungCacThaoTac = new ThanhDanhSach();
-        oTimKiem = taoOTimKiem("Tìm trong danh sách...");
+        oTimKiem = taoOTimKiem(layGoiYTimKiem());
         oTimKiem.setName("timKiemNghiepVu");
         ganPhimTimKiem(oTimKiem);
         khungCacThaoTac.add(oTimKiem);
         khungTren.add(khungCacThaoTac, BorderLayout.CENTER);
         return khungTren;
+    }
+
+    private String layGoiYTimKiem() {
+        return switch (kieuNghiepVu) {
+            case HOA_DON -> "Số hóa đơn hoặc khách hàng";
+            case LO_HANG -> "Sản phẩm hoặc số lô";
+            case GIO_HANG_TREO -> "Mã đơn nháp hoặc khách hàng";
+            case DOI_TRA -> "Mã phiếu đổi hoặc hóa đơn gốc";
+            case PHIEU_NHAP_KHO -> "Số phiếu nhập hoặc nhà cung cấp";
+            case PHIEU_XUAT_KHO -> "Số phiếu xuất hoặc lý do";
+            case KIEM_KE -> "Số biên bản hoặc kỳ kiểm kê";
+            case LICH_HEN -> "Mã lịch hẹn hoặc khách hàng";
+            case PHONG_LUU_TRU -> "Mã hoặc loại phòng";
+            case HOP_DONG_LUU_TRU, DAT_PHONG_LUU_TRU, NHAT_KY_LUU_TRU, TRA_PHONG_LUU_TRU ->
+                    "Mã hợp đồng hoặc khách hàng";
+            default -> "Mã phiếu spa hoặc khách hàng";
+        };
     }
 
     private void ganPhimTimKiem(JTextField oTruong) {
@@ -352,18 +379,24 @@ public abstract class BangNghiepVuPanel extends CoSoPanel {
             return;
         }
         int token = ++phienTaiLai;
+        bangBang.putClientProperty("trangThaiTai", "Đang tải danh sách…");
         var session = PhienDangNhapService.macDinh().layPhienHienTai();
         TacVuNen.chay(
                 () -> layDuLieu().toArray(Object[][]::new),
                 duLieu -> {
                     if (token != phienTaiLai
                             || PhienDangNhapService.macDinh().layPhienHienTai() != session) return;
+                    bangBang.putClientProperty("trangThaiTai", null);
                     apDungDuLieu(duLieu);
                 },
                 ex -> {
                     if (token != phienTaiLai
                             || PhienDangNhapService.macDinh().layPhienHienTai() != session) return;
-                    HopThoai.hienThiCanhBao(BangNghiepVuPanel.this, TacVuNen.thongDiepLoi(ex));
+                    bangBang.putClientProperty(
+                            "trangThaiTai", "Chưa tải được danh sách. Nhấn F5 để thử lại.");
+                    bangBang.repaint();
+                    HopThoai.hienThiCanhBao(
+                            BangNghiepVuPanel.this, "Chưa tải được danh sách. Nhấn F5 để thử lại.");
                 });
     }
 

@@ -2,6 +2,7 @@ package com.petstation.gui.luutru;
 
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.HopThoaiTroGiup;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
@@ -174,8 +175,9 @@ public final class NhatKyChamSocDialog {
     }
 
     private static JPanel taoThanhChanHopThoai(JDialog dialog) {
-        JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel chan = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         chan.setOpaque(false);
+        chan.add(HopThoaiTroGiup.taoNutTroGiup(dialog, NhatKyChamSocDialog.class));
         NutDinhDang btnDong = new NutDinhDang("Đóng", NutDinhDang.KieuNut.TRONG_SUOT);
         btnDong.addActionListener(e -> dialog.dispose());
         chan.add(btnDong);
@@ -247,7 +249,7 @@ public final class NhatKyChamSocDialog {
                 taoCuon(food, 50));
         themTruong(
                 khungBieuMauTrai,
-                laSpa ? "Sản phẩm sử dụng / lưu ý da lông" : "Thuốc & chỉ định từ chủ nuôi",
+                laSpa ? "Sản phẩm sử dụng / lưu ý da lông" : "Thuốc và hướng dẫn của chủ nuôi",
                 taoCuon(medicine, 50));
         themTruong(khungBieuMauTrai, "Việc đã thực hiện trong ca", taoCuon(tasks, 60));
         JPanel tagCongViec =
@@ -362,7 +364,9 @@ public final class NhatKyChamSocDialog {
                             i == 0 ? "Chọn ảnh trước" : "Chọn ảnh sau", NutDinhDang.KieuNut.PHU);
             btnChonAnh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
             btnChonAnh.setEnabled(choPhepChinhSua);
-            NutDinhDang btnXoaAnh = new NutDinhDang("Xóa", NutDinhDang.KieuNut.TRONG_SUOT);
+            NutDinhDang btnXoaAnh =
+                    new NutDinhDang(
+                            i == 0 ? "Bỏ ảnh trước" : "Bỏ ảnh sau", NutDinhDang.KieuNut.TRONG_SUOT);
             btnXoaAnh.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 11));
             btnXoaAnh.setEnabled(false);
             JLabel nhanTenAnh = new JLabel("Chưa chọn");

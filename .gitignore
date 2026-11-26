@@ -54,3 +54,6 @@ src/main/resources/db.properties
 src/main/resources/demo-access.properties
 config/db.properties
 config/*.local.properties
+
+# Generated demo exports
+/output/

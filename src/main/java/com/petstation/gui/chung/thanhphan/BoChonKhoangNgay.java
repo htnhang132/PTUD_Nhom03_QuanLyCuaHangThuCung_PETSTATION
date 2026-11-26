@@ -35,7 +35,7 @@ public class BoChonKhoangNgay extends JPanel {
             "Tháng trước",
             "30 ngày qua",
             "Năm nay",
-            "Tùy chọn..."
+            "Chọn khoảng ngày…"
         };
         cboGiaTriCoSanHopChon = new JComboBox<>(cacGiaTriCoSan);
         cboGiaTriCoSanHopChon.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -121,7 +121,7 @@ public class BoChonKhoangNgay extends JPanel {
                 den = homNay;
                 khungTuyChinhNgayVungHienThi.setVisible(true);
                 break;
-            case "Tùy chọn...":
+            case "Chọn khoảng ngày…":
                 khungTuyChinhNgayVungHienThi.setVisible(true);
                 return;
         }
@@ -147,7 +147,7 @@ public class BoChonKhoangNgay extends JPanel {
                 }
                 dangDatKy = false;
             }
-            cboGiaTriCoSanHopChon.setSelectedItem("Tùy chọn...");
+            cboGiaTriCoSanHopChon.setSelectedItem("Chọn khoảng ngày…");
             firePropertyChange(
                     "dateRange", null, new LocalDate[] {layNgayBatDau(), layNgayKetThuc()});
         }

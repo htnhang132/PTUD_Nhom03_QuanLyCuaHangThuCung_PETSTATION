@@ -62,7 +62,7 @@ public final class BoChonNhieuKhachHang implements BoSoanThaoTruong {
         oTimKiem.setPreferredSize(new Dimension(0, MauUngDung.CAO_DAU_VAO));
         oTimKiem.putClientProperty("JTextField.padding", new Insets(4, 8, 4, 8));
         oTimKiem.putClientProperty(
-                "JTextField.placeholderText", "Tìm mã, tên hoặc SĐT khách hàng...");
+                "JTextField.placeholderText", "Mã, tên hoặc điện thoại người nhận");
         CoSoPanel.themBoLangNgheTaiLieu(oTimKiem, this::locDanhSach);
         chkChonTatCa.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         chkChonTatCa.setOpaque(false);

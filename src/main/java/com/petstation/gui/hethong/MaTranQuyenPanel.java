@@ -11,6 +11,7 @@ import com.petstation.service.hethong.QuyenVaiTroService;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -45,7 +46,7 @@ public final class MaTranQuyenPanel extends CoSoPanel {
             bangBang.getColumnModel().getColumn(chiSo).setCellRenderer(nhanGiua);
         add(
                 taoTieuDeManHinh(
-                        "Ma trận quyền theo vai trò (4 vai trò)",
+                        "Quyền theo vai trò",
                         "Tổng hợp các quyền chức năng mặc định của từng vai trò nhân sự"),
                 BorderLayout.NORTH);
         add(scrCuon, BorderLayout.CENTER);
@@ -70,7 +71,8 @@ public final class MaTranQuyenPanel extends CoSoPanel {
                                         co
                                                 ? BieuTuong.GiaoDien.Kieu.CHO_PHEP
                                                 : BieuTuong.GiaoDien.Kieu.KHONG_CHO_PHEP));
-                        setToolTipText(co ? "Được phép" : "Không được phép");
+                        setText(co ? "Được phép" : "Không được phép");
+                        setToolTipText(getText());
                         return this;
                     }
                 };
@@ -87,11 +89,12 @@ public final class MaTranQuyenPanel extends CoSoPanel {
     private List<Object[]> taiDuLieuMaTran() {
         VaiTro[] cacVaiTro = VaiTro.values();
         List<Object[]> ketQua = new ArrayList<>();
+        var quyenTheoVaiTro = Arrays.stream(cacVaiTro).map(quyenVaiTroService::tao).toList();
         for (Quyen quyen : Quyen.values()) {
             Object[] dong = new Object[cacVaiTro.length + 1];
             dong[0] = quyenVaiTroService.layNhan(quyen);
             for (int chiSo = 0; chiSo < cacVaiTro.length; chiSo++) {
-                dong[chiSo + 1] = quyenVaiTroService.tao(cacVaiTro[chiSo]).contains(quyen);
+                dong[chiSo + 1] = quyenTheoVaiTro.get(chiSo).contains(quyen);
             }
             ketQua.add(dong);
         }
@@ -115,7 +118,7 @@ public final class MaTranQuyenPanel extends CoSoPanel {
 
     @Override
     protected String layTieuDeTroGiup() {
-        return "Ma trận quyền";
+        return "Quyền theo vai trò";
     }
 
     @Override

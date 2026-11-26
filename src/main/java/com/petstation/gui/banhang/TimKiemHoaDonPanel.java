@@ -161,11 +161,10 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
                 taoNutXemTruocHoaDon(
                         "In lại hóa đơn", NutDinhDang.KieuNut.CHINH, e -> inHoaDonDangChon());
         btnXuatPdf =
-                taoNutXemTruocHoaDon(
-                        "Xuất file PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
+                taoNutXemTruocHoaDon("Xuất PDF", NutDinhDang.KieuNut.PHU, e -> xuLyXuatHoaDon());
         btnDoiHang =
                 taoNutXemTruocHoaDon(
-                        "Đổi phụ kiện từ HĐ này",
+                        "Đổi phụ kiện",
                         NutDinhDang.KieuNut.PHU,
                         e -> {
                             if (bienLaiDangChon != null) {
@@ -181,7 +180,7 @@ public final class TimKiemHoaDonPanel extends BangNghiepVuPanel {
         khoangCachDoiHang.setVisible(false);
         btnYeuCauPheDuyet =
                 taoNutXemTruocHoaDon(
-                        "Yêu cầu hủy / sửa HĐ",
+                        "Yêu cầu sửa hoặc hủy hóa đơn",
                         NutDinhDang.KieuNut.NGUY_HIEM,
                         e -> xuLyYeuCauHuySua());
         khungThaoTacHoaDon.add(btnInLai);

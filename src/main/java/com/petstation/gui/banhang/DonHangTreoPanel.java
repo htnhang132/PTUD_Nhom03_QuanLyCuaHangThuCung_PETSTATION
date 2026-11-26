@@ -20,9 +20,9 @@ import java.util.function.Consumer;
 public final class DonHangTreoPanel extends BangNghiepVuPanel {
     private final DonDoiTreoService donDoiTreoService = new DonDoiTreoService();
     private final BanHangService banHangService = new BanHangService();
-    private final NutDinhDang btnMoLai = new NutDinhDang("Mở lại đơn", NutDinhDang.KieuNut.PHU);
+    private final NutDinhDang btnMoLai = new NutDinhDang("Tiếp tục xử lý", NutDinhDang.KieuNut.PHU);
     private final NutDinhDang btnXoa =
-            new NutDinhDang("Xóa đơn treo", NutDinhDang.KieuNut.NGUY_HIEM);
+            new NutDinhDang("Xóa đơn nháp", NutDinhDang.KieuNut.NGUY_HIEM);
 
     public DonHangTreoPanel(GioHang banHang, Consumer<MaManHinh> dieuHuong) {
         super(LoaiNghiepVu.GIO_HANG_TREO, banHang, dieuHuong);
@@ -57,7 +57,9 @@ public final class DonHangTreoPanel extends BangNghiepVuPanel {
                                     + "?",
                             "Giỏ hàng đang có sản phẩm",
                             new String[] {
-                                "Treo giỏ hiện tại rồi mở", "Thay thế (xóa giỏ hiện tại)", "Hủy"
+                                "Lưu giỏ hiện tại và mở đơn",
+                                "Bỏ giỏ hiện tại và mở đơn",
+                                "Giữ nguyên giỏ"
                             },
                             true);
             if (luaChon == 0) {
@@ -103,7 +105,7 @@ public final class DonHangTreoPanel extends BangNghiepVuPanel {
     private void xoaDonTreo() {
         try {
             String maDon = layNoiDungDongChon(1);
-            if (!HopThoai.xacNhan(this, "Xóa đơn treo đã chọn?")) return;
+            if (!HopThoai.xacNhan(this, "Xóa đơn nháp đã chọn?")) return;
             TacVuNen.chayCoPhien(
                     this, () -> true, () -> banHangService.xoaTreo(maDon), this::taiLaiNen);
         } catch (RuntimeException ex) {

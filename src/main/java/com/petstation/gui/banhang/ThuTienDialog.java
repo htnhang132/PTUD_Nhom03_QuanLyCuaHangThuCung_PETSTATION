@@ -2,6 +2,7 @@ package com.petstation.gui.banhang;
 
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.HopThoaiTroGiup;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
 import com.petstation.model.chung.PhuongThuc;
@@ -15,6 +16,7 @@ import java.awt.Dialog;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -22,6 +24,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -77,7 +80,7 @@ public final class ThuTienDialog extends JDialog {
     private ThuTienDialog(Component cha, long toiDa, String thamChieu) {
         super(
                 SwingUtilities.getWindowAncestor(cha),
-                "Thu tiền cọc Hotel",
+                "Thu tiền cọc lưu trú",
                 Dialog.ModalityType.APPLICATION_MODAL);
         if (toiDa <= 0) throw new IllegalArgumentException("Số tiền cần thu phải lớn hơn 0.");
         this.toiDa = toiDa;
@@ -85,6 +88,27 @@ public final class ThuTienDialog extends JDialog {
         soTien.setText(String.valueOf(toiDa));
         khachDua.setText(String.valueOf(toiDa));
         henTaiQr.setRepeats(false);
+        phuongThuc.setRenderer(
+                new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(
+                            JList<?> list,
+                            Object value,
+                            int index,
+                            boolean selected,
+                            boolean focus) {
+                        super.getListCellRendererComponent(list, value, index, selected, focus);
+                        if (value instanceof PhuongThuc pt)
+                            setText(
+                                    switch (pt) {
+                                        case TIEN_MAT -> "Tiền mặt";
+                                        case CHUYEN_KHOAN -> "Chuyển khoản";
+                                        case THE_NGAN_HANG -> "Thẻ ngân hàng";
+                                        case DIEM_TICH_LUY -> "Điểm tích lũy";
+                                    });
+                        return this;
+                    }
+                });
         taoNoiDung();
         ganSuKien();
         capNhat();
@@ -100,7 +124,7 @@ public final class ThuTienDialog extends JDialog {
 
     private void taoNoiDung() {
         JPanel nhap = new JPanel(new GridLayout(0, 2, 8, 8));
-        nhap.add(new JLabel("Còn thiếu tối đa:"));
+        nhap.add(new JLabel("Tiền cọc còn phải thu:"));
         nhap.add(new JLabel(DinhDang.dinhDang(toiDa)));
         nhap.add(new JLabel("Số tiền thu lần này:"));
         nhap.add(soTien);
@@ -108,7 +132,7 @@ public final class ThuTienDialog extends JDialog {
         nhap.add(phuongThuc);
         nhap.add(new JLabel("Tiền khách đưa:"));
         nhap.add(khachDua);
-        nhap.add(new JLabel("Tiền trả lại:"));
+        nhap.add(new JLabel("Tiền thừa trả khách:"));
         nhap.add(tienThua);
         JPanel giua = new JPanel(new BorderLayout(0, 8));
         giua.add(qr, BorderLayout.CENTER);
@@ -122,6 +146,7 @@ public final class ThuTienDialog extends JDialog {
         JButton thu = new NutDinhDang("Xác nhận thu cọc", NutDinhDang.KieuNut.CHINH);
         thu.addActionListener(e -> xacNhanThu());
         JPanel chan = new JPanel();
+        chan.add(HopThoaiTroGiup.taoNutTroGiup(this, ThuTienDialog.class));
         chan.add(huy);
         chan.add(thu);
         JPanel goc = new JPanel(new BorderLayout(0, 12));

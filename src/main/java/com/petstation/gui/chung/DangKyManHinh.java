@@ -95,7 +95,7 @@ public final class DangKyManHinh {
     }
 
     private void dangKyTatCa() {
-        dangKy(MaManHinh.TONG_QUAN, "Màn hình chính", "Chọn một công việc để bắt đầu.", null);
+        dangKy(MaManHinh.TONG_QUAN, "Tổng quan", "Chọn một công việc để bắt đầu.", null);
         dangKyHeThong();
         dangKyDanhMuc();
         dangKyTraCuu();
@@ -232,27 +232,27 @@ public final class DangKyManHinh {
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.DAT_LICH_HEN_SPA,
-                "Spa: Lịch hẹn",
+                "Lịch hẹn spa",
                 "Chọn khách, thú, dịch vụ, ngày giờ, nhân viên.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.TIEP_NHAN_SPA,
-                "Spa: Tiếp nhận",
+                "Tiếp nhận thú cưng",
                 "Cân nặng, tình trạng, lưu ý, ảnh.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.CHON_GOI_SPA,
-                "Spa: Chọn dịch vụ",
+                "Thêm dịch vụ vào phiếu",
                 "Dịch vụ thực tế, giá theo cân nặng, phụ phí.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.CAP_NHAT_TIEN_DO_SPA,
-                "Spa: Tiến độ",
+                "Cập nhật tiến độ spa",
                 "Chờ, đang làm, hoàn thành.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
                 MaManHinh.HOAN_TAT_SPA,
-                "Spa: Đóng phiếu",
+                "Hoàn tất dịch vụ",
                 "Chốt tổng tiền rồi chuyển sang Thanh toán.",
                 Quyen.QUAN_LY_SPA);
         dangKy(
@@ -262,17 +262,17 @@ public final class DangKyManHinh {
                 Quyen.QUAN_LY_LUU_TRU);
         dangKy(
                 MaManHinh.DAT_PHONG_LUU_TRU,
-                "Lưu trú: Đặt phòng",
+                "Đặt phòng lưu trú",
                 "Chọn khách, thú, phòng trống, ngày vào ra, tiền cọc.",
                 Quyen.QUAN_LY_LUU_TRU);
         dangKy(
                 MaManHinh.NHAT_KY_CHAM_SOC,
-                "Lưu trú: Nhật ký chăm sóc",
+                "Nhật ký chăm sóc",
                 "Check-in, chăm sóc hằng ngày, gia hạn, dịch vụ thêm.",
                 Quyen.QUAN_LY_LUU_TRU);
         dangKy(
                 MaManHinh.TRA_PHONG_LUU_TRU,
-                "Lưu trú: Trả phòng và quyết toán",
+                "Trả phòng và tính tiền",
                 "Số ngày × giá phòng + phụ phí trễ + dịch vụ − tiền cọc.",
                 Quyen.QUAN_LY_LUU_TRU);
     }
@@ -344,7 +344,7 @@ public final class DangKyManHinh {
         dangKy(
                 MaManHinh.THONG_KE_NHAN_VIEN,
                 "Thống kê nhân viên",
-                "Số ca, giờ làm, doanh số, phiếu Spa đã thực hiện.",
+                "Số ca, giờ làm, doanh số, thu tiền theo ca và giờ làm.",
                 Quyen.XEM_BAO_CAO_CHUNG);
     }
 

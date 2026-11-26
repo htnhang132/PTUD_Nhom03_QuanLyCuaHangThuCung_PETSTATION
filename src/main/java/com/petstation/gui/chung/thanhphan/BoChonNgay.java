@@ -247,7 +247,7 @@ public class BoChonNgay extends JPanel {
         JPanel khungChanTrang = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton btnHomNay = new JButton("Hôm nay");
         btnHomNay.addActionListener(e -> chonNgay(LocalDate.now()));
-        JButton btnXoa = new JButton("Xóa");
+        JButton btnXoa = new JButton("Ngừng kinh doanh");
         btnXoa.addActionListener(
                 e -> {
                     datNgayDuocChon(null);

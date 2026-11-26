@@ -31,7 +31,7 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                 CauHinh.tao("Danh mục phòng lưu trú", "phòng")
                         .datTienTo("P")
                         .themBoLoc("Loại phòng", d -> String.valueOf(d[1]))
-                        .timKiem("Tìm theo mã phòng, loại phòng...")
+                        .timKiem("Mã hoặc loại phòng")
                         .datTrangThai(5, "Trống", "Bảo trì")
                         .datBoKiemTra(
                                 dong -> {
@@ -76,8 +76,8 @@ public final class DanhMucPhongHotelPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Loại phòng", Kieu.HOP_CHON)
                         .batBuoc()
                         .datLuaChon("Tiêu chuẩn", "VIP", "Penthouse", "Mèo"),
-                TruongDuLieu.tao("Sức chứa (thú)", Kieu.SO_NGUYEN).batBuoc().datMacDinh("1"),
-                TruongDuLieu.tao("Giá / ngày", Kieu.TIEN_TE).batBuoc(),
+                TruongDuLieu.tao("Số thú tối đa", Kieu.SO_NGUYEN).batBuoc().datMacDinh("1"),
+                TruongDuLieu.tao("Giá mỗi ngày (₫)", Kieu.TIEN_TE).batBuoc(),
                 TruongDuLieu.tao("Ghi chú", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Trống", "Bảo trì")

@@ -12,6 +12,7 @@ import java.awt.Insets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -99,6 +100,15 @@ public final class BieuMauTruong {
 
     public static Map<String, String> layYeuCauNhap(
             Component cha, String tieuDe, TruongDuLieu... cacTruong) {
+        return layYeuCauNhapCoKiemTra(cha, tieuDe, tieuDe, giaTri -> null, cacTruong);
+    }
+
+    public static Map<String, String> layYeuCauNhapCoKiemTra(
+            Component cha,
+            String tieuDe,
+            String nhanXacNhan,
+            Function<Map<String, String>, String> kiemTra,
+            TruongDuLieu... cacTruong) {
         JPanel khungBieuMau = new JPanel(new GridBagLayout());
         khungBieuMau.setBackground(MauUngDung.NEN_KEM);
         khungBieuMau.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -137,6 +147,7 @@ public final class BieuMauTruong {
                             && chon.giaTri().equals(truongDangXet.banDau()))
                         cbo.setSelectedIndex(i);
             }
+            nhan.setLabelFor(dauVao);
             dauVao.setName(truongDangXet.khoa());
             dauVao.getAccessibleContext().setAccessibleName(truongDangXet.nhan());
             cacDauVao.put(truongDangXet.khoa(), dauVao);
@@ -160,19 +171,38 @@ public final class BieuMauTruong {
                         public void ancestorMoved(AncestorEvent event) {}
                     });
         }
-        if (!HopThoai.xacNhanOk(cha, khungBieuMau, tieuDe)) return null;
-        Map<String, String> cacGiaTri = new LinkedHashMap<>();
-        for (TruongDuLieu truongDangXet : cacTruong) {
-            JComponent dauVao = cacDauVao.get(truongDangXet.khoa());
-            String giaTri = "";
-            if (dauVao instanceof JTextField oGiaTriTam) {
-                giaTri = oGiaTriTam.getText().trim();
-            } else if (dauVao instanceof JComboBox<?> cbo
-                    && cbo.getSelectedItem() instanceof LuaChon chon) {
-                giaTri = chon.giaTri();
+        return hienThiVaKiemTra(
+                cha, tieuDe, nhanXacNhan, kiemTra, cacTruong, khungBieuMau, cacDauVao);
+    }
+
+    private static Map<String, String> hienThiVaKiemTra(
+            Component cha,
+            String tieuDe,
+            String nhanXacNhan,
+            Function<Map<String, String>, String> kiemTra,
+            TruongDuLieu[] cacTruong,
+            JPanel khungBieuMau,
+            Map<String, JComponent> cacDauVao) {
+        while (true) {
+            if (HopThoai.tuyChon(
+                            cha, khungBieuMau, tieuDe, new String[] {nhanXacNhan, "Hủy"}, false)
+                    != 0) return null;
+            Map<String, String> cacGiaTri = new LinkedHashMap<>();
+            for (TruongDuLieu truongDangXet : cacTruong) {
+                JComponent dauVao = cacDauVao.get(truongDangXet.khoa());
+                String giaTri = "";
+                if (dauVao instanceof JTextField oGiaTriTam) {
+                    giaTri = oGiaTriTam.getText().trim();
+                } else if (dauVao instanceof JComboBox<?> cbo
+                        && cbo.getSelectedItem() instanceof LuaChon chon) {
+                    giaTri = chon.giaTri();
+                }
+                cacGiaTri.put(truongDangXet.khoa(), giaTri);
             }
-            cacGiaTri.put(truongDangXet.khoa(), giaTri);
+            String truongLoi = kiemTra.apply(cacGiaTri);
+            if (truongLoi == null) return cacGiaTri;
+            JComponent dauVaoLoi = cacDauVao.get(truongLoi);
+            if (dauVaoLoi != null) SwingUtilities.invokeLater(dauVaoLoi::requestFocusInWindow);
         }
-        return cacGiaTri;
     }
 }

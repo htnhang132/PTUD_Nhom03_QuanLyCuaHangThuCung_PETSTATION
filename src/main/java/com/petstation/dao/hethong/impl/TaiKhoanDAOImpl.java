@@ -151,12 +151,7 @@ public final class TaiKhoanDAOImpl implements TaiKhoanDAO {
     @Override
     public List<String> timCua(String maVaiTro) {
         VaiTro vt = VaiTro.docTuCSDL(maVaiTro);
-        Object chuoi =
-                ThaoTacSQL.layGiaTriDon(
-                        "SELECT TOP 1 quyen FROM tai_khoan WHERE vai_tro=? AND quyen IS NOT NULL"
-                                + " AND quyen<>N''",
-                        vt.name());
-        String ds = chuoi != null ? chuoi.toString() : macDinhTheoVaiTro(vt);
+        String ds = macDinhTheoVaiTro(vt);
         List<String> ketQua = new ArrayList<>();
         for (String q : ds.split("[,;]")) {
             if (!q.isBlank()) {

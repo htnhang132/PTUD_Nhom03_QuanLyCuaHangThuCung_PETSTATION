@@ -127,8 +127,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
                 }
             };
     private Color vienKhungHoSo = MauUngDung.VIEN;
-    private final JLabel nhanTomTatSucKhoe =
-            new JLabel("Mặc định: Bình thường — Đủ điều kiện tiếp nhận");
+    private final JLabel nhanTomTatSucKhoe = new JLabel("Chưa xác nhận đánh giá sức khỏe");
     private final JPanel khungChiTietSucKhoe = new JPanel(new GridLayout(3, 2, 10, 6));
     private final List<GoiDaChon> dsGoiChon = new ArrayList<>();
     private final DefaultTableModel moHinhDichVu =
@@ -503,7 +502,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
     }
 
     private JPanel taoTheKhachVaThuCung(Runnable chonLich) {
-        JButton btnTimKhach = nutPhu("Tìm", this::timKhach);
+        JButton btnTimKhach = nutPhu("Tìm khách hàng", this::timKhach);
         JButton btnThemKhach = nutPhu("+ Khách", this::themKhach);
         btnThemThu = nutPhu("+ Thú", this::moHoSoThuCung);
         btnThemThu.setEnabled(khachHang != null);
@@ -610,7 +609,7 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         int batThuong = demDiemBatThuong();
         int ketLuanIdx = cboKetLuanTiepNhan.getSelectedIndex();
         if (batThuong == 0 && ketLuanIdx == 0) {
-            nhanTomTatSucKhoe.setText("Mặc định: Bình thường — Đủ điều kiện tiếp nhận");
+            nhanTomTatSucKhoe.setText("Chưa xác nhận đánh giá sức khỏe");
             nhanTomTatSucKhoe.setForeground(MauUngDung.mau(0x065F46));
             return;
         }
@@ -685,11 +684,11 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
         trai.add(nhanMucTong);
         trai.add(nhanTongTamTinh);
 
-        JButton btnLamMoi = nutTrongSuot("Xóa trắng", this::xoaForm);
+        JButton btnLamMoi = nutTrongSuot("Xóa nội dung đã nhập", this::xoaForm);
         btnPhieuTreo = nutPhu("Mở phiếu tạm (0)", this::moDanhSachPhieuTreo);
         btnTreo = nutPhu("Lưu phiếu tạm", this::treoPhieu);
         btnTaoPhieu = nutPhu("Tạo phiếu", () -> luu(false));
-        btnTaoVaLamNgay = nutChinh("Tạo & Bắt đầu làm ngay", () -> luu(true));
+        btnTaoVaLamNgay = nutChinh("Tạo phiếu và bắt đầu dịch vụ", () -> luu(true));
 
         JPanel phai = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         phai.setOpaque(false);
@@ -1863,6 +1862,15 @@ public final class LapPhieuSpaPanel extends CoSoPanel {
             return;
         }
         double cn = canNang();
+        if (demDiemBatThuong() == 0
+                && cboKetLuanTiepNhan.getSelectedIndex() == 0
+                && !HopThoai.xacNhan(
+                        this,
+                        "Đã kiểm tra da, ve, mắt tai và lông của thú cưng "
+                                + thuCung.nhan()
+                                + " và xác nhận đủ điều kiện tiếp nhận?",
+                        "Xác nhận đánh giá",
+                        false)) return;
         String tinhTrangLuu = taoTinhTrangLuu();
         String yeuCau = oYeuCau.getText();
         String maThu = thuCung.giaTri();

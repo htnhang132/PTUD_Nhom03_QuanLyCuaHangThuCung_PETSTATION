@@ -29,7 +29,7 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
         CauHinh cauHinh =
                 CauHinh.tao("Danh mục nhà cung cấp", "nhà cung cấp")
                         .datTienTo("NCC")
-                        .timKiem("Tìm theo tên, người liên hệ, MST...")
+                        .timKiem("Tên nhà cung cấp, người liên hệ hoặc mã số thuế")
                         .datBoKiemTra(
                                 dong -> DanhMucService.kiemTraMaSoThue(String.valueOf(dong[5])))
                         .datTrangThai(7, "Đang hợp tác", "Ngừng hợp tác");
@@ -38,7 +38,7 @@ public final class DanhMucNhaCungCapPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
-                TruongDuLieu.tao("Mã NCC", Kieu.VAN_BAN).chiDoc(),
+                TruongDuLieu.tao("Mã nhà cung cấp", Kieu.VAN_BAN).chiDoc(),
                 TruongDuLieu.tao("Tên nhà cung cấp", Kieu.VAN_BAN).batBuoc(),
                 TruongDuLieu.tao("Người liên hệ", Kieu.VAN_BAN),
                 TruongDuLieu.tao("Số điện thoại", Kieu.SO_DIEN_THOAI).batBuoc(),

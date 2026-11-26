@@ -4,6 +4,7 @@ import static com.petstation.model.chung.VaiTro.layCacTenHienThi;
 
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
+import com.petstation.gui.chung.TacVuNen;
 import com.petstation.service.chung.DieuKienTaiDuLieu;
 import com.petstation.service.nhansu.NhanVienService;
 import com.petstation.util.DinhDang;
@@ -11,7 +12,9 @@ import com.petstation.util.DinhDang;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.swing.SwingUtilities;
@@ -21,6 +24,34 @@ import javax.swing.SwingUtilities;
 // Mô tả: Quản lý hồ sơ nhân sự, vị trí chức danh, số điện thoại và trạng thái làm việc
 // Phân hệ: nhansu
 public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
+    private final Map<String, String> nhanTaiKhoan = new HashMap<>();
+
+    @Override
+    protected String layNhanThaoTacBoSung(String nhan, Object[] dong) {
+        if (!"Đặt lại mật khẩu".equals(nhan) || dong == null || nhanTaiKhoan == null) return nhan;
+        String ma = String.valueOf(dong[0]);
+        if (!nhanTaiKhoan.containsKey(ma)) {
+            nhanTaiKhoan.put(ma, "Cấp hoặc đặt lại tài khoản");
+            TacVuNen.chayCoPhien(
+                    this,
+                    () -> true,
+                    () -> NhanVienService.macDinh().layTenDangNhapTheoNhanVien(ma),
+                    ten -> {
+                        nhanTaiKhoan.put(
+                                ma,
+                                ten == null || ten.isBlank()
+                                        ? "Cấp tài khoản"
+                                        : "Đặt lại mật khẩu");
+                        capNhatTrangThaiNut();
+                    });
+        }
+        return nhanTaiKhoan.get(ma);
+    }
+
+    @Override
+    protected void sauThaoTacBoSung(String nhan) {
+        nhanTaiKhoan.clear();
+    }
 
     public DanhMucNhanVienPanel() {
         super(
@@ -37,7 +68,7 @@ public final class DanhMucNhanVienPanel extends QuanLyDanhMucPanel {
                 CauHinh.tao("Danh mục nhân viên", "nhân viên")
                         .themBoLoc("Chức vụ", d -> String.valueOf(d[4]))
                         .datTienTo("NV")
-                        .timKiem("Tìm theo tên, SĐT, CCCD, mã NV...")
+                        .timKiem("Tên, điện thoại, số căn cước hoặc mã nhân viên")
                         .datBoKiemTra(
                                 dong ->
                                         NhanVienService.kiemTraNhanVien(

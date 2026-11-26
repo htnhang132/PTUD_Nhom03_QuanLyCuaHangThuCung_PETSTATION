@@ -33,28 +33,32 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
         List<KieuHienThi> ds = new ArrayList<>();
         ds.add(
                 taoKieuHienThi(
-                        "Sản phẩm bán chạy",
-                        new String[] {"Mã SP", "Sản phẩm", "Số bán sau trả", "Doanh thu"},
+                        "10 sản phẩm có doanh thu cao nhất",
+                        new String[] {"Mã sản phẩm", "Sản phẩm", "Số lượng bán ròng", "Doanh thu"},
                         1,
                         3,
                         true,
-                        chiSo("Số sản phẩm", "Tổng doanh thu", "TB/sản phẩm"),
+                        chiSo("Số sản phẩm", "Doanh thu nhóm hiển thị", "TB/sản phẩm"),
                         thongKeService::laySanPhamBanChay));
         ds.add(
                 taoKieuHienTai(
                         "Hàng tồn đọng / chôn vốn",
                         new String[] {
-                            "Mã SP", "Sản phẩm", "Tồn kho", "Giá nhập gần nhất", "Tổng vốn chôn"
+                            "Mã sản phẩm",
+                            "Sản phẩm",
+                            "Tồn kho",
+                            "Giá nhập gần nhất",
+                            "Giá trị tồn ước tính"
                         },
                         1,
                         4,
                         true,
-                        chiSo("Số mặt hàng", "Tổng vốn chôn"),
+                        chiSo("Số mặt hàng", "Giá trị tồn ước tính"),
                         ngayDangXet -> thongKeService.layHangTonDong()));
         ds.add(
                 taoKieuHienTai(
                         "Sắp hết hạn",
-                        new String[] {"Mã SP", "Sản phẩm", "Số lô", "Hạn dùng", "Tồn"},
+                        new String[] {"Mã sản phẩm", "Sản phẩm", "Số lô", "Hạn dùng", "Tồn"},
                         1,
                         4,
                         false,
@@ -70,7 +74,7 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                 taoKieuHienThi(
                         "Hao hụt từ kiểm kê",
                         new String[] {
-                            "Mã SP",
+                            "Mã sản phẩm",
                             "Sản phẩm",
                             "Số lô",
                             "Chênh lệch SL",
@@ -87,7 +91,7 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                 taoKieuHienThi(
                                 "Biến động trong kỳ",
                                 new String[] {
-                                    "Mã SP",
+                                    "Mã sản phẩm",
                                     "Sản phẩm",
                                     "Loại giao dịch",
                                     "Số lượng (+ nhập / − xuất)"
@@ -102,7 +106,11 @@ public final class ThongKeHangHoaPanel extends BaoCaoPanel {
                 taoKieuHienTai(
                         "Tồn kho hiện tại",
                         new String[] {
-                            "Mã SP", "Sản phẩm", "Tồn kho", "Tồn tối thiểu", "Giá nhập gần nhất"
+                            "Mã sản phẩm",
+                            "Sản phẩm",
+                            "Tồn kho",
+                            "Tồn tối thiểu",
+                            "Giá nhập gần nhất"
                         },
                         1,
                         2,

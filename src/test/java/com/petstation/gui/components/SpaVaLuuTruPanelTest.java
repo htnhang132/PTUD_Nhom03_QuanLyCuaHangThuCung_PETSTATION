@@ -2,6 +2,7 @@ package com.petstation.gui.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.petstation.dao.banhang.PhienLamViecDAO;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.HotelDTO;
@@ -16,9 +17,11 @@ import com.petstation.gui.banhang.TimKiemHoaDonPanel;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.DangKyManHinh;
+import com.petstation.gui.chung.DanhMucNhieuTabPanel;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.QuanLyDanhMucPanel;
 import com.petstation.gui.chung.thanhphan.BieuMauTruong;
+import com.petstation.gui.hethong.CaiDatPanel;
 import com.petstation.gui.hethong.DoiMatKhauPanel;
 import com.petstation.gui.hethong.TongQuanPanel;
 import com.petstation.gui.khachhang.BoChonKhachHang;
@@ -75,12 +78,129 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 class SpaVaLuuTruPanelTest {
+    @Test
+    void troGiupTheoDungTabDangChon() throws Exception {
+        SwingUtilities.invokeAndWait(
+                () -> {
+                    DangKyManHinh ds = new DangKyManHinh(phien, id -> {});
+                    kiemTraTroGiupCacTab(
+                            (CoSoPanel) ds.tao(MaManHinh.QUAN_LY_SPA),
+                            "Điều phối phiếu Spa",
+                            "Lập phiếu Spa",
+                            "Lịch hẹn Spa");
+                    kiemTraTroGiupCacTab(
+                            (CoSoPanel) ds.tao(MaManHinh.QUAN_LY_LUU_TRU),
+                            "Sơ đồ phòng lưu trú",
+                            "Hợp đồng lưu trú");
+                    kiemTraTroGiupCacTab(
+                            new DanhMucNhieuTabPanel(
+                                    new String[] {"Mật khẩu", "Cài đặt"},
+                                    new JPanel[] {new DoiMatKhauPanel(), new CaiDatPanel(true)}),
+                            "Đổi mật khẩu",
+                            "Cài đặt hệ thống");
+                });
+    }
+
+    private static void kiemTraTroGiupCacTab(CoSoPanel manHinh, String... tieuDe) {
+        JTabbedPane tabs = timTatCaKieu(manHinh, JTabbedPane.class).get(0);
+        assertThat(tabs.getTabCount()).isEqualTo(tieuDe.length);
+        for (int i = 0; i < tieuDe.length; i++) {
+            tabs.setSelectedIndex(i);
+            assertThat(manHinh.layHuongDanTroGiup().tieuDe).isEqualTo(tieuDe[i]);
+            assertThat(manHinh.layKhaNangThanhCongCu().coTheTroGiup()).isTrue();
+        }
+    }
+
+    @Test
+    void caiDatGomHaiTabVaThaoTacCoDinhOCuoiTrang() throws Exception {
+        LookAndFeel giaoDienCu = UIManager.getLookAndFeel();
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+            SwingUtilities.invokeAndWait(
+                    () -> {
+                        try {
+                            CaiDatPanel panel = new CaiDatPanel(true);
+                            JTabbedPane tabs = timTatCaKieu(panel, JTabbedPane.class).get(0);
+                            assertThat(tabs.getTabCount()).isEqualTo(2);
+                            assertThat(tabs.getTitleAt(0)).isEqualTo("Cửa hàng và thanh toán");
+                            assertThat(tabs.getTitleAt(1)).isEqualTo("Vận hành");
+                            JButton datLai = timNutTheoTen(panel, "Đặt lại cấu hình");
+                            JButton luu = timNutTheoTen(panel, "Lưu cài đặt");
+                            assertThat(datLai).isNotNull();
+                            assertThat(luu).isNotNull();
+                            assertThat(datLai.getParent()).isSameAs(luu.getParent());
+                            assertThat(datLai.getParent().getComponents())
+                                    .containsExactly(datLai, luu);
+                            for (int width : new int[] {1665, 1100, 1366, 900}) {
+                                for (int tab = 0; tab < tabs.getTabCount(); tab++) {
+                                    tabs.setSelectedIndex(tab);
+                                    BufferedImage anh = null;
+                                    for (int i = 0; i < 4; i++) anh = veLenAnh(panel, width, 680);
+                                    assertThat(datLai.getY()).isEqualTo(luu.getY());
+                                    assertThat(datLai.getX() + datLai.getWidth())
+                                            .isLessThan(luu.getX());
+                                    assertThat(luu.getX() + luu.getWidth())
+                                            .isLessThanOrEqualTo(luu.getParent().getWidth());
+                                    JScrollPane cuon = (JScrollPane) tabs.getSelectedComponent();
+                                    kiemTraNhanCaiDatKhongBiRutGon(cuon);
+                                    assertThat(cuon.getViewport().getView().getWidth())
+                                            .as("Nội dung tab nằm trong cửa sổ %d px", width)
+                                            .isLessThanOrEqualTo(cuon.getViewport().getWidth());
+                                    List<JPanel> cacCot =
+                                            timTatCaKieu(cuon, JPanel.class).stream()
+                                                    .filter(
+                                                            p ->
+                                                                    "cotNhomCaiDat"
+                                                                            .equals(p.getName()))
+                                                    .toList();
+                                    assertThat(cacCot).hasSize(2);
+                                    assertThat(cacCot.get(0).getHeight())
+                                            .isEqualTo(cacCot.get(1).getHeight());
+                                    for (JPanel cot : cacCot) {
+                                        Component theCuoi =
+                                                cot.getComponent(cot.getComponentCount() - 1);
+                                        assertThat(theCuoi.getY() + theCuoi.getHeight())
+                                                .as(
+                                                        "Đáy thẻ khớp đáy cột ở tab %d, %d px",
+                                                        tab, width)
+                                                .isEqualTo(cot.getHeight());
+                                    }
+                                    luuAnhNeuCauHinh(
+                                            anh, "cai-dat-tab-" + tab + "-" + width + ".png");
+                                }
+                            }
+                            CaiDatPanel chiXem = new CaiDatPanel(false);
+                            assertThat(timNutTheoTen(chiXem, "Đặt lại cấu hình").isEnabled())
+                                    .isFalse();
+                        } catch (Exception ex) {
+                            throw new AssertionError(ex);
+                        }
+                    });
+        } finally {
+            UIManager.setLookAndFeel(giaoDienCu);
+        }
+    }
+
+    private static void kiemTraNhanCaiDatKhongBiRutGon(Container tab) {
+        for (JLabel nhan : timTatCaKieu(tab, JLabel.class)) {
+            if (nhan.getText() == null || nhan.getText().startsWith("<html>")) continue;
+            int rongChu = nhan.getFontMetrics(nhan.getFont()).stringWidth(nhan.getText());
+            assertThat(nhan.getWidth() - nhan.getInsets().left - nhan.getInsets().right)
+                    .as("Nhãn phải hiện đầy đủ: %s", nhan.getText())
+                    .isGreaterThanOrEqualTo(rongChu + 2);
+        }
+    }
+
     private PhienDangNhap phien;
     private com.petstation.gui.DongThongBaoKiemThu thongBao;
 
@@ -159,7 +279,7 @@ class SpaVaLuuTruPanelTest {
                     gio.setKhachHang("KH000001", "Đặng Thu Thảo", 1780);
                     BoChonKhachHang boChon = new BoChonKhachHang(gio, () -> {});
                     luuAnhNeuCauHinh(veLenAnh(boChon, 640, 148), "bo_chon_khach.png");
-                    JButton btnXoa = timNutTheoTen(boChon, "Bỏ chọn");
+                    JButton btnXoa = timNutTheoTen(boChon, "Bỏ chọn khách");
                     assertThat(btnXoa).isNotNull();
                     assertThat(btnXoa.getHeight()).isBetween(28, 38);
 
@@ -214,7 +334,7 @@ class SpaVaLuuTruPanelTest {
                     assertThat(layCacMucCombo(cboSpa)).doesNotContain("Đang làm");
 
                     LapPhieuSpaPanel lapPhieu = new LapPhieuSpaPanel(ma -> {}, () -> {}, null);
-                    assertThat(timNutTheoTen(lapPhieu, "Xóa trắng")).isNotNull();
+                    assertThat(timNutTheoTen(lapPhieu, "Xóa nội dung đã nhập")).isNotNull();
                     assertThat(timNutTheoTen(lapPhieu, "Làm mới")).isNull();
 
                     LuuTruHotelPanel hotel =
@@ -239,9 +359,7 @@ class SpaVaLuuTruPanelTest {
                     assertThat(layCacMucCombo(cboPhong))
                             .contains("Tất cả", "Trống", "Có thú", "Đang dọn", "Bảo trì")
                             .doesNotContain("Đang khai thác", "Ngừng hoạt động");
-                    JButton btnXoaPhong = timNutTheoTen(dmPhong, "Xóa");
-                    assertThat(btnXoaPhong).isNotNull();
-                    assertThat(btnXoaPhong.isEnabled()).isFalse();
+                    assertThat(timNutTheoTen(dmPhong, "Xóa")).isNull();
                 });
     }
 
@@ -277,8 +395,8 @@ class SpaVaLuuTruPanelTest {
                                         }
                                     });
                     LapHoaDonPanel lapHoaDon = new LapHoaDonPanel(gioAo, id -> {});
-                    assertThat(timNutTheoTen(lapHoaDon, "Lưu đơn tạm (Ctrl+S)")).isNotNull();
-                    assertThat(timNutTheoTen(lapHoaDon, "Mở đơn tạm (F8)")).isNotNull();
+                    assertThat(timNutTheoTen(lapHoaDon, "Lưu đơn nháp (Ctrl+S)")).isNotNull();
+                    assertThat(timNutTheoTen(lapHoaDon, "Mở đơn nháp (F8)")).isNotNull();
                     luuAnhNeuCauHinh(veLenAnh(lapHoaDon, 1146, 720), "pos_lap_hoa_don.png");
 
                     PhienLamViecDAO daoGia =
@@ -300,7 +418,7 @@ class SpaVaLuuTruPanelTest {
                     luuAnhNeuCauHinh(veLenAnh(tongQuan, 1146, 720), "hethong_tong_quan.png");
 
                     DoiMatKhauPanel doiMk = (DoiMatKhauPanel) boDangKy.tao(MaManHinh.DOI_MAT_KHAU);
-                    assertThat(timNutTheoTen(doiMk, "Xóa trắng")).isNotNull();
+                    assertThat(timNutTheoTen(doiMk, "Xóa nội dung đã nhập")).isNotNull();
                     assertThat(timNutTheoTen(doiMk, "Hủy")).isNull();
                     luuAnhNeuCauHinh(veLenAnh(doiMk, 1146, 700), "hethong_doi_mat_khau.png");
 
@@ -333,14 +451,14 @@ class SpaVaLuuTruPanelTest {
 
                     TimKiemHoaDonPanel timHd =
                             (TimKiemHoaDonPanel) boDangKy.tao(MaManHinh.TIM_KIEM_HOA_DON);
-                    JButton btnDoiTuHd = timNutTheoTen(timHd, "Đổi phụ kiện từ HĐ này");
+                    JButton btnDoiTuHd = timNutTheoTen(timHd, "Đổi phụ kiện");
                     assertThat(btnDoiTuHd).isNotNull();
                     assertThat(btnDoiTuHd.isVisible()).isFalse();
                     luuAnhNeuCauHinh(veLenAnh(timHd, 1146, 720), "banhang_tim_kiem.png");
 
                     DoiTraPanel doiTra = (DoiTraPanel) boDangKy.tao(MaManHinh.DOI_TRA_HANG_HOA);
-                    assertThat(timNutTheoTen(doiTra, "+ Đổi phụ kiện (F7)")).isNotNull();
-                    assertThat(timNutTheoTen(doiTra, "Xem HĐ thay thế")).isNotNull();
+                    assertThat(timNutTheoTen(doiTra, "+ Đổi phụ kiện (F2)")).isNotNull();
+                    assertThat(timNutTheoTen(doiTra, "Xem hóa đơn thay thế")).isNotNull();
                     assertThat(timComboChuaMuc(doiTra, "Chờ xử lý đổi hàng")).isNotNull();
                     luuAnhNeuCauHinh(veLenAnh(doiTra, 1146, 720), "banhang_doi_tra.png");
                 });

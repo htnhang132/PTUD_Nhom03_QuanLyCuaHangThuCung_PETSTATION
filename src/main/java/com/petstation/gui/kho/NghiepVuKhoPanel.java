@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -70,19 +71,25 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
             HopThoai.hienThiCanhBao(this, "Chưa có sản phẩm nào đang kinh doanh để nhập kho.");
             return;
         }
-        String soLoGoiY = "LOTE" + LocalDate.now().format(DinhDang.MA_NGAY);
-        String hanDungGoiY = LocalDate.now().plusYears(1).format(DinhDang.NGAY);
+        String soLoGoiY = "";
+        String hanDungGoiY = "";
+        dsNcc = new ArrayList<>(dsNcc);
+        dsSp = new ArrayList<>(dsSp);
+        dsNcc.add(0, new MucLuaChon("", "Chọn nhà cung cấp"));
+        dsSp.add(0, new MucLuaChon("", "Chọn sản phẩm thực nhận"));
         Map<String, String> giaTri =
-                BieuMauTruong.layYeuCauNhap(
+                BieuMauTruong.layYeuCauNhapCoKiemTra(
                         this,
                         "Lập phiếu nhập kho",
+                        "Ghi nhận nhập kho",
+                        this::kiemTraNhapKhoTruocKhiGhi,
                         taoLuaChonMuc("supplier", "Nhà cung cấp", dsNcc),
                         taoLuaChonMuc("product", "Sản phẩm", dsSp),
                         layTruongVanBan("batch", "Số lô", soLoGoiY),
                         layTruongVanBan(
                                 "expiry", "Hạn sử dụng (dd/MM/yyyy hoặc yyyy-MM-dd)", hanDungGoiY),
                         layTruongVanBan("qty", "Số lượng", ""),
-                        layTruongVanBan("cost", "Giá nhập / đơn vị (₫)", ""),
+                        layTruongVanBan("cost", "Đơn giá nhập (₫)", ""),
                         layTruongVanBan("da_tra", "Đã trả (₫)", "0"));
         if (giaTri == null) return;
         DuLieuNhapKho duLieuNhap = docVaKiemTraNhapKho(giaTri);
@@ -107,6 +114,35 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                     lamMoi();
                 },
                 ex -> HopThoai.hienThiCanhBao(this, TacVuNen.thongDiepLoi(ex)));
+    }
+
+    private String kiemTraNhapKhoTruocKhiGhi(Map<String, String> giaTriNhap) {
+
+        if (giaTriNhap.get("supplier").isBlank() || giaTriNhap.get("product").isBlank()) {
+            HopThoai.hienThiCanhBao(this, "Chọn nhà cung cấp và sản phẩm thực nhận.");
+            return "supplier";
+        }
+        if (giaTriNhap.get("batch").isBlank()) {
+            HopThoai.hienThiCanhBao(this, "Nhập số lô trên bao bì hàng thực nhận.");
+            return "batch";
+        }
+        DuLieuNhapKho nhap = docVaKiemTraNhapKho(giaTriNhap);
+        if (nhap == null) return "qty";
+        long tong = Math.multiplyExact((long) nhap.sl, nhap.gia);
+        return HopThoai.xacNhan(
+                        this,
+                        "Số lô: "
+                                + giaTriNhap.get("batch")
+                                + "\nSố lượng: "
+                                + nhap.sl
+                                + "\nTổng giá trị: "
+                                + DinhDang.dinhDang(tong)
+                                + "\nĐã trả: "
+                                + DinhDang.dinhDang(nhap.daTra)
+                                + "\nCòn nợ: "
+                                + DinhDang.dinhDang(tong - nhap.daTra))
+                ? null
+                : "qty";
     }
 
     private static final class DuLieuNhapKho {
@@ -213,7 +249,7 @@ public abstract class NghiepVuKhoPanel extends BangNghiepVuPanel {
                     Map<String, String> giaTri =
                             BieuMauTruong.layYeuCauNhap(
                                     this,
-                                    "Trả công nợ",
+                                    "Ghi nhận trả nhà cung cấp",
                                     layTruongVanBan(
                                             "da_tra",
                                             "Số tiền trả thêm (còn nợ "

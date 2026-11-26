@@ -37,7 +37,12 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 thongKeService::layLuotKhach),
                         taoKieuHienThi(
                                 "Lượt dùng voucher trong kỳ",
-                                new String[] {"Mã voucher", "Khách hàng", "Lượt dùng", "Giảm giá"},
+                                new String[] {
+                                    "Mã voucher",
+                                    "Chủ voucher",
+                                    "Lượt dùng",
+                                    "Tổng giảm trên hóa đơn dùng voucher"
+                                },
                                 0,
                                 2,
                                 false,
@@ -45,7 +50,13 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                                 thongKeService::laySuDungVoucher),
                         taoKieuHienThi(
                                 "Chi tiêu theo kỳ",
-                                new String[] {"Mã KH", "Khách hàng", "Hạng", "Điểm", "Chi tiêu"},
+                                new String[] {
+                                    "Mã KH",
+                                    "Khách hàng",
+                                    "Hạng thành viên",
+                                    "Điểm tích lũy",
+                                    "Chi tiêu"
+                                },
                                 1,
                                 4,
                                 true,
@@ -54,7 +65,7 @@ public final class ThongKeKhachHangPanel extends BaoCaoPanel {
                         taoKieuHienTai(
                                 "Sử dụng voucher",
                                 new String[] {
-                                    "Mã voucher", "Mệnh giá", "Đã dùng", "Số lượng", "Hạn dùng"
+                                    "Mã voucher", "Mệnh giá", "Lượt đã dùng", "Số lượng", "Hạn dùng"
                                 },
                                 0,
                                 2,

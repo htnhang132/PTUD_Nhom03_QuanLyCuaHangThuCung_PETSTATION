@@ -72,7 +72,8 @@ public final class TongQuanPanel extends CoSoPanel {
     private final JTable bangBang;
 
     private final DefaultTableModel trenMoHinh =
-            new DefaultTableModel(new String[] {"#", "Sản phẩm", "Đã bán", "Doanh thu"}, 0) {
+            new DefaultTableModel(
+                    new String[] {"Hạng", "Sản phẩm", "Số lượng bán", "Doanh thu"}, 0) {
                 @Override
                 public boolean isCellEditable(int dongDuLieu, int giaTriDangXet) {
                     return false;
@@ -88,7 +89,7 @@ public final class TongQuanPanel extends CoSoPanel {
         this.caLamViec = caLamViec;
         setLayout(new BorderLayout(0, 14));
         JPanel khungDau = taoVungTrongSuot(new BorderLayout());
-        JLabel nhanTieuDe = taoTieuDeManHinh("Tổng quan hôm nay");
+        JLabel nhanTieuDe = taoTieuDeManHinh("Tổng quan cửa hàng");
         String ngay = LocalDate.now().format(DinhDang.THU_NGAY_VI);
         JLabel nhanNhanNgay = new JLabel(ngay.substring(0, 1).toUpperCase() + ngay.substring(1));
         nhanNhanNgay.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
@@ -116,7 +117,7 @@ public final class TongQuanPanel extends CoSoPanel {
         scrKhungCuon.setBorder(BorderFactory.createLineBorder(MauUngDung.XAM_VIEN_NHE));
         scrKhungCuon.getViewport().setBackground(Color.WHITE);
         JPanel khungTrenThe = layThe(new BorderLayout(0, 8));
-        khungTrenThe.add(taoTieuDeMuc("Sản phẩm bán chạy"), BorderLayout.NORTH);
+        khungTrenThe.add(taoTieuDeMuc("Sản phẩm bán chạy trong 7 ngày qua"), BorderLayout.NORTH);
         khungTrenThe.add(scrKhungCuon, BorderLayout.CENTER);
         JPanel khungGiua = new JPanel(new GridLayout(1, 2, 14, 0));
         khungGiua.setOpaque(false);
@@ -245,14 +246,14 @@ public final class TongQuanPanel extends CoSoPanel {
 
     private void capNhatCacPhimTat(long dangChoSoBo, boolean moCa) {
         khungCacPhimTat.removeAll();
-        themPhimTat("Lập hóa đơn (F2)", MaManHinh.LAP_HOA_DON, NutDinhDang.KieuNut.CHINH);
+        themPhimTat("Lập hóa đơn (F1)", MaManHinh.LAP_HOA_DON, NutDinhDang.KieuNut.CHINH);
         themPhimTat("Tạo lịch hẹn Spa", MaManHinh.DAT_LICH_HEN_SPA, NutDinhDang.KieuNut.PHU);
-        themPhimTat("Đặt phòng Hotel", MaManHinh.DAT_PHONG_LUU_TRU, NutDinhDang.KieuNut.PHU);
+        themPhimTat("Đặt phòng lưu trú", MaManHinh.DAT_PHONG_LUU_TRU, NutDinhDang.KieuNut.PHU);
         themPhimTat(
                 moCa ? "Kết ca" : "Mở ca", MaManHinh.CA_THU_NGAN, NutDinhDang.KieuNut.TRONG_SUOT);
         themPhimTat("Lập phiếu nhập kho", MaManHinh.NHAP_KHO, NutDinhDang.KieuNut.TRONG_SUOT);
         themPhimTat(
-                dangChoSoBo > 0 ? "Phê duyệt (" + dangChoSoBo + ")" : "Phê duyệt",
+                dangChoSoBo > 0 ? "Phê duyệt (" + dangChoSoBo + ")" : "Yêu cầu chờ duyệt",
                 MaManHinh.PHE_DUYET_YEU_CAU,
                 dangChoSoBo > 0 ? NutDinhDang.KieuNut.NGUY_HIEM : NutDinhDang.KieuNut.TRONG_SUOT);
         khungCacPhimTat.revalidate();
@@ -446,7 +447,7 @@ public final class TongQuanPanel extends CoSoPanel {
 
     @Override
     protected String layTieuDeTroGiup() {
-        return "Màn hình chính";
+        return "Tổng quan";
     }
 
     @Override

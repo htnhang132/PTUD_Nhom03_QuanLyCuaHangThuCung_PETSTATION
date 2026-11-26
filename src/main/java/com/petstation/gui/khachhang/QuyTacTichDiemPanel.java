@@ -55,13 +55,7 @@ public final class QuyTacTichDiemPanel extends CoSoPanel {
         giaTriDangXet.insets = new Insets(6, 0, 6, 12);
         giaTriDangXet.anchor = GridBagConstraints.WEST;
         int toaDoDoc = 0;
-        layDong(
-                khungThe,
-                giaTriDangXet,
-                toaDoDoc++,
-                "Chi tiêu bao nhiêu đồng được 1 điểm",
-                oTichDiem,
-                "₫");
+        layDong(khungThe, giaTriDangXet, toaDoDoc++, "Chi tiêu để nhận 1 điểm (₫)", oTichDiem, "₫");
         layDong(
                 khungThe,
                 giaTriDangXet,

@@ -113,7 +113,17 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
 
     @Override
     public void xuLyTroGiup() {
-        HopThoaiTroGiup.hienThi(this, layTieuDeTroGiup(), layNoiDungTroGiup());
+        HopThoaiTroGiup.hienThi(this, layHuongDanTroGiup());
+    }
+
+    public final HopThoaiTroGiup.NoiDungHuongDan layHuongDanTroGiup() {
+        CoSoPanel manHinh = layManHinhTroGiup();
+        if (manHinh != this) return manHinh.layHuongDanTroGiup();
+        return HopThoaiTroGiup.xayDungNoiDung(this, layTieuDeTroGiup(), layNoiDungTroGiup());
+    }
+
+    protected CoSoPanel layManHinhTroGiup() {
+        return this;
     }
 
     protected String layTieuDeTroGiup() {
@@ -133,7 +143,21 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         JLabel nhanHienThi = new JLabel(nhan);
         nhanHienThi.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhanHienThi.setForeground(MauUngDung.VAN_BAN_XAM);
-        JLabel nhanGiaTri = new JLabel(giaTri);
+        JLabel nhanGiaTri =
+                new JLabel(giaTri) {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        int coChu = 22;
+                        Font phongChu = MauUngDung.taoPhongChu(Font.BOLD, coChu);
+                        while (coChu > 14
+                                && g.getFontMetrics(phongChu).stringWidth(getText()) > getWidth()) {
+                            phongChu = MauUngDung.taoPhongChu(Font.BOLD, --coChu);
+                        }
+                        setFont(phongChu);
+                        super.paintComponent(g);
+                    }
+                };
+        nhanGiaTri.setToolTipText(giaTri);
         nhanGiaTri.setFont(MauUngDung.taoPhongChu(Font.BOLD, 22));
         nhanGiaTri.setForeground(mauNhan == null ? MauUngDung.VAN_BAN_TOI : mauNhan);
         khungThe.add(nhanHienThi, BorderLayout.NORTH);
@@ -197,16 +221,22 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
                     @Override
                     public void paint(Graphics g) {
                         super.paint(g);
-                        veTrangThaiRong(g, this, bangBang, moHinh);
+                        if (!Boolean.TRUE.equals(bangBang.getClientProperty("tuVeTrangThaiRong"))) {
+                            veTrangThaiRong(g, this, bangBang, moHinh);
+                        }
                     }
                 };
         khungXem.setBackground(MauUngDung.THE_NEN);
         khungXem.setView(bangBang);
         scrCuon.setViewport(khungXem);
+        if (bangBang.getRowSorter() != null) {
+            bangBang.getRowSorter().addRowSorterListener(e -> khungXem.repaint());
+        }
+        if (moHinh != null) moHinh.addTableModelListener(e -> khungXem.repaint());
     }
 
     private static void veTrangThaiRong(
-            Graphics g, JViewport khungXem, JTable bangBang, TableModel moHinh) {
+            Graphics g, Component khungXem, JTable bangBang, TableModel moHinh) {
         if (bangBang.getRowCount() > 0) return;
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(
@@ -215,8 +245,13 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
         g2.setColor(MauUngDung.VAN_BAN_XAM);
         String thongBao =
                 moHinh == null || moHinh.getRowCount() == 0
-                        ? "Chưa có dữ liệu để hiển thị."
+                        ? String.valueOf(
+                                bangBang.getClientProperty("thongBaoRong") == null
+                                        ? "Chưa có dữ liệu để hiển thị."
+                                        : bangBang.getClientProperty("thongBaoRong"))
                         : "Không tìm thấy kết quả phù hợp.";
+        Object trangThaiTai = bangBang.getClientProperty("trangThaiTai");
+        if (trangThaiTai != null) thongBao = trangThaiTai.toString();
         FontMetrics fm = g2.getFontMetrics();
         int x = Math.max(12, (khungXem.getWidth() - fm.stringWidth(thongBao)) / 2);
         int y = Math.max(fm.getAscent() + 20, khungXem.getHeight() / 2);
@@ -225,7 +260,15 @@ public abstract class CoSoPanel extends JPanel implements HoTroThanhCongCu {
     }
 
     protected JScrollPane taoBangDinhDang(TableModel moHinh) {
-        JTable bangBang = new JTable(moHinh);
+        JTable bangBang =
+                new JTable(moHinh) {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        super.paintComponent(g);
+                        veTrangThaiRong(g, this, this, getModel());
+                    }
+                };
+        bangBang.putClientProperty("tuVeTrangThaiRong", true);
         DinhDangBang.apDung(bangBang);
         JScrollPane scrKhungCuon = new JScrollPane(bangBang);
         scrKhungCuon.setColumnHeaderView(bangBang.getTableHeader());

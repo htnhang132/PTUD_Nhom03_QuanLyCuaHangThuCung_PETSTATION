@@ -47,7 +47,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                         .datTienTo("SP")
                         .datTruongDau(1)
                         .themThaoTacBoSungKhongLuu(
-                                "Tạo Barcode",
+                                "Tạo mã vạch",
                                 dong -> {
                                     String ma = String.valueOf(dong[0]);
                                     String barcodeHienTai =
@@ -76,7 +76,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                                                     .layPhien()
                                                     .kiemTraCo(Quyen.DUYET_GIA));
                                 })
-                        .timKiem("Tìm mã, tên, mã vạch...")
+                        .timKiem("Mã, tên hoặc mã vạch")
                         .datTrangThai(9, "Đang kinh doanh", "Ngừng kinh doanh");
         return cauHinh;
     }
@@ -87,7 +87,7 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
 
     private static List<TruongDuLieu> taoCacTruong() {
         return List.of(
-                TruongDuLieu.tao("Mã SP", Kieu.VAN_BAN).chiDoc(),
+                TruongDuLieu.tao("Mã sản phẩm", Kieu.VAN_BAN).chiDoc(),
                 TruongDuLieu.tao("Tên sản phẩm", Kieu.VAN_BAN)
                         .batBuoc()
                         .kiemTraDuyNhat()
@@ -105,7 +105,9 @@ public class DanhSachSanPhamPanel extends QuanLyDanhMucPanel {
                 taoTruongGia(),
                 TruongDuLieu.tao("Giá nhập gần nhất", Kieu.TIEN_TE).an(),
                 TruongDuLieu.tao("Tồn tối thiểu", Kieu.SO_NGUYEN).batBuoc().an().datMacDinh("5"),
-                TruongDuLieu.tao("Quản lý lô / HSD", Kieu.HOP_CHON).datLuaChon("Có", "Không").an(),
+                TruongDuLieu.tao("Theo dõi lô và hạn dùng", Kieu.HOP_CHON)
+                        .datLuaChon("Có", "Không")
+                        .an(),
                 TruongDuLieu.tao("Tồn kho", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Đang kinh doanh", "Ngừng kinh doanh"),

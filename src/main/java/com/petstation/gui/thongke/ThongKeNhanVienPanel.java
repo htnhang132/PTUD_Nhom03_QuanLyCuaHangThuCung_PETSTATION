@@ -21,7 +21,7 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
     public ThongKeNhanVienPanel(ThongKeService thongKeService) {
         super(
                 "Thống kê nhân viên",
-                "Chọn kỳ để xem giao dịch đã lưu",
+                "Thu tiền theo ca gồm các phương thức thanh toán; thực đếm là tiền mặt.",
                 "Thống kê nhân viên".replace(' ', '_'),
                 List.of(
                         // 1. CHẾ ĐỘ XEM: THU TIỀN VÀ CHÊNH LỆCH CA THU NGÂN
@@ -35,8 +35,8 @@ public final class ThongKeNhanVienPanel extends BaoCaoPanel {
                                     "Tiền đầu ca",
                                     "Thu hóa đơn",
                                     "Cọc lưu trú",
-                                    "Tổng thu trong ca (HĐ + Cọc)",
-                                    "Thực đếm",
+                                    "Tổng thu gồm cọc",
+                                    "Tiền mặt thực đếm",
                                     "Chênh lệch"
                                 },
                                 0,

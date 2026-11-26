@@ -115,6 +115,9 @@ public final class ThanhTieuDe extends JPanel {
                     }
                 };
         btnNut.setPreferredSize(new Dimension(46, 34));
+        String ten = dong ? "Đóng cửa sổ" : "–".equals(vanBan) ? "Thu nhỏ" : "Phóng to / Khôi phục";
+        btnNut.setToolTipText(ten);
+        btnNut.getAccessibleContext().setAccessibleName(ten);
         btnNut.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 16));
         btnNut.setForeground(Color.WHITE);
         btnNut.setBorder(null);

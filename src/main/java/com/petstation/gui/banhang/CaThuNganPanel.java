@@ -233,7 +233,7 @@ public final class CaThuNganPanel extends CoSoPanel {
 
         JPanel khungBenThe = layTheGon(new BorderLayout(0, 14));
         khungBenThe.setBorder(new EmptyBorder(16, 22, 18, 22));
-        khungBenThe.add(taoTieuDeMuc("Đối soát tiền mặt & kết ca"), BorderLayout.NORTH);
+        khungBenThe.add(taoTieuDeMuc("Đối soát tiền mặt và kết ca"), BorderLayout.NORTH);
         khungBenThe.add(noiDungHaiCot, BorderLayout.CENTER);
         return khungBenThe;
     }
@@ -503,14 +503,15 @@ public final class CaThuNganPanel extends CoSoPanel {
         khungCacChiSo.add(layChiSoTheGon("Tiền đầu ca", DinhDang.dinhDang(tomTat.getTienDauCa())));
         khungCacChiSo.add(
                 layChiSoTheGon(
-                        "Doanh thu tiền mặt", DinhDang.dinhDang(tomTat.getDoanhThuTienMat())));
+                        "Thu hóa đơn tiền mặt", DinhDang.dinhDang(tomTat.getDoanhThuTienMat())));
         khungCacChiSo.add(
                 layChiSoTheGon(
                         "Chuyển khoản / thẻ",
                         DinhDang.dinhDang(tomTat.getDoanhThuChuyenKhoanVaThe())));
         khungCacChiSo.add(
                 layChiSoTheGon(
-                        "Cọc Hotel tiền mặt", DinhDang.dinhDang(tomTat.getTienCocHotelTienMat())));
+                        "Cọc lưu trú tiền mặt",
+                        DinhDang.dinhDang(tomTat.getTienCocHotelTienMat())));
         khungCacChiSo.add(
                 layChiSoTheNoiBat("Dự kiến trong két", DinhDang.dinhDang(tienMatDuKienHienTai)));
         khungCacChiSo.revalidate();

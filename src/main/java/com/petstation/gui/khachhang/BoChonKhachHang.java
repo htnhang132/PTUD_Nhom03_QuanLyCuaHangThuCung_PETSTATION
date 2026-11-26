@@ -40,7 +40,7 @@ public final class BoChonKhachHang extends JPanel {
     private final JLabel nhanVanBanNhan = new JLabel();
 
     private final NutDinhDang btnDoiVoucher =
-            new NutDinhDang("Đổi voucher", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("Đổi điểm lấy voucher", NutDinhDang.KieuNut.TRONG_SUOT);
 
     private final TichDiemService tichDiemService = new TichDiemService();
 
@@ -65,7 +65,7 @@ public final class BoChonKhachHang extends JPanel {
         oDauVao.putClientProperty("JTextField.placeholderText", "SĐT, mã hoặc tên khách...");
         oDauVao.getAccessibleContext().setAccessibleName("Tìm khách hàng");
         oDauVao.addActionListener(suKien -> timKiem());
-        NutDinhDang btnTim = new NutDinhDang("Tìm", NutDinhDang.KieuNut.PHU);
+        NutDinhDang btnTim = new NutDinhDang("Tìm khách hàng", NutDinhDang.KieuNut.PHU);
         btnTim.addActionListener(suKien -> timKiem());
         khungDong.add(oDauVao, BorderLayout.CENTER);
         khungDong.add(btnTim, BorderLayout.EAST);
@@ -75,7 +75,7 @@ public final class BoChonKhachHang extends JPanel {
         khungNhan.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungNhan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         nhanVanBanNhan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
-        NutDinhDang btnXoa = new NutDinhDang("Bỏ chọn", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnXoa = new NutDinhDang("Bỏ chọn khách", NutDinhDang.KieuNut.TRONG_SUOT);
         Dimension kichThuocNutXoa = new Dimension(86, MauUngDung.CAO_NUT);
         btnXoa.setPreferredSize(kichThuocNutXoa);
         btnXoa.setMinimumSize(kichThuocNutXoa);
@@ -123,8 +123,9 @@ public final class BoChonKhachHang extends JPanel {
         String maKh = banHang.getMaKhachHang();
         if (maKh.isBlank()) return;
         if (!HopThoai.xacNhanDongY(
-                this, "Trừ 200 điểm để nhận voucher Spa 150.000₫, hạn 60 ngày?", "Đổi voucher"))
-            return;
+                this,
+                "Trừ 200 điểm để nhận voucher Spa 150.000₫, hạn 60 ngày?",
+                "Đổi điểm lấy voucher")) return;
         if (khoaDoiVoucher == null) khoaDoiVoucher = "DOI-" + UUID.randomUUID();
         String khoaTam = khoaDoiVoucher;
         btnDoiVoucher.setEnabled(false);

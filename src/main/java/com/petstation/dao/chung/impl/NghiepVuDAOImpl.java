@@ -66,7 +66,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                     "Thu ngân",
                     "Thời gian",
                     "Tổng tiền",
-                    "Thanh toán",
+                    "Phương thức",
                     "Trạng thái"
                 },
                 "SELECT h.ma_hoa_don AS ma_khoa, h.ma_hoa_don, COALESCE(k.ho_ten,"
@@ -89,11 +89,11 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                 "Tồn kho theo lô",
                 new String[] {
                     "ID",
-                    "Sản phẩm",
+                    "Mã sản phẩm",
                     "Tên sản phẩm",
                     "Số lô",
                     "Hạn sử dụng",
-                    "Tồn kho",
+                    "Tồn của lô",
                     "Trạng thái"
                 },
                 "SELECT l.ma_lo, p.ma_san_pham, p.ten, l.so_lo, l.han_su_dung,"
@@ -210,7 +210,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
         return switch (cheDo) {
             case PHIEU_NHAP_KHO ->
                     new KieuHienThi(
-                            "Nhập kho",
+                            "Phiếu nhập kho",
                             new String[] {
                                 "ID",
                                 "Số phiếu",
@@ -218,14 +218,15 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Ngày nhập",
                                 "Tổng tiền",
                                 "Đã trả",
+                                "Còn nợ",
                                 "Trạng thái"
                             },
                             "SELECT p.ma_phieu_nhap AS ma_khoa, p.ma_phieu_nhap, n.ten,"
-                                    + " p.ngay_nhap, p.tong_tien, p.da_tra, CASE WHEN"
-                                    + " p.da_tra>=p.tong_tien THEN N'Đã thanh toán' ELSE N'Đã ghi"
-                                    + " sổ' END FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
-                                    + " n.ma_nha_cung_cap = p.ma_nha_cung_cap ORDER BY"
-                                    + " p.ma_phieu_nhap DESC");
+                                + " p.ngay_nhap, p.tong_tien, p.da_tra, p.tong_tien-p.da_tra, CASE"
+                                + " WHEN p.da_tra>=p.tong_tien THEN N'Đã thanh toán' ELSE N'Đã ghi"
+                                + " sổ' END FROM phieu_nhap_kho p JOIN nha_cung_cap n ON"
+                                + " n.ma_nha_cung_cap = p.ma_nha_cung_cap ORDER BY p.ma_phieu_nhap"
+                                + " DESC");
             case PHIEU_XUAT_KHO ->
                     new KieuHienThi(
                             "Xuất kho và xuất hủy",
@@ -234,16 +235,18 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                                 "Số phiếu",
                                 "Loại xuất",
                                 "Lý do",
-                                "Giá trị",
+                                "Giá trị xuất (₫)",
                                 "Trạng thái",
                                 "Ngày tạo"
                             },
-                            "SELECT ma_phieu_xuat AS ma_khoa, ma_phieu_xuat, loai_xuat, ly_do,"
-                                    + " tong_gia_tri, trang_thai, tao_luc FROM phieu_xuat_kho"
-                                    + " ORDER BY ma_phieu_xuat DESC");
+                            "SELECT ma_phieu_xuat AS ma_khoa, ma_phieu_xuat, CASE loai_xuat WHEN"
+                                + " 'XUAT_HUY' THEN N'Xuất hủy' WHEN 'SU_DUNG_NOI_BO' THEN N'Sử"
+                                + " dụng nội bộ' ELSE loai_xuat END, ly_do, tong_gia_tri,"
+                                + " trang_thai, tao_luc FROM phieu_xuat_kho ORDER BY ma_phieu_xuat"
+                                + " DESC");
             default ->
                     new KieuHienThi(
-                            "Kiểm kê tồn kho",
+                            "Biên bản kiểm kê",
                             new String[] {
                                 "ID", "Số biên bản", "Kỳ kiểm kê", "Trạng thái", "Ngày tạo"
                             },
@@ -258,7 +261,7 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
     private KieuHienThi taoKieuDoiTraHoacTreo(LoaiNghiepVu cheDo) {
         if (cheDo == LoaiNghiepVu.DOI_TRA) {
             return new KieuHienThi(
-                    "Đổi trả hàng",
+                    "Lịch sử đổi hàng",
                     new String[] {
                         "ID",
                         "Mã phiếu",
@@ -284,14 +287,14 @@ public final class NghiepVuDAOImpl implements NghiepVuDAO {
                             + " p.ma_phieu DESC");
         }
         return new KieuHienThi(
-                "Đơn đang treo",
+                "Đơn nháp",
                 new String[] {
                     "ID",
                     "Mã đơn",
                     "Khách hàng",
                     "Người lập",
                     "Ngày tạo",
-                    "Số dòng",
+                    "Số dòng hàng",
                     "Tạm tính",
                     "Loại đơn"
                 },

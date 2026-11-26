@@ -50,7 +50,7 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
                             return "Trong thời gian áp dụng";
                         })
                 .datTienTo("KM")
-                .timKiem("Tìm theo mã, tên chương trình...")
+                .timKiem("Mã hoặc tên chương trình")
                 .datTrangThai(8, "Đang áp dụng", "Ngừng áp dụng")
                 .datBoKiemTra(
                         dongDuLieu -> {
@@ -85,10 +85,10 @@ public final class DanhMucKhuyenMaiPanel extends QuanLyDanhMucPanel {
         return List.of(
                 TruongDuLieu.tao("Mã KM", Kieu.VAN_BAN).chiDoc(),
                 TruongDuLieu.tao("Tên chương trình", Kieu.VAN_BAN).batBuoc(),
-                TruongDuLieu.tao("Loại", Kieu.HOP_CHON).datLuaChon("Giảm %", "Giảm tiền"),
+                TruongDuLieu.tao("Hình thức giảm", Kieu.HOP_CHON).datLuaChon("Giảm %", "Giảm tiền"),
                 TruongDuLieu.tao("Phạm vi", Kieu.HOP_CHON)
                         .datLuaChon("Sản phẩm", "Dịch vụ", "Cả đơn"),
-                TruongDuLieu.tao("Giá trị", Kieu.SO_NGUYEN)
+                TruongDuLieu.tao("Mức giảm", Kieu.SO_NGUYEN)
                         .batBuoc()
                         .sapXepSo()
                         .hienThiTheoDong(

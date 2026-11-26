@@ -27,13 +27,13 @@ public final class NhapKhoPanel extends NghiepVuKhoPanel {
         var btnChiTiet =
                 themNut(
                         layKhungThaoTac(),
-                        "Chi tiết",
+                        "Xem phiếu nhập",
                         NutDinhDang.KieuNut.PHU,
                         this::layNhapKhoChiTiet);
         var btnTraNo =
                 themNut(
                         layKhungThaoTac(),
-                        "Trả công nợ",
+                        "Ghi nhận trả nhà cung cấp",
                         NutDinhDang.KieuNut.THANH_CONG,
                         this::thanhToanNhaCungCap);
 

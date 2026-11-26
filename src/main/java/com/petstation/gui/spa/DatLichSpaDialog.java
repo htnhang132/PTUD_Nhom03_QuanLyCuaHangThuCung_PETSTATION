@@ -4,6 +4,7 @@ import com.petstation.dto.MucLuaChon;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.HopThoaiTroGiup;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
@@ -115,7 +116,8 @@ public final class DatLichSpaDialog {
                                 : "Cập nhật lịch hẹn Spa #" + maLichHenSua,
                         Dialog.ModalityType.APPLICATION_MODAL);
         oTimKhach = new JTextField(12);
-        oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
+        oTimKhach.putClientProperty(
+                "JTextField.placeholderText", "Tên hoặc số điện thoại khách hàng");
         oTimKhach.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 13));
         oTimKhach.setPreferredSize(new Dimension(140, 34));
         BieuMauTruong.LuaChon mauCombo =
@@ -248,6 +250,7 @@ public final class DatLichSpaDialog {
         for (var khach : hopLe) {
             cboKhachHang.addItem(khach);
         }
+        cboKhachHang.setSelectedIndex(-1);
         if (dangChon != null) {
             for (int i = 0; i < cboKhachHang.getItemCount(); i++) {
                 if (cboKhachHang.getItemAt(i).giaTri().equals(dangChon.giaTri())) {
@@ -255,9 +258,6 @@ public final class DatLichSpaDialog {
                     break;
                 }
             }
-        }
-        if (cboKhachHang.getSelectedIndex() < 0 && !hopLe.isEmpty()) {
-            cboKhachHang.setSelectedIndex(0);
         }
         capNhatDanhSachThuCung();
     }
@@ -391,6 +391,7 @@ public final class DatLichSpaDialog {
     private JPanel taoChanHopThoai() {
         JPanel khungDuoi = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         khungDuoi.setOpaque(false);
+        khungDuoi.add(HopThoaiTroGiup.taoNutTroGiup(hopThoai, DatLichSpaDialog.class));
         khungDuoi.add(btnHuy);
         khungDuoi.add(btnLuu);
         return khungDuoi;

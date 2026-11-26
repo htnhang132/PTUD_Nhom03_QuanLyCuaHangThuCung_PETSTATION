@@ -17,6 +17,7 @@ import com.petstation.service.hethong.PhienDangNhapService;
 import com.petstation.service.pheduyet.PheDuyetService;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -168,6 +169,24 @@ public final class KiemKeService {
 
     private String luuBienBanKiemKe(
             String kyKiemKe, List<DongKiemKe> danhSachDong, int demChenhLech) {
+        for (DongKiemKe dong :
+                danhSachDong.stream().sorted(Comparator.comparing(d -> d.maLo)).toList()) {
+            int ton =
+                    kiemKeDAO
+                            .timKiemKe(dong.maLo)
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalArgumentException(
+                                                    "Lô đã thay đổi hoặc không còn tồn tại: "
+                                                            + dong.soLo));
+            if (ton != dong.tonHeThong) {
+                throw new IllegalStateException(
+                        "Tồn sổ sách của lô "
+                                + dong.soLo
+                                + " đã thay đổi trong lúc đếm. Hãy đối chiếu giao dịch và kiểm kê"
+                                + " lại lô này.");
+            }
+        }
         boolean coChenhLech = demChenhLech > 0;
         String soBienBan = taoMa("KK");
         String trangThai =

@@ -41,7 +41,7 @@ public final class ChiTietThongKeService {
                         || baoCao.contains("nhân viên")
                         || baoCao.contains("hàng hóa")
                                 && !Set.of(
-                                                "Sản phẩm bán chạy",
+                                                "10 sản phẩm có doanh thu cao nhất",
                                                 "Tồn kho hiện tại",
                                                 "Sắp hết hạn",
                                                 "Hàng tồn đọng / chôn vốn",

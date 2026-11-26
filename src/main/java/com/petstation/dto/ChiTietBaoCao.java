@@ -310,7 +310,22 @@ public class ChiTietBaoCao implements Serializable {
 
         @Override
         public Object[] thanhHang() {
-            return new Object[] {maSanPham, tenSanPham, soLo, chenhLech, giaTriLech, lyDo, ngayTao};
+            return new Object[] {
+                maSanPham, tenSanPham, soLo, chenhLech, giaTriLech, lyDo, ngayTaoHienThi()
+            };
+        }
+
+        private Object ngayTaoHienThi() {
+            if (ngayTao == null || ngayTao.isBlank()) return ngayTao;
+            try {
+                return LocalDateTime.parse(ngayTao.trim().replace(' ', 'T'));
+            } catch (RuntimeException ex) {
+                try {
+                    return LocalDate.parse(ngayTao.trim());
+                } catch (RuntimeException khongPhaiNgay) {
+                    return ngayTao;
+                }
+            }
         }
     }
 
@@ -556,7 +571,16 @@ public class ChiTietBaoCao implements Serializable {
         @Override
         public Object[] thanhHang() {
             return new Object[] {
-                nhanVien, tenCa, moLuc, dongLuc, tienDauCa, thuHoaDon, cocLuuTru, thucDem, chenhLech
+                nhanVien,
+                tenCa,
+                moLuc,
+                dongLuc,
+                tienDauCa,
+                thuHoaDon,
+                cocLuuTru,
+                thuHoaDon + cocLuuTru,
+                thucDem,
+                chenhLech
             };
         }
     }

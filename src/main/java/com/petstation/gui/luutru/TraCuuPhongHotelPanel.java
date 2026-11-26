@@ -123,7 +123,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
         this.gio = gio;
         this.dieuHuong = dieuHuong;
         this.khiChonPhong = khiChonPhong;
-        this.oLoc = taoOTimKiem("Tìm mã phòng, loại, khách, SĐT, thú cưng...");
+        this.oLoc = taoOTimKiem("Phòng, khách hàng hoặc thú cưng");
         setLayout(new BorderLayout(0, 12));
         setBorder(new EmptyBorder(0, 0, 0, 0));
         setBackground(MauUngDung.NEN_KEM);
@@ -1458,7 +1458,7 @@ public final class TraCuuPhongHotelPanel extends CoSoPanel {
                         .append(trangThaiNhan)
                         .append("<br>Sức chứa: ")
                         .append(phong.getSucChua())
-                        .append("<br>Giá / ngày: ")
+                        .append("<br>Giá mỗi ngày (₫): ")
                         .append(DinhDang.dinhDang(phong.getGiaDem()));
         if (phong.getDangO() != null) {
             s.append("<hr><b>Đang lưu trú</b><br>").append(layLich(phong.getDangO()));

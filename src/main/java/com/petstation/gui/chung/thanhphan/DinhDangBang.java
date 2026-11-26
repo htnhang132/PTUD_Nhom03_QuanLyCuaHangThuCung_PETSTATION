@@ -321,7 +321,15 @@ public final class DinhDangBang {
                 (bangBang.getParent() != null && bangBang.getParent().getWidth() > 200)
                         ? bangBang.getParent().getWidth()
                         : bangBang.getWidth();
-        if (rongKhung > 200 && tongToiThieu > rongKhung - 6) {
+        if (Boolean.TRUE.equals(bangBang.getClientProperty("uuTienTenDayDu"))) {
+            for (int i = 0; i < bangBang.getColumnCount(); i++) {
+                TableColumn cot = bangBang.getColumnModel().getColumn(i);
+                if (String.valueOf(cot.getHeaderValue()).startsWith("Tên ")) {
+                    cot.setMinWidth(240);
+                    cot.setPreferredWidth(Math.max(300, cot.getPreferredWidth()));
+                }
+            }
+        } else if (rongKhung > 200 && tongToiThieu > rongKhung - 6) {
             coGianCotKhiThieuCho(bangBang, rongKhung - 6, tongToiThieu);
         }
     }
@@ -656,7 +664,7 @@ public final class DinhDangBang {
                     Map.entry("DA_BAN_GIAO", "Đã bàn giao"),
                     Map.entry("CON_HAN", "Còn hạn"),
                     Map.entry("HET_HAN", "Hết hạn"),
-                    Map.entry("DA_DUNG", "Đã dùng"),
+                    Map.entry("DA_DUNG", "Lượt đã dùng"),
                     Map.entry("DANG_HOP_TAC", "Đang hợp tác"),
                     Map.entry("NGUNG_HOP_TAC", "Ngừng hợp tác"),
                     Map.entry("DOI_HANG", "Đổi hàng"),

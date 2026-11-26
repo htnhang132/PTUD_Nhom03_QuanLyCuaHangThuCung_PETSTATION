@@ -81,6 +81,7 @@ public class BaoCaoPanel extends CoSoPanel {
     private final List<KieuHienThi> cacKieuHienThi;
     private final ChiTietThongKeService chiTietThongKeService = new ChiTietThongKeService();
     private final BoChonKhoangNgay cboKy = new BoChonKhoangNgay();
+    private final JLabel nhanTieuDeBieuDo = new JLabel();
     private final JComboBox<String> cboHienThiHop = new JComboBox<>();
     private final JComboBox<String> cboTongHop =
             new JComboBox<>(new String[] {"Ngày", "Tuần", "Tháng"});
@@ -165,7 +166,13 @@ public class BaoCaoPanel extends CoSoPanel {
         xuat.addActionListener(
                 e ->
                         XuatExcelDialog.xuatBang(
-                                this, bangBang, tenXuat + "_" + nhanKhoang.getText()));
+                                this,
+                                bangBang,
+                                tenXuat
+                                        + "_"
+                                        + cboHienThiHop.getSelectedItem()
+                                        + "_"
+                                        + nhanKhoang.getText()));
         cboKy.addPropertyChangeListener(
                 "dateRange",
                 e -> {
@@ -264,7 +271,8 @@ public class BaoCaoPanel extends CoSoPanel {
 
     private JPanel taoKhuVucBieuDo(JScrollPane bar) {
         JPanel khungCot = taoTheCoVien(new BorderLayout(0, 8));
-        JLabel nhanTieuDeCot = new JLabel(layTieuDeBieuDo());
+        JLabel nhanTieuDeCot = nhanTieuDeBieuDo;
+        nhanTieuDeCot.setText(layTieuDeBieuDo());
         nhanTieuDeCot.setFont(MauUngDung.taoPhongChu(Font.BOLD, 12));
         nhanTieuDeCot.setForeground(MauUngDung.XAM_DAM);
         khungCot.add(nhanTieuDeCot, BorderLayout.NORTH);
@@ -416,6 +424,8 @@ public class BaoCaoPanel extends CoSoPanel {
 
     private void capNhatKetQuaTai(KieuHienThi k, KhoangNgay ky, KetQuaTai ketQua) {
         duLieu = ketQua.duLieu;
+        nhanTieuDeBieuDo.setText(k.ten());
+        nhanTieuDeBieuDo.setToolTipText("Nhấp vào cột để xem chứng từ của " + k.ten());
         chungTu = ketQua.chungTu;
         kyDuLieu = ky;
         moHinh.setDataVector(duLieu.cacDong(), duLieu.cacCot());
@@ -513,7 +523,8 @@ public class BaoCaoPanel extends CoSoPanel {
         pieDocs = null;
         boolean goods =
                 tenXuat.contains("hàng_hóa")
-                        && "Sản phẩm bán chạy".equals(cboHienThiHop.getSelectedItem());
+                        && "10 sản phẩm có doanh thu cao nhất"
+                                .equals(cboHienThiHop.getSelectedItem());
         if ((temporal || goods) && chungTu != null && !chungTu.getDong().isEmpty()) {
             int group = goods ? 6 : 2;
             int amount = goods ? 5 : tenXuat.contains("doanh_thu") ? 6 : 3;
@@ -677,7 +688,7 @@ public class BaoCaoPanel extends CoSoPanel {
     }
 
     protected String layTieuDeBieuDo() {
-        return "BIỂU ĐỒ DIỄN BIẾN (Nhấp vào cột để xem chứng từ chi tiết)";
+        return "So sánh theo nhóm báo cáo (nhấp cột để xem chứng từ)";
     }
 
     private static void choPhep(Component c, boolean enabled) {

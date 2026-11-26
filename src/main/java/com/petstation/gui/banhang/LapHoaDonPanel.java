@@ -167,7 +167,7 @@ public class LapHoaDonPanel extends CoSoPanel {
     private boolean dangDongBoGhiChu = false;
     private final JSpinner spnSoLuong = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
     private final JLabel nhanTrangThaiQuet = new JLabel(TRANG_THAI_MAC_DINH);
-    private final JLabel nhanKetNoiUsb = new JLabel("USB: chưa khởi tạo.");
+    private final JLabel nhanKetNoiUsb = new JLabel("Chưa kết nối máy quét");
     private Timer henGioDatLaiTrangThai;
     private BarcodeUsbServer barcodeUsbServer;
 
@@ -186,11 +186,11 @@ public class LapHoaDonPanel extends CoSoPanel {
     private final JLabel nhanNhanTong = new JLabel("0₫");
 
     private final NutDinhDang btnNutThanhToan =
-            new NutDinhDang("TIẾN HÀNH THANH TOÁN (F9)", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Sang thanh toán (F9)", NutDinhDang.KieuNut.CHINH);
     private final NutDinhDang btnNutTreo =
-            new NutDinhDang("Lưu đơn tạm (Ctrl+S)", NutDinhDang.KieuNut.PHU);
+            new NutDinhDang("Lưu đơn nháp (Ctrl+S)", NutDinhDang.KieuNut.PHU);
     private final NutDinhDang btnNutLay =
-            new NutDinhDang("Mở đơn tạm (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
+            new NutDinhDang("Mở đơn nháp (F8)", NutDinhDang.KieuNut.TRONG_SUOT);
     private Consumer<GioHang> boLangNgheGioHang;
 
     // 2. HÀM KHỞI TẠO
@@ -203,7 +203,7 @@ public class LapHoaDonPanel extends CoSoPanel {
         setLayout(new BorderLayout(0, 12));
         add(
                 taoTieuDeManHinh(
-                        "Lập hóa đơn (POS)",
+                        "Lập hóa đơn",
                         "Quét mã vạch hoặc tìm sản phẩm, chọn khách hàng và chuyển sang thanh"
                                 + " toán."),
                 BorderLayout.NORTH);
@@ -312,12 +312,12 @@ public class LapHoaDonPanel extends CoSoPanel {
                 });
         String[] tieuDeCot = {
             "STT",
-            "Mã SP / Barcode",
+            "Mã sản phẩm hoặc mã vạch",
             "Tên hàng hóa / Dịch vụ",
             "Đơn giá",
             "Số lượng",
             "Thành tiền",
-            "Xóa"
+            "Ngừng kinh doanh"
         };
         moHinhBang =
                 new DefaultTableModel(tieuDeCot, 0) {
@@ -410,13 +410,13 @@ public class LapHoaDonPanel extends CoSoPanel {
     private JPanel taoKhuVucQuet() {
         BoGocPanel panel = layThe(new BorderLayout(0, 8));
         panel.setBorder(new EmptyBorder(12, 16, 12, 16));
-        JLabel tieuDe = new JLabel("QUÉT MÃ VẠCH SẢN PHẨM (POS)");
+        JLabel tieuDe = new JLabel("Quét mã hoặc tìm sản phẩm");
         tieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
         tieuDe.setForeground(MauUngDung.DO_THUONG_HIEU);
         JPanel dongNhap = taoVungTrongSuot(new BorderLayout(8, 0));
         dongNhap.add(oTimKiem, BorderLayout.CENTER);
         JPanel khungSoLuongVaNut = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JLabel nhanSoLuongNgan = new JLabel("SL:");
+        JLabel nhanSoLuongNgan = new JLabel("Số lượng:");
         nhanSoLuongNgan.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
         spnSoLuong.setPreferredSize(new Dimension(65, 42));
         spnSoLuong.setFont(MauUngDung.taoPhongChu(Font.BOLD, 14));
@@ -528,7 +528,7 @@ public class LapHoaDonPanel extends CoSoPanel {
 
     private JPanel taoKhungGhiChuDon() {
         JPanel khung = taoVungTrongSuot(new BorderLayout(0, 4));
-        JLabel nhan = new JLabel("Ghi chú đơn hàng (phân biệt khi lưu tạm)");
+        JLabel nhan = new JLabel("Ghi chú đơn hàng (phân biệt đơn nháp)");
         nhan.setFont(MauUngDung.taoPhongChu(Font.PLAIN, 12));
         nhan.setForeground(MauUngDung.VAN_BAN_XAM);
         oGhiChu.setPreferredSize(new Dimension(0, MauUngDung.CAO_DAU_VAO));

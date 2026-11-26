@@ -65,7 +65,7 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
         return CauHinh.tao("Danh mục khách hàng", "khách hàng")
                 .themBoLoc("Hạng thành viên", d -> String.valueOf(d[6]))
                 .datTienTo("KH")
-                .timKiem("Tìm theo tên, SĐT, Email, Địa chỉ, mã khách...")
+                .timKiem("Tên, số điện thoại hoặc mã khách hàng")
                 .datTrangThai(8, "Đang hoạt động", "Ngừng hoạt động")
                 .themThaoTacBoSungKhongLuu(
                         "+ Thêm thú cưng",
@@ -102,8 +102,8 @@ public final class DanhMucKhachHangPanel extends QuanLyDanhMucPanel {
                 TruongDuLieu.tao("Email", Kieu.EMAIL).an(),
                 TruongDuLieu.tao("Địa chỉ", Kieu.VAN_BAN).an(),
                 TruongDuLieu.tao("Ghi chú", Kieu.VUNG).an(),
-                TruongDuLieu.tao("Hạng", Kieu.VAN_BAN).chiDoc().datMacDinh("Đồng"),
-                TruongDuLieu.tao("Điểm", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
+                TruongDuLieu.tao("Hạng thành viên", Kieu.VAN_BAN).chiDoc().datMacDinh("Đồng"),
+                TruongDuLieu.tao("Điểm tích lũy", Kieu.SO_NGUYEN).chiDoc().datMacDinh("0"),
                 TruongDuLieu.tao("Trạng thái", Kieu.HOP_CHON)
                         .datLuaChon("Đang hoạt động", "Ngừng hoạt động"));
     }

@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 public final class TaiKhoanPhanQuyenPanel extends DanhMucNhieuTabPanel {
     public TaiKhoanPhanQuyenPanel() {
         super(
-                new String[] {"Tài khoản", "Ma trận quyền"},
+                new String[] {"Tài khoản", "Quyền theo vai trò"},
                 new JPanel[] {new DanhSachTaiKhoanPanel(), new MaTranQuyenPanel()});
     }
 }

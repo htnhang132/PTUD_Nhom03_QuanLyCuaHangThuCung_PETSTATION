@@ -150,7 +150,7 @@ public class DangNhapFrame extends JFrame {
         JLabel nhanLogoBieuTuong = taoLogo();
         nhanLogoBieuTuong.setAlignmentX(Component.CENTER_ALIGNMENT);
         nhanLogoBieuTuong.setBorder(new EmptyBorder(0, 0, 12, 0));
-        JLabel nhanTieuDe = new JLabel("Pet Station", SwingConstants.CENTER);
+        JLabel nhanTieuDe = new JLabel("Đăng nhập", SwingConstants.CENTER);
         nhanTieuDe.setFont(MauUngDung.taoPhongChu(Font.BOLD, 30));
         nhanTieuDe.setForeground(MauUngDung.DO_THUONG_HIEU);
         nhanTieuDe.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -206,7 +206,7 @@ public class DangNhapFrame extends JFrame {
                 suKien ->
                         oVanBanMatKhau.setEchoChar(
                                 btnHienThiMatKhau.isSelected() ? (char) 0 : HIEN_THI_THAY_THE));
-        JButton btnQuen = new JButton("Quên mật khẩu?");
+        JButton btnQuen = new JButton("Cách đặt lại mật khẩu");
         btnQuen.setBorderPainted(false);
         btnQuen.setContentAreaFilled(false);
         btnQuen.setFocusPainted(false);

@@ -18,6 +18,21 @@ import java.util.UUID;
 import javax.swing.SwingUtilities;
 
 public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
+    @Override
+    protected boolean hoTroXoaBanGhi() {
+        return false;
+    }
+
+    @Override
+    protected String layNhanThaoTacBoSung(String nhan, Object[] dong) {
+        if ("Khóa / Mở khóa".equals(nhan)) {
+            return dong != null && "Đã khóa".equals(dong[3])
+                    ? "Mở khóa tài khoản"
+                    : "Khóa tài khoản";
+        }
+        return nhan;
+    }
+
     public DanhSachTaiKhoanPanel() {
         this(new Component[1]);
     }
@@ -37,7 +52,7 @@ public final class DanhSachTaiKhoanPanel extends QuanLyDanhMucPanel {
     private static CauHinh taoCauHinh(Component[] chaRef) {
         CauHinh cauHinh =
                 CauHinh.tao("Tài khoản", "tài khoản")
-                        .timKiem("Tìm theo tên đăng nhập, nhân viên...")
+                        .timKiem("Tên đăng nhập hoặc nhân viên")
                         .datTrangThai(3, "Hoạt động", "Đã khóa")
                         .datDieuKienXoa(
                                 dongDuLieu ->

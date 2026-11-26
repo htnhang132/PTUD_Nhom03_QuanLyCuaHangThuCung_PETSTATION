@@ -3,6 +3,7 @@ package com.petstation.gui.spa;
 import com.petstation.dto.GioHang;
 import com.petstation.dto.SpaDTO;
 import com.petstation.gui.chung.ChinhFrame;
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
@@ -420,6 +421,11 @@ public final class TiepNhanSpaPanel extends NghiepVuSpaPanel {
         int idx = tabWorkspace.getSelectedIndex();
         return new KhaNangThanhCongCu(
                 idx != 2, false, idx == 0 || idx == 2, idx == 0 || idx == 2, false, true);
+    }
+
+    @Override
+    protected CoSoPanel layManHinhTroGiup() {
+        return tabWorkspace.getSelectedComponent() instanceof CoSoPanel manHinh ? manHinh : this;
     }
 
     @Override

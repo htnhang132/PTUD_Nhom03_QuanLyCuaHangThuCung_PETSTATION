@@ -112,10 +112,10 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
                         ? ""
                         : bienLai.getThoiGian().format(DinhDang.NGAY_GIO);
         themChu(khoi, "Ngày: " + ngay, 8, false, 0);
-        themChu(khoi, "KH: " + Objects.toString(bienLai.getKhachHang(), ""), 8, false, 0);
+        themChu(khoi, "Khách hàng: " + Objects.toString(bienLai.getKhachHang(), ""), 8, false, 0);
         String dienThoai = Objects.toString(thongTin.getDienThoaiKhach(), "");
         if (!dienThoai.isBlank()) themChu(khoi, "SĐT: " + dienThoai, 8, false, 0);
-        themChu(khoi, "NVBH: " + Objects.toString(bienLai.getThuNgan(), ""), 8, false, 0);
+        themChu(khoi, "Thu ngân: " + Objects.toString(bienLai.getThuNgan(), ""), 8, false, 0);
         String maNguon = Objects.toString(thongTin.getMaNguon(), "");
         if (!maNguon.isBlank()) themChu(khoi, "Chứng từ: " + maNguon, 8, false, 0);
         String hoaDonGoc = Objects.toString(thongTin.getHoaDonGoc(), "");
@@ -124,7 +124,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     }
 
     private static void themBangMatHangBienLaiDoc(List<Khoi> khoi, ChiTietBienLai thongTin) {
-        themHang(khoi, "#", "Tên hàng / dịch vụ", "SL", "ĐG", "TT", true);
+        themHang(khoi, "STT", "Tên hàng / dịch vụ", "Số lượng", "Đơn giá", "Thành tiền", true);
         int stt = 0;
         var cacDong = thongTin.getBienLai().getCacDong();
         if (cacDong != null) {
@@ -146,7 +146,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
     private static void themTongKetVaThanhToanBienLaiDoc(List<Khoi> khoi, ChiTietBienLai thongTin) {
         var bienLai = thongTin.getBienLai();
         String loaiNguon = Objects.toString(thongTin.getLoaiNguon(), "");
-        themCap(khoi, "Tổng SL mua", String.valueOf(thongTin.tongSoLuong()), false);
+        themCap(khoi, "Tổng số lượng", String.valueOf(thongTin.tongSoLuong()), false);
         themCap(
                 khoi,
                 "LUU_TRU".equals(loaiNguon) ? "Phải thu sau cọc" : "Tiền hàng",
@@ -185,7 +185,7 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         if (pt == null) return "Không rõ";
         return switch (pt) {
             case TIEN_MAT -> "Tiền mặt";
-            case CHUYEN_KHOAN -> "Chuyển khoản / QR";
+            case CHUYEN_KHOAN -> "Chuyển khoản bằng mã QR";
             case THE_NGAN_HANG -> "Thẻ";
             case DIEM_TICH_LUY -> "Điểm tích lũy";
         };
@@ -300,9 +300,9 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
         Font phong = font(7.5f, dam);
         List<Chu> chu = new ArrayList<>();
         double doc = 10;
-        var dongTen = xuongDong(Objects.toString(ten, ""), phong, 72);
+        var dongTen = xuongDong(Objects.toString(ten, ""), phong, 64);
         for (String dong : dongTen) {
-            chu.add(new Chu(11, doc, dong, phong, 0));
+            chu.add(new Chu(17, doc, dong, phong, 0));
             doc += 10;
         }
         String sttAnToan = Objects.toString(stt, "");
@@ -316,7 +316,13 @@ public final class HoaDonDocPanel extends JComponent implements Scrollable, Prin
             fontSo = fontSo.deriveFont(fontSo.getSize2D() - .25f);
         }
         chu.add(new Chu(0, 10, sttAnToan, phong, 0));
-        chu.add(new Chu(93, 10, slAnToan, fontSl, 1));
+        if (dam && "Số lượng".equals(slAnToan)) {
+            chu.add(new Chu(93, 10, "Số", phong, 1));
+            chu.add(new Chu(93, 20, "lượng", phong, 1));
+            doc = Math.max(doc, 30);
+        } else {
+            chu.add(new Chu(93, 10, slAnToan, fontSl, 1));
+        }
         chu.add(new Chu(151, 10, giaAnToan, fontSo, 2));
         chu.add(new Chu(RONG_NOI_DUNG, 10, tienAnToan, fontSo, 2));
         khoi.add(new Khoi(Math.max(14, doc - 6), chu, true, false));

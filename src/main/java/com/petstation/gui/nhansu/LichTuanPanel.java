@@ -266,6 +266,10 @@ public class LichTuanPanel extends CoSoPanel {
         return "Lịch làm việc theo tuần";
     }
 
+    public CheDo layCheDo() {
+        return cheDo;
+    }
+
     @Override
     protected String layNoiDungTroGiup() {
         return switch (cheDo) {
@@ -276,7 +280,7 @@ public class LichTuanPanel extends CoSoPanel {
                     "Ca của bạn trong tuần, tổng giờ trong tháng. Bấm \"Đăng ký nghỉ phép\" để gửi"
                             + " yêu cầu sang Cửa hàng trưởng duyệt.";
             case SUA ->
-                    "Chọn tuần rồi bấm \"+ Thêm nhân viên\" trong ô để phân ca; bấm vào thẻ nhân"
+                    "Chọn tuần rồi bấm \"Thêm người vào ca\" trong ô để phân ca; bấm vào thẻ nhân"
                             + " viên để bỏ khỏi ca. Ô viền đỏ là ca thiếu người.";
         };
     }
@@ -327,7 +331,7 @@ public class LichTuanPanel extends CoSoPanel {
                     () -> {
                         if (!dangDatLaiBoLoc) henGioLocNv.restart();
                     });
-            khungThanh.themBoLoc("Lọc NV:", oLocNhanVien);
+            khungThanh.themBoLoc("Lọc nhân viên:", oLocNhanVien);
         }
     }
 
@@ -366,7 +370,7 @@ public class LichTuanPanel extends CoSoPanel {
                         }));
         khungThanh.add(
                 taoNutCongCu(
-                        "Hiện tại",
+                        "Tuần này",
                         NutDinhDang.KieuNut.PHU,
                         null,
                         () -> {
@@ -379,7 +383,7 @@ public class LichTuanPanel extends CoSoPanel {
         if (cheDo == CheDo.SUA) {
             khungThanh.add(
                     taoNutCongCu(
-                            "Sao chép tuần trước",
+                            "Sao chép lịch tuần trước",
                             NutDinhDang.KieuNut.TRONG_SUOT,
                             "Sao chép phân ca từ tuần trước sang tuần này",
                             this::saoChepLichTuan));
@@ -643,7 +647,7 @@ public class LichTuanPanel extends CoSoPanel {
             khungVungDangXet.add(nhanCanhBao);
         }
         if (cheDo == CheDo.SUA) {
-            JLabel nhanThem = new JLabel("+ Thêm nhân viên");
+            JLabel nhanThem = new JLabel("Thêm người vào ca");
             nhanThem.setFont(MauUngDung.taoPhongChu(Font.BOLD, 11));
             nhanThem.setForeground(TIEU_DE_CHU);
             nhanThem.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1606,7 +1610,7 @@ public class LichTuanPanel extends CoSoPanel {
                         + " · "
                         + (ngan1 == 0 ? "Đủ người ở mọi ca" : ngan1 + " ca thiếu người (viền đỏ)")
                         + (cheDo == CheDo.SUA
-                                ? " · Bấm \"+ Thêm nhân viên\" để phân ca, bấm vào thẻ để bỏ khỏi"
+                                ? " · Bấm \"Thêm người vào ca\" để phân ca, bấm vào thẻ để bỏ khỏi"
                                         + " ca"
                                 : ""));
     }

@@ -113,7 +113,7 @@ public final class NhapXuatKhoService {
                                     ct.getSanPham() != null
                                             ? ct.getSanPham().getTenSanPham()
                                             : null,
-                                    ct.getLoHang() != null ? ct.getLoHang().getMaLo() : null,
+                                    ct.getLoHang() != null ? ct.getLoHang().getSoLo() : null,
                                     ct.getLoHang() != null ? ct.getLoHang().getHanSuDung() : null,
                                     ct.getSoLuong(),
                                     ct.getGiaNhap()

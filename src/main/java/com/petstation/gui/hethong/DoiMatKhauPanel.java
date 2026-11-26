@@ -80,7 +80,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         khungTruongXacNhanMatKhau = taoTruongMatKhau();
         themDong(khungNoiDung, gc, 1, "Mật khẩu hiện tại *", khungTruongHienTaiMatKhau);
         themDong(khungNoiDung, gc, 2, "Mật khẩu mới *", khungTruongMoiMatKhau);
-        themDong(khungNoiDung, gc, 3, "Xác nhận mật khẩu *", khungTruongXacNhanMatKhau);
+        themDong(khungNoiDung, gc, 3, "Nhập lại mật khẩu mới *", khungTruongXacNhanMatKhau);
         nhanNhanDoManh = taoNhanDoManhMatKhau(khungNoiDung, gc);
         themGhiChuQuyTacMatKhau(khungNoiDung, gc);
         themThanhThaoTacDoiMatKhau(khungNoiDung, gc);
@@ -140,8 +140,9 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     private void themThanhThaoTacDoiMatKhau(JPanel khungNoiDung, GridBagConstraints gc) {
         JPanel khungCacThaoTac = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         khungCacThaoTac.setOpaque(false);
-        NutDinhDang btnXoaTrang = new NutDinhDang("Xóa trắng", NutDinhDang.KieuNut.TRONG_SUOT);
-        NutDinhDang btnLuu = new NutDinhDang("Lưu mật khẩu", NutDinhDang.KieuNut.CHINH);
+        NutDinhDang btnXoaTrang =
+                new NutDinhDang("Xóa nội dung đã nhập", NutDinhDang.KieuNut.TRONG_SUOT);
+        NutDinhDang btnLuu = new NutDinhDang("Đổi mật khẩu", NutDinhDang.KieuNut.CHINH);
         khungCacThaoTac.add(btnXoaTrang);
         khungCacThaoTac.add(btnLuu);
         gc.gridy = 6;
@@ -149,7 +150,8 @@ public final class DoiMatKhauPanel extends CoSoPanel {
         btnXoaTrang.addActionListener(
                 e -> {
                     if (coThayDoiChuaLuu()
-                            && !HopThoai.xacNhan(this, "Xóa trắng thông tin mật khẩu đang nhập?")) {
+                            && !HopThoai.xacNhan(
+                                    this, "Xóa nội dung đã nhập thông tin mật khẩu đang nhập?")) {
                         return;
                     }
                     xoaBieuMau();
@@ -191,7 +193,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     @Override
     public void xuLyLamMoi() {
         if (coThayDoiChuaLuu()
-                && !HopThoai.xacNhan(this, "Xóa trắng thông tin mật khẩu đang nhập?")) {
+                && !HopThoai.xacNhan(this, "Xóa nội dung đã nhập thông tin mật khẩu đang nhập?")) {
             return;
         }
         xoaBieuMau();
@@ -230,7 +232,8 @@ public final class DoiMatKhauPanel extends CoSoPanel {
             return;
         }
         if (!moiMatKhau.equals(xacNhan)) {
-            HopThoai.hienThiCanhBao(this, "Xác nhận mật khẩu không khớp.", "Dữ liệu chưa hợp lệ");
+            HopThoai.hienThiCanhBao(
+                    this, "Nhập lại mật khẩu mới không khớp.", "Dữ liệu chưa hợp lệ");
             khungTruongXacNhanMatKhau.xoa();
             khungTruongXacNhanMatKhau.requestFocus();
             return;
@@ -308,15 +311,7 @@ public final class DoiMatKhauPanel extends CoSoPanel {
     }
 
     @Override
-    public void xuLyTroGiup() {
-        HopThoai.hienThiThongTin(
-                this,
-                "Hướng dẫn đổi mật khẩu:\n\n"
-                        + "1. Nhập mật khẩu hiện tại\n"
-                        + "2. Nhập mật khẩu mới (tối thiểu 8 ký tự)\n"
-                        + "3. Xác nhận lại mật khẩu mới\n"
-                        + "4. Nhấn 'Lưu mật khẩu' hoặc phím Ctrl+S / Enter\n\n"
-                        + "Mẹo: Nhấn nút Hiện/Ẩn để xem hoặc che mật khẩu",
-                "Trợ giúp");
+    protected String layTieuDeTroGiup() {
+        return "Đổi mật khẩu";
     }
 }

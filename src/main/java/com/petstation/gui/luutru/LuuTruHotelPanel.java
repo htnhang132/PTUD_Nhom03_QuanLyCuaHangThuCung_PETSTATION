@@ -2,6 +2,7 @@ package com.petstation.gui.luutru;
 
 import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.ChinhFrame;
+import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
 import com.petstation.gui.chung.KhaNangThanhCongCu;
 import com.petstation.gui.chung.MauUngDung;
@@ -333,6 +334,11 @@ public final class LuuTruHotelPanel extends NghiepVuHotelPanel {
             return khungSoDoPhong.layKhaNangThanhCongCu();
         }
         return new KhaNangThanhCongCu(true, false, layOTimKiem() != null, true, false, true);
+    }
+
+    @Override
+    protected CoSoPanel layManHinhTroGiup() {
+        return tabWorkspace.getSelectedComponent() instanceof CoSoPanel manHinh ? manHinh : this;
     }
 
     @Override

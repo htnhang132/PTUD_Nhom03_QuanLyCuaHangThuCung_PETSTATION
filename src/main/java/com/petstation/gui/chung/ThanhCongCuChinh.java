@@ -46,8 +46,7 @@ public final class ThanhCongCuChinh extends JPanel {
         btnNutQuayLai.addActionListener(suKien -> diQuayLai.run());
         btnNutQuayLai.setEnabled(false);
         add(btnNutQuayLai);
-        JButton btnTrangChinh =
-                taoNut("Màn hình chính", "Alt+Home", BieuTuong.Net.Kieu.TRANG_CHINH);
+        JButton btnTrangChinh = taoNut("Tổng quan", "Alt+Home", BieuTuong.Net.Kieu.TRANG_CHINH);
         btnTrangChinh.addActionListener(suKien -> diTrangChinh.run());
         add(btnTrangChinh);
         JButton btnLamMoi = taoNut("Làm mới", "F5", BieuTuong.Net.Kieu.LAM_MOI);
@@ -56,7 +55,7 @@ public final class ThanhCongCuChinh extends JPanel {
         add(Box.createHorizontalStrut(4));
         add(layDuongPhanCach());
         add(Box.createHorizontalStrut(4));
-        themThaoTac(ThaoTac.TRO_GIUP, "Trợ giúp", "F1", BieuTuong.Net.Kieu.TRO_GIUP);
+        themThaoTac(ThaoTac.TRO_GIUP, "Trợ giúp", "Alt+F1", BieuTuong.Net.Kieu.TRO_GIUP);
         add(Box.createHorizontalGlue());
         datHoatDongVungHienThi(null);
     }

@@ -40,7 +40,8 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
     private final JTextField denKg = new JTextField("5", 4);
     private final JTextField gia = new JTextField(6);
     private final JButton them = new NutDinhDang("+ Thêm mức giá", NutDinhDang.KieuNut.PHU);
-    private final JButton taoNhanh = new NutDinhDang("4 mốc cân", NutDinhDang.KieuNut.TRONG_SUOT);
+    private final JButton taoNhanh =
+            new NutDinhDang("Tạo 4 khoảng cân nặng", NutDinhDang.KieuNut.TRONG_SUOT);
     private final JButton sua = new NutDinhDang("Sửa mức giá", NutDinhDang.KieuNut.PHU);
     private final JButton xoa = new NutDinhDang("Xóa mức giá", NutDinhDang.KieuNut.NGUY_HIEM);
 
@@ -60,7 +61,7 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         panel.add(cuon, BorderLayout.CENTER);
         them.addActionListener(e -> capNhat(false));
         taoNhanh.setToolTipText(
-                "Tạo nhanh 4 mốc cân (<5kg, 5-10kg, 10-20kg, >=20kg) theo giá cơ bản");
+                "Tạo nhanh Tạo 4 khoảng cân nặng (<5kg, 5-10kg, 10-20kg, >=20kg) theo giá cơ bản");
         taoNhanh.addActionListener(e -> taoNhanhBonMocCan());
         sua.addActionListener(e -> capNhat(true));
         xoa.addActionListener(
@@ -98,8 +99,8 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         nhap.setOpaque(false);
         nhap.add(hangNhap("Loài", loai));
         nhap.add(hangNhap("Giá dịch vụ (₫)", gia));
-        nhap.add(hangNhap("Từ cân (kg)", tuKg));
-        nhap.add(hangNhap("Đến cân (kg, trống = ∞)", denKg));
+        nhap.add(hangNhap("Từ (kg) (kg)", tuKg));
+        nhap.add(hangNhap("Đến (kg, để trống nếu không giới hạn)", denKg));
         gia.putClientProperty("JTextField.placeholderText", "Nhập giá...");
         Border viNut = BorderFactory.createEmptyBorder(3, 4, 3, 4);
         them.setBorder(viNut);
@@ -132,7 +133,9 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
         long giaCoBan = DinhDang.doc(gia.getText());
         if (giaCoBan <= 0) {
             HopThoai.hienThiCanhBao(
-                    panel, "Nhập Giá cơ bản (₫) vào ô Giá dịch vụ trước khi tạo nhanh 4 mốc cân.");
+                    panel,
+                    "Nhập Giá cơ bản (₫) vào ô Giá dịch vụ trước khi tạo nhanh Tạo 4 khoảng cân"
+                            + " nặng.");
             gia.requestFocusInWindow();
             return;
         }
@@ -149,7 +152,8 @@ public final class BoSoanThaoBangGia implements BoSoanThaoTruong {
                         panel,
                         "Loài \""
                                 + loaiChon
-                                + "\" đã có bảng giá. Thay thế toàn bộ bằng 4 mốc cân mới?",
+                                + "\" đã có bảng giá. Thay thế toàn bộ bằng Tạo 4 khoảng cân nặng"
+                                + " mới?",
                         "Thay thế bảng giá")) {
             return;
         }

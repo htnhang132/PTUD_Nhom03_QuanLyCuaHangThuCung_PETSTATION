@@ -7,7 +7,6 @@ import com.petstation.dto.KhoangNgay;
 import com.petstation.util.DinhDang;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -48,6 +47,26 @@ public final class DuLieuBaoCaoService {
         return new NhanChiSo(nhanDem, nhanTong, nhanTrungBinh);
     }
 
+    /** Chỉ số cột nguồn, độc lập với tên và vị trí hiển thị của cột. */
+    public static final class TongHop {
+        private final int cotSoDon;
+        private final int cotLoiNhuan;
+        public static final TongHop THEO_DONG = new TongHop(-1, -1);
+
+        public TongHop(int cotSoDon, int cotLoiNhuan) {
+            this.cotSoDon = cotSoDon;
+            this.cotLoiNhuan = cotLoiNhuan;
+        }
+
+        public int cotSoDon() {
+            return cotSoDon;
+        }
+
+        public int cotLoiNhuan() {
+            return cotLoiNhuan;
+        }
+    }
+
     // 1. KHỞI TẠO CHẾ ĐỘ XEM THEO KỲ (CÓ LỌC KHOẢNG NGÀY)
 
     public static <T extends HangBaoCao> KieuHienThi taoKieuHienThi(
@@ -68,7 +87,21 @@ public final class DuLieuBaoCaoService {
             boolean tienTe,
             NhanChiSo nhanChiSo,
             Function<KhoangNgay, List<T>> truyVan) {
-        boolean baoCaoCongNo = laBaoCaoCongNo(tieuDe);
+        return taoKieuHienThi(
+                tieuDe, cacCot, nhan, chiSo, tienTe, nhanChiSo, TongHop.THEO_DONG, truyVan);
+    }
+
+    public static <T extends HangBaoCao> KieuHienThi taoKieuHienThi(
+            String tieuDe,
+            String[] cacCot,
+            int nhan,
+            int chiSo,
+            boolean tienTe,
+            NhanChiSo nhanChiSo,
+            TongHop tongHop,
+            Function<KhoangNgay, List<T>> truyVan) {
+        boolean baoCaoCongNo = false;
+
         return new KieuHienThi(
                 tieuDe,
                 khoang ->
@@ -79,6 +112,7 @@ public final class DuLieuBaoCaoService {
                                 tienTe,
                                 baoCaoCongNo,
                                 nhanChiSo,
+                                tongHop,
                                 truyVan.apply(khoang),
                                 khoang));
     }
@@ -90,6 +124,7 @@ public final class DuLieuBaoCaoService {
             boolean tienTe,
             boolean baoCaoCongNo,
             NhanChiSo nhanChiSo,
+            TongHop tongHop,
             List<T> cacHang,
             KhoangNgay khoang) {
         Object[][] cacDong = new Object[cacHang.size()][];
@@ -98,10 +133,10 @@ public final class DuLieuBaoCaoService {
         double tong = 0;
         long tongDon = 0;
         Double tongLoiNhuanGop = 0.0;
-        boolean coLoiNhuanGop = cacCot.length >= 7 && "Lợi nhuận gộp".equals(cacCot[6]);
-        int cotSoDon = timCotSoDon(cacCot);
+        boolean coLoiNhuanGop = tongHop.cotLoiNhuan() >= 0;
+        int cotSoDon = tongHop.cotSoDon();
         for (int i = 0; i < cacHang.size(); i++) {
-            Object[] dong = chuanHoaDong(cacCot, cacHang.get(i).thanhHang());
+            Object[] dong = cacHang.get(i).thanhHang();
             cacDong[i] = dong;
             cacNhan[i] = String.valueOf(dong[nhan]);
             Object giaTri = dong[chiSo];
@@ -109,9 +144,9 @@ public final class DuLieuBaoCaoService {
             tong += cacGiaTri[i];
             if (cotSoDon >= 0 && dong[cotSoDon] instanceof Number nDon) tongDon += nDon.longValue();
             if (coLoiNhuanGop) {
-                if (!(dong[6] instanceof Number)) tongLoiNhuanGop = null;
+                if (!(dong[tongHop.cotLoiNhuan()] instanceof Number)) tongLoiNhuanGop = null;
                 else if (tongLoiNhuanGop != null)
-                    tongLoiNhuanGop += ((Number) dong[6]).doubleValue();
+                    tongLoiNhuanGop += ((Number) dong[tongHop.cotLoiNhuan()]).doubleValue();
             }
         }
         if (cotSoDon < 0) tongDon = cacHang.size();
@@ -134,57 +169,6 @@ public final class DuLieuBaoCaoService {
                 khoang);
     }
 
-    private static Object[] chuanHoaDong(String[] cacCot, Object[] dongGoc) {
-        Object[] dong = dongGoc;
-        if (cacCot.length == 10
-                && dongGoc.length == 9
-                && "Tổng thu trong ca (HĐ + Cọc)".equals(cacCot[7])) {
-            double hoaDon = dongGoc[5] instanceof Number n ? n.doubleValue() : 0;
-            double coc = dongGoc[6] instanceof Number n ? n.doubleValue() : 0;
-            dong =
-                    new Object[] {
-                        dongGoc[0],
-                        dongGoc[1],
-                        dongGoc[2],
-                        dongGoc[3],
-                        dongGoc[4],
-                        dongGoc[5],
-                        dongGoc[6],
-                        hoaDon + coc,
-                        dongGoc[7],
-                        dongGoc[8]
-                    };
-        }
-        if (cacCot.length == 7
-                && dong.length == 7
-                && "Ngày tạo".equals(cacCot[6])
-                && dong[6] instanceof String s
-                && !s.isBlank()) {
-            dong = dong.clone();
-            dong[6] = phanTichNgayGio(s);
-        }
-        return dong;
-    }
-
-    private static Object phanTichNgayGio(String chuoi) {
-        try {
-            return LocalDateTime.parse(chuoi.trim().replace(' ', 'T'));
-        } catch (RuntimeException ignored) {
-            try {
-                return LocalDate.parse(chuoi.trim());
-            } catch (RuntimeException ignored2) {
-                return chuoi;
-            }
-        }
-    }
-
-    private static int timCotSoDon(String[] cacCot) {
-        for (int c = 0; c < cacCot.length; c++) {
-            if ("Số đơn".equals(cacCot[c]) || "Số hóa đơn".equals(cacCot[c])) return c;
-        }
-        return -1;
-    }
-
     private static DuLieu taoDuLieuLoiNhuanGop(
             String[] cacNhan,
             double[] cacGiaTri,
@@ -204,7 +188,7 @@ public final class DuLieuBaoCaoService {
                 cacCot,
                 cacDong,
                 new String[] {
-                    "Tổng số đơn", "Doanh thu thuần", "Giá trị TB/đơn (AOV)", "Lợi nhuận gộp"
+                    "Tổng số đơn", "Doanh thu thuần", "Giá trị trung bình mỗi đơn", "Lợi nhuận gộp"
                 },
                 new String[] {
                     tongDon + " đơn",
@@ -213,7 +197,8 @@ public final class DuLieuBaoCaoService {
                     tongLoiNhuanGop == null
                             ? "Cần đối chiếu giá vốn"
                             : DinhDang.dinhDang(Math.round(tongLoiNhuanGop))
-                                    + String.format(Locale.ROOT, " (%.1f%%)", tySuat)
+                                    + String.format(
+                                            Locale.forLanguageTag("vi-VN"), " (%.1f%%)", tySuat)
                 });
     }
 
@@ -245,7 +230,7 @@ public final class DuLieuBaoCaoService {
                 nhanChiSo != null && nhanChiSo.nhanTrungBinh() != null
                         ? nhanChiSo.nhanTrungBinh()
                         : baoCaoCongNo
-                                ? "Dư nợ TB/NCC"
+                                ? "Dư nợ trung bình mỗi nhà cung cấp"
                                 : cotSoDon >= 0
                                         ? "Giá trị TB/đơn"
                                         : tienTe ? "Giá trị TB" : "Trung bình";
@@ -261,10 +246,10 @@ public final class DuLieuBaoCaoService {
                     "" + (cotSoDon >= 0 ? tongDon : soMuc),
                     tienTe
                             ? DinhDang.dinhDang(Math.round(tong))
-                            : String.format(Locale.ROOT, "%.0f", tong),
+                            : String.format(Locale.forLanguageTag("vi-VN"), "%.0f", tong),
                     tienTe
                             ? DinhDang.dinhDang(Math.round(trungBinh))
-                            : String.format(Locale.ROOT, "%.1f", trungBinh),
+                            : String.format(Locale.forLanguageTag("vi-VN"), "%.1f", trungBinh),
                     khoang.demSoNgay() + " ngày"
                 });
     }
@@ -290,7 +275,7 @@ public final class DuLieuBaoCaoService {
             NhanChiSo nhanChiSo,
             Function<KhoangNgay, List<T>> truyVan) {
         KieuHienThi goc = taoKieuHienThi(ten, cot, nhan, chiSo, tienTe, nhanChiSo, truyVan);
-        boolean baoCaoCongNo = laBaoCaoCongNo(ten);
+        boolean baoCaoCongNo = false;
         String nhanThe1 =
                 nhanChiSo != null && nhanChiSo.nhanDem() != null
                         ? nhanChiSo.nhanDem()
@@ -315,16 +300,9 @@ public final class DuLieuBaoCaoService {
                                 d.theCacGiaTri()[0],
                                 d.theCacGiaTri()[1],
                                 "Hiện tại",
-                                LocalDate.now().toString()
+                                LocalDate.now().format(DinhDang.NGAY)
                             });
                 },
                 true);
-    }
-
-    // 3. HÀM HỖ TRỢ NHẬN DIỆN LOẠI BÁO CÁO
-
-    private static boolean laBaoCaoCongNo(String ten) {
-        String chuDe = ten == null ? "" : ten.toLowerCase(Locale.ROOT);
-        return chuDe.contains("công nợ") || chuDe.contains("dư nợ");
     }
 }

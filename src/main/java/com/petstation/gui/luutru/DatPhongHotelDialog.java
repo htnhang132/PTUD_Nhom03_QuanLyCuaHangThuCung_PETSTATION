@@ -3,6 +3,7 @@ package com.petstation.gui.luutru;
 import com.petstation.dto.HotelDTO;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.HopThoaiTroGiup;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
@@ -79,8 +80,9 @@ public final class DatPhongHotelDialog {
     private JPanel hangCocDuKien;
     private final JLabel nhanThongTinCoc = new JLabel(" ");
     private final JLabel nhanTrangThai = new JLabel(" ");
-    private final JLabel nhanTieuDeHopThoai = new JLabel("THÔNG TIN ĐẶT PHÒNG");
-    private final NutDinhDang btnLuu = new NutDinhDang("Lưu đặt phòng", NutDinhDang.KieuNut.CHINH);
+    private final JLabel nhanTieuDeHopThoai = new JLabel("Đặt phòng lưu trú");
+    private final NutDinhDang btnLuu =
+            new NutDinhDang("Xác nhận đặt phòng", NutDinhDang.KieuNut.CHINH);
     private boolean dangTaiDuLieu = true;
     private boolean cheDoGiaHan;
     private LocalDateTime ngayRaCu;
@@ -150,7 +152,8 @@ public final class DatPhongHotelDialog {
                         parent == null ? null : SwingUtilities.getWindowAncestor(parent),
                         this.maHopDong == null ? "Đặt phòng Pet Hotel" : "Sửa đặt phòng Pet Hotel",
                         Dialog.ModalityType.APPLICATION_MODAL);
-        oTimKhach.putClientProperty("JTextField.placeholderText", "Tìm tên, SĐT...");
+        oTimKhach.putClientProperty(
+                "JTextField.placeholderText", "Tên hoặc số điện thoại khách hàng");
         oTimKhach.setPreferredSize(new Dimension(130, 34));
         cboKhachHang.setPrototypeDisplayValue(
                 new BieuMauTruong.LuaChon("KH", "KH000001 — Khách hàng mẫu (0901234567)"));
@@ -257,11 +260,9 @@ public final class DatPhongHotelDialog {
         for (var khach : hopLe) {
             cboKhachHang.addItem(khach);
         }
+        cboKhachHang.setSelectedIndex(-1);
         if (dangChon != null) {
             chonGiaTri(cboKhachHang, dangChon.giaTri());
-        }
-        if (cboKhachHang.getSelectedIndex() < 0 && !hopLe.isEmpty()) {
-            cboKhachHang.setSelectedIndex(0);
         }
         capNhatDanhSachThuCung();
     }
@@ -353,8 +354,7 @@ public final class DatPhongHotelDialog {
         JPanel root = new JPanel(new BorderLayout(0, 12));
         root.setBackground(MauUngDung.NEN_KEM);
         root.setBorder(new EmptyBorder(16, 20, 16, 20));
-        nhanTieuDeHopThoai.setText(
-                maHopDong == null ? "THÔNG TIN ĐẶT PHÒNG" : "CẬP NHẬT ĐẶT PHÒNG");
+        nhanTieuDeHopThoai.setText(maHopDong == null ? "Đặt phòng lưu trú" : "CẬP NHẬT ĐẶT PHÒNG");
         nhanTieuDeHopThoai.setFont(MauUngDung.taoPhongChu(Font.BOLD, 18));
         nhanTieuDeHopThoai.setForeground(MauUngDung.NAU);
         root.add(nhanTieuDeHopThoai, BorderLayout.NORTH);
@@ -498,6 +498,7 @@ public final class DatPhongHotelDialog {
         btnHuy.addActionListener(e -> hopThoai.dispose());
         btnLuu.setPreferredSize(new Dimension(148, MauUngDung.CAO_NUT));
         btnLuu.addActionListener(e -> luu());
+        khungThaoTac.add(HopThoaiTroGiup.taoNutTroGiup(hopThoai, DatPhongHotelDialog.class));
         khungThaoTac.add(btnHuy);
         khungThaoTac.add(btnLuu);
         return khungThaoTac;

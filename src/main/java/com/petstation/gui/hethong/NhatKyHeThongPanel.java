@@ -66,7 +66,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
         "Bán hàng & Thu ngân",
         "Kho hàng",
         "Spa & Lưu trú",
-        "Phê duyệt",
+        "Yêu cầu chờ duyệt",
         "Danh mục & Nhân sự",
         "Hệ thống"
     };
@@ -219,7 +219,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
     }
 
     private JScrollPane taoBangVungHienThi() {
-        String[] cacCot = {"Thời gian", "Người dùng", "Hành động", "Loại sự kiện", "Kết quả"};
+        String[] cacCot = {"Thời gian", "Người thực hiện", "Hành động", "Loại sự kiện", "Kết quả"};
         moHinhBang =
                 new DefaultTableModel(new Object[0][], cacCot) {
                     @Override
@@ -455,7 +455,7 @@ public final class NhatKyHeThongPanel extends CoSoPanel {
             case "PAYMENT" -> "Bán hàng & Thu ngân";
             case "INVENTORY" -> "Kho hàng";
             case "SERVICE" -> "Spa & Lưu trú";
-            case "APPROVAL" -> "Phê duyệt";
+            case "APPROVAL" -> "Yêu cầu chờ duyệt";
             case "CATALOG", "CREATE", "UPDATE", "DELETE" -> "Danh mục & Nhân sự";
             case "SYSTEM" -> "Hệ thống";
             case "WARNING" -> "Cảnh báo";

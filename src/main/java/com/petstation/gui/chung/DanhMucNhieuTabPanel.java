@@ -81,12 +81,8 @@ public class DanhMucNhieuTabPanel extends CoSoPanel {
     }
 
     @Override
-    public void xuLyTroGiup() {
-        if (tabCacTab.getSelectedComponent() instanceof HoTroThanhCongCu giaTriTam) {
-            giaTriTam.xuLyTroGiup();
-            return;
-        }
-        super.xuLyTroGiup();
+    protected CoSoPanel layManHinhTroGiup() {
+        return tabCacTab.getSelectedComponent() instanceof CoSoPanel manHinh ? manHinh : this;
     }
 
     @Override

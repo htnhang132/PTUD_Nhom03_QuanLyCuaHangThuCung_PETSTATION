@@ -38,7 +38,7 @@ public final class HopThoai {
 
     private static final String DONG = "Đóng";
 
-    private static final String DONG_Y = "Đồng ý";
+    private static final String DONG_Y = "Xác nhận";
 
     private static final String HUY = "Hủy";
 

@@ -16,7 +16,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.time.LocalDateTime;
@@ -53,7 +56,7 @@ public final class CaiDatPanel extends CoSoPanel {
 
     private final Map<String, JTextField> cacDauVao = new LinkedHashMap<>();
     private final JCheckBox hopChonMacDinhKiemDemMu =
-            new JCheckBox("Mặc định bật chế độ kiểm kê mù (Blind Count) cho nhân viên kho");
+            new JCheckBox("Mặc định ẩn tồn sổ sách khi đếm");
     private final JComboBox<String> cboMayIn = new JComboBox<>();
     private final JComboBox<String> cboNganHangVietQR = new JComboBox<>();
     private final boolean coTheSua;
@@ -103,10 +106,8 @@ public final class CaiDatPanel extends CoSoPanel {
                 BorderLayout.NORTH);
         tabCaiDat = new JTabbedPane();
         tabCaiDat.setFont(MauUngDung.taoPhongChu(Font.BOLD, 13));
-        tabCaiDat.addTab("Cửa hàng & Hóa đơn", bocCuon(taoTabCuaHangVaHoaDon()));
-        tabCaiDat.addTab("Kho & Hàng hóa", bocCuon(taoTabKhoVaHangHoa()));
-        tabCaiDat.addTab("Nhân sự & Phân lịch", bocCuon(taoTabNhanSuVaQuyDinh()));
-        tabCaiDat.addTab("Lưu trữ & Bảo trì", bocCuon(taoTabLuuTruVaBaoTri()));
+        tabCaiDat.addTab("Cửa hàng và thanh toán", bocCuon(taoTabCuaHangVaHoaDon()));
+        tabCaiDat.addTab("Vận hành", bocCuon(taoTabVanHanh()));
         add(tabCaiDat, BorderLayout.CENTER);
         add(taoThanhThaoTacCaiDat(), BorderLayout.SOUTH);
         nap();
@@ -114,7 +115,7 @@ public final class CaiDatPanel extends CoSoPanel {
 
     private JPanel taoTabCuaHangVaHoaDon() {
         JPanel tab1 = taoKhungTab();
-        JPanel khungThongTinCuaHang = layNhomBox("Thông tin pháp nhân & Liên hệ");
+        JPanel khungThongTinCuaHang = layNhomBox("Thông tin cửa hàng");
         taoTruong(
                 khungThongTinCuaHang,
                 "TEN_CUA_HANG",
@@ -137,7 +138,7 @@ public final class CaiDatPanel extends CoSoPanel {
                 "Hộp thư chăm sóc khách hàng");
         taoTruong(khungThongTinCuaHang, "WEBSITE_CUA_HANG", "Website", "Địa chỉ website cửa hàng");
         taoTruong(khungThongTinCuaHang, "MA_SO_THUE", "Mã số thuế", "Mã số thuế doanh nghiệp");
-        JPanel khungHoaDonVaMayIn = layNhomBox("Bán hàng, Thuế & Thiết bị");
+        JPanel khungHoaDonVaMayIn = layNhomBox("In hóa đơn và thuế");
         taoTruong(
                 khungHoaDonVaMayIn,
                 "THUE_VAT_PHAN_TRAM",
@@ -161,30 +162,37 @@ public final class CaiDatPanel extends CoSoPanel {
         btnKiemThu.addActionListener(e -> inThu());
         khungHoaDonVaMayIn.add(btnKiemThu);
         khungHoaDonVaMayIn.add(Box.createVerticalStrut(12));
-        themChonNganHangVietQR(khungHoaDonVaMayIn);
+        JPanel khungNhanTien = layNhomBox("Nhận chuyển khoản");
+        themChonNganHangVietQR(khungNhanTien);
         taoTruong(
-                khungHoaDonVaMayIn,
+                khungNhanTien,
                 "MA_BIN_NGAN_HANG",
                 "Mã BIN ngân hàng VietQR",
                 "Mã BIN 6 số ngân hàng (tự điền khi chọn ngân hàng phía trên)");
         taoTruong(
-                khungHoaDonVaMayIn,
+                khungNhanTien,
                 "SO_TAI_KHOAN_NGAN_HANG",
                 "Số tài khoản nhận tiền",
                 "Số tài khoản ngân hàng thụ hưởng");
         taoTruong(
-                khungHoaDonVaMayIn,
+                khungNhanTien,
                 "TEN_CHU_TAI_KHOAN",
                 "Chủ tài khoản (IN HOA)",
                 "Tên chủ tài khoản viết hoa không dấu");
-        tab1.add(khungThongTinCuaHang);
-        tab1.add(khungHoaDonVaMayIn);
+        tab1.add(taoCotNhom(khungThongTinCuaHang));
+        tab1.add(taoCotNhom(khungNhanTien, khungHoaDonVaMayIn));
         return tab1;
     }
 
-    private JPanel taoTabKhoVaHangHoa() {
-        JPanel tab2 = taoKhungTab();
-        JPanel khungKho1 = layNhomBox("Cảnh báo tồn kho & Hạn dùng");
+    private JPanel taoTabVanHanh() {
+        JPanel tab = taoKhungTab();
+        tab.add(taoNhomKhoVaHangHoa());
+        tab.add(taoCotNhom(taoNhomNhanSu(), taoNhomDichVuVaAnh()));
+        return tab;
+    }
+
+    private JPanel taoNhomKhoVaHangHoa() {
+        JPanel khungKho1 = layNhomBox("Cảnh báo tồn kho và hạn dùng");
         taoTruong(
                 khungKho1,
                 "NGUONG_TON_KHO_THAP",
@@ -200,7 +208,7 @@ public final class CaiDatPanel extends CoSoPanel {
                 "SO_NGAY_TON_DONG",
                 "Ngưỡng hàng tồn đọng / chôn vốn (ngày)",
                 "Hàng nhập kho quá số ngày này chưa bán được xem là tồn đọng");
-        JPanel khungKho2 = layNhomBox("Xuất hủy & Kiểm kê");
+        JPanel khungKho2 = layNhomBox("Xuất hủy và kiểm kê");
         taoTruong(
                 khungKho2,
                 "HAN_MUC_XUAT_HUY_CAN_DUYET",
@@ -211,14 +219,11 @@ public final class CaiDatPanel extends CoSoPanel {
         hopChonMacDinhKiemDemMu.setAlignmentX(Component.LEFT_ALIGNMENT);
         khungKho2.add(Box.createVerticalStrut(10));
         khungKho2.add(hopChonMacDinhKiemDemMu);
-        tab2.add(khungKho1);
-        tab2.add(khungKho2);
-        return tab2;
+        return taoCotNhom(khungKho1, khungKho2);
     }
 
-    private JPanel taoTabNhanSuVaQuyDinh() {
-        JPanel tab3 = taoKhungTab();
-        JPanel khungNhanSu1 = layNhomBox("Chính sách làm việc & Ca trực");
+    private JPanel taoNhomNhanSu() {
+        JPanel khungNhanSu1 = layNhomBox("Nhân sự và phân ca");
         taoTruong(
                 khungNhanSu1,
                 "SO_GIO_TOI_DA_MOI_TUAN",
@@ -229,7 +234,11 @@ public final class CaiDatPanel extends CoSoPanel {
                 "SO_GIO_BAO_TRUOC_DOI_CA",
                 "Thời gian báo trước khi đổi ca (giờ)",
                 "Nhân viên phải gửi yêu cầu đổi ca trước ca làm ít nhất");
-        JPanel khungNhanSu2 = layNhomBox("Quy định dịch vụ & Đổi trả");
+        return khungNhanSu1;
+    }
+
+    private JPanel taoNhomDichVuVaAnh() {
+        JPanel khungNhanSu2 = layNhomBox("Dịch vụ, đổi trả và ảnh chăm sóc");
         taoTruong(
                 khungNhanSu2,
                 "PHI_TRA_PHONG_TRE",
@@ -240,40 +249,49 @@ public final class CaiDatPanel extends CoSoPanel {
                 "SO_NGAY_DOI_TRA",
                 "Thời hạn đổi trả phụ kiện (ngày)",
                 "Số ngày tối đa cho phép khách hàng đổi trả phụ kiện kể từ ngày mua");
-        tab3.add(khungNhanSu1);
-        tab3.add(khungNhanSu2);
-        return tab3;
+        taoTruongThuMuc(
+                khungNhanSu2,
+                "THU_MUC_ANH_CHAM_SOC",
+                "Thư mục ảnh chăm sóc thú cưng",
+                "Mặc định thư mục PetStation trong thư mục người dùng");
+        return khungNhanSu2;
     }
 
-    private JPanel taoTabLuuTruVaBaoTri() {
-        JPanel tab4 = taoKhungTab();
-        JPanel khungHeThong1 = layNhomBox("Đường dẫn dữ liệu");
-        taoTruongThuMuc(
-                khungHeThong1,
-                "THU_MUC_ANH_CHAM_SOC",
-                "Thư mục lưu trữ hình ảnh chăm sóc thú cưng",
-                "Mặc định thư mục PetStation trong thư mục người dùng");
-        JPanel khungHeThong2 = layNhomBox("Khôi phục cấu hình");
-        JLabel nhanGhiChuBaoTri =
-                new JLabel(
-                        "<html><i>Có thể khôi phục các tham số hệ thống về giá trị mặc định của nhà"
-                                + " sản xuất.</i></html>");
-        nhanGhiChuBaoTri.setAlignmentX(Component.LEFT_ALIGNMENT);
-        khungHeThong2.add(nhanGhiChuBaoTri);
-        khungHeThong2.add(Box.createVerticalStrut(14));
-        NutDinhDang btnKhoiPhucMacDinh =
-                new NutDinhDang("Khôi phục thiết lập chuẩn", NutDinhDang.KieuNut.PHU);
-        btnKhoiPhucMacDinh.setEnabled(coTheSua);
-        btnKhoiPhucMacDinh.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnKhoiPhucMacDinh.addActionListener(e -> khoiPhucMacDinh());
-        khungHeThong2.add(btnKhoiPhucMacDinh);
-        tab4.add(khungHeThong1);
-        tab4.add(khungHeThong2);
-        return tab4;
+    private JPanel taoCotNhom(JPanel... cacNhom) {
+        JPanel cot = taoVungTrongSuot(new GridBagLayout());
+        cot.setName("cotNhomCaiDat");
+        for (int i = 0; i < cacNhom.length; i++) {
+            JPanel nhom = cacNhom[i];
+            for (Component thanhPhan : nhom.getComponents()) {
+                thanhPhan.setMaximumSize(
+                        new Dimension(
+                                thanhPhan instanceof JLabel
+                                        ? Integer.MAX_VALUE
+                                        : thanhPhan.getMaximumSize().width,
+                                thanhPhan.getPreferredSize().height));
+            }
+            nhom.add(Box.createVerticalGlue());
+            GridBagConstraints viTri = new GridBagConstraints();
+            viTri.gridx = 0;
+            viTri.gridy = i;
+            viTri.weightx = 1;
+            viTri.weighty = i == cacNhom.length - 1 ? 1 : 0;
+            viTri.fill = GridBagConstraints.BOTH;
+            viTri.insets = new Insets(i == 0 ? 0 : 16, 0, 0, 0);
+            cot.add(nhom, viTri);
+        }
+        return cot;
     }
 
     private JPanel taoThanhThaoTacCaiDat() {
         JPanel khungCacThaoTac = taoVungTrongSuot(new FlowLayout(FlowLayout.RIGHT, 10, 8));
+        NutDinhDang btnKhoiPhucMacDinh =
+                new NutDinhDang("Đặt lại cấu hình", NutDinhDang.KieuNut.PHU);
+        btnKhoiPhucMacDinh.setEnabled(coTheSua);
+        btnKhoiPhucMacDinh.setToolTipText(
+                "Điền lại các thông số mặc định. Bấm Lưu cài đặt để áp dụng.");
+        btnKhoiPhucMacDinh.addActionListener(e -> khoiPhucMacDinh());
+        khungCacThaoTac.add(btnKhoiPhucMacDinh);
         btnLuu = new NutDinhDang("Lưu cài đặt", NutDinhDang.KieuNut.CHINH);
         btnLuu.setEnabled(false);
         btnLuu.addActionListener(suKien -> xuLyLuu());
@@ -282,7 +300,18 @@ public final class CaiDatPanel extends CoSoPanel {
     }
 
     private JScrollPane bocCuon(JPanel tab) {
-        JPanel neoTren = taoVungTrongSuot(new BorderLayout());
+        JPanel neoTren =
+                new JPanel(new BorderLayout()) {
+                    @Override
+                    public Dimension getPreferredSize() {
+                        Dimension kichThuoc = super.getPreferredSize();
+                        if (getParent() != null && getParent().getWidth() > 0) {
+                            kichThuoc.width = getParent().getWidth();
+                        }
+                        return kichThuoc;
+                    }
+                };
+        neoTren.setOpaque(false);
         neoTren.add(tab, BorderLayout.NORTH);
         JScrollPane cuon =
                 new JScrollPane(
@@ -484,7 +513,9 @@ public final class CaiDatPanel extends CoSoPanel {
 
     private void khoiPhucMacDinh() {
         if (!HopThoai.xacNhan(
-                this, "Bạn có chắc muốn đặt lại các thông số cấu hình về giá trị tiêu chuẩn?")) {
+                this,
+                "Đặt lại các thông số cấu hình về giá trị mặc định?"
+                        + "\nBấm Lưu cài đặt sau đó để áp dụng thay đổi.")) {
             return;
         }
         datGiaTriNeuCo("THUE_VAT_PHAN_TRAM", "8");

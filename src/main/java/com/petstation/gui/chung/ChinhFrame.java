@@ -236,10 +236,6 @@ public final class ChinhFrame extends JFrame {
     }
 
     private void hienThi(MaManHinh id, DinhNghiaManHinh dinhNghia, boolean lichSuBanGhi) {
-        if (lichSuBanGhi && hienTai != null && hienTai != id) {
-            lichSu.push(hienTai);
-            while (lichSu.size() > LICH_SU_LON_NHAT) lichSu.removeLast();
-        }
         var yeuCau = NguCanhMoBanGhi.lay();
         if (yeuCau != null && yeuCau.manHinh() == id) {
             var q = manHinhBoDangKy.layGioHang().getQuyTrinh();
@@ -251,7 +247,6 @@ public final class ChinhFrame extends JFrame {
                 default -> {}
             }
         }
-        hienTai = id;
         boolean moiTao = !manHinhBoNhoDem.containsKey(id);
         JPanel khungManHinh =
                 manHinhBoNhoDem.computeIfAbsent(
@@ -261,6 +256,11 @@ public final class ChinhFrame extends JFrame {
                             khungVungLamViec.add(khungDaTao, khoa.name());
                             return khungDaTao;
                         });
+        if (lichSuBanGhi && hienTai != null && hienTai != id) {
+            lichSu.push(hienTai);
+            while (lichSu.size() > LICH_SU_LON_NHAT) lichSu.removeLast();
+        }
+        hienTai = id;
         khungManHinh.putClientProperty("maManHinh", id);
         manHinhBoCuc.show(khungVungLamViec, id.name());
         if (id == MaManHinh.DAT_LICH_HEN_SPA && khungManHinh instanceof TiepNhanSpaPanel spa) {
@@ -361,31 +361,7 @@ public final class ChinhFrame extends JFrame {
                 KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK),
                 "back",
                 this::diQuayLai);
-        lienKet(
-                goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0),
-                "pos",
-                () -> dieuHuong(MaManHinh.LAP_HOA_DON));
-        lienKet(
-                goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
-                "orders",
-                () -> dieuHuong(MaManHinh.TIM_KIEM_HOA_DON));
-        lienKet(
-                goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),
-                "spa",
-                () -> dieuHuong(MaManHinh.QUAN_LY_SPA));
-        lienKet(
-                goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0),
-                "hotel",
-                () -> dieuHuong(MaManHinh.QUAN_LY_LUU_TRU));
-        lienKet(
-                goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0),
-                "returns",
-                () -> dieuHuong(MaManHinh.DOI_TRA_HANG_HOA));
+        CauTrucMenu.dangKyPhimTatDieuHuong(goc, this::dieuHuong);
         lienKet(
                 goc,
                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0),
@@ -431,7 +407,7 @@ public final class ChinhFrame extends JFrame {
                 () -> khungThanhCongCu.kichHoat(ThanhCongCuChinh.ThaoTac.HOAN_TAC));
         lienKet(
                 goc,
-                KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0),
+                KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.ALT_DOWN_MASK),
                 "help",
                 () -> khungThanhCongCu.kichHoat(ThanhCongCuChinh.ThaoTac.TRO_GIUP));
         lienKet(

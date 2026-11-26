@@ -67,6 +67,7 @@ public class TruongMatKhauAnHien extends JPanel {
             btnNutBatTat.setToolTipText("Hiển thị mật khẩu");
             btnNutBatTat.setSelected(false);
         }
+        btnNutBatTat.getAccessibleContext().setAccessibleName(btnNutBatTat.getToolTipText());
     }
 
     private static Icon taoBieuTuongMat(boolean an) {

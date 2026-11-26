@@ -5,6 +5,7 @@ import com.petstation.dto.GioHang;
 import com.petstation.gui.chung.BoGocPanel;
 import com.petstation.gui.chung.CoSoPanel;
 import com.petstation.gui.chung.HopThoai;
+import com.petstation.gui.chung.HopThoaiTroGiup;
 import com.petstation.gui.chung.MauUngDung;
 import com.petstation.gui.chung.NutDinhDang;
 import com.petstation.gui.chung.TacVuNen;
@@ -77,12 +78,18 @@ public final class DoiPhuKienDialog extends JDialog {
                     "Đổi phụ kiện trong thời hạn quy định • Hàng thay thế giá bằng hoặc cao hơn •"
                             + " Không hoàn tiền");
     private final NutDinhDang tiepTuc =
-            new NutDinhDang("Tiếp tục thanh toán", NutDinhDang.KieuNut.CHINH);
+            new NutDinhDang("Sang thanh toán", NutDinhDang.KieuNut.CHINH);
     private int soNgayHanDoi = 3;
     private final DefaultTableModel moHinhHoaDon =
             model("Hóa đơn", "Khách hàng", "Ngày lập", "Tổng tiền");
     private final DefaultTableModel moHinhDong =
-            model("Sản phẩm", "Nhóm", "Đã mua", "Đã đổi", "Còn đổi", "Giá bán gốc");
+            model(
+                    "Sản phẩm",
+                    "Nhóm",
+                    "Đã mua",
+                    "Đã đổi",
+                    "Số lượng còn được đổi",
+                    "Giá mua ban đầu");
     private final DefaultTableModel moHinhHang =
             model("Mã phụ kiện", "Tên phụ kiện", "Đơn giá", "Tồn khả dụng");
     private final JTable hoaDonBang = bang(moHinhHoaDon);
@@ -285,9 +292,11 @@ public final class DoiPhuKienDialog extends JDialog {
         trangThaiDong.add(trangThai, BorderLayout.NORTH);
         JPanel nutDong = new JPanel(new BorderLayout());
         nutDong.setOpaque(false);
+        nutDong.add(HopThoaiTroGiup.taoNutTroGiup(this, DoiPhuKienDialog.class), BorderLayout.WEST);
         NutDinhDang btnHuy = new NutDinhDang("Hủy", NutDinhDang.KieuNut.TRONG_SUOT);
         btnHuy.addActionListener(e -> huy());
-        nutDong.add(hang(btnHuy, nut("Treo đơn đổi", this::treoDon), tiepTuc), BorderLayout.EAST);
+        nutDong.add(
+                hang(btnHuy, nut("Lưu phiếu đổi nháp", this::treoDon), tiepTuc), BorderLayout.EAST);
         trangThaiDong.add(nutDong, BorderLayout.CENTER);
         chan.add(trangThaiDong, BorderLayout.CENTER);
         return chan;
@@ -530,8 +539,7 @@ public final class DoiPhuKienDialog extends JDialog {
                         dispose();
                         dieuHuong.accept(MaManHinh.HOA_DON_CHO);
                         HopThoai.hienThiThanhCong(
-                                getOwner(),
-                                "Đã treo đơn đổi. Mở lại tại Đơn đang treo để tiếp tục.");
+                                getOwner(), "Đã treo đơn đổi. Mở lại tại Đơn nháp để tiếp tục.");
                     });
         } catch (Exception e) {
             baoLoi(e);
@@ -866,7 +874,7 @@ public final class DoiPhuKienDialog extends JDialog {
         boolean duDieuKien = tem.isSelected() && chuaDung.isSelected();
         trangThai.setText(
                 duDieuKien
-                        ? "Đủ điều kiện. Bấm \"Tiếp tục thanh toán\" để hoàn tất."
+                        ? "Đủ điều kiện. Bấm \"Sang thanh toán\" để hoàn tất."
                         : "Tích đủ 2 cam kết tình trạng hàng (tem mác & chưa sử dụng)"
                                 + " để tiếp tục.");
         tiepTuc.setEnabled(duDieuKien);
@@ -881,7 +889,7 @@ public final class DoiPhuKienDialog extends JDialog {
                         || tem.isSelected()
                         || chuaDung.isSelected();
         if (coDuLieuDangNhap) {
-            String[] luaChon = {"Treo đơn đổi", "Bỏ thay đổi", "Tiếp tục nhập"};
+            String[] luaChon = {"Lưu phiếu đổi nháp", "Bỏ thay đổi", "Tiếp tục nhập"};
             int chon =
                     HopThoai.tuyChon(
                             this,
@@ -967,7 +975,9 @@ public final class DoiPhuKienDialog extends JDialog {
             int rong =
                     ten.equals("Sản phẩm") || ten.equals("Tên phụ kiện")
                             ? 300
-                            : ten.equals("Đã mua") || ten.equals("Đã đổi") || ten.equals("Còn đổi")
+                            : ten.equals("Đã mua")
+                                            || ten.equals("Đã đổi")
+                                            || ten.equals("Số lượng còn được đổi")
                                     ? 65
                                     : 150;
             t.getColumnModel().getColumn(i).setPreferredWidth(rong);

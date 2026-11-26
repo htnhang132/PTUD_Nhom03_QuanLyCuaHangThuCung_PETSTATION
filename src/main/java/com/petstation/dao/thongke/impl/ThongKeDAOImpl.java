@@ -898,7 +898,7 @@ public final class ThongKeDAOImpl implements ThongKeDAO {
     }
 
     private ChiTietBaoCao layChiTietHangHoa(String goc, Object tu, Object den, String maNhanVien) {
-        if (goc.equals("Sản phẩm bán chạy")) {
+        if (goc.equals("Sản phẩm bán chạy") || goc.equals("10 sản phẩm có doanh thu cao nhất")) {
             return layChiTietSanPhamBanChay(tu, den, maNhanVien);
         }
         if (goc.equals("Tồn kho hiện tại") || goc.equals("Sắp hết hạn")) {
